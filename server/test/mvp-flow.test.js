@@ -1,0 +1,245 @@
+import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+import { after, before, test } from 'node:test';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { addDays, zonedNow } from '../src/utils/time.js';
+
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = randomBytes(32).toString('base64url');
+process.env.JWT_EXPIRES_IN = '1h';
+process.env.CLIENT_ORIGIN = 'http://localhost:5173';
+
+const memory = await MongoMemoryServer.create();
+process.env.MONGO_URI = memory.getUri();
+
+const { default: app } = await import('../src/app.js');
+const { connectDb, disconnectDb } = await import('../src/config/db.js');
+const { default: Booking } = await import('../src/models/Booking.js');
+const { default: Membership } = await import('../src/models/Membership.js');
+const { default: MembershipPlan } = await import('../src/models/MembershipPlan.js');
+const { default: Payment } = await import('../src/models/Payment.js');
+const { default: Service } = await import('../src/models/Service.js');
+const { default: Tenant } = await import('../src/models/Tenant.js');
+const { default: TenantUser } = await import('../src/models/TenantUser.js');
+const { default: User } = await import('../src/models/User.js');
+
+const created = {
+  userIds: [],
+  tenantId: null,
+};
+
+let server;
+let baseUrl;
+
+function authHeaders(token, json = false) {
+  const headers = {};
+  if (json) headers['content-type'] = 'application/json';
+  if (token) headers.authorization = `Bearer ${token}`;
+  return headers;
+}
+
+async function request(path, { method = 'GET', token, body } = {}) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method,
+    headers: body || token ? authHeaders(token, Boolean(body)) : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await response.text();
+  let payload = null;
+  if (text) payload = JSON.parse(text);
+  return { status: response.status, body: payload };
+}
+
+before(async () => {
+  await connectDb();
+  server = app.listen(0);
+  baseUrl = `http://127.0.0.1:${server.address().port}`;
+});
+
+after(async () => {
+  if (created.tenantId) {
+    const tenantId = created.tenantId;
+    await Booking.deleteMany({ tenantId });
+    await Membership.deleteMany({ tenantId });
+    await Payment.deleteMany({ tenantId });
+    await MembershipPlan.deleteMany({ tenantId });
+    await Service.deleteMany({ tenantId });
+    await TenantUser.deleteMany({ tenantId });
+    await Tenant.deleteOne({ _id: tenantId });
+  }
+  if (created.userIds.length > 0) {
+    await User.deleteMany({ _id: { $in: created.userIds } });
+  }
+  if (server) await new Promise((resolve) => server.close(resolve));
+  await disconnectDb();
+  await memory.stop();
+});
+
+test('MVP flow: business, membership, booking and cancellation', { timeout: 60000 }, async () => {
+  const stamp = Date.now();
+  const ownerEmail = `owner-${stamp}@example.com`;
+  const customerEmail = `customer-${stamp}@example.com`;
+  const password = 'test-pass-123';
+
+  const health = await request('/api/health');
+  assert.equal(health.status, 200);
+  assert.equal(health.body.ok, true);
+
+  const owner = await request('/api/auth/register', {
+    method: 'POST',
+    body: {
+      name: 'Vlasnik Test',
+      email: ownerEmail,
+      password,
+      role: 'BUSINESS_OWNER',
+    },
+  });
+  assert.equal(owner.status, 201);
+  created.userIds.push(owner.body.user.id);
+  const ownerToken = owner.body.token;
+
+  const emptyMine = await request('/api/tenants/mine', { token: ownerToken });
+  assert.equal(emptyMine.status, 200);
+  assert.deepEqual(emptyMine.body.tenants, []);
+
+  const tenantResponse = await request('/api/tenants', {
+    method: 'POST',
+    token: ownerToken,
+    body: { name: `Studio ${stamp}`, niche: 'fitness' },
+  });
+  assert.equal(tenantResponse.status, 201);
+  const tenant = tenantResponse.body.tenant;
+  created.tenantId = tenant.id;
+
+  const mine = await request('/api/tenants/mine', { token: ownerToken });
+  assert.equal(mine.status, 200);
+  assert.equal(mine.body.tenants.length, 1);
+  assert.equal(mine.body.tenants[0].role, 'BUSINESS_OWNER');
+  assert.equal(mine.body.tenants[0].tenant.id, tenant.id);
+
+  const hours = await request(`/api/tenants/${tenant.id}`, {
+    method: 'PATCH',
+    token: ownerToken,
+    body: {
+      bookingSettings: {
+        capacityModel: 'PER_SLOT',
+        workingHours: [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+          day,
+          closed: false,
+          open: '08:00',
+          close: '20:00',
+        })),
+      },
+    },
+  });
+  assert.equal(hours.status, 200);
+
+  const serviceResponse = await request(`/api/tenants/${tenant.id}/services`, {
+    method: 'POST',
+    token: ownerToken,
+    body: {
+      name: 'Power Plate',
+      durationMinutes: 30,
+      slotIntervalMinutes: 15,
+      capacity: 6,
+      cancellationWindowMinutes: 15,
+      price: 10,
+      membershipRequired: true,
+    },
+  });
+  assert.equal(serviceResponse.status, 201);
+  const service = serviceResponse.body.service;
+
+  const planResponse = await request(`/api/tenants/${tenant.id}/membership-plans`, {
+    method: 'POST',
+    token: ownerToken,
+    body: {
+      name: '12 treninga',
+      price: 120,
+      validityDays: 30,
+      sessionsIncluded: 12,
+      allowedServiceIds: [service.id],
+    },
+  });
+  assert.equal(planResponse.status, 201);
+  const plan = planResponse.body.plan;
+
+  const customer = await request('/api/auth/register', {
+    method: 'POST',
+    body: {
+      name: 'Kupac Test',
+      email: customerEmail,
+      password,
+      role: 'CUSTOMER',
+    },
+  });
+  assert.equal(customer.status, 201);
+  created.userIds.push(customer.body.user.id);
+  const customerToken = customer.body.token;
+
+  const membershipResponse = await request(`/api/tenants/${tenant.id}/memberships`, {
+    method: 'POST',
+    token: ownerToken,
+    body: {
+      userId: customer.body.user.id,
+      membershipPlanId: plan.id,
+      method: 'CASH',
+      amount: 120,
+    },
+  });
+  assert.equal(membershipResponse.status, 201);
+  assert.equal(membershipResponse.body.membership.sessionsRemaining, 12);
+  assert.match(membershipResponse.body.membership.code, /^MEM-\d{4}-\d{6}$/);
+  assert.match(membershipResponse.body.paymentCode, /^PAY-\d{4}-\d{6}$/);
+
+  const visitDate = addDays(zonedNow('Europe/Zagreb').date, 1);
+  const before = await request(
+    `/api/tenants/${tenant.id}/services/${service.id}/availability?date=${visitDate}`,
+  );
+  assert.equal(before.status, 200);
+  const openSlot = before.body.slots.find((slot) => slot.startTime === '10:00');
+  assert.ok(openSlot);
+  assert.equal(openSlot.available, 6);
+  assert.equal(openSlot.status, 'AVAILABLE');
+
+  const bookingResponse = await request('/api/bookings', {
+    method: 'POST',
+    token: customerToken,
+    body: {
+      serviceId: service.id,
+      date: visitDate,
+      startTime: '10:00',
+    },
+  });
+  assert.equal(bookingResponse.status, 201);
+  assert.equal(bookingResponse.body.booking.status, 'CONFIRMED');
+
+  const afterBook = await request(
+    `/api/tenants/${tenant.id}/services/${service.id}/availability?date=${visitDate}`,
+  );
+  const bookedSlot = afterBook.body.slots.find((slot) => slot.startTime === '10:00');
+  assert.equal(bookedSlot.booked, 1);
+  assert.equal(bookedSlot.available, 5);
+
+  const myMemberships = await request('/api/memberships/my', { token: customerToken });
+  assert.equal(myMemberships.body.memberships[0].sessionsUsed, 1);
+  assert.equal(myMemberships.body.memberships[0].sessionsRemaining, 11);
+
+  const cancelled = await request(`/api/bookings/${bookingResponse.body.booking.id}/cancel`, {
+    method: 'PATCH',
+    token: customerToken,
+  });
+  assert.equal(cancelled.status, 200);
+  assert.equal(cancelled.body.booking.status, 'CANCELLED');
+
+  const afterCancel = await request(
+    `/api/tenants/${tenant.id}/services/${service.id}/availability?date=${visitDate}`,
+  );
+  const freedSlot = afterCancel.body.slots.find((slot) => slot.startTime === '10:00');
+  assert.equal(freedSlot.booked, 0);
+  assert.equal(freedSlot.available, 6);
+
+  const restored = await request('/api/memberships/my', { token: customerToken });
+  assert.equal(restored.body.memberships[0].sessionsUsed, 0);
+  assert.equal(restored.body.memberships[0].sessionsRemaining, 12);
+});
