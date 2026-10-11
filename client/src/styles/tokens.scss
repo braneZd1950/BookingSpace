@@ -1,0 +1,63 @@
+:root {
+  --bg: #f5f8f8;
+  --surface: #ffffff;
+  --line: #d9e2e3;
+  --fg: #112b2e;
+  --muted: #55696c;
+  --brand: #0e6b73;
+  --on-brand: #ffffff;
+  --brand-strong: #0a4f56;
+  --brand-soft: #dceff0;
+  --accent: #f2a33a;
+  --on-accent: #3a2400;
+  --ok: #1f8a5b;
+  --ok-soft: #ddf3e8;
+  --ok-ink: #14663f;
+  --low: #c98a1b;
+  --low-soft: #fbefd3;
+  --low-ink: #8a5a0f;
+  --full: #c73e3e;
+  --full-soft: #fae0e0;
+  --full-ink: #a82e2e;
+  --member: #4a5fc1;
+  --member-soft: #e3e7f8;
+  --member-ink: #3a4dae;
+  color-scheme: light;
+}
+
+@mixin dark-tokens {
+  --bg: #0d1a1c;
+  --surface: #142528;
+  --line: #24393c;
+  --fg: #e6f0f0;
+  --muted: #92a8ab;
+  --brand: #3fb6bf;
+  --on-brand: #06282b;
+  --brand-strong: #7fd3d9;
+  --brand-soft: #123a3e;
+  --accent: #f2b04f;
+  --on-accent: #2b1b00;
+  --ok: #4cc38a;
+  --ok-soft: #12301f;
+  --ok-ink: #6fd6a4;
+  --low: #e0a94a;
+  --low-soft: #33270f;
+  --low-ink: #ebbb62;
+  --full: #ee7b7b;
+  --full-soft: #3a1818;
+  --full-ink: #f29a9a;
+  --member: #8e9deb;
+  --member-soft: #1e2447;
+  --member-ink: #a9b6f2;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}

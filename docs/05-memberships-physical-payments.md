@@ -1,5 +1,7 @@
 # Memberships and Physical Payments
 
+> Members UI: [Phase 1](lean/phase-01-frontend.md). Payments UI: [Phase 5](lean/phase-05-frontend.md). Backend frozen: [lean/backend-status.md](lean/backend-status.md).
+
 ## Goal
 
 A customer may pay physically at the fitness center while still using BookingSpace for online reservations.

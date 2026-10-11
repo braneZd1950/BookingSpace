@@ -22,10 +22,12 @@ function applyEnvFile(filename, { override }) {
 }
 
 applyEnvFile('.env', { override: false });
+applyEnvFile('server/.env', { override: true });
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
 if (nodeEnv !== 'production') {
   applyEnvFile('.env.development', { override: true });
+  applyEnvFile('server/.env.development', { override: true });
 }
 
 function required(name) {
@@ -60,6 +62,18 @@ const env = {
     apiKey: blank('CLOUDINARY_API_KEY'),
     apiSecret: blank('CLOUDINARY_API_SECRET'),
   },
+  smtp: {
+    host: blank('SMTP_HOST'),
+    port: Number(optional('SMTP_PORT', '587')),
+    secure: optional('SMTP_SECURE', 'false') === 'true',
+    user: blank('SMTP_USER'),
+    pass: blank('SMTP_PASS'),
+    from: blank('EMAIL_FROM') || blank('SMTP_FROM'),
+  },
+  adminEmails: blank('ADMIN_EMAILS')
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean),
 };
 
 export default env;

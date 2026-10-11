@@ -8,6 +8,9 @@ import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
 import { createWithCode } from '../../utils/codes.js';
 import { HttpError } from '../../utils/httpError.js';
+import { trackUsage } from '../../utils/analytics.js';
+import { sendMemberInviteEmail } from '../../utils/mail.js';
+import { generateMemberPassword } from '../../utils/password.js';
 import { addDays, zonedNow } from '../../utils/time.js';
 import { createDoc, sessionOptions, withTransaction } from '../../utils/transaction.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
@@ -40,10 +43,16 @@ export function toPlan(plan) {
 export function toMembership(membership) {
   const plan = membership.membershipPlanId?.name ? membership.membershipPlanId : null;
   const sessionsIncluded = membership.sessionsIncluded ?? null;
+  const tenantDoc = membership.tenantId?.slug ? membership.tenantId : null;
   return {
     id: membership._id,
     code: membership.code,
-    tenantId: membership.tenantId,
+    tenantId: tenantDoc?._id || membership.tenantId,
+    tenant: tenantDoc ? {
+      id: tenantDoc._id,
+      name: tenantDoc.name,
+      slug: tenantDoc.slug,
+    } : undefined,
     userId: membership.userId?._id || membership.userId,
     user: membership.userId?.email ? {
       id: membership.userId._id,
@@ -108,20 +117,24 @@ async function resolveCustomer(tenantId, input, session) {
   if (input.userId) {
     const user = await bind(User.findById(input.userId).select('_id name email phone'), session);
     if (!user) throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
-    return user;
+    return { user, accountCreated: false, temporaryPassword: null };
   }
 
   const existing = await bind(User.findOne({ email: input.customer.email }).select('_id name email phone'), session);
-  if (existing) return existing;
+  if (existing) {
+    return { user: existing, accountCreated: false, temporaryPassword: null };
+  }
 
-  const passwordHash = await bcrypt.hash(input.customer.password, BCRYPT_ROUNDS);
-  return createDoc(User, {
+  const temporaryPassword = generateMemberPassword();
+  const passwordHash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
+  const user = await createDoc(User, {
     name: input.customer.name,
     email: input.customer.email,
     phone: input.customer.phone,
     passwordHash,
     role: 'CUSTOMER',
   }, session);
+  return { user, accountCreated: true, temporaryPassword };
 }
 
 async function ensureCustomerLink(tenantId, userId, session) {
@@ -141,8 +154,9 @@ export async function activateMembership(actor, tenantId, input) {
   const plan = await MembershipPlan.findOne({ _id: input.membershipPlanId, tenantId, active: true });
   if (!tenant || !plan) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
-  return withTransaction(async (session) => {
-    const user = await resolveCustomer(tenantId, input, session);
+  const created = await withTransaction(async (session) => {
+    const resolved = await resolveCustomer(tenantId, input, session);
+    const { user, accountCreated, temporaryPassword } = resolved;
     await ensureCustomerLink(tenantId, user._id, session);
     const validFrom = input.validFrom || zonedNow(tenant.timezone || 'Europe/Zagreb').date;
     const validUntil = addDays(validFrom, plan.validityDays - 1);
@@ -174,8 +188,45 @@ export async function activateMembership(actor, tenantId, input) {
       membership: toMembership({ ...membership.toObject(), membershipPlanId: plan, userId: user }),
       paymentId: payment._id,
       paymentCode: payment.code,
+      accountCreated,
+      temporaryPassword,
+      inviteEmail: user.email,
+      memberName: user.name,
     };
   });
+
+  let inviteSent = false;
+  if (created.accountCreated && created.temporaryPassword) {
+    try {
+      const mail = await sendMemberInviteEmail({
+        to: created.inviteEmail,
+        memberName: created.memberName,
+        studioName: tenant.name,
+        studioSlug: tenant.slug,
+        password: created.temporaryPassword,
+      });
+      inviteSent = Boolean(mail.delivered);
+    } catch (error) {
+      console.error('[mail] Pozivnica članu nije poslana:', error?.message || error);
+      inviteSent = false;
+    }
+  }
+
+  trackUsage({
+    type: 'member_created',
+    tenantId,
+    userId: actor._id,
+    role: actor.role,
+    path: '/stranica/clanovi',
+  });
+
+  return {
+    membership: created.membership,
+    paymentId: created.paymentId,
+    paymentCode: created.paymentCode,
+    accountCreated: created.accountCreated,
+    inviteSent,
+  };
 }
 
 export async function listMemberships(user, tenantId, limit) {
@@ -192,7 +243,8 @@ export async function listMyMemberships(user, limit) {
   const memberships = await Membership.find({ userId: user._id })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate('membershipPlanId', 'name');
+    .populate('membershipPlanId', 'name')
+    .populate('tenantId', 'name slug');
   return memberships.map(toMembership);
 }
 

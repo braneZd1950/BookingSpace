@@ -1,9 +1,13 @@
+import { randomBytes } from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import env from '../../config/env.js';
 import Service from '../../models/Service.js';
 import Tenant from '../../models/Tenant.js';
 import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
+import { defaultTrialBilling } from '../../utils/billing.js';
 import { HttpError } from '../../utils/httpError.js';
 import { createDoc, withTransaction } from '../../utils/transaction.js';
 import { requireMember } from '../access.js';
@@ -95,6 +99,7 @@ export async function createTenant(user, input) {
       address: input.address,
       timezone: input.timezone || 'Europe/Zagreb',
       siteSettings: { template: input.template || 'generic' },
+      billing: defaultTrialBilling(),
     }, session);
 
     await createDoc(TenantUser, {
@@ -153,6 +158,8 @@ export async function updateSite(user, tenantId, input) {
   if (!tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
   if (input.template) tenant.siteSettings.template = input.template;
+  if (input.layout) tenant.siteSettings.layout = input.layout;
+  if (input.paletteId !== undefined) tenant.siteSettings.paletteId = input.paletteId;
   if (input.theme) tenant.theme = { ...tenant.theme.toObject(), ...input.theme };
   if (input.visibleSections) {
     tenant.siteSettings.visibleSections = {
@@ -175,12 +182,24 @@ export async function updateSite(user, tenantId, input) {
   return toTenant(tenant);
 }
 
-function assertCloudinary() {
+function imageExtension(mime) {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  return 'jpg';
+}
+
+function cloudinaryReady() {
   const { cloudName, apiKey, apiSecret } = env.cloudinary;
-  if (!cloudName || !apiKey || !apiSecret) {
-    throw new HttpError(503, 'Image storage is not configured', { code: 'CLOUDINARY_NOT_CONFIGURED' });
-  }
-  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+  return Boolean(cloudName && apiKey && apiSecret);
+}
+
+async function storeLocalImage(file, tenantId) {
+  const safeId = String(tenantId).replace(/[^a-f\d]/gi, '');
+  const filename = `${randomBytes(12).toString('hex')}.${imageExtension(file.mimetype)}`;
+  const dir = path.resolve(process.cwd(), 'uploads', safeId);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(path.join(dir, filename), file.buffer);
+  return `/uploads/${safeId}/${filename}`;
 }
 
 export async function uploadImage(user, tenantId, file, purpose) {
@@ -193,22 +212,29 @@ export async function uploadImage(user, tenantId, file, purpose) {
     throw new HttpError(413, 'Image is too large', { code: 'PAYLOAD_TOO_LARGE' });
   }
 
-  assertCloudinary();
   const tenant = await Tenant.findById(tenantId);
   if (!tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
-  const uploaded = await cloudinary.uploader.upload(
-    `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-    { folder: `bookingspace/${tenantId}`, resource_type: 'image' },
-  );
+  let url = '';
+  let publicId = '';
+  if (cloudinaryReady()) {
+    const { cloudName, apiKey, apiSecret } = env.cloudinary;
+    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+    const uploaded = await cloudinary.uploader.upload(
+      `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+      { folder: `bookingspace/${tenantId}`, resource_type: 'image' },
+    );
+    url = uploaded.secure_url;
+    publicId = uploaded.public_id;
+  } else {
+    url = await storeLocalImage(file, tenantId);
+    publicId = url;
+  }
 
-  if (purpose === 'logo') tenant.logoUrl = uploaded.secure_url;
-  if (purpose === 'hero') tenant.heroImageUrl = uploaded.secure_url;
+  if (purpose === 'logo') tenant.logoUrl = url;
+  if (purpose === 'hero') tenant.heroImageUrl = url;
   if (purpose === 'gallery') {
-    tenant.siteSettings.gallery.push({
-      url: uploaded.secure_url,
-      publicId: uploaded.public_id,
-    });
+    tenant.siteSettings.gallery.push({ url, publicId });
     tenant.markModified('siteSettings');
   }
   await tenant.save();

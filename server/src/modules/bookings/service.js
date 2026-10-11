@@ -5,6 +5,7 @@ import Service from '../../models/Service.js';
 import Tenant from '../../models/Tenant.js';
 import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
+import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
 import { overlaps, withinCancellationWindow, zonedNow } from '../../utils/time.js';
 import { createDoc, sessionOptions, withTransaction } from '../../utils/transaction.js';
@@ -32,11 +33,21 @@ function bind(query, session) {
 }
 
 export function toBooking(booking) {
+  const userDoc = booking.userId?.email || booking.userId?.name ? booking.userId : null;
+  const serviceDoc = booking.serviceId?.name ? booking.serviceId : null;
+
   return {
     id: booking._id,
     tenantId: booking.tenantId,
-    serviceId: booking.serviceId,
-    userId: booking.userId,
+    serviceId: serviceDoc?._id || booking.serviceId,
+    serviceName: serviceDoc?.name || undefined,
+    serviceCapacity: serviceDoc?.capacity ?? undefined,
+    userId: userDoc?._id || booking.userId,
+    user: userDoc ? {
+      id: userDoc._id,
+      name: userDoc.name,
+      email: userDoc.email || null,
+    } : undefined,
     membershipId: booking.membershipId || null,
     date: booking.date,
     startTime: booking.startTime,
@@ -179,21 +190,38 @@ export async function createBooking(actor, input) {
     }
   });
 
+  trackUsage({
+    type: 'booking_created',
+    tenantId: tenant._id,
+    userId: actor._id,
+    role: actor.role,
+    path: '/bookings',
+  });
+
   return toBooking(booking);
 }
 
 export async function listMyBookings(user, limit) {
   const bookings = await Booking.find({ userId: user._id })
     .sort({ date: -1, startTime: -1 })
-    .limit(limit);
+    .limit(limit)
+    .populate('serviceId', 'name capacity');
   return bookings.map(toBooking);
 }
 
 export async function listTenantBookings(user, tenantId, query) {
   await requireMember(user, tenantId, MANAGE_ROLES);
   const filter = { tenantId };
-  if (query.date) filter.date = query.date;
+  if (query.date) {
+    filter.date = query.date;
+  } else if (query.dateFrom || query.dateTo) {
+    filter.date = {};
+    if (query.dateFrom) filter.date.$gte = query.dateFrom;
+    if (query.dateTo) filter.date.$lte = query.dateTo;
+  }
   const bookings = await Booking.find(filter)
+    .populate('userId', 'name email')
+    .populate('serviceId', 'name capacity')
     .sort({ date: 1, startTime: 1 })
     .limit(query.limit);
   return bookings.map(toBooking);
@@ -254,6 +282,14 @@ export async function cancelBooking(actor, bookingId) {
       );
     }
     return current;
+  });
+
+  trackUsage({
+    type: 'booking_cancelled',
+    tenantId: existing.tenantId,
+    userId: actor._id,
+    role: actor.role,
+    path: '/bookings',
   });
 
   return toBooking(booking);

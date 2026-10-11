@@ -1,80 +1,52 @@
-# Frontend Routes and UX
+# Frontend routes (current + by phase)
 
-## Public platform
+> Delivery order: [lean/README.md](lean/README.md). Backend frozen: [lean/backend-status.md](lean/backend-status.md).
 
-| Route | Page |
+## Public platform (live)
+
+| Route | Page | Phase |
+| --- | --- | --- |
+| `/` | B2B home: business signup + live slug preview | 1 |
+| `/login` | Login | 1 |
+| `/register` | Same business signup form | 1 |
+| `/postavljanje` | Provider wizard: subdomain, template, layout, colors, content | 1 / 4 |
+| `/privatnost`, `/uvjeti`, `/kolacici`, `/kontakt`, `/povratna-informacija` | Legal / contact | 1 |
+| `/odrzavanje` | Maintenance status page | 1 |
+| `*` (catch-all) | 404 | 1 |
+
+Maintenance mode for the whole app: set `VITE_MAINTENANCE=true` in client env (all routes show održavanje).
+
+## Owner studio (live) — `/stranica`
+
+| Route | Nav label | Page |
+| --- | --- | --- |
+| `/stranica` | Stranica | Public site preview |
+| `/stranica/termini` | Termini | Schedule / bookings |
+| `/stranica/kalendar` | Kalendar | Month view |
+| `/stranica/clanovi` | Članovi | Members |
+| `/stranica/galerija` | Galerija | Photos |
+| `/stranica/postavke` | Postavke | Name, contact, hours |
+
+## Member studio (live) — `/s/:slug`
+
+| Route | Nav label | Page |
+| --- | --- | --- |
+| `/s/:slug` | Početna | Studio overview + membership status |
+| `/s/:slug/termini` | Termini | Member book / cancel (ACTIVE membership) |
+
+## Later
+
+| Route idea | Phase |
 | --- | --- |
-| `/` | Landing page |
-| `/login` | Login |
-| `/register` | Registration |
-| `/choose-niche` | Choose a business category |
-| `/create-business` | Create a tenant |
+| Real DNS for `{slug}.booking.hr` | 4 |
+| Payments / plans | 5 |
 
-## Tenant public website
+## Explicitly not building now
 
-The tenant is resolved from the hostname. Examples:
+- `*.bookingspace.hr` tenant hostname product  
+- `/dashboard/website` style full site editor  
+- Cross-tenant discovery UI  
 
-- `powerfit.bookingspace.hr/`
-- `powerfit.bookingspace.hr/services`
-- `powerfit.bookingspace.hr/book`
+## UX principle (lean)
 
-The public tenant page should not require login to browse. Login is required to finalize a member-only booking.
-
-## Customer area
-
-| Route | Page |
-| --- | --- |
-| `/my-bookings` | The customer's bookings |
-| `/my-memberships` | The customer's memberships |
-| `/profile` | Profile |
-
-## Business dashboard
-
-| Route | Page |
-| --- | --- |
-| `/dashboard` | Overview |
-| `/dashboard/calendar` | Calendar |
-| `/dashboard/bookings` | Bookings |
-| `/dashboard/customers` | Customers |
-| `/dashboard/memberships` | Memberships |
-| `/dashboard/payments` | Physical payments |
-| `/dashboard/services` | Services |
-| `/dashboard/website` | Website editor |
-| `/dashboard/settings` | Business settings |
-
-## Booking UX
-
-```text
-Choose service
-  -> Choose date
-  -> See available capacity
-  -> Choose time
-  -> Login or register if required
-  -> Membership check
-  -> Confirm booking
-  -> Success
-```
-
-## Member-only behavior
-
-A non-member can see `18:00` and `4/6`, but the button says `MEMBERSHIP REQUIRED`.
-
-The user can view the service, schedule, price, and membership options. The backend blocks booking without an eligible membership.
-
-## Customer cross-tenant discovery
-
-A logged-in user can browse other businesses. Example:
-
-```text
-PowerFit        ACTIVE MEMBERSHIP   [BOOK]
-Pilates Ana     NO MEMBERSHIP       [VIEW]
-FitZone         NO MEMBERSHIP       [VIEW]
-```
-
-The user has one BookingSpace account. Membership rights are always tenant-specific.
-
-## Business dashboard principle
-
-Keep it operational, not complicated.
-
-The first screen should show today's bookings, today's occupancy, active memberships, memberships expiring soon, and quick actions.
+Keep the owner shell **operational**: members, hours, then bookings. Marketing website comes after the booking loop works.

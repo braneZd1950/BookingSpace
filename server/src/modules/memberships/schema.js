@@ -37,7 +37,6 @@ export const updatePlanSchema = z.object({
 const customer = z.object({
   name: z.string().trim().min(1).max(80),
   email,
-  password: z.string().min(8).max(72),
   phone: z.string().trim().max(30).optional(),
 });
 

@@ -134,6 +134,64 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
   });
   assert.equal(hours.status, 200);
 
+  const siteResponse = await request(`/api/tenants/${tenant.id}/site`, {
+    method: 'PATCH',
+    token: ownerToken,
+    body: {
+      template: 'fitness',
+      layout: 'banner',
+      paletteId: 'ember',
+      theme: {
+        primaryColor: '#b33b2e',
+        secondaryColor: '#f3d5d0',
+        fontFamily: 'Figtree, sans-serif',
+        borderRadius: '0.5rem',
+        buttonStyle: 'soft',
+      },
+      visibleSections: {
+        hero: true,
+        about: true,
+        services: true,
+        schedule: true,
+        gallery: false,
+        contact: true,
+        location: true,
+        openingHours: true,
+      },
+      seo: {
+        title: tenant.name,
+        description: 'Test studio stranica',
+      },
+    },
+  });
+  assert.equal(siteResponse.status, 200);
+  assert.equal(siteResponse.body.tenant.siteSettings.layout, 'banner');
+  assert.equal(siteResponse.body.tenant.siteSettings.paletteId, 'ember');
+  assert.equal(siteResponse.body.tenant.theme.primaryColor, '#b33b2e');
+
+  const profile = await request(`/api/tenants/${tenant.slug}/public`);
+  assert.equal(profile.status, 200);
+  assert.equal(profile.body.tenant.name, tenant.name);
+  assert.equal(profile.body.tenant.theme.primaryColor, '#b33b2e');
+  assert.equal(profile.body.tenant.siteSettings.paletteId, 'ember');
+  assert.equal(profile.body.tenant.siteSettings.visibleSections.gallery, false);
+  assert.equal(profile.body.tenant.bookingSettings.workingHours.length, 7);
+
+  const profilePatch = await request(`/api/tenants/${tenant.id}`, {
+    method: 'PATCH',
+    token: ownerToken,
+    body: {
+      description: 'Lokalni smoke opis',
+      phone: '+385 91 000 0000',
+      address: 'Test ulica 1',
+    },
+  });
+  assert.equal(profilePatch.status, 200);
+
+  const publicAfter = await request(`/api/tenants/${tenant.slug}/public`);
+  assert.equal(publicAfter.body.tenant.description, 'Lokalni smoke opis');
+  assert.equal(publicAfter.body.tenant.phone, '+385 91 000 0000');
+
   const serviceResponse = await request(`/api/tenants/${tenant.id}/services`, {
     method: 'POST',
     token: ownerToken,
@@ -224,6 +282,13 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
   const myMemberships = await request('/api/memberships/my', { token: customerToken });
   assert.equal(myMemberships.body.memberships[0].sessionsUsed, 1);
   assert.equal(myMemberships.body.memberships[0].sessionsRemaining, 11);
+  assert.equal(myMemberships.body.memberships[0].tenant.slug, tenant.slug);
+  assert.equal(myMemberships.body.memberships[0].status, 'ACTIVE');
+
+  const myBookings = await request('/api/bookings/my', { token: customerToken });
+  assert.equal(myBookings.status, 200);
+  assert.equal(myBookings.body.bookings[0].serviceName, 'Power Plate');
+  assert.equal(myBookings.body.bookings[0].status, 'CONFIRMED');
 
   const cancelled = await request(`/api/bookings/${bookingResponse.body.booking.id}/cancel`, {
     method: 'PATCH',

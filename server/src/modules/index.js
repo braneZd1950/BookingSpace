@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import analyticsRoutes from './analytics/routes.js';
 import authRoutes from './auth/routes.js';
 import { bookingRoutes, tenantBookingRoutes } from './bookings/routes.js';
 import customerRoutes from './customers/routes.js';
@@ -15,6 +16,7 @@ import tenantRoutes from './tenants/routes.js';
 
 const api = Router();
 
+api.use('/analytics', analyticsRoutes);
 api.use('/auth', authRoutes);
 api.use('/tenants/:tenantId/services/:serviceId/availability', sessionRoutes);
 api.use('/tenants/:tenantId/services', serviceCollectionRoutes);

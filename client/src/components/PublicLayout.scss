@@ -1,0 +1,9 @@
+.public {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.public > main {
+  flex: 1;
+}

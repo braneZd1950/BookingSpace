@@ -20,7 +20,9 @@ export const tenantBookingsSchema = z.object({
   params: z.object({ tenantId: objectId }),
   query: z.object({
     date: calendarDate.optional(),
-    limit: z.coerce.number().int().min(1).max(100).default(50),
+    dateFrom: calendarDate.optional(),
+    dateTo: calendarDate.optional(),
+    limit: z.coerce.number().int().min(1).max(500).default(200),
   }),
 });
 

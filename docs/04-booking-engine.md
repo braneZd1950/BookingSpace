@@ -1,6 +1,8 @@
 # Booking Engine Specification
 
-This is the most important technical component of the MVP.
+> UI for this lands in lean [Phase 2](lean/phase-02-frontend.md). Backend remains frozen unless a gap is approved: [lean/backend-status.md](lean/backend-status.md).
+
+This is the most important technical component of the long-term product.
 
 ## Core parameters
 

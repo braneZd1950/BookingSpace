@@ -1,6 +1,8 @@
 # REST API Specification
 
-Base: `https://api.bookingspace.hr/api`
+> Contract reference for the frontend. **Do not expand the API** during lean frontend work unless unlocked in [lean/backend-status.md](lean/backend-status.md).
+
+Base: `https://api.bookingspace.hr/api` (local: `http://localhost:4000/api`)
 
 ## Authentication
 

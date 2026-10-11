@@ -1,0 +1,113 @@
+.menu-select {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.menu-select__label {
+  font-weight: 650;
+}
+
+.menu-select__face {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--site-soft, var(--brand-soft));
+  color: var(--site-brand, var(--brand-strong));
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-select.is-open .menu-select__face,
+.menu-select__face:hover {
+  border-color: var(--site-brand, var(--brand));
+}
+
+.menu-select__face:focus-visible {
+  outline: 2px solid var(--accent, var(--site-brand));
+  outline-offset: 2px;
+}
+
+.menu-select__chev {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.menu-select.is-open .menu-select__chev {
+  transform: translateY(0.15rem) rotate(-135deg);
+}
+
+.menu-select__panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 16px 36px rgb(17 43 46 / 14%);
+}
+
+.menu-select__list {
+  display: grid;
+  max-height: 14rem;
+  overflow: auto;
+  gap: 0.2rem;
+}
+
+.menu-select__list button {
+  display: grid;
+  gap: 0.1rem;
+  justify-items: start;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-select__list button strong {
+  font-weight: 750;
+}
+
+.menu-select__list button span {
+  color: var(--muted, #55696c);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.menu-select__list button:hover {
+  background: var(--site-soft, var(--brand-soft));
+}
+
+.menu-select__list button.is-on {
+  background: var(--site-brand, var(--brand));
+  color: var(--site-on, #fff);
+}
+
+.menu-select__list button.is-on span {
+  color: rgb(255 255 255 / 82%);
+}
+
+.menu-select__list button:focus-visible {
+  outline: 2px solid var(--accent, var(--site-brand));
+  outline-offset: 1px;
+}

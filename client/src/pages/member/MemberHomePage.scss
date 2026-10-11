@@ -1,0 +1,32 @@
+.member-home {
+  min-height: calc(100vh - 3.5rem);
+}
+
+.member-home__status {
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--brand-soft) 70%, var(--surface));
+  color: var(--fg);
+}
+
+.member-home__status p {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.member-home__status a {
+  color: var(--brand);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.member-home__status a:hover {
+  text-decoration: underline;
+}
+
+.member-home .site--live {
+  min-height: calc(100vh - 6.5rem);
+}

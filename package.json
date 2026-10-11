@@ -1,0 +1,12 @@
+{
+  "name": "bookingspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "test": "npm --prefix server test",
+    "test:server": "npm --prefix server test",
+    "smoke": "node scripts/prod-smoke.js",
+    "preview:client": "npm --prefix client exec -- vite preview --host 127.0.0.1 --port 4173"
+  }
+}

@@ -1,5 +1,7 @@
 # Technical Architecture
 
+> **Lean:** delivery order is [lean/README.md](lean/README.md). **Do not change `server/`** during current frontend work — [lean/backend-status.md](lean/backend-status.md).
+
 ## Stack
 
 ### Frontend

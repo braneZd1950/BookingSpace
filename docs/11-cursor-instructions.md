@@ -1,96 +1,65 @@
-# Cursor Development Instructions
+# Cursor development instructions
 
-## General rule
+## Active rule (lean)
 
-Implement the MVP incrementally. Do not rewrite the entire project for every feature.
+1. Read [lean/README.md](lean/README.md) and the **current phase** frontend doc.  
+2. **Do not change `server/`** unless [lean/backend-status.md](lean/backend-status.md) explicitly unlocks a gap.  
+3. Prefer the smallest frontend change that advances the active phase metric.  
+4. Keep owner Settings lean: name, contact, hours — no website/SEO/social/subdomain UI.
 
-Before coding a feature:
+## Before coding
 
-1. Inspect the existing architecture.
-2. Identify affected modules.
-3. Propose the smallest implementation.
-4. Implement it.
-5. Run tests and the build.
+1. Confirm which lean phase owns the task.  
+2. Inspect existing `client/` code and APIs.  
+3. Propose the smallest implementation.  
+4. Implement frontend only (default).  
+5. Smoke-check in the browser.  
 6. Report changed files.
 
 ## Code principles
 
-- Use clear naming.
-- Keep controllers thin.
-- Put business rules in services.
-- Validate request data.
-- Keep tenant authorization centralized.
-- Avoid duplicated booking logic.
-- Avoid premature abstractions.
-- Prefer small reusable components.
+- Clear naming; thin pages; shared helpers when already used.  
+- RTK Query for HTTP (no Axios).  
+- Croatian UI copy for owner/customer surfaces.  
+- Do not put authorization rules only in React — backend remains source of truth when APIs exist.  
+- Avoid premature abstractions and website chrome.
 
-## Backend structure
-
-```text
-server/src/
-  config/
-  middleware/
-  models/
-  routes/
-  controllers/
-  services/
-  validators/
-  utils/
-  app.js
-  server.js
-```
-
-## Frontend structure
+## Repo layout (actual)
 
 ```text
 client/src/
-  app/
-  api/
-  components/
-  features/
-    auth/
-    tenant/
-    services/
-    booking/
-    memberships/
-    payments/
-  layouts/
+  app/           # store, App routes
+  api/           # RTK Query APIs
+  components/    # public chrome
   pages/
-  hooks/
-  store/
-  utils/
+    owner/       # /stranica/* studio UI + lean Plan
+    public/      # marketing, auth
+  styles/
+server/          # FROZEN for current lean work — read only
+docs/
+  lean/          # phase-scoped delivery docs (prefer these)
+  01–14          # background / historical specs
 ```
-
-## Important business modules
-
-| Concern | Location |
-| --- | --- |
-| Booking engine | `services/booking.service.js` |
-| Membership logic | `services/membership.service.js` |
-| Tenant resolution | `middleware/tenant.middleware.js` |
-| Authorization | `middleware/auth.middleware.js` |
 
 ## Do not
 
-- add Stripe before it is requested
-- add a mobile app
-- add microservices
-- add AI
-- create separate MongoDB databases for tenants
-- expose `tenantId` as an authorization mechanism
-- put business rules directly in React components
-- trust frontend capacity calculations
+- edit backend during Phase 1 frontend work  
+- re-add subdomain, SEO, social, or section-toggle settings  
+- force `/postavljanje` after login/register  
+- add Stripe, mobile apps, microservices, AI  
+- trust frontend for capacity authorization  
 
 ## Task format
-
-When asking Cursor to implement a feature, use:
 
 ```text
 Goal:
 [one clear goal]
 
-Context:
-[relevant module]
+Phase:
+[lean phase number + link]
+
+Layer:
+frontend only | backend gap (document only)
 
 Requirements:
 - ...
@@ -99,31 +68,30 @@ Acceptance criteria:
 - ...
 
 Do not:
-- ...
+- touch server/
+- …
 ```
 
-## Example
+## Example (Phase 1)
 
 ```text
 Goal:
-Implement capacity-based availability for a service.
+Keep Postavke limited to name, contact, and working hours.
 
-Context:
-Service has durationMinutes, slotIntervalMinutes and capacity.
+Phase:
+1 — docs/lean/phase-01-frontend.md
+
+Layer:
+frontend only
 
 Requirements:
-- Generate start times using slotIntervalMinutes.
-- Calculate bookings.
-- Return capacity, booked, and available.
-- Respect the tenant timezone.
-- Do not allow cross-tenant access.
+- Save via existing tenant update API.
+- No SEO / social / sections UI.
 
 Acceptance criteria:
-- 18:00 with 4/6 returns available=2.
-- 18:00 with 6/6 returns unavailable.
-- The API never trusts a frontend tenantId.
+- Owner can update hours and see them on Termini/Kalendar.
 
 Do not:
-- implement online payments
-- implement waitlist yet
+- modify server/
+- add subdomain fields
 ```

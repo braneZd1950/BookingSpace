@@ -33,6 +33,14 @@ const userSchema = new Schema(
       default: 'CUSTOMER',
       required: true,
     },
+    passwordResetTokenHash: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
   },
   {
     collection: 'users',

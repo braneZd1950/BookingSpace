@@ -1,97 +1,55 @@
-# Personalized Tenant Websites
+# Personalized tenant websites
 
-## Concept
+> **Lean status:** Phase 4 — [lean/phase-04-frontend.md](lean/phase-04-frontend.md)  
+> **Not in active build.** Subdomain product, SEO editor, social links, and section toggles are deferred. Backend frozen: [lean/backend-status.md](lean/backend-status.md).
 
-Every business receives a personalized website under its BookingSpace subdomain.
+## Concept (future)
 
-Examples:
+A business may get a simple public page with booking CTA. Long-term vision includes a subdomain (`powerfit.bookingspace.hr`). **That hostname product is not part of the current lean MVP.**
 
-- `powerfit.bookingspace.hr`
-- `studioana.bookingspace.hr`
-- `igraonica-zadar.bookingspace.hr`
+## Lean Phase 4 (when unlocked)
 
-This is more than a booking page. It is a mini business website with booking functionality.
+Ship the smallest useful page:
 
-## MVP website sections
+- Hero with studio name  
+- Short about text  
+- One optional photo  
+- Hours / contact from settings  
+- CTA into the booking flow (Phase 3)  
 
-- Hero
-- About
-- Services
-- Schedule / Booking
-- Gallery
-- Contact
-- Location
-- Opening hours
+Serve under an app route first. Subdomains come after the booking loop is proven.
 
-Sections should be configurable.
+## Explicitly deferred
 
-## Owner editor
+| Feature | Why deferred |
+| --- | --- |
+| Subdomain / custom domain UI | Does not validate booking value |
+| SEO title/description editor | Vanity before learning |
+| Social links | Same |
+| Configurable section checkboxes | Complexity without metric |
+| Multi-template / color wizard before first booking | Friction before value |
+| Full drag-and-drop builder | Never MVP |
 
-Dashboard section `Website`:
+## Historical vision (do not build now)
 
-- Logo
-- Hero image
-- Business name
-- Description
-- Gallery
-- Phone
-- Email
-- Address
-- Social links
-- Theme color
-- Template
-- Visible sections
+The following remains a **later** design sketch only.
 
-## Templates
+### Possible sections later
 
-MVP templates:
+Hero, About, Services, Schedule/Booking, Gallery, Contact, Location, Opening hours.
 
-1. Fitness
-2. Pilates
-3. Power Plate
-4. Children's playroom
-5. Generic service business
+### Templates (later)
 
-Do not build a full drag-and-drop website builder in the MVP. Use predefined blocks and templates.
+Fitness, Pilates, Power Plate, children's playroom, generic — predefined blocks only, never a page builder.
 
-## Theme
+### Theme (later)
 
-Store tenant-specific theme data:
+Small set: primary/secondary color, font, radius, button style.
 
-```text
-primaryColor
-secondaryColor
-fontFamily
-borderRadius
-buttonStyle
-```
+### Images
 
-Keep the number of options small.
+Prefer uploaded URLs (or existing upload API). Do not store binaries in MongoDB.
 
-## Images
+### SEO / custom domains
 
-Use Cloudinary or an equivalent. Store only URLs and public IDs in MongoDB. Do not store large binary images directly in MongoDB.
-
-## Public page behavior
-
-When the browser visits `powerfit.bookingspace.hr`, the frontend:
-
-1. Reads the hostname.
-2. Extracts the tenant slug.
-3. Calls the tenant public API.
-4. Loads theme and content.
-5. Renders services.
-6. Loads availability.
-7. Enables booking.
-
-## SEO
-
-Each tenant page should have a title, description, Open Graph metadata, a canonical URL, and basic sitemap support.
-
-Advanced SEO is later.
-
-## Custom domains
-
-Do not implement custom domains in the MVP.
-
-Later, `powerfit.hr` can point to the same tenant after DNS and TLS verification.
+Advanced SEO and custom domains stay post-pilot ([roadmap](12-roadmap.md)).

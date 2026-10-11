@@ -5,6 +5,8 @@ const { Schema } = mongoose;
 export const NICHES = ['powerplate', 'fitness', 'pilates', 'yoga', 'playroom', 'generic'];
 export const TEMPLATES = ['fitness', 'pilates', 'powerplate', 'playroom', 'generic'];
 export const CAPACITY_MODELS = ['PER_SLOT', 'CONCURRENT'];
+export const BILLING_STATUSES = ['TRIAL', 'PAID', 'UNPAID', 'PAST_DUE', 'EXPIRED'];
+export const BILLING_PLANS = ['pilot', 'standard'];
 
 const themeSchema = new Schema(
   {
@@ -32,6 +34,16 @@ const siteSettingsSchema = new Schema(
       type: String,
       enum: TEMPLATES,
       default: 'generic',
+    },
+    layout: {
+      type: String,
+      enum: ['banner', 'bar', 'sidebar'],
+      default: 'banner',
+    },
+    paletteId: {
+      type: String,
+      trim: true,
+      default: '',
     },
     visibleSections: {
       hero: { type: Boolean, default: true },
@@ -150,6 +162,28 @@ const tenantSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
+    },
+    billing: {
+      status: {
+        type: String,
+        enum: BILLING_STATUSES,
+        default: 'TRIAL',
+      },
+      plan: {
+        type: String,
+        enum: BILLING_PLANS,
+        default: 'pilot',
+      },
+      validUntil: {
+        type: String,
+        match: /^\d{4}-\d{2}-\d{2}$/,
+      },
+      lastPaidAt: { type: Date },
+      amount: { type: Number, min: 0, default: 0 },
+      currency: { type: String, default: 'EUR', trim: true },
+      lastWarningSentAt: { type: Date },
+      lastInvoiceSentAt: { type: Date },
+      note: { type: String, trim: true, maxlength: 500 },
     },
   },
   {

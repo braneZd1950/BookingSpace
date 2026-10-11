@@ -1,0 +1,287 @@
+.studio-panel.termini {
+  width: min(72rem, calc(100% - 2.4rem));
+}
+
+.termini__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.termini__head h1 {
+  margin: 0;
+}
+
+.termini__head p {
+  max-width: 36rem;
+  margin: 0.45rem 0 0;
+}
+
+.termini__link {
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--site-brand);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.termini__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+
+.termini__stats article {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 1.05rem;
+  border-radius: 0.95rem;
+  background: #fff;
+}
+
+.termini__stats span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.termini__stats strong {
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.termini__layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 1.2rem;
+  align-items: start;
+}
+
+.termini__days {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.45rem;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.termini__days button {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.termini__days button span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.termini__days button.is-closed {
+  opacity: 0.55;
+}
+
+.termini__days button.is-on {
+  background: var(--site-brand);
+  color: var(--site-on, #fff);
+}
+
+.termini__days button.is-on span {
+  color: color-mix(in srgb, var(--site-on, #fff) 75%, transparent);
+}
+
+.termini__main {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.termini__book,
+.termini__list-wrap {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.2rem 1.25rem 1.3rem;
+  border-radius: 1.05rem;
+  background: #fff;
+  box-shadow: 0 10px 24px color-mix(in srgb, #000 5%, transparent);
+}
+
+.termini__book header h2,
+.termini__list-wrap header h2 {
+  margin: 0;
+}
+
+.termini__book header p,
+.termini__list-wrap header p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.termini__book label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 650;
+}
+
+.termini__book select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line, #e4e8ec);
+  border-radius: 0.65rem;
+  background: var(--surface, #f7f8fa);
+  color: var(--fg);
+  font: inherit;
+}
+
+.termini__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.termini__slots button {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 4.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: var(--site-soft, #e8eef2);
+  color: var(--site-brand);
+  font: inherit;
+  cursor: pointer;
+}
+
+.termini__slots button strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.termini__slots button span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.termini__slots button.is-on {
+  background: var(--site-brand);
+  color: var(--site-on, #fff);
+}
+
+.termini__primary,
+.termini__cancel {
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.termini__primary {
+  justify-self: start;
+  padding: 0.8rem 1.15rem;
+  background: var(--site-brand);
+  color: var(--site-on, #fff);
+}
+
+.termini__primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.termini__list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.termini__list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--site-soft, #e8eef2) 45%, #fff);
+}
+
+.termini__list strong {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.termini__list span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.termini__cancel {
+  padding: 0.5rem 0.85rem;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #a82e2e 40%, transparent);
+  color: #a82e2e;
+}
+
+.termini__empty,
+.termini__hint {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.termini__empty a {
+  color: var(--site-brand);
+  font-weight: 750;
+}
+
+.termini__error,
+.termini__ok {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.8rem;
+  font-weight: 700;
+}
+
+.termini__error {
+  background: #f0d0d0;
+  color: #a82e2e;
+}
+
+.termini__ok {
+  background: #d7eee2;
+  color: #1f5c3d;
+}
+
+@media (max-width: 64rem) {
+  .termini__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .termini__days {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .termini__stats,
+  .termini__days {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,5 +1,7 @@
 # Database Design
 
+> Read-only reference while backend is frozen: [lean/backend-status.md](lean/backend-status.md).
+
 ## Collections
 
 MVP collections:

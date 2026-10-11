@@ -1,0 +1,259 @@
+.biz-form__steps {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.biz-form__panel {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.biz-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.biz-form input {
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 500;
+}
+
+.biz-form input:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.biz-form__password-wrap {
+  position: relative;
+  display: block;
+}
+
+.biz-form__password-wrap input {
+  padding-right: 2.75rem;
+}
+
+.biz-form__eye {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.biz-form__eye:hover,
+.biz-form__eye:focus-visible {
+  color: var(--fg);
+  background: var(--brand-soft);
+}
+
+.biz-form__eye:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.biz-form__slug,
+.biz-form__hint {
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.biz-form__slug {
+  color: var(--brand);
+}
+
+.biz-form__hint {
+  margin: 0;
+  color: var(--muted);
+}
+
+.biz-form__block h3 {
+  margin: 0 0 0.25rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 640;
+}
+
+.biz-form__error,
+.biz-form__form-error {
+  color: var(--full-ink);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.biz-form__form-error {
+  margin: 0;
+}
+
+.biz-form__submit,
+.biz-form__back {
+  padding: 0.85rem 1.15rem;
+  border: 0;
+  border-radius: 0.45rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.biz-form__submit {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.biz-form__submit:hover:not(:disabled) {
+  background: var(--brand-strong);
+}
+
+.biz-form__submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.biz-form__back {
+  background: transparent;
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.biz-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.biz-form__login {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.biz-form__login a {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.biz-templates {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+}
+
+@media (min-width: 40rem) {
+  .biz-templates {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.biz-template {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.biz-template.is-selected {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.biz-template__name {
+  font-weight: 750;
+}
+
+.biz-template__note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.biz-swatches {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+}
+
+.biz-swatch {
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 0.55rem;
+  cursor: pointer;
+}
+
+.biz-swatch.is-selected {
+  border-color: var(--fg);
+  outline: 2px solid var(--surface);
+  outline-offset: -4px;
+}
+
+.biz-preview {
+  margin-top: 0.35rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.biz-preview__host {
+  margin: 0 0 0.45rem;
+  color: var(--preview-brand);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.biz-preview h4 {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 640;
+}
+
+.biz-preview p {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.biz-preview__cta {
+  display: inline-block;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (max-width: 40rem) {
+  .biz-swatches {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

@@ -1,5 +1,7 @@
 # Security and Data Rules
 
+> Still binding. Frontend must not weaken these rules. Backend changes stay frozen: [lean/backend-status.md](lean/backend-status.md).
+
 ## Authentication
 
 - Hash passwords with a strong password hashing algorithm.

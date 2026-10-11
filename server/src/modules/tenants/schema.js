@@ -61,6 +61,8 @@ export const updateSiteSchema = z.object({
   params: z.object({ tenantId: objectId }),
   body: z.object({
     template: z.enum(TEMPLATES).optional(),
+    layout: z.enum(['banner', 'bar', 'sidebar']).optional(),
+    paletteId: z.string().trim().max(40).optional(),
     theme: z.object({
       primaryColor: z.string().trim().max(30).optional(),
       secondaryColor: z.string().trim().max(30).optional(),
