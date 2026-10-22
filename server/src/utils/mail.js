@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+﻿import nodemailer from 'nodemailer';
 import env from '../config/env.js';
 
 let transporter;
@@ -55,7 +55,7 @@ export async function verifyMail() {
 }
 
 export async function sendMail({ to, subject, text, html }) {
-  const from = env.smtp.from || 'BookingSpace <noreply@bookingspace.local>';
+  const from = env.smtp.from || 'anyminutes <noreply@anyminutes.local>';
   const transport = getTransporter();
 
   if (!transport) {
@@ -183,7 +183,7 @@ export async function sendMemberInviteEmail({
         <tr>
           <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
             <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
-              BookingSpace · rezervacije za studio
+              anyminutes · rezervacije za studio
             </p>
           </td>
         </tr>
@@ -201,11 +201,11 @@ export async function sendPasswordResetEmail({
   memberName,
   resetUrl,
 }) {
-  const subject = 'Oporavak lozinke — BookingSpace';
+  const subject = 'Oporavak lozinke — anyminutes';
   const text = [
     `Pozdrav ${memberName},`,
     '',
-    'Zatražen je oporavak lozinke za vaš BookingSpace račun (član ili studio).',
+    'Zatražen je oporavak lozinke za vaš anyminutes račun (član ili studio).',
     'Link vrijedi 60 minuta.',
     '',
     'Postavite novu lozinku:',
@@ -231,7 +231,7 @@ export async function sendPasswordResetEmail({
         <tr>
           <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
             <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
-              BookingSpace
+              anyminutes
             </p>
             <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
               Oporavak lozinke
@@ -279,7 +279,7 @@ export async function sendPasswordResetEmail({
         <tr>
           <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
             <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
-              BookingSpace · rezervacije za studio
+              anyminutes · sigurnost računa
             </p>
           </td>
         </tr>
@@ -339,7 +339,7 @@ export async function sendSubscriptionWarningEmail({
         <tr>
           <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
             <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
-              BookingSpace
+              anyminutes
             </p>
             <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
               Obnova pretplate
@@ -377,7 +377,7 @@ export async function sendSubscriptionWarningEmail({
         <tr>
           <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
             <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
-              BookingSpace · pretplata partnera
+              anyminutes · pretplata partnera
             </p>
           </td>
         </tr>
@@ -408,14 +408,14 @@ export async function sendSubscriptionInvoiceEmail({
     '',
     draft
       ? 'Ovo je pripremna obavijest o e-računu. Puni e-račun bit će uveden nakon završetka testiranja.'
-      : 'U prilogu / ispod su podaci e-računa za pretplatu BookingSpace.',
+      : 'U prilogu / ispod su podaci e-računa za pretplatu anyminutes.',
     '',
     `Studio: ${studioName}`,
     `Plan: ${plan || 'pilot'}`,
     `Iznos: ${amount || 0} ${currency || 'EUR'}`,
     `Pretplata do: ${validUntil || '—'}`,
     '',
-    'Hvala što koristite BookingSpace.',
+    'Hvala što koristite anyminutes.',
   ].join('\n');
 
   const safeName = escapeHtml(contactName);
@@ -432,7 +432,7 @@ export async function sendSubscriptionInvoiceEmail({
         <tr>
           <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
             <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
-              BookingSpace
+              anyminutes
             </p>
             <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
               ${draft ? 'E-račun · priprema' : 'E-račun'}
@@ -468,14 +468,210 @@ export async function sendSubscriptionInvoiceEmail({
               </tr>
             </table>
             <p style="margin:0;padding-top:18px;border-top:1px solid #e6ebef;font-size:12px;line-height:1.55;color:#6a7880">
-              ${draft ? 'Ovaj dokument nije fiskalni račun.' : 'Hvala što koristite BookingSpace.'}
+              ${draft ? 'Ovaj dokument nije fiskalni račun.' : 'Hvala što koristite anyminutes.'}
             </p>
           </td>
         </tr>
         <tr>
           <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
             <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
-              BookingSpace · naplata partnera
+              anyminutes · naplata partnera
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+
+  return sendMail({ to, subject, text, html });
+}
+
+export async function sendStaffBookingCancelledEmail({
+  to,
+  contactName,
+  studioName,
+  memberName,
+  serviceName,
+  date,
+  startTime,
+  endTime,
+  cancelledBy,
+}) {
+  const subject = `Otkaz termina — ${studioName}`;
+  const when = `${date} · ${startTime}${endTime ? `–${endTime}` : ''}`;
+  const text = [
+    `Pozdrav ${contactName},`,
+    '',
+    `Rezervacija u studiju ${studioName} je otkazana.`,
+    '',
+    `Član: ${memberName || '—'}`,
+    `Usluga: ${serviceName || 'Termin'}`,
+    `Termin: ${when}`,
+    cancelledBy ? `Otkazao: ${cancelledBy}` : '',
+    '',
+    'Provjerite kalendar u aplikaciji anyminutes.',
+  ].filter(Boolean).join('\n');
+
+  const safeName = escapeHtml(contactName);
+  const safeStudio = escapeHtml(studioName);
+  const safeMember = escapeHtml(memberName || '—');
+  const safeService = escapeHtml(serviceName || 'Termin');
+  const safeWhen = escapeHtml(when);
+  const safeBy = cancelledBy ? escapeHtml(cancelledBy) : '';
+
+  const html = `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#eef1f4">
+  <tr>
+    <td align="center" style="padding:28px 14px">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;max-width:560px;width:100%;background:#ffffff">
+        <tr>
+          <td style="height:6px;background:#0b3d4a;font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
+              anyminutes
+            </p>
+            <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
+              Otkaz termina
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#1a262b">
+            <p style="margin:0 0 14px;font-size:16px;line-height:1.55">Pozdrav ${safeName},</p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#314046">
+              Rezervacija u studiju <strong style="color:#0b3d4a">${safeStudio}</strong> je otkazana.
+            </p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px;background:#f4f7f8;border:1px solid #dce5e8">
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Član</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeMember}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Usluga</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeService}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px${safeBy ? ';border-bottom:1px solid #dce5e8' : ''}">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Termin</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeWhen}</p>
+                </td>
+              </tr>
+              ${safeBy ? `<tr>
+                <td style="padding:14px 20px">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Otkazao</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeBy}</p>
+                </td>
+              </tr>` : ''}
+            </table>
+            <p style="margin:0;padding-top:18px;border-top:1px solid #e6ebef;font-size:12px;line-height:1.55;color:#6a7880">
+              Provjerite kalendar u aplikaciji anyminutes.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+            <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
+              anyminutes · obavijest studija
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+
+  return sendMail({ to, subject, text, html });
+}
+
+export async function sendStaffBookingCreatedEmail({
+  to,
+  contactName,
+  studioName,
+  memberName,
+  serviceName,
+  date,
+  startTime,
+  endTime,
+}) {
+  const subject = `Nova rezervacija — ${studioName}`;
+  const when = `${date} · ${startTime}${endTime ? `–${endTime}` : ''}`;
+  const text = [
+    `Pozdrav ${contactName},`,
+    '',
+    `Nova rezervacija u studiju ${studioName}.`,
+    '',
+    `Član: ${memberName || '—'}`,
+    `Usluga: ${serviceName || 'Termin'}`,
+    `Termin: ${when}`,
+    '',
+    'Vidite je u kalendaru aplikacije anyminutes.',
+  ].join('\n');
+
+  const safeName = escapeHtml(contactName);
+  const safeStudio = escapeHtml(studioName);
+  const safeMember = escapeHtml(memberName || '—');
+  const safeService = escapeHtml(serviceName || 'Termin');
+  const safeWhen = escapeHtml(when);
+
+  const html = `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#eef1f4">
+  <tr>
+    <td align="center" style="padding:28px 14px">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;max-width:560px;width:100%;background:#ffffff">
+        <tr>
+          <td style="height:6px;background:#0b3d4a;font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
+              anyminutes
+            </p>
+            <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
+              Nova rezervacija
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#1a262b">
+            <p style="margin:0 0 14px;font-size:16px;line-height:1.55">Pozdrav ${safeName},</p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#314046">
+              Nova rezervacija u studiju <strong style="color:#0b3d4a">${safeStudio}</strong>.
+            </p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px;background:#f4f7f8;border:1px solid #dce5e8">
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Član</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeMember}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Usluga</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeService}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Termin</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeWhen}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+            <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
+              anyminutes · obavijest studija
             </p>
           </td>
         </tr>

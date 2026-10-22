@@ -41,6 +41,25 @@ const userSchema = new Schema(
       type: Date,
       select: false,
     },
+    notificationPrefs: {
+      bookingEmail: { type: Boolean, default: true },
+      cancelEmail: { type: Boolean, default: true },
+      memberEmail: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: false },
+      marketing: { type: Boolean, default: false },
+      bookingPush: { type: Boolean, default: true },
+      cancelPush: { type: Boolean, default: true },
+      memberPush: { type: Boolean, default: true },
+      reminderPush: { type: Boolean, default: false },
+    },
+    /** Privola za obradu podataka potrebnu za račun, rezervacije i članstvo. */
+    privacyConsent: {
+      accepted: { type: Boolean, default: false },
+      version: { type: String, trim: true, default: '' },
+      acceptedAt: { type: Date },
+      withdrawnAt: { type: Date },
+      source: { type: String, trim: true, maxlength: 40 },
+    },
   },
   {
     collection: 'users',

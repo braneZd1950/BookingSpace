@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import {
   useCancelBookingMutation,
   useCreateBookingMutation,
   useGetAvailabilityQuery,
   useListMyBookingsQuery,
 } from '../../api/bookingApi.js';
-import { formatDay, toDateKey, upcomingDays } from '../owner/studioTime.js';
+import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
+import { ConsentGate } from '../../components/ConsentBanner.jsx';
+import { usePrivacyConsent } from '../../hooks/usePrivacyConsent.js';
+import {
+  formatCancellationWindow,
+  formatDay,
+  toDateKey,
+  upcomingDays,
+  withinCancellationWindow,
+  zonedClock,
+} from '../owner/studioTime.js';
 import './MemberBookPage.scss';
 
 const shortWeekday = new Intl.DateTimeFormat('hr-HR', { weekday: 'short' });
@@ -50,17 +60,47 @@ function slotNote(slot) {
   return `${slot.available} mjesta`;
 }
 
+function canCancelBooking(booking, windowMinutes, timeZone) {
+  const now = zonedClock(timeZone || 'Europe/Zagreb');
+  return withinCancellationWindow(
+    now,
+    booking.date,
+    booking.startTime,
+    windowMinutes ?? 0,
+  );
+}
+
 function firstOpenKey(days, workingHours) {
   const open = days.find((item) => dayOpen(workingHours, item));
   return toDateKey(open || days[0]);
 }
 
+function policyMark(minutes) {
+  const value = Number(minutes);
+  if (!Number.isFinite(value) || value < 0) return '—';
+  if (value < 60) return `${value} min`;
+  const hours = value / 60;
+  if (Number.isInteger(hours)) return `${hours} h`;
+  return `${Math.floor(hours)} h ${value % 60} min`;
+}
+
 export default function MemberBookPage() {
-  const { tenant, membership, isMember, loggedIn } = useOutletContext();
+  const { slug } = useParams();
+  const { tenant: tenantFromLayout, membership, isMember, loggedIn } = useOutletContext();
+  const { accepted: consentOk } = usePrivacyConsent();
+  const { data: publicData } = useGetPublicTenantQuery(slug, {
+    skip: !slug,
+    refetchOnMountOrArgChange: true,
+    pollingInterval: 15000,
+  });
+  const tenant = publicData?.tenant || tenantFromLayout;
   const tenantId = String(tenant.id);
   const services = tenant.services || [];
-  const service = services[0] || null;
+  const service = services.find((item) => item.active !== false) || services[0] || null;
   const serviceId = service ? String(service.id) : '';
+  const cancelWindow = Number(service?.cancellationWindowMinutes ?? 60) || 60;
+  const cancelWindowLabel = formatCancellationWindow(cancelWindow);
+  const timeZone = tenant.timezone || 'Europe/Zagreb';
   const workingHours = tenant.bookingSettings?.workingHours || [];
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => firstOpenKey(days, workingHours));
@@ -68,9 +108,19 @@ export default function MemberBookPage() {
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
   const [busyId, setBusyId] = useState('');
+  const [policyFlash, setPolicyFlash] = useState(false);
   const daysRef = useRef(null);
+  const lastWindowRef = useRef(cancelWindow);
 
-  const canFetchSlots = loggedIn && isMember && Boolean(serviceId);
+  useEffect(() => {
+    if (lastWindowRef.current === cancelWindow) return;
+    lastWindowRef.current = cancelWindow;
+    setPolicyFlash(true);
+    const timer = window.setTimeout(() => setPolicyFlash(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [cancelWindow]);
+
+  const canFetchSlots = loggedIn && isMember && Boolean(serviceId) && consentOk;
   const { data: availability, isFetching: loadingSlots } = useGetAvailabilityQuery(
     { tenantId, serviceId, date },
     { skip: !canFetchSlots },
@@ -157,6 +207,10 @@ export default function MemberBookPage() {
         setError('Već imate rezervaciju u tom terminu.');
         return;
       }
+      if (code === 'CONSENT_REQUIRED') {
+        setError('Potrebna je privola. Prihvatite je u banneru ili u Privatnost.');
+        return;
+      }
       setError('Rezervacija nije uspjela.');
     }
   }
@@ -167,11 +221,13 @@ export default function MemberBookPage() {
     setBusyId(bookingId);
     try {
       await cancelBooking(bookingId).unwrap();
-      setOk('Rezervacija je otkazana.');
+      setOk('Rezervacija je otkazana. Termin vam se ne broji kao iskorišten.');
     } catch (failure) {
       const code = failure?.data?.code;
       if (code === 'CANCELLATION_WINDOW') {
-        setError('Prekasno je za otkazivanje ovog termina.');
+        setError(`Prekasno je za otkaz. Rok je ${cancelWindowLabel}.`);
+      } else if (code === 'CONSENT_REQUIRED') {
+        setError('Potrebna je privola. Prihvatite je u banneru ili u Privatnost.');
       } else {
         setError(failure?.status === 'FETCH_ERROR'
           ? 'Poslužitelj nije dostupan.'
@@ -230,7 +286,11 @@ export default function MemberBookPage() {
         </section>
       ) : null}
 
-      {loggedIn && isMember && !service ? (
+      {loggedIn && isMember && !consentOk ? (
+        <ConsentGate title="Privola je potrebna za rezervacije" />
+      ) : null}
+
+      {loggedIn && isMember && consentOk && !service ? (
         <section className="member-book__gate">
           <h2>Nema usluge</h2>
           <p>Studio još nije postavio uslugu za termine. Probajte kasnije.</p>
@@ -239,6 +299,33 @@ export default function MemberBookPage() {
 
       {canFetchSlots ? (
         <div className="member-book__flow">
+          <aside
+            className={policyFlash ? 'member-book__policy is-updated' : 'member-book__policy'}
+            aria-label="Uvjeti otkazivanja"
+            aria-live="polite"
+          >
+            <div className="member-book__policy-head">
+              <h2>Uvjeti otkazivanja</h2>
+              <span className="member-book__policy-mark" key={cancelWindow}>
+                {policyMark(cancelWindow)}
+              </span>
+            </div>
+            <p>
+              Termin možete otkazati najkasnije
+              {' '}
+              <strong key={`label-${cancelWindow}`}>{cancelWindowLabel}</strong>
+              .
+              U tom roku rezervacija se briše i termin se
+              {' '}
+              <strong>ne broji kao iskorišten</strong>
+              .
+            </p>
+            <p>
+              Ako otkažete kasnije ili ne dođete, studio zadržava termin kao iskorišten
+              prema svojim pravilima.
+            </p>
+          </aside>
+
           <section className="member-book__pick" aria-label="Odabir dana">
             <header className="member-book__section-head">
               <h2>Dan</h2>
@@ -336,8 +423,8 @@ export default function MemberBookPage() {
               <h2>Vaše rezervacije</h2>
               <p>
                 {dayBookings.length > 0
-                  ? `${dayBookings.length} za odabrani dan · sve potvrđene ispod`
-                  : 'Sve potvrđene rezervacije u ovom studiju'}
+                  ? `${dayBookings.length} za odabrani dan · otkaz unutar roka vraća termin`
+                  : `Otkaz najkasnije ${cancelWindowLabel} · inače se termin broji`}
               </p>
             </header>
             {loadingBookings ? <p className="member-book__hint">Učitavamo…</p> : null}
@@ -346,28 +433,41 @@ export default function MemberBookPage() {
             ) : null}
             {myBookings.length > 0 ? (
               <ul className="member-book__list">
-                {myBookings.map((item) => (
-                  <li key={item.id} className={item.date === date ? 'is-day' : undefined}>
-                    <div>
-                      <strong>
-                        {formatBookingDay(item.date)}
-                        {' · '}
-                        {item.startTime}
-                        –
-                        {item.endTime}
-                      </strong>
-                      <span>{item.serviceName || 'Termin'}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="member-book__cancel"
-                      disabled={cancelling && busyId === item.id}
-                      onClick={() => onCancel(item.id)}
-                    >
-                      {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
-                    </button>
-                  </li>
-                ))}
+                {myBookings.map((item) => {
+                  const allowed = canCancelBooking(item, cancelWindow, timeZone);
+                  return (
+                    <li key={item.id} className={item.date === date ? 'is-day' : undefined}>
+                      <div>
+                        <strong>
+                          {formatBookingDay(item.date)}
+                          {' · '}
+                          {item.startTime}
+                          –
+                          {item.endTime}
+                        </strong>
+                        <span>
+                          {item.serviceName || 'Termin'}
+                          {' · '}
+                          {allowed
+                            ? 'Možete otkazati bez gubitka termina'
+                            : 'Rok za otkaz je istekao'}
+                        </span>
+                      </div>
+                      {allowed ? (
+                        <button
+                          type="button"
+                          className="member-book__cancel"
+                          disabled={cancelling && busyId === item.id}
+                          onClick={() => onCancel(item.id)}
+                        >
+                          {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
+                        </button>
+                      ) : (
+                        <span className="member-book__locked">Zaključano</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             ) : null}
           </section>

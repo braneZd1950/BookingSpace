@@ -1,0 +1,388 @@
+.legal {
+  --legal-ink: #13241f;
+  --legal-soft: #e8f0ec;
+  --legal-line: #c9d8d0;
+  --legal-accent: #0e6b73;
+  --legal-wash: #dfeae4;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  color: var(--legal-ink);
+  background:
+    linear-gradient(180deg, var(--legal-wash) 0%, #f7faf8 18rem, var(--bg, #fff) 100%);
+}
+
+.legal__wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: min(42rem, 88vh);
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 12% -10%, rgb(14 107 115 / 22%), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 92% 8%, rgb(20 55 48 / 14%), transparent 50%),
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 11px,
+      rgb(19 36 31 / 2.5%) 11px,
+      rgb(19 36 31 / 2.5%) 12px
+    );
+  animation: legal-wash-in 1.1s ease both;
+}
+
+.legal__hero,
+.legal__tabs,
+.legal__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(46rem, calc(100% - 2.4rem));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.legal__hero {
+  padding: clamp(2.6rem, 7vh, 3.8rem) 0 1.4rem;
+  animation: legal-rise 0.85s ease both;
+}
+
+.legal__brand {
+  margin: 0;
+  color: var(--legal-ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2.8rem, 9vw, 4.4rem);
+  font-weight: 640;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.legal__kicker {
+  margin: 1.15rem 0 0;
+  color: color-mix(in srgb, var(--legal-ink) 55%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.legal__hero h1 {
+  margin: 0.4rem 0 0;
+  max-width: 16ch;
+  color: color-mix(in srgb, var(--legal-ink) 82%, transparent);
+  font-family: Figtree, system-ui, sans-serif;
+  font-size: clamp(1.2rem, 2.8vw, 1.5rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.legal__lead {
+  margin: 1rem 0 0;
+  max-width: 34rem;
+  color: color-mix(in srgb, var(--legal-ink) 72%, transparent);
+  font-size: 1.05rem;
+  font-weight: 550;
+  line-height: 1.55;
+}
+
+.legal__basis {
+  margin: 0.85rem 0 0;
+  max-width: 40rem;
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid var(--legal-accent);
+  background: color-mix(in srgb, #fff 70%, var(--legal-soft));
+  color: color-mix(in srgb, var(--legal-ink) 72%, transparent);
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.legal__meta {
+  margin: 1.1rem 0 0;
+  color: color-mix(in srgb, var(--legal-ink) 48%, transparent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.legal__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.6rem;
+  padding: 0.3rem;
+  border: 1px solid color-mix(in srgb, var(--legal-accent) 18%, var(--legal-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 78%, var(--legal-soft));
+  animation: legal-rise 0.85s 0.08s ease both;
+}
+
+.legal__tabs a {
+  flex: 1 1 auto;
+  min-width: 5.5rem;
+  padding: 0.62rem 1rem;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--legal-ink) 70%, transparent);
+  font-size: 0.92rem;
+  font-weight: 750;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.legal__tabs a:hover {
+  color: var(--legal-ink);
+  background: color-mix(in srgb, var(--legal-accent) 8%, transparent);
+}
+
+.legal__tabs a.is-on {
+  background: var(--legal-ink);
+  color: #f4f7f5;
+}
+
+.legal__tabs a:focus-visible {
+  outline: 2px solid var(--legal-accent);
+  outline-offset: 2px;
+}
+
+.legal__sheet {
+  display: grid;
+  gap: 1.75rem;
+  padding-bottom: 3.8rem;
+  animation: legal-rise 0.9s 0.16s ease both;
+}
+
+.legal__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--legal-line);
+}
+
+.legal__clause {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr);
+  gap: 0.85rem 1.1rem;
+  padding: 1.35rem 0 1.45rem;
+  border-bottom: 1px solid var(--legal-line);
+}
+
+.legal__index {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  color: var(--legal-accent);
+  line-height: 1.2;
+}
+
+.legal__copy h2 {
+  margin: 0 0 0.55rem;
+  font-family: Figtree, system-ui, sans-serif;
+  font-size: 1.08rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.legal__summary {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.85rem !important;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--legal-accent) 9%, #fff);
+  color: color-mix(in srgb, var(--legal-ink) 82%, transparent) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+}
+
+.legal__summary span {
+  color: var(--legal-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.legal__copy p {
+  margin: 0 0 0.7rem;
+  color: color-mix(in srgb, var(--legal-ink) 78%, transparent);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.legal__law {
+  margin: 0.75rem 0 0 !important;
+  color: color-mix(in srgb, var(--legal-ink) 48%, transparent) !important;
+  font-size: 0.78rem !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+}
+
+.legal__copy p:last-child {
+  margin-bottom: 0;
+}
+
+.legal__bullets {
+  margin: 0.15rem 0 0.85rem;
+  padding: 0 0 0 1.15rem;
+  color: color-mix(in srgb, var(--legal-ink) 78%, transparent);
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.legal__bullets li {
+  margin: 0 0 0.45rem;
+  padding-left: 0.15rem;
+}
+
+.legal__bullets li:last-child {
+  margin-bottom: 0;
+}
+
+.legal__note {
+  margin: 0.85rem 0 0 !important;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--legal-accent) 7%, #fff);
+  color: color-mix(in srgb, var(--legal-ink) 75%, transparent) !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+.legal__id {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--legal-accent) 18%, var(--legal-line));
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, #fff 82%, var(--legal-soft));
+}
+
+.legal__id > p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.legal__id-note {
+  color: color-mix(in srgb, var(--legal-ink) 62%, transparent) !important;
+  font-size: 0.88rem !important;
+  font-weight: 550 !important;
+}
+
+.legal__aside {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 0 0;
+  border-top: 1px dashed color-mix(in srgb, var(--legal-accent) 28%, var(--legal-line));
+}
+
+.legal__closing {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--legal-line);
+}
+
+.legal__closing p {
+  margin: 0;
+  color: color-mix(in srgb, var(--legal-ink) 68%, transparent);
+  font-size: 0.9rem;
+  font-weight: 550;
+  line-height: 1.55;
+}
+
+.legal__closing a {
+  color: var(--legal-accent);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.legal__closing a:hover {
+  text-decoration: underline;
+}
+
+.legal__aside-label {
+  margin: 0;
+  color: color-mix(in srgb, var(--legal-ink) 48%, transparent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.legal__roles {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.legal__roles > div {
+  display: grid;
+  gap: 0.25rem;
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--legal-accent);
+}
+
+.legal__roles strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.legal__roles span {
+  color: color-mix(in srgb, var(--legal-ink) 68%, transparent);
+  font-size: 0.92rem;
+  font-weight: 550;
+  line-height: 1.45;
+}
+
+@keyframes legal-wash-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes legal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.85rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 40rem) {
+  .legal__clause {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 1rem 1.4rem;
+  }
+}
+
+@media (min-width: 52rem) {
+  .legal__roles {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal__wash,
+  .legal__hero,
+  .legal__tabs,
+  .legal__sheet {
+    animation: none;
+  }
+}

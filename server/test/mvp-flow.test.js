@@ -260,6 +260,42 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
   assert.equal(openSlot.available, 6);
   assert.equal(openSlot.status, 'AVAILABLE');
 
+  const consent = await request('/api/consent', {
+    method: 'POST',
+    token: customerToken,
+    body: {
+      action: 'accept',
+      version: '2026-10-13',
+      source: 'register',
+    },
+  });
+  assert.equal(consent.status, 200);
+  assert.equal(consent.body.consent.isCurrent, true);
+
+  const bookingBlocked = await request('/api/bookings', {
+    method: 'POST',
+    token: ownerToken,
+    body: {
+      serviceId: service.id,
+      date: visitDate,
+      startTime: '10:00',
+      userId: customer.body.user.id,
+    },
+  });
+  assert.equal(bookingBlocked.status, 403);
+  assert.equal(bookingBlocked.body.code, 'CONSENT_REQUIRED');
+
+  const ownerConsent = await request('/api/consent', {
+    method: 'POST',
+    token: ownerToken,
+    body: {
+      action: 'accept',
+      version: '2026-10-13',
+      source: 'settings',
+    },
+  });
+  assert.equal(ownerConsent.status, 200);
+
   const bookingResponse = await request('/api/bookings', {
     method: 'POST',
     token: customerToken,

@@ -246,11 +246,29 @@
   gap: 0.65rem 1.2rem;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0 1.4rem;
+  padding: 1rem 0 0.55rem;
   border-top: 1px solid color-mix(in srgb, var(--site-brand) 12%, transparent);
   color: color-mix(in srgb, currentColor 65%, transparent);
   font-size: 0.86rem;
   font-weight: 650;
+}
+
+.site__foot-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.95rem;
+  align-items: center;
+}
+
+.site__foot-legal a {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site__foot-legal a:hover {
+  color: var(--site-brand);
+  text-decoration: underline;
 }
 
 .site__foot-credit {
@@ -261,6 +279,16 @@
 
 .site__foot-credit:hover {
   text-decoration: underline;
+}
+
+.site__foot-note {
+  margin: 0;
+  padding: 0 0 1.35rem;
+  max-width: 38rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 @media (min-width: 48rem) {

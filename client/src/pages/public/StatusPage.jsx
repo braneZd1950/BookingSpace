@@ -88,7 +88,7 @@ export function MaintenancePage() {
     <StatusPage
       code="Održavanje"
       title="Trenutačno radimo na sustavu."
-      lead="BookingApp je privremeno nedostupan. Rezervacije i prijave vratit će se čim završimo. Hvala na strpljenju."
+      lead="anyminutes je privremeno nedostupan. Rezervacije i prijave vratit će se čim završimo. Hvala na strpljenju."
       primaryTo="/"
       primaryLabel="Pokušajte ponovno"
       showContact
@@ -108,7 +108,7 @@ export function StudioMissingPage() {
         </p>
         <div className="status__actions">
           <Link className="status__cta" to="/">
-            Početna BookingApp
+            Početna anyminutes
           </Link>
           <Link className="status__cta status__cta--ghost" to="/login">
             Prijava

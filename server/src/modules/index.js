@@ -2,6 +2,7 @@ import { Router } from 'express';
 import analyticsRoutes from './analytics/routes.js';
 import authRoutes from './auth/routes.js';
 import { bookingRoutes, tenantBookingRoutes } from './bookings/routes.js';
+import consentRoutes from './consent/routes.js';
 import customerRoutes from './customers/routes.js';
 import {
   membershipCollectionRoutes,
@@ -10,6 +11,7 @@ import {
   planItemRoutes,
 } from './memberships/routes.js';
 import paymentRoutes from './payments/routes.js';
+import pushRoutes from './push/routes.js';
 import { serviceCollectionRoutes, serviceItemRoutes } from './services/routes.js';
 import sessionRoutes from './sessions/routes.js';
 import tenantRoutes from './tenants/routes.js';
@@ -18,6 +20,8 @@ const api = Router();
 
 api.use('/analytics', analyticsRoutes);
 api.use('/auth', authRoutes);
+api.use('/consent', consentRoutes);
+api.use('/push', pushRoutes);
 api.use('/tenants/:tenantId/services/:serviceId/availability', sessionRoutes);
 api.use('/tenants/:tenantId/services', serviceCollectionRoutes);
 api.use('/tenants/:tenantId/bookings', tenantBookingRoutes);

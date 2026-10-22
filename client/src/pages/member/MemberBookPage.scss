@@ -295,6 +295,77 @@
   border-top: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
 }
 
+.member-book__policy {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--line));
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--brand-soft) 55%, #fff) 0%,
+      #fff 70%
+    );
+  transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.member-book__policy.is-updated {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+.member-book__policy-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-book__policy h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+}
+
+.member-book__policy-mark {
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 12%, #fff);
+  color: var(--brand-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  animation: policy-mark-in 0.45s ease;
+}
+
+@keyframes policy-mark-in {
+  from {
+    transform: scale(0.86);
+    opacity: 0.35;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.member-book__policy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.member-book__policy strong {
+  color: var(--brand-strong);
+  font-weight: 800;
+}
+
 .member-book__bookings {
   padding-top: 0.35rem;
   border-top: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
@@ -342,6 +413,16 @@
   background: transparent;
   box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--full-ink) 42%, transparent);
   color: var(--full-ink);
+}
+
+.member-book__locked {
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
 }
 
 .member-book__hint,

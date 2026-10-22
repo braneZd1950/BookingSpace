@@ -27,14 +27,14 @@ const bookingApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Bookings', 'Availability', 'Memberships', 'MyBookings', 'MyMemberships'],
+      invalidatesTags: ['Bookings', 'Availability', 'Memberships', 'MyBookings', 'MyMemberships', 'Analytics'],
     }),
     cancelBooking: build.mutation({
       query: (bookingId) => ({
         url: `/bookings/${bookingId}/cancel`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['Bookings', 'Availability', 'Memberships', 'MyBookings', 'MyMemberships'],
+      invalidatesTags: ['Bookings', 'Availability', 'Memberships', 'MyBookings', 'MyMemberships', 'Analytics'],
     }),
     listMyBookings: build.query({
       query: (limit = 50) => ({

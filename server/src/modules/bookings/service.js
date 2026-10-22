@@ -7,9 +7,15 @@ import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
+import {
+  sendStaffBookingCancelledEmail,
+  sendStaffBookingCreatedEmail,
+} from '../../utils/mail.js';
+import { notifyTenantStaff } from '../../utils/notify.js';
 import { overlaps, withinCancellationWindow, zonedNow } from '../../utils/time.js';
 import { createDoc, sessionOptions, withTransaction } from '../../utils/transaction.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
+import { assertPrivacyConsent } from '../consent/service.js';
 import { buildDaySlots } from '../sessions/slots.js';
 
 function notFound(error) {
@@ -69,6 +75,7 @@ async function staffAccess(user, tenantId) {
 }
 
 export async function createBooking(actor, input) {
+  assertPrivacyConsent(actor);
   const service = await Service.findOne({ _id: input.serviceId, active: true });
   const tenant = service ? await Tenant.findOne({ _id: service.tenantId, active: true }) : null;
   if (!service || !tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
@@ -198,6 +205,33 @@ export async function createBooking(actor, input) {
     path: '/bookings',
   });
 
+  const customer = await User.findById(booking.userId).select('name email');
+  const memberName = customer?.name || customer?.email || 'Član';
+  notifyTenantStaff({
+    tenantId: tenant._id,
+    excludeUserId: actor._id,
+    emailPrefKey: 'bookingEmail',
+    pushPrefKey: 'bookingPush',
+    type: 'booking_created',
+    title: `Nova rezervacija · ${tenant.name}`,
+    body: `${memberName} · ${service.name} · ${booking.date} ${booking.startTime}`,
+    data: {
+      bookingId: String(booking._id),
+      date: booking.date,
+      startTime: booking.startTime,
+    },
+    sendEmail: ({ to, contactName, studioName }) => sendStaffBookingCreatedEmail({
+      to,
+      contactName,
+      studioName,
+      memberName,
+      serviceName: service.name,
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+    }),
+  });
+
   return toBooking(booking);
 }
 
@@ -252,6 +286,7 @@ export async function cancelBooking(actor, bookingId) {
     await staffAccess(actor, existing.tenantId);
     staff = true;
   }
+  assertPrivacyConsent(actor);
   const now = zonedNow(tenant.timezone || 'Europe/Zagreb');
   const inWindow = withinCancellationWindow(
     now,
@@ -292,32 +327,65 @@ export async function cancelBooking(actor, bookingId) {
     path: '/bookings',
   });
 
+  const customer = await User.findById(existing.userId).select('name email');
+  const memberName = customer?.name || customer?.email || 'Član';
+  const cancelledByMember = owns;
+  notifyTenantStaff({
+    tenantId: existing.tenantId,
+    // Always alert trainers when a member cancels; if staff cancels, skip the actor.
+    excludeUserId: cancelledByMember ? undefined : actor._id,
+    emailPrefKey: 'cancelEmail',
+    pushPrefKey: 'cancelPush',
+    type: 'booking_cancelled',
+    title: `Otkaz termina · ${tenant.name}`,
+    body: `${memberName} · ${service.name} · ${existing.date} ${existing.startTime}`,
+    data: {
+      bookingId: String(existing._id),
+      date: existing.date,
+      startTime: existing.startTime,
+      cancelledBy: actor.name || actor.email,
+    },
+    sendEmail: ({ to, contactName, studioName }) => sendStaffBookingCancelledEmail({
+      to,
+      contactName,
+      studioName,
+      memberName,
+      serviceName: service.name,
+      date: existing.date,
+      startTime: existing.startTime,
+      endTime: existing.endTime,
+      cancelledBy: actor.name || actor.email,
+    }),
+  });
+
   return toBooking(booking);
 }
 
-async function mark(actor, bookingId, status, stamp) {
+async function mark(actor, bookingId, status, stamp, usageType) {
   const booking = await loadManageable(actor, bookingId);
   await staffAccess(actor, booking.tenantId);
   if (booking.status !== 'CONFIRMED') {
     throw new HttpError(409, 'Booking cannot be updated', { code: 'INVALID_STATE' });
   }
   booking.status = status;
-  booking[stamp] = new Date();
+  if (stamp) booking[stamp] = new Date();
   await booking.save();
+  if (usageType) {
+    trackUsage({
+      type: usageType,
+      tenantId: booking.tenantId,
+      userId: actor._id,
+      role: actor.role,
+      path: '/bookings',
+    });
+  }
   return toBooking(booking);
 }
 
 export function completeBooking(actor, bookingId) {
-  return mark(actor, bookingId, 'COMPLETED', 'completedAt');
+  return mark(actor, bookingId, 'COMPLETED', 'completedAt', 'booking_completed');
 }
 
-export async function markNoShow(actor, bookingId) {
-  const booking = await loadManageable(actor, bookingId);
-  await staffAccess(actor, booking.tenantId);
-  if (booking.status !== 'CONFIRMED') {
-    throw new HttpError(409, 'Booking cannot be updated', { code: 'INVALID_STATE' });
-  }
-  booking.status = 'NO_SHOW';
-  await booking.save();
-  return toBooking(booking);
+export function markNoShow(actor, bookingId) {
+  return mark(actor, bookingId, 'NO_SHOW', null, 'booking_no_show');
 }

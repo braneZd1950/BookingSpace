@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.js",
+    "dev:mobile": "node scripts/dev-mobile.js",
     "test": "npm --prefix server test",
     "test:server": "npm --prefix server test",
     "smoke": "node scripts/prod-smoke.js",
-    "preview:client": "npm --prefix client exec -- vite preview --host 127.0.0.1 --port 4173"
+    "preview:client": "npm --prefix client exec -- vite preview --host 127.0.0.1 --port 4173",
+    "preview:mobile": "npm --prefix client-mobile exec -- vite preview --host 127.0.0.1 --port 4174"
   }
 }

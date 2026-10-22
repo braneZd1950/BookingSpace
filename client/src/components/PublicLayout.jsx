@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import ConsentBanner from './ConsentBanner.jsx';
+import InstallAppBanner from './InstallAppBanner.jsx';
 import SiteFooter from './SiteFooter.jsx';
 import SiteHeader from './SiteHeader.jsx';
 import './PublicLayout.scss';
@@ -22,6 +24,8 @@ export default function PublicLayout() {
       <SiteHeader />
       <Outlet />
       <SiteFooter />
+      <ConsentBanner />
+      <InstallAppBanner />
     </div>
   );
 }

@@ -142,6 +142,26 @@
   gap: 0.65rem;
 }
 
+.biz-form__consent {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  gap: 0.65rem !important;
+  align-items: start;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.biz-form__consent input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+}
+
+.biz-form__consent a {
+  color: var(--brand, #0e6b73);
+  font-weight: 750;
+}
+
 .biz-form__login {
   margin: 0.2rem 0 0;
   color: var(--muted);

@@ -219,8 +219,22 @@
   outline-offset: 1px;
 }
 
+.settings__hint {
+  margin: 0.35rem 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.settings__hint strong {
+  color: var(--site-brand, var(--brand));
+  font-weight: 800;
+}
+
 .settings__sheet input,
-.settings__sheet textarea {
+.settings__sheet textarea,
+.settings__sheet select {
   width: 100%;
   padding: 0.78rem 0.9rem;
   border: 1px solid color-mix(in srgb, var(--site-brand, var(--brand)) 16%, #d5dde2);
@@ -232,7 +246,8 @@
 }
 
 .settings__sheet input:focus,
-.settings__sheet textarea:focus {
+.settings__sheet textarea:focus,
+.settings__sheet select:focus {
   outline: 2px solid var(--site-brand, var(--brand));
   outline-offset: 1px;
 }
@@ -241,6 +256,12 @@
   display: grid;
   gap: 0.65rem;
   padding-top: 0.4rem;
+}
+
+.settings__hours-block--cancel {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
 }
 
 .settings__hours-block h2 {

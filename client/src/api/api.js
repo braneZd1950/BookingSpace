@@ -10,6 +10,8 @@ export const api = createApi({
       return headers;
     },
   }),
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
   tagTypes: [
     'Memberships',
     'MyMemberships',
@@ -22,6 +24,7 @@ export const api = createApi({
     'MyTenants',
     'PublicTenant',
     'Analytics',
+    'Push',
   ],
   endpoints: () => ({}),
 });

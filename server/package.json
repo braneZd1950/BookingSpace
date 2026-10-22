@@ -8,7 +8,9 @@
     "test": "node --test test/mvp-flow.test.js test/platform-billing.test.js",
     "mail:check": "node scripts/check-mail.js",
     "generate:jwt-secret": "node src/utils/generateJwtSecret.js",
-    "generate:jwt-secret:write": "node src/utils/generateJwtSecret.js --write"
+    "generate:jwt-secret:write": "node src/utils/generateJwtSecret.js --write",
+    "generate:vapid": "node scripts/generate-vapid.js",
+    "generate:vapid:write": "node scripts/generate-vapid.js --write"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,6 +24,7 @@
     "multer": "^2.4.0",
     "nodemailer": "^10.0.13",
     "socket.io": "^4.8.4",
+    "web-push": "^3.6.7",
     "zod": "^4.6.5"
   },
   "devDependencies": {

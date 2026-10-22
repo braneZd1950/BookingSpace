@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  PLATFORM_POLL,
   useGetPlatformBillingQuery,
   useSendBillingInvoiceMutation,
   useSendBillingWarningMutation,
@@ -49,7 +50,10 @@ export default function PlatformBillingPage() {
   const [filter, setFilter] = useState('all');
   const [busyId, setBusyId] = useState('');
   const [flash, setFlash] = useState('');
-  const { data, isLoading, isError, refetch } = useGetPlatformBillingQuery();
+  const { data, isLoading, isError, refetch } = useGetPlatformBillingQuery(
+    undefined,
+    PLATFORM_POLL.billing,
+  );
   const [updateBilling] = useUpdatePlatformBillingMutation();
   const [sendWarning] = useSendBillingWarningMutation();
   const [sendInvoice] = useSendBillingInvoiceMutation();

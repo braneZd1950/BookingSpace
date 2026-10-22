@@ -106,10 +106,19 @@ function LiveFooter({
           {' '}
           {name}
         </span>
-        <Link className="site__foot-credit" to="/" onClick={leaveToAppHome}>
-          BookingApp
-        </Link>
+        <nav className="site__foot-legal" aria-label="Pravila">
+          <Link to="/privatnost">Privatnost</Link>
+          <Link to="/uvjeti">Uvjeti</Link>
+          <Link to="/kolacici">Kolačići</Link>
+          <Link className="site__foot-credit" to="/" onClick={leaveToAppHome}>
+            anyminutes
+          </Link>
+        </nav>
       </div>
+      <p className="site__foot-note">
+        Rezervacije idu preko anyminutesa. Studio postavlja termine i pravila;
+        platforma obrađuje podatke potrebne za prijavu i rezervaciju.
+      </p>
     </footer>
   );
 }

@@ -1,4 +1,4 @@
-import { useGetPlatformSystemQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformSystemQuery } from '../../api/analyticsApi.js';
 import PlatformSection from './PlatformSection.jsx';
 import '../public/AnalyticsPage.scss';
 
@@ -23,7 +23,10 @@ function formatWhen(value) {
 }
 
 export default function PlatformSystemPage() {
-  const { data, isLoading, isError, refetch, isFetching } = useGetPlatformSystemQuery();
+  const { data, isLoading, isError, refetch, isFetching } = useGetPlatformSystemQuery(
+    undefined,
+    PLATFORM_POLL.system,
+  );
 
   if (isLoading) {
     return (

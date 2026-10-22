@@ -7,6 +7,7 @@ import Service from '../../models/Service.js';
 import Tenant from '../../models/Tenant.js';
 import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
+import { trackUsage } from '../../utils/analytics.js';
 import { defaultTrialBilling } from '../../utils/billing.js';
 import { HttpError } from '../../utils/httpError.js';
 import { createDoc, withTransaction } from '../../utils/transaction.js';
@@ -114,6 +115,14 @@ export async function createTenant(user, input) {
     }
 
     return created;
+  });
+
+  trackUsage({
+    type: 'tenant_created',
+    tenantId: tenant._id,
+    userId: user._id,
+    role: user.role,
+    path: '/tenants',
   });
 
   return toTenant(tenant);

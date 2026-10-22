@@ -6,6 +6,7 @@ import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
 import { sendPasswordResetEmail } from '../../utils/mail.js';
 import { signAccessToken } from '../../utils/token.js';
+import { setConsentForUser, toPrivacyConsent } from '../consent/service.js';
 
 const BCRYPT_ROUNDS = 12;
 const RESET_TTL_MS = 60 * 60 * 1000;
@@ -15,6 +16,18 @@ function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
+const DEFAULT_NOTIFICATION_PREFS = {
+  bookingEmail: true,
+  cancelEmail: true,
+  memberEmail: true,
+  weeklyDigest: false,
+  marketing: false,
+  bookingPush: true,
+  cancelPush: true,
+  memberPush: true,
+  reminderPush: false,
+};
+
 export function toPublicUser(user) {
   return {
     id: user._id,
@@ -23,6 +36,11 @@ export function toPublicUser(user) {
     phone: user.phone || null,
     role: user.role,
     createdAt: user.createdAt,
+    notificationPrefs: {
+      ...DEFAULT_NOTIFICATION_PREFS,
+      ...(user.notificationPrefs?.toObject?.() || user.notificationPrefs || {}),
+    },
+    privacyConsent: toPrivacyConsent(user.privacyConsent),
   };
 }
 
@@ -86,6 +104,17 @@ export async function updateMe(user, input) {
   }
   if (input.name) user.name = input.name;
   if (input.phone !== undefined) user.phone = input.phone || undefined;
+  if (input.notificationPrefs) {
+    user.notificationPrefs = {
+      ...DEFAULT_NOTIFICATION_PREFS,
+      ...(user.notificationPrefs?.toObject?.() || user.notificationPrefs || {}),
+      ...input.notificationPrefs,
+    };
+  }
+  if (input.privacyConsent) {
+    await setConsentForUser(user, input.privacyConsent);
+    return toPublicUser(user);
+  }
   await user.save();
   return toPublicUser(user);
 }

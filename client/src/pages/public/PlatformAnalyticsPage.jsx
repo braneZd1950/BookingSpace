@@ -1,18 +1,24 @@
-import { useGetPlatformAnalyticsQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformAnalyticsQuery } from '../../api/analyticsApi.js';
 import './AnalyticsPage.scss';
 
 const LABELS = {
   page_view: 'Posjeti stranica',
   login_success: 'Prijave',
   register_success: 'Registracije',
+  tenant_created: 'Novi studiji',
   member_created: 'Dodani članovi',
   booking_created: 'Rezervacije',
   booking_cancelled: 'Otkazi',
+  booking_completed: 'Završeni termini',
+  booking_no_show: 'Nedolasci',
   password_reset_requested: 'Oporavak lozinke',
 };
 
 export default function PlatformAnalyticsPage() {
-  const { data, isLoading, isError } = useGetPlatformAnalyticsQuery(30);
+  const { data, isLoading, isError, isFetching } = useGetPlatformAnalyticsQuery(
+    30,
+    PLATFORM_POLL.overview,
+  );
 
   if (isLoading) {
     return (
@@ -41,6 +47,10 @@ export default function PlatformAnalyticsPage() {
           <p className="analytics__lead">
             Globalno korištenje — agregati bez podataka pojedinog studija ili člana.
             Zadnjih {data.days} dana.
+            {' '}
+            <span className={`analytics__live${isFetching ? ' is-busy' : ''}`}>
+              uživo
+            </span>
           </p>
         </div>
       </header>

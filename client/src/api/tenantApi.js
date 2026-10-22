@@ -8,7 +8,7 @@ const tenantApi = api.injectEndpoints({
         method: 'PATCH',
         body,
       }),
-      invalidatesTags: ['MyTenants', 'PublicTenant'],
+      invalidatesTags: ['MyTenants', 'PublicTenant', 'Analytics'],
     }),
     updateSite: build.mutation({
       query: ({ id, body }) => ({
@@ -16,7 +16,7 @@ const tenantApi = api.injectEndpoints({
         method: 'PATCH',
         body,
       }),
-      invalidatesTags: ['MyTenants', 'PublicTenant'],
+      invalidatesTags: ['MyTenants', 'PublicTenant', 'Analytics'],
     }),
     uploadImage: build.mutation({
       query: ({ id, file, purpose }) => {
@@ -29,7 +29,7 @@ const tenantApi = api.injectEndpoints({
           body,
         };
       },
-      invalidatesTags: ['MyTenants', 'PublicTenant'],
+      invalidatesTags: ['MyTenants', 'PublicTenant', 'Analytics'],
     }),
     myTenants: build.query({
       query: () => '/tenants/mine',

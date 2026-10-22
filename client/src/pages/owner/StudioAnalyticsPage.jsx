@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom';
-import { useGetStudioAnalyticsQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetStudioAnalyticsQuery } from '../../api/analyticsApi.js';
 import '../public/AnalyticsPage.scss';
 
 const LABELS = {
@@ -8,6 +8,8 @@ const LABELS = {
   member_created: 'Dodani članovi',
   booking_created: 'Rezervacije',
   booking_cancelled: 'Otkazi',
+  booking_completed: 'Završeni termini',
+  booking_no_show: 'Nedolasci',
 };
 
 const REAL_ID = /^[a-f\d]{24}$/i;
@@ -18,7 +20,7 @@ export default function StudioAnalyticsPage() {
   const ready = REAL_ID.test(tenantId);
   const { data, isLoading, isError } = useGetStudioAnalyticsQuery(
     { tenantId, days: 30 },
-    { skip: !ready },
+    { skip: !ready, ...PLATFORM_POLL.studio },
   );
 
   if (!ready) {

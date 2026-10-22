@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
 import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
+import ConsentBanner from '../../components/ConsentBanner.jsx';
+import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
 import { paletteFromTenant } from './publicSite.js';
@@ -48,6 +50,7 @@ export default function MemberLayout() {
 
   const { data, isLoading, isError, error } = useGetPublicTenantQuery(slug, {
     skip: !slug,
+    refetchOnMountOrArgChange: true,
   });
   const { data: membershipData } = useListMyMembershipsQuery(50, { skip: !loggedIn });
   const tenant = data?.tenant || null;
@@ -126,6 +129,11 @@ export default function MemberLayout() {
             Termini
           </NavLink>
           {loggedIn ? (
+            <NavLink to={`${base}/privatnost`}>
+              Privatnost
+            </NavLink>
+          ) : null}
+          {loggedIn ? (
             <button
               type="button"
               className="member-nav__power"
@@ -141,6 +149,8 @@ export default function MemberLayout() {
         </nav>
       </header>
       <Outlet context={{ tenant, membership, isMember, loggedIn, session, palette }} />
+      <ConsentBanner />
+      <InstallAppBanner />
     </div>
   );
 }

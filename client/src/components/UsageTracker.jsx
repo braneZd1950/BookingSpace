@@ -28,28 +28,67 @@ export function rememberAnalyticsTenant(tenantId) {
   } catch {
     // ignore
   }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('bookingspace:analytics-tenant', {
+      detail: { tenantId: String(tenantId) },
+    }));
+  }
+}
+
+function sendPageView(track, path, tenantId) {
+  track({
+    type: 'page_view',
+    path,
+    ...(tenantId ? { tenantId } : {}),
+  });
 }
 
 export default function UsageTracker() {
   const location = useLocation();
   const [track] = useTrackPageViewMutation();
   const last = useRef('');
+  const pendingStudioPath = useRef('');
 
   useEffect(() => {
     const path = `${location.pathname}${location.search || ''}`.slice(0, 200);
     if (!path || path === last.current) return;
-    last.current = path;
 
     const onStudioSurface = location.pathname.startsWith('/s/')
       || location.pathname.startsWith('/stranica');
     const tenantId = onStudioSurface ? readTenantId() : undefined;
 
-    track({
-      type: 'page_view',
-      path,
-      ...(tenantId ? { tenantId } : {}),
-    });
+    // Wait briefly for MemberLayout/StudioLayout to set tenant before counting.
+    if (onStudioSurface && !tenantId) {
+      pendingStudioPath.current = path;
+      const timer = window.setTimeout(() => {
+        if (pendingStudioPath.current !== path) return;
+        const lateId = readTenantId();
+        last.current = path;
+        pendingStudioPath.current = '';
+        sendPageView(track, path, lateId);
+      }, 400);
+      return () => window.clearTimeout(timer);
+    }
+
+    last.current = path;
+    pendingStudioPath.current = '';
+    sendPageView(track, path, tenantId);
+    return undefined;
   }, [location.pathname, location.search, track]);
+
+  useEffect(() => {
+    function onTenantReady(event) {
+      const path = pendingStudioPath.current;
+      if (!path) return;
+      const tenantId = event?.detail?.tenantId || readTenantId();
+      if (!tenantId) return;
+      pendingStudioPath.current = '';
+      last.current = path;
+      sendPageView(track, path, tenantId);
+    }
+    window.addEventListener('bookingspace:analytics-tenant', onTenantReady);
+    return () => window.removeEventListener('bookingspace:analytics-tenant', onTenantReady);
+  }, [track]);
 
   return null;
 }

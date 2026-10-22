@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCreateTenantMutation, useRegisterMutation } from '../../api/authApi.js';
+import { useRecordConsentMutation } from '../../api/consentApi.js';
+import { CONSENT_VERSION, acceptLocally, getAnonymousKey } from '../../consent.js';
 import { findPalette, studioPalettes } from '../../styles/studioPalette.js';
 import { saveStudio } from '../../studio.js';
 import {
@@ -19,6 +21,7 @@ const empty = {
   businessName: '',
   password: '',
   passwordAgain: '',
+  acceptTerms: false,
   template: 'fitness',
   palette: 'navy',
 };
@@ -99,8 +102,11 @@ function basicsProblems(values) {
   }
   if (!values.passwordAgain) {
     problems.passwordAgain = 'Ponovite lozinku.';
-  } else if (values.password !== values.passwordAgain) {
+  } else   if (values.password !== values.passwordAgain) {
     problems.passwordAgain = 'Lozinke se ne podudaraju.';
+  }
+  if (!values.acceptTerms) {
+    problems.acceptTerms = 'Potrebno je prihvatiti privatnost i uvjete korištenja.';
   }
   return problems;
 }
@@ -121,6 +127,7 @@ export default function BusinessSignupForm({ className = '' }) {
   const navigate = useNavigate();
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [createTenant, { isLoading: isCreating }] = useCreateTenantMutation();
+  const [recordConsent] = useRecordConsentMutation();
   const isLoading = isRegistering || isCreating;
   const slug = previewSlug(values.businessName);
   const chosen = findPalette(values.palette);
@@ -173,6 +180,18 @@ export default function BusinessSignupForm({ className = '' }) {
         accessToken = account.token;
         localStorage.setItem(TOKEN_KEY, accessToken);
         setToken(accessToken);
+        acceptLocally('register');
+        try {
+          await recordConsent({
+            action: 'accept',
+            version: CONSENT_VERSION,
+            source: 'register',
+            path: '/register',
+            anonymousKey: getAnonymousKey(),
+          }).unwrap();
+        } catch {
+          /* račun postoji; banner/postavke mogu ponoviti privolu */
+        }
       }
 
       const created = await createTenant({
@@ -276,6 +295,28 @@ export default function BusinessSignupForm({ className = '' }) {
             invalid={Boolean(problems.passwordAgain)}
             error={problems.passwordAgain}
           />
+
+          <label className="biz-form__consent">
+            <input
+              type="checkbox"
+              checked={values.acceptTerms}
+              onChange={(event) => update('acceptTerms', event.target.checked)}
+              aria-invalid={Boolean(problems.acceptTerms)}
+            />
+            <span>
+              Prihvaćam
+              {' '}
+              <Link to="/privatnost" target="_blank" rel="noreferrer">privatnost</Link>
+              {' '}
+              i
+              {' '}
+              <Link to="/uvjeti" target="_blank" rel="noreferrer">uvjete korištenja</Link>
+              .
+            </span>
+          </label>
+          {problems.acceptTerms ? (
+            <span className="biz-form__error">{problems.acceptTerms}</span>
+          ) : null}
 
           <button className="biz-form__submit" type="submit">
             Dalje

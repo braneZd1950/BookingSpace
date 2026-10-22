@@ -1,4 +1,4 @@
-import { useGetPlatformReportsQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformReportsQuery } from '../../api/analyticsApi.js';
 import PlatformSection from './PlatformSection.jsx';
 import '../public/AnalyticsPage.scss';
 
@@ -6,9 +6,12 @@ const ROWS = [
   ['page_view', 'Posjeti stranica'],
   ['login_success', 'Prijave'],
   ['register_success', 'Registracije'],
+  ['tenant_created', 'Novi studiji'],
   ['member_created', 'Dodani članovi'],
   ['booking_created', 'Rezervacije'],
   ['booking_cancelled', 'Otkazi'],
+  ['booking_completed', 'Završeni termini'],
+  ['booking_no_show', 'Nedolasci'],
 ];
 
 function deltaText(deltaPct) {
@@ -23,7 +26,7 @@ function deltaClass(deltaPct) {
 }
 
 export default function PlatformReportsPage() {
-  const { data, isLoading, isError } = useGetPlatformReportsQuery(30);
+  const { data, isLoading, isError } = useGetPlatformReportsQuery(30, PLATFORM_POLL.reports);
 
   if (isLoading) {
     return (

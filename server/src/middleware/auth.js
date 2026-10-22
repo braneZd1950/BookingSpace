@@ -23,3 +23,22 @@ export async function requireAuth(req, res, next) {
     next(error);
   }
 }
+
+/** Attach user when Bearer token is present; continue as guest otherwise. */
+export async function optionalAuth(req, res, next) {
+  const header = req.get('authorization') || '';
+  const match = header.match(/^Bearer\s+(\S+)$/i);
+  if (!match) {
+    next();
+    return;
+  }
+
+  try {
+    const payload = verifyAccessToken(match[1]);
+    const user = await User.findById(payload.sub);
+    if (user) req.user = user;
+    next();
+  } catch {
+    next();
+  }
+}

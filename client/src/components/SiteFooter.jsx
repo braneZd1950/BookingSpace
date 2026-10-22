@@ -34,7 +34,7 @@ export default function SiteFooter() {
       <div className="site-footer__inner">
         <div className="site-footer__grid">
           <div className="site-footer__brand">
-            <p className="site-footer__name">BookingApp</p>
+            <p className="site-footer__name">anyminutes</p>
             <p>
               Termini, paketi i članarine — za igraonice, studije i sva poslovanja
               koja žive od rasporeda.
@@ -57,7 +57,7 @@ export default function SiteFooter() {
             </nav>
           ))}
         </div>
-        <p className="site-footer__note">© 2026 BookingApp</p>
+        <p className="site-footer__note">© 2026 anyminutes</p>
       </div>
     </footer>
   );

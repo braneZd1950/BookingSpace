@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useGetPlatformStudiosQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformStudiosQuery } from '../../api/analyticsApi.js';
 import PlatformSection from './PlatformSection.jsx';
 import '../public/AnalyticsPage.scss';
 
@@ -26,7 +26,7 @@ function formatDate(value) {
 export default function PlatformStudiosPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
-  const { data, isLoading, isError } = useGetPlatformStudiosQuery(30);
+  const { data, isLoading, isError } = useGetPlatformStudiosQuery(30, PLATFORM_POLL.studios);
 
   const studios = data?.studios || [];
   const summary = data?.summary || { total: 0, active: 0, inactive: 0, withMembers: 0 };

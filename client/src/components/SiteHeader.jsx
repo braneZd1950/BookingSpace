@@ -36,7 +36,7 @@ export default function SiteHeader() {
     return (
       <header className="site-header site-header--admin">
         <Link className="site-header__brand" to="/analitika">
-          BookingSpace
+          anyminutes
         </Link>
         <nav className="site-header__nav" aria-label="Platforma">
           {adminLinks.map(([to, label, end]) => (
@@ -59,7 +59,7 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <Link className="site-header__brand" to="/">
-        BookingApp
+        anyminutes
       </Link>
       <nav className="site-header__nav" aria-label="Račun">
         <Link to="/login">Prijava</Link>

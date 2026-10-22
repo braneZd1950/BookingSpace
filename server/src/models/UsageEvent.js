@@ -6,9 +6,12 @@ export const USAGE_EVENT_TYPES = [
   'page_view',
   'login_success',
   'register_success',
+  'tenant_created',
   'member_created',
   'booking_created',
   'booking_cancelled',
+  'booking_completed',
+  'booking_no_show',
   'password_reset_requested',
 ];
 

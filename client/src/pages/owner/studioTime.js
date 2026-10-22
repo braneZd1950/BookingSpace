@@ -70,6 +70,68 @@ export function toDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+function toMinutes(value) {
+  const [hours, minutes] = String(value || '00:00').split(':').map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
+export function addDaysKey(isoDate, days) {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return toDateKey(date);
+}
+
+/** Local clock in studio timezone (same shape as server zonedNow). */
+export function zonedClock(timeZone = 'Europe/Zagreb') {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const read = (type) => parts.find((part) => part.type === type)?.value ?? '';
+  const hour = read('hour') === '24' ? '00' : read('hour');
+  return {
+    date: `${read('year')}-${read('month')}-${read('day')}`,
+    time: `${hour.padStart(2, '0')}:${read('minute').padStart(2, '0')}`,
+  };
+}
+
+/** True if cancel still restores the session (matches server rule). */
+export function withinCancellationWindow(now, date, startTime, windowMinutes) {
+  const minutes = Number(windowMinutes);
+  if (!Number.isFinite(minutes) || minutes < 0) return false;
+  let deadline = toMinutes(startTime) - minutes;
+  let deadlineDate = date;
+  while (deadline < 0) {
+    deadline += 24 * 60;
+    deadlineDate = addDaysKey(deadlineDate, -1);
+  }
+  if (now.date < deadlineDate) return true;
+  if (now.date > deadlineDate) return false;
+  return toMinutes(now.time) <= deadline;
+}
+
+export function formatCancellationWindow(minutes) {
+  const value = Number(minutes);
+  if (!Number.isFinite(value) || value < 0) return 'nije definirano';
+  if (value === 0) return 'do samog početka termina';
+  if (value < 60) return `${value} min prije početka`;
+  const hours = value / 60;
+  if (Number.isInteger(hours)) {
+    if (hours === 1) return '1 sat prije početka';
+    if (hours >= 2 && hours <= 4) return `${hours} sata prije početka`;
+    return `${hours} sati prije početka`;
+  }
+  const h = Math.floor(value / 60);
+  const m = value % 60;
+  return `${h} h ${m} min prije početka`;
+}
+
 /** Convert studio UI hours into API bookingSettings.workingHours. */
 export function hoursPayload(hours) {
   const source = { ...fallbackHours, ...hours };

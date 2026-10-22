@@ -142,7 +142,7 @@ export default function LoginPage() {
         email: result.user.email,
         role: result.user.role,
         detail: result.user.role === 'ADMIN'
-          ? 'Platforma BookingSpace'
+          ? 'Platforma anyminutes'
           : result.user.role === 'BUSINESS_OWNER'
             ? (trial?.session.detail || 'Račun studija je otvoren.')
             : (trial?.session.detail || 'Račun člana je otvoren.'),
@@ -185,7 +185,8 @@ export default function LoginPage() {
       return;
     } catch (error) {
       if (error?.status === 'FETCH_ERROR') {
-        if (trial) {
+        // Mock trial login only in local Vite dev — never for real-user testing builds.
+        if (import.meta.env.DEV && trial) {
           if (trial.password !== values.password) {
             setFormError('E-pošta ili lozinka nije točna.');
             return;

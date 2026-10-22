@@ -1,17 +1,6 @@
 import { Link } from 'react-router-dom';
+import { getHomePartners } from '../../homePartners.js';
 import './HomePage.scss';
-
-/** Placeholder wordmarks — replace with partner logos later. */
-const partnerMarks = [
-  'Igraonica Luka',
-  'PowerFit Zadar',
-  'Studio Ravnoteža',
-  'Pilates Kvart',
-  'Yoga Obala',
-  'Salon Mira',
-  'Tečaj Ritam',
-  'Wellness Obala',
-];
 
 const steps = [
   {
@@ -32,14 +21,15 @@ const steps = [
 ];
 
 export default function HomePage() {
-  const loop = [...partnerMarks, ...partnerMarks];
+  const { partners, label, ariaLabel, live } = getHomePartners();
+  const loop = [...partners, ...partners];
 
   return (
     <main className="home">
       <section className="home__hero" aria-labelledby="home-brand">
         <div className="home__hero-shade" aria-hidden="true" />
         <div className="home__hero-copy">
-          <p className="home__brand" id="home-brand">BookingApp</p>
+          <p className="home__brand" id="home-brand">anyminutes</p>
           <h1>Organizacija termina bez bilježnice i WhatsAppa.</h1>
           <p className="home__lead">
             Za igraonice, wellness, salone i studije — sve koji dogovaraju sate,
@@ -55,13 +45,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="home__partners" aria-label="Partneri koji dolaze na BookingApp">
-          <p className="home__partners-label">Uskoro s nama</p>
+        <div
+          className={`home__partners${live ? ' home__partners--live' : ''}`}
+          aria-label={ariaLabel}
+        >
+          <p className="home__partners-label">{label}</p>
           <div className="home__partners-viewport">
             <ul className="home__partners-track">
-              {loop.map((name, index) => (
-                <li key={`${name}-${index}`}>
-                  <span>{name}</span>
+              {loop.map((partner, index) => (
+                <li key={`${partner.name}-${index}`}>
+                  {partner.href ? (
+                    <Link to={partner.href}>{partner.name}</Link>
+                  ) : (
+                    <span>{partner.name}</span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -70,7 +67,7 @@ export default function HomePage() {
       </section>
 
       <section className="home__block" aria-labelledby="home-what">
-        <h2 id="home-what">Što je BookingApp</h2>
+        <h2 id="home-what">Što je anyminutes</h2>
         <p>
           Alat za raspored: slobodni termini, kapacitet i popis dolazaka na jednom
           mjestu. Fitness centri često rade na članarinama; igraonice i wellness

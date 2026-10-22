@@ -8,6 +8,7 @@ const authApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Analytics'],
     }),
     register: build.mutation({
       query: (body) => ({
@@ -15,6 +16,7 @@ const authApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Analytics'],
     }),
     createTenant: build.mutation({
       query: (body) => ({
@@ -22,6 +24,7 @@ const authApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['MyTenants', 'Analytics'],
     }),
     getMe: build.query({
       query: () => '/auth/me',

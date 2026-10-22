@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useGetPlatformUsersQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformUsersQuery } from '../../api/analyticsApi.js';
 import PlatformSection from './PlatformSection.jsx';
 import '../public/AnalyticsPage.scss';
 
@@ -24,7 +24,7 @@ function formatDate(value) {
 export default function PlatformUsersPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
-  const { data, isLoading, isError } = useGetPlatformUsersQuery(30);
+  const { data, isLoading, isError } = useGetPlatformUsersQuery(30, PLATFORM_POLL.users);
 
   const users = data?.users || [];
   const summary = data?.summary || {

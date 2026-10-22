@@ -317,7 +317,7 @@ export default function SetupPage() {
           <p className="setup__host" aria-label="Adresa stranice">{hostname}</p>
           <h1>Dobrodošli, {studio.name}.</h1>
           <p className="setup__lead">
-            Ovo je vaša poddomena na BookingAppu. Sad birate predložak i raspored
+            Ovo je vaša poddomena na anyminutesu. Sad birate predložak i raspored
             (header, stupac, traka) — boja, tekst i slike dolaze u sljedećim koracima.
           </p>
           <ol className="guide__path">

@@ -11,27 +11,40 @@ const analyticsApi = api.injectEndpoints({
     }),
     getPlatformAnalytics: build.query({
       query: (days = 30) => `/analytics/platform?days=${days}`,
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 15,
     }),
     getPlatformStudios: build.query({
       query: (days = 30) => `/analytics/platform/studios?days=${days}`,
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 15,
     }),
     getPlatformUsers: build.query({
       query: (days = 30) => `/analytics/platform/users?days=${days}`,
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 15,
     }),
     getPlatformActivity: build.query({
       query: ({ days = 7, type = 'actions' } = {}) => (
         `/analytics/platform/activity?days=${days}&type=${encodeURIComponent(type)}`
       ),
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 5,
     }),
     getPlatformReports: build.query({
       query: (days = 30) => `/analytics/platform/reports?days=${days}`,
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 30,
     }),
     getPlatformSystem: build.query({
       query: () => '/analytics/platform/system',
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 20,
     }),
     getPlatformBilling: build.query({
       query: () => '/analytics/platform/billing',
       providesTags: ['Analytics'],
+      keepUnusedDataFor: 30,
     }),
     updatePlatformBilling: build.mutation({
       query: ({ tenantId, body }) => ({
@@ -57,6 +70,8 @@ const analyticsApi = api.injectEndpoints({
     }),
     getStudioAnalytics: build.query({
       query: ({ tenantId, days = 30 }) => `/analytics/tenants/${tenantId}?days=${days}`,
+      providesTags: ['Analytics'],
+      keepUnusedDataFor: 20,
     }),
   }),
 });
@@ -75,3 +90,15 @@ export const {
   useSendBillingInvoiceMutation,
   useGetStudioAnalyticsQuery,
 } = analyticsApi;
+
+/** Shared live-poll options for platform admin screens. */
+export const PLATFORM_POLL = {
+  overview: { refetchInterval: 20_000 },
+  activity: { refetchInterval: 8_000 },
+  studios: { refetchInterval: 20_000 },
+  users: { refetchInterval: 20_000 },
+  reports: { refetchInterval: 45_000 },
+  system: { refetchInterval: 30_000 },
+  billing: { refetchInterval: 45_000 },
+  studio: { refetchInterval: 30_000 },
+};

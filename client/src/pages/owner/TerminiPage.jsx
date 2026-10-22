@@ -9,6 +9,9 @@ import {
 import { useListMembershipsQuery } from '../../api/membershipApi.js';
 import { useCreateServiceMutation, useListServicesQuery } from '../../api/serviceApi.js';
 import { useUpdateTenantMutation } from '../../api/tenantApi.js';
+import { ConsentGate } from '../../components/ConsentBanner.jsx';
+import { usePrivacyConsent } from '../../hooks/usePrivacyConsent.js';
+import MemberSelect from './MemberSelect.jsx';
 import {
   dayHours,
   formatDay,
@@ -49,6 +52,7 @@ export default function TerminiPage() {
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => toDateKey(days[0]));
   const [memberId, setMemberId] = useState('');
+  const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [slotTime, setSlotTime] = useState('');
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
@@ -63,6 +67,7 @@ export default function TerminiPage() {
   const [updateTenant] = useUpdateTenantMutation();
   const [createBooking, { isLoading: booking }] = useCreateBookingMutation();
   const [cancelBooking, { isLoading: cancelling }] = useCancelBookingMutation();
+  const { accepted: consentOk } = usePrivacyConsent();
 
   const services = (serviceData?.services || []).filter((item) => item.active !== false);
   const service = services[0] || null;
@@ -78,6 +83,17 @@ export default function TerminiPage() {
   );
 
   const memberships = (memberData?.memberships || []).filter((item) => item.status === 'ACTIVE');
+  const memberOptions = useMemo(
+    () => (memberData?.memberships || [])
+      .filter((item) => item.status === 'ACTIVE')
+      .map((item) => ({
+        value: String(item.userId),
+        label: memberLabel(item),
+        hint: item.user?.email || '',
+        note: sessionsLeft(item),
+      })),
+    [memberData],
+  );
   const slots = availability?.slots || [];
   const openSlots = slots.filter((item) => item.status === 'AVAILABLE');
   const dayBookings = (bookingData?.bookings || [])
@@ -154,6 +170,10 @@ export default function TerminiPage() {
     event.preventDefault();
     setError('');
     setOk('');
+    if (!consentOk) {
+      setError('Potrebna je privola za rezervacije.');
+      return;
+    }
     if (!memberId) {
       setError('Odaberite člana.');
       return;
@@ -194,6 +214,10 @@ export default function TerminiPage() {
         setError('Član već ima rezervaciju u tom terminu.');
         return;
       }
+      if (code === 'CONSENT_REQUIRED') {
+        setError('Potrebna je privola za rezervacije. Prihvatite je u banneru ili u Postavke → Privatnost.');
+        return;
+      }
       setError('Rezervacija nije spremljena.');
     }
   }
@@ -206,9 +230,14 @@ export default function TerminiPage() {
       await cancelBooking(bookingId).unwrap();
       setOk('Rezervacija je otkazana.');
     } catch (failure) {
-      setError(failure?.status === 'FETCH_ERROR'
-        ? 'Poslužitelj nije dostupan.'
-        : 'Otkaz nije uspio.');
+      const code = failure?.data?.code;
+      if (code === 'CONSENT_REQUIRED') {
+        setError('Potrebna je privola za otkaz. Prihvatite je u banneru ili u Postavke → Privatnost.');
+      } else {
+        setError(failure?.status === 'FETCH_ERROR'
+          ? 'Poslužitelj nije dostupan.'
+          : 'Otkaz nije uspio.');
+      }
     } finally {
       setBusyId('');
     }
@@ -234,6 +263,10 @@ export default function TerminiPage() {
           Upravljajte članovima
         </Link>
       </div>
+
+      {!consentOk ? (
+        <ConsentGate title="Privola je potrebna za rezervacije u studiju" />
+      ) : null}
 
       <div className="termini__stats">
         <article>
@@ -302,17 +335,16 @@ export default function TerminiPage() {
               </p>
             ) : (
               <>
-                <label>
-                  Član
-                  <select value={memberId} onChange={(event) => setMemberId(event.target.value)}>
-                    <option value="">Odaberite člana</option>
-                    {memberships.map((item) => (
-                      <option key={item.id} value={String(item.userId)}>
-                        {memberLabel(item)} · {sessionsLeft(item)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <MemberSelect
+                  label="Član"
+                  value={memberId}
+                  options={memberOptions}
+                  open={memberMenuOpen}
+                  onOpen={() => setMemberMenuOpen(true)}
+                  onClose={() => setMemberMenuOpen(false)}
+                  onChange={setMemberId}
+                  placeholder="Odaberite člana"
+                />
 
                 <div className="termini__slots" role="group" aria-label="Slobodni termini">
                   {loadingSlots ? <p className="termini__hint">Učitavamo sate…</p> : null}

@@ -12,9 +12,21 @@ const serviceApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Services'],
+      invalidatesTags: ['Services', { type: 'PublicTenant' }],
+    }),
+    updateService: build.mutation({
+      query: ({ serviceId, body }) => ({
+        url: `/services/${serviceId}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Services', { type: 'PublicTenant' }],
     }),
   }),
 });
 
-export const { useListServicesQuery, useCreateServiceMutation } = serviceApi;
+export const {
+  useListServicesQuery,
+  useCreateServiceMutation,
+  useUpdateServiceMutation,
+} = serviceApi;

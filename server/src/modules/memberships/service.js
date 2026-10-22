@@ -212,11 +212,14 @@ export async function activateMembership(actor, tenantId, input) {
     }
   }
 
+  const memberUserId = created.membership?.user?.id
+    || created.membership?.userId
+    || actor._id;
   trackUsage({
     type: 'member_created',
     tenantId,
-    userId: actor._id,
-    role: actor.role,
+    userId: String(memberUserId),
+    role: 'CUSTOMER',
     path: '/stranica/clanovi',
   });
 

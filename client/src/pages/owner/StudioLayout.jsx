@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import ConsentBanner from '../../components/ConsentBanner.jsx';
+import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import { useMyTenantsQuery } from '../../api/tenantApi.js';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { findPalette } from '../../styles/studioPalette.js';
@@ -143,6 +145,8 @@ export default function StudioLayout() {
         </p>
       ) : null}
       <Outlet context={{ studio, palette }} />
+      <ConsentBanner />
+      <InstallAppBanner />
     </div>
   );
 }

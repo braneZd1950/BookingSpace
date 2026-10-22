@@ -5,11 +5,25 @@ import {
   useGetMeQuery,
   useUpdateMeMutation,
 } from '../../api/authApi.js';
+import {
+  useCreateServiceMutation,
+  useListServicesQuery,
+  useUpdateServiceMutation,
+} from '../../api/serviceApi.js';
 import { useUpdateTenantMutation } from '../../api/tenantApi.js';
 import { saveStudio, STUDIO_KEY } from '../../studio.js';
 import { studioHost } from './siteTemplates.js';
+import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
+import { disableWebPush, enableWebPush, getPushStatus, pushSupported } from '../../push.js';
+import CancelWindowSelect from './CancelWindowSelect.jsx';
 import TimeSelect from './TimeSelect.jsx';
-import { fallbackHours, hourRows, hoursPayload, studioHours } from './studioTime.js';
+import {
+  fallbackHours,
+  formatCancellationWindow,
+  hourRows,
+  hoursPayload,
+  studioHours,
+} from './studioTime.js';
 import './SetupPage.scss';
 import './SettingsPage.scss';
 
@@ -29,10 +43,12 @@ const sections = [
 
 const defaultPrefs = {
   bookingEmail: true,
+  cancelEmail: true,
   memberEmail: true,
   weeklyDigest: false,
   marketing: false,
   bookingPush: true,
+  cancelPush: true,
   memberPush: true,
   reminderPush: false,
 };
@@ -143,17 +159,32 @@ export default function SettingsPage() {
     again: '',
   });
   const [prefs, setPrefs] = useState(loadPrefs);
+  const [pushState, setPushState] = useState({
+    supported: pushSupported(),
+    permission: 'default',
+    subscribed: false,
+  });
+  const [pushBusy, setPushBusy] = useState(false);
   const [openClock, setOpenClock] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const pushClient = import.meta.env.VITE_APP_SHELL === 'mobile' ? 'mobile' : 'web';
   const [updateTenant, { isLoading: savingBusiness }] = useUpdateTenantMutation();
   const [updateMe, { isLoading: savingAccount }] = useUpdateMeMutation();
   const [changePassword, { isLoading: savingPassword }] = useChangePasswordMutation();
+  const [createService] = useCreateServiceMutation();
+  const [updateService] = useUpdateServiceMutation();
   const { data: meData } = useGetMeQuery();
-
   const ready = REAL_ID.test(String(studio.id || ''));
+  const { data: serviceData } = useListServicesQuery(String(studio.id || ''), {
+    skip: !ready,
+  });
+  const [cancelWindow, setCancelWindow] = useState(60);
   const host = studioHost(studio.slug);
   const user = meData?.user;
   const activeSection = sections.find((item) => item.id === tab) || sections[0];
+  const primaryService = (serviceData?.services || []).find((item) => item.active !== false)
+    || serviceData?.services?.[0]
+    || null;
 
   useEffect(() => {
     setForm(fromStudio(studio));
@@ -166,7 +197,23 @@ export default function SettingsPage() {
       email: user.email || '',
       phone: user.phone || '',
     });
+    if (user.notificationPrefs) {
+      setPrefs({ ...defaultPrefs, ...user.notificationPrefs });
+    }
   }, [user]);
+
+  useEffect(() => {
+    if (primaryService?.cancellationWindowMinutes == null) return;
+    setCancelWindow(Number(primaryService.cancellationWindowMinutes) || 60);
+  }, [primaryService]);
+
+  useEffect(() => {
+    let alive = true;
+    getPushStatus().then((status) => {
+      if (alive) setPushState(status);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [tab]);
 
   const flash = useMemo(() => message, [message]);
 
@@ -235,6 +282,28 @@ export default function SettingsPage() {
           },
         },
       }).unwrap();
+
+      const windowMinutes = Number(cancelWindow) || 60;
+      if (primaryService?.id) {
+        await updateService({
+          serviceId: primaryService.id,
+          body: { cancellationWindowMinutes: windowMinutes },
+        }).unwrap();
+      } else {
+        await createService({
+          tenantId: studio.id,
+          body: {
+            name: 'Termin',
+            durationMinutes: 60,
+            slotIntervalMinutes: 60,
+            capacity: 12,
+            cancellationWindowMinutes: windowMinutes,
+            price: 0,
+            membershipRequired: true,
+          },
+        }).unwrap();
+      }
+
       saveStudio({
         ...studio,
         name: form.name.trim(),
@@ -245,7 +314,7 @@ export default function SettingsPage() {
         hours: form.hours,
       });
       window.dispatchEvent(new Event('studio-changed'));
-      note('ok', 'Podaci poslovanja su spremljeni.');
+      note('ok', 'Podaci poslovanja i rok otkaza su spremljeni.');
     } catch (failure) {
       note('error', failure?.status === 'FETCH_ERROR'
         ? 'Poslužitelj nije dostupan.'
@@ -310,10 +379,45 @@ export default function SettingsPage() {
     }
   }
 
-  function savePrefs(event) {
+  async function savePrefs(event) {
     event.preventDefault();
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    note('ok', 'Postavke obavijesti su spremljene na ovom uređaju.');
+    if (!ready) {
+      note('ok', 'Postavke su spremljene na ovom uređaju.');
+      return;
+    }
+    try {
+      await updateMe({ notificationPrefs: prefs }).unwrap();
+      note('ok', pushState.subscribed
+        ? 'Obavijesti su spremljene. E-pošta i push na ovom uređaju su aktivni.'
+        : 'Obavijesti su spremljene. Za push na ovom uređaju uključite dozvolu ispod.');
+    } catch (failure) {
+      note('error', failure?.status === 'FETCH_ERROR'
+        ? 'Poslužitelj nije dostupan.'
+        : 'Obavijesti nisu spremljene.');
+    }
+  }
+
+  async function toggleDevicePush() {
+    setPushBusy(true);
+    try {
+      if (pushState.subscribed) {
+        await disableWebPush();
+        setPushState(await getPushStatus());
+        note('ok', 'Push na ovom uređaju je isključen.');
+      } else {
+        const result = await enableWebPush({ client: pushClient });
+        setPushState(await getPushStatus());
+        if (result.ok) note('ok', 'Push je uključen na ovom uređaju.');
+        else if (result.reason === 'denied') note('error', 'Dozvola za obavijesti je odbijena u pregledniku.');
+        else if (result.reason === 'not_configured') note('error', 'Push nije konfiguriran na poslužitelju (VAPID).');
+        else note('error', 'Ovaj preglednik ne podržava Web Push.');
+      }
+    } catch (error) {
+      note('error', error?.message || 'Push nije moguće promijeniti.');
+    } finally {
+      setPushBusy(false);
+    }
   }
 
   function logout() {
@@ -351,8 +455,8 @@ export default function SettingsPage() {
             <p className="settings__eyebrow">{activeSection.label}</p>
             <h1>{studio.name || 'Postavke'}</h1>
             <p>
-              {tab === 'business' && 'Naziv, kontakt i radno vrijeme koje vide članovi.'}
-              {tab === 'account' && 'Osobni podaci vlasnika za prijavu u BookingApp.'}
+              {tab === 'business' && 'Naziv, kontakt, radno vrijeme i rok otkaza koji vide članovi.'}
+              {tab === 'account' && 'Osobni podaci vlasnika za prijavu u anyminutes.'}
               {tab === 'security' && 'Lozinka i sesija na ovom uređaju.'}
               {tab === 'privacy' && 'Kako se koriste podaci studija i gdje su pravila.'}
               {tab === 'billing' && 'Plan usluge i naplata — trenutačno u pilotu.'}
@@ -444,6 +548,31 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="settings__hours-block settings__hours-block--cancel">
+              <h2>Otkazivanje termina</h2>
+              <p className="settings__hint">
+                Članovi ovo vide na stranici Termini. Ako otkažu unutar roka,
+                termin im se ne broji kao iskorišten.
+              </p>
+              <CancelWindowSelect
+                value={cancelWindow}
+                open={openClock === 'cancel-window'}
+                onOpen={() => setOpenClock('cancel-window')}
+                onClose={() => setOpenClock('')}
+                onChange={(next) => {
+                  setCancelWindow(Number(next));
+                  setMessage({ type: '', text: '' });
+                }}
+              />
+              <p className="settings__hint">
+                Trenutačno:
+                {' '}
+                <strong>{formatCancellationWindow(cancelWindow)}</strong>
+                {' '}
+                · sprema se tipkom „Spremite poslovanje”
+              </p>
             </div>
 
             <div className="settings__actions">
@@ -543,20 +672,25 @@ export default function SettingsPage() {
         {tab === 'privacy' ? (
           <div className="settings__stack">
             <article className="settings__sheet">
+              <PrivacyConsentPanel />
+            </article>
+            <article className="settings__sheet">
               <h2>Podaci studija</h2>
               <p className="settings__lead">
                 Podaci članova i rezervacija vezani su uz vaš studio i koriste se
                 isključivo za rad aplikacije — prijave, termine i komunikaciju s članovima.
+                Bez privole članovi mogu samo pregledavati sadržaj, ne i rezervirati.
               </p>
               <ul className="settings__rules">
                 <li>Članovi koje upišete vide samo svoju stranicu i termine.</li>
                 <li>Kontakt i radno vrijeme prikazuju se na javnoj stranici studija.</li>
                 <li>Lozinke se ne spremaju u čitljivom obliku.</li>
+                <li>Povlačenjem privole banner se ponovno prikazuje dok se privola ne da.</li>
               </ul>
             </article>
             <article className="settings__sheet">
               <h2>Pravila platforme</h2>
-              <p className="settings__lead">Puni tekstovi dostupni su javno na BookingAppu.</p>
+              <p className="settings__lead">Puni tekstovi dostupni su javno na anyminutesu.</p>
               <ul className="settings__links">
                 <li><Link to="/privatnost">Privatnost</Link></li>
                 <li><Link to="/uvjeti">Uvjeti korištenja</Link></li>
@@ -601,9 +735,10 @@ export default function SettingsPage() {
               <ul className="settings__toggles">
                 {[
                   ['bookingEmail', 'Nova rezervacija', 'E-pošta kad netko rezervira termin'],
+                  ['cancelEmail', 'Otkaz termina', 'E-pošta kad član ili trener otkaže rezervaciju'],
                   ['memberEmail', 'Novi član', 'Obavijest kad dodate ili obnovite člana'],
                   ['weeklyDigest', 'Tjedni sažetak', 'Jednom tjedno pregled popunjenosti'],
-                  ['marketing', 'Novosti proizvoda', 'Rijetke obavijesti o BookingAppu'],
+                  ['marketing', 'Novosti proizvoda', 'Rijetke obavijesti o anyminutesu'],
                 ].map(([key, title, noteText]) => (
                   <li key={key}>
                     <div>
@@ -627,14 +762,36 @@ export default function SettingsPage() {
             </div>
 
             <div className="settings__notify-group">
-              <h2>Push na mobitel</h2>
+              <h2>Push na uređaj</h2>
               <p className="settings__lead">
-                Kratke obavijesti na telefonu. Slanje se uključuje kad mobilna
-                aplikacija bude dostupna — odabir se već sada pamti.
+                Web Push u pregledniku (i na mobitelu kad instalirate anyminutes kao app).
+                Uključite dozvolu na ovom uređaju, zatim odaberite što želite primati.
+              </p>
+              <div className="settings__actions" style={{ marginBottom: '1rem' }}>
+                <button
+                  className="settings__primary"
+                  type="button"
+                  disabled={pushBusy || !pushState.supported}
+                  onClick={toggleDevicePush}
+                >
+                  {pushBusy
+                    ? 'Pripremamo…'
+                    : pushState.subscribed
+                      ? 'Isključite push na ovom uređaju'
+                      : 'Uključite push na ovom uređaju'}
+                </button>
+              </div>
+              <p className="settings__fine">
+                {pushState.supported
+                  ? (pushState.subscribed
+                    ? 'Ovaj uređaj prima push obavijesti.'
+                    : `Status dozvole: ${pushState.permission}.`)
+                  : 'Ovaj preglednik ne podržava Web Push (na iOS-u treba „Dodaj na početni zaslon”).'}
               </p>
               <ul className="settings__toggles">
                 {[
                   ['bookingPush', 'Nova rezervacija', 'Push kad član rezervira termin'],
+                  ['cancelPush', 'Otkaz termina', 'Push kad netko otkaže rezervaciju'],
                   ['memberPush', 'Promjena članarine', 'Push kad dodate ili obnovite člana'],
                   ['reminderPush', 'Podsjetnik prije termina', 'Push prije početka treninga (uskoro)'],
                 ].map(([key, title, noteText]) => (
@@ -659,7 +816,9 @@ export default function SettingsPage() {
               </ul>
             </div>
 
-            <p className="settings__fine">Za sada se odabir pamti na ovom pregledniku.</p>
+            <p className="settings__fine">
+              Odabir se sprema na vaš račun (i lokalno na uređaju).
+            </p>
             <div className="settings__actions">
               <button className="settings__primary" type="submit">
                 Spremite obavijesti

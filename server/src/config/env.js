@@ -50,11 +50,22 @@ function blank(name) {
   return value.trim();
 }
 
+const clientOrigin = optional('CLIENT_ORIGIN', 'http://localhost:5173');
+const extraOrigins = blank('CLIENT_ORIGINS')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean);
+
 const env = {
   nodeEnv: optional('NODE_ENV', 'development'),
   port: Number(optional('PORT', '4000')),
   mongoUri: required('MONGO_URI'),
-  clientOrigin: optional('CLIENT_ORIGIN', 'http://localhost:5173'),
+  clientOrigin,
+  clientOrigins: [...new Set([
+    clientOrigin,
+    optional('CLIENT_ORIGIN_MOBILE', 'http://localhost:5174'),
+    ...extraOrigins,
+  ].filter(Boolean))],
   jwtSecret: required('JWT_SECRET'),
   jwtExpiresIn: optional('JWT_EXPIRES_IN', '7d'),
   cloudinary: {
@@ -69,6 +80,11 @@ const env = {
     user: blank('SMTP_USER'),
     pass: blank('SMTP_PASS'),
     from: blank('EMAIL_FROM') || blank('SMTP_FROM'),
+  },
+  vapid: {
+    publicKey: blank('VAPID_PUBLIC_KEY'),
+    privateKey: blank('VAPID_PRIVATE_KEY'),
+    subject: blank('VAPID_SUBJECT') || 'mailto:kontakt@anyminutes.hr',
   },
   adminEmails: blank('ADMIN_EMAILS')
     .split(',')

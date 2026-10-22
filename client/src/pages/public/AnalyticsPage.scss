@@ -27,6 +27,31 @@
   line-height: 1.5;
 }
 
+.analytics__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ok-ink, #1f6b4a);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.analytics__live::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  animation: analytics-pulse 1.6s ease-out infinite;
+}
+
+.analytics__live.is-busy {
+  color: var(--brand);
+}
+
 .analytics__lead code {
   font-size: 0.9em;
 }
@@ -382,6 +407,18 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+@keyframes analytics-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 0.45rem transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
 }
 
 @media (max-width: 40rem) {

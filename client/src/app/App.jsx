@@ -1,4 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
+import '../api/consentApi.js';
+import '../api/pushApi.js';
 import PublicLayout from '../components/PublicLayout.jsx';
 import CalendarPage from '../pages/owner/CalendarPage.jsx';
 import MembersPage from '../pages/owner/MembersPage.jsx';
@@ -10,6 +12,7 @@ import { StudioHome } from '../pages/owner/studioPages.jsx';
 import MemberBookPage from '../pages/member/MemberBookPage.jsx';
 import MemberHomePage from '../pages/member/MemberHomePage.jsx';
 import MemberLayout from '../pages/member/MemberLayout.jsx';
+import MemberPrivacyPage from '../pages/member/MemberPrivacyPage.jsx';
 import UsageTracker from '../components/UsageTracker.jsx';
 import StudioAnalyticsPage from '../pages/owner/StudioAnalyticsPage.jsx';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage.jsx';
@@ -59,6 +62,7 @@ export default function App() {
         <Route path="/s/:slug" element={<MemberLayout />}>
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
+          <Route path="privatnost" element={<MemberPrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="/stranica" element={<StudioLayout />}>

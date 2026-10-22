@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetPlatformActivityQuery } from '../../api/analyticsApi.js';
+import { PLATFORM_POLL, useGetPlatformActivityQuery } from '../../api/analyticsApi.js';
 import PlatformSection from './PlatformSection.jsx';
 import '../public/AnalyticsPage.scss';
 
@@ -7,9 +7,12 @@ const TYPE_LABELS = {
   page_view: 'Posjet',
   login_success: 'Prijava',
   register_success: 'Registracija',
+  tenant_created: 'Novi studio',
   member_created: 'Novi član',
   booking_created: 'Rezervacija',
   booking_cancelled: 'Otkaz',
+  booking_completed: 'Završeno',
+  booking_no_show: 'Nedolazak',
   password_reset_requested: 'Oporavak lozinke',
 };
 
@@ -27,10 +30,10 @@ function formatWhen(value) {
 
 export default function PlatformActivityPage() {
   const [filter, setFilter] = useState('actions');
-  const { data, isLoading, isError, isFetching } = useGetPlatformActivityQuery({
-    days: 7,
-    type: filter,
-  });
+  const { data, isLoading, isError, isFetching } = useGetPlatformActivityQuery(
+    { days: 7, type: filter },
+    PLATFORM_POLL.activity,
+  );
 
   const summary = data?.summary || {};
   const events = data?.events || [];
@@ -54,7 +57,7 @@ export default function PlatformActivityPage() {
   return (
     <PlatformSection
       title="Aktivnost"
-      lead={`Nedavni događaji na platformi · zadnjih ${data.days} dana. Zadnje ${events.length} zapisa u feedu.`}
+      lead={`Nedavni događaji na platformi · zadnjih ${data.days} dana · osvježava se uživo. Zadnje ${events.length} zapisa u feedu.`}
     >
       <div className="analytics__stats analytics__stats--wide" aria-label="Sažetak aktivnosti">
         <article>
@@ -85,6 +88,8 @@ export default function PlatformActivityPage() {
 
       <div className="analytics__toolbar">
         <p className="analytics__toolbar-note">
+          <span className={`analytics__live${isFetching ? ' is-busy' : ''}`}>uživo</span>
+          {' · '}
           {isFetching ? 'Osvježavamo…' : 'Filter feeda'}
         </p>
         <div className="analytics__filters" role="tablist" aria-label="Filter aktivnosti">
@@ -93,8 +98,10 @@ export default function PlatformActivityPage() {
             ['all', 'Sve'],
             ['login_success', 'Prijave'],
             ['booking_created', 'Rezervacije'],
+            ['booking_completed', 'Završeno'],
             ['booking_cancelled', 'Otkazi'],
             ['member_created', 'Članovi'],
+            ['tenant_created', 'Studiji'],
             ['register_success', 'Registracije'],
             ['page_view', 'Posjeti'],
           ].map(([id, label]) => (

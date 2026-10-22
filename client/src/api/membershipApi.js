@@ -24,14 +24,14 @@ const membershipApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Memberships', 'MyMemberships'],
+      invalidatesTags: ['Memberships', 'MyMemberships', 'Analytics'],
     }),
     suspendMembership: build.mutation({
       query: (id) => ({
         url: `/memberships/${id}/suspend`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['Memberships', 'MyMemberships'],
+      invalidatesTags: ['Memberships', 'MyMemberships', 'Analytics'],
     }),
     listMyMemberships: build.query({
       query: (limit = 50) => ({

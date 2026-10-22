@@ -16,12 +16,20 @@ export function isPlatformAdmin(user) {
   return allowed.includes(String(user.email || '').toLowerCase());
 }
 
+function asObjectId(value) {
+  if (value == null || value === '') return undefined;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value._id) return String(value._id);
+  // Avoid ObjectId.id (Buffer) — prefer string form.
+  return String(value);
+}
+
 export function trackUsage(input) {
   const doc = {
     type: input.type,
     path: input.path ? String(input.path).slice(0, 200) : undefined,
-    tenantId: input.tenantId || undefined,
-    userId: input.userId || undefined,
+    tenantId: asObjectId(input.tenantId),
+    userId: asObjectId(input.userId),
     role: input.role || undefined,
   };
 
@@ -78,8 +86,10 @@ export async function summarizeUsage({ tenantId = null, days = 30 } = {}) {
       login_success: 0,
       booking_created: 0,
       booking_cancelled: 0,
+      booking_completed: 0,
       member_created: 0,
       register_success: 0,
+      tenant_created: 0,
     });
   }
   for (const row of byDay) {
@@ -96,9 +106,12 @@ export async function summarizeUsage({ tenantId = null, days = 30 } = {}) {
       page_view: counts.page_view || 0,
       login_success: counts.login_success || 0,
       register_success: counts.register_success || 0,
+      tenant_created: counts.tenant_created || 0,
       member_created: counts.member_created || 0,
       booking_created: counts.booking_created || 0,
       booking_cancelled: counts.booking_cancelled || 0,
+      booking_completed: counts.booking_completed || 0,
+      booking_no_show: counts.booking_no_show || 0,
       password_reset_requested: counts.password_reset_requested || 0,
     },
     series: [...daysMap.values()],
@@ -302,9 +315,12 @@ export async function listPlatformActivity({
       page_view: counts.page_view || 0,
       login_success: counts.login_success || 0,
       register_success: counts.register_success || 0,
+      tenant_created: counts.tenant_created || 0,
       member_created: counts.member_created || 0,
       booking_created: counts.booking_created || 0,
       booking_cancelled: counts.booking_cancelled || 0,
+      booking_completed: counts.booking_completed || 0,
+      booking_no_show: counts.booking_no_show || 0,
       password_reset_requested: counts.password_reset_requested || 0,
     },
     events: events.map((item) => ({
@@ -380,9 +396,12 @@ export async function buildPlatformReports({ days = 30 } = {}) {
     'page_view',
     'login_success',
     'register_success',
+    'tenant_created',
     'member_created',
     'booking_created',
     'booking_cancelled',
+    'booking_completed',
+    'booking_no_show',
   ];
 
   const comparison = Object.fromEntries(
