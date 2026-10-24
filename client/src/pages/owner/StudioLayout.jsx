@@ -6,7 +6,7 @@ import { useMyTenantsQuery } from '../../api/tenantApi.js';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { findPalette } from '../../styles/studioPalette.js';
 import { loadStudio, STUDIO_KEY } from '../../studio.js';
-import { studioHost } from './siteTemplates.js';
+import { studioPublicPath } from '../../studioPublicUrl.js';
 import { studioFromTenant } from './studioSync.js';
 import './StudioLayout.scss';
 
@@ -15,6 +15,7 @@ const TOKEN_KEY = 'bookingspace.token';
 const links = [
   ['/stranica', 'Početna', true],
   ['/stranica/termini', 'Termini', false],
+  ['/stranica/online', 'Online', false],
   ['/stranica/kalendar', 'Kalendar', false],
   ['/stranica/clanovi', 'Članovi', false],
   ['/stranica/analitika', 'Analitika', false],
@@ -141,7 +142,7 @@ export default function StudioLayout() {
       </header>
       {!studio.guideDone ? (
         <p className="studio-host-bar">
-          Vaša adresa bit će <strong>{studioHost(studio.slug)}</strong> — dovršite vodič.
+          Vaša stranica bit će <strong>{studioPublicPath(studio.slug)}</strong> — dovršite vodič.
         </p>
       ) : null}
       <Outlet context={{ studio, palette }} />

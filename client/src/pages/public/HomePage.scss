@@ -239,6 +239,44 @@
   line-height: 1.55;
 }
 
+.home__edge-lead {
+  margin: 0 0 1.2rem !important;
+}
+
+.home__edges {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--home-line);
+}
+
+@media (min-width: 720px) {
+  .home__edges {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1.5rem;
+  }
+}
+
+.home__edges li {
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--home-line);
+}
+
+.home__edges h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.home__edges p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 0.98rem;
+}
+
 .home__steps {
   display: grid;
   gap: 0;

@@ -12,6 +12,7 @@ import { defaultTrialBilling } from '../../utils/billing.js';
 import { HttpError } from '../../utils/httpError.js';
 import { createDoc, withTransaction } from '../../utils/transaction.js';
 import { requireMember } from '../access.js';
+import { listPublicTrainers } from '../staff/service.js';
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -133,11 +134,13 @@ export async function getPublicTenant(slug) {
   if (!tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
   const services = await Service.find({ tenantId: tenant._id, active: true }).sort({ name: 1 });
+  const trainers = await listPublicTrainers(tenant._id);
   const profile = toTenant(tenant);
   return {
     ...profile,
     bookingSettings: { workingHours: tenant.bookingSettings?.workingHours || [] },
     services: services.map(publicService),
+    trainers,
   };
 }
 

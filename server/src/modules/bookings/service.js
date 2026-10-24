@@ -8,6 +8,8 @@ import User from '../../models/User.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
 import {
+  sendMemberBookingCancelledEmail,
+  sendMemberBookingConfirmedEmail,
   sendStaffBookingCancelledEmail,
   sendStaffBookingCreatedEmail,
 } from '../../utils/mail.js';
@@ -16,6 +18,7 @@ import { overlaps, withinCancellationWindow, zonedNow } from '../../utils/time.j
 import { createDoc, sessionOptions, withTransaction } from '../../utils/transaction.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
 import { assertPrivacyConsent } from '../consent/service.js';
+import { assertBookableStaff, listPublicTrainers } from '../staff/service.js';
 import { buildDaySlots } from '../sessions/slots.js';
 
 function notFound(error) {
@@ -41,6 +44,7 @@ function bind(query, session) {
 export function toBooking(booking) {
   const userDoc = booking.userId?.email || booking.userId?.name ? booking.userId : null;
   const serviceDoc = booking.serviceId?.name ? booking.serviceId : null;
+  const staffDoc = booking.staffId?.name ? booking.staffId : null;
 
   return {
     id: booking._id,
@@ -55,6 +59,11 @@ export function toBooking(booking) {
       email: userDoc.email || null,
     } : undefined,
     membershipId: booking.membershipId || null,
+    staffId: staffDoc?._id || booking.staffId || null,
+    staff: staffDoc ? {
+      id: staffDoc._id,
+      name: staffDoc.name,
+    } : undefined,
     date: booking.date,
     startTime: booking.startTime,
     endTime: booking.endTime,
@@ -86,6 +95,14 @@ export async function createBooking(actor, input) {
     const customer = await User.findById(input.userId).select('_id');
     if (!customer) throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
     customerId = customer._id;
+  }
+
+  const trainers = await listPublicTrainers(tenant._id);
+  let staffId = null;
+  if (input.staffId) {
+    staffId = await assertBookableStaff(tenant._id, input.staffId);
+  } else if (trainers.length > 0) {
+    throw new HttpError(400, 'Trainer is required', { code: 'STAFF_REQUIRED' });
   }
 
   const booking = await withTransaction(async (session) => {
@@ -183,6 +200,7 @@ export async function createBooking(actor, input) {
         serviceId: service._id,
         userId: customerId,
         membershipId,
+        staffId: staffId || undefined,
         date: input.date,
         startTime: slot.startTime,
         endTime: slot.endTime,
@@ -232,6 +250,24 @@ export async function createBooking(actor, input) {
     }),
   });
 
+  if (customer?.email) {
+    try {
+      await sendMemberBookingConfirmedEmail({
+        to: customer.email,
+        memberName,
+        studioName: tenant.name,
+        studioSlug: tenant.slug,
+        serviceName: service.name,
+        date: booking.date,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        cancelWindowMinutes: service.cancellationWindowMinutes,
+      });
+    } catch (error) {
+      console.error('[mail] Potvrda članu nije poslana:', error?.message || error);
+    }
+  }
+
   return toBooking(booking);
 }
 
@@ -239,7 +275,8 @@ export async function listMyBookings(user, limit) {
   const bookings = await Booking.find({ userId: user._id })
     .sort({ date: -1, startTime: -1 })
     .limit(limit)
-    .populate('serviceId', 'name capacity');
+    .populate('serviceId', 'name capacity')
+    .populate('staffId', 'name');
   return bookings.map(toBooking);
 }
 
@@ -256,6 +293,7 @@ export async function listTenantBookings(user, tenantId, query) {
   const bookings = await Booking.find(filter)
     .populate('userId', 'name email')
     .populate('serviceId', 'name capacity')
+    .populate('staffId', 'name')
     .sort({ date: 1, startTime: 1 })
     .limit(query.limit);
   return bookings.map(toBooking);
@@ -357,6 +395,23 @@ export async function cancelBooking(actor, bookingId) {
       cancelledBy: actor.name || actor.email,
     }),
   });
+
+  if (customer?.email) {
+    try {
+      await sendMemberBookingCancelledEmail({
+        to: customer.email,
+        memberName,
+        studioName: tenant.name,
+        studioSlug: tenant.slug,
+        serviceName: service.name,
+        date: existing.date,
+        startTime: existing.startTime,
+        endTime: existing.endTime,
+      });
+    } catch (error) {
+      console.error('[mail] Otkaz članu nije poslan:', error?.message || error);
+    }
+  }
 
   return toBooking(booking);
 }

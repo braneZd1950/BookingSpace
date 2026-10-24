@@ -1,22 +1,41 @@
 import { Link } from 'react-router-dom';
-import { getHomePartners } from '../../homePartners.js';
+import { getHomePartners, SHOW_HOME_PARTNERS } from '../../homePartners.js';
 import './HomePage.scss';
 
 const steps = [
   {
     n: '01',
-    title: 'Postanite partner',
-    text: 'Registrirajte se e-poštom i nazivom obrta. Dobijete adresu npr. igraonica-luka.booking.hr.',
+    title: 'Otvorite studio',
+    text: 'Registracija u minutama. Dobijete vlastitu stranicu (/s/vas-studio) — ne profil u tuđem katalogu.',
   },
   {
     n: '02',
     title: 'Postavite raspored',
-    text: 'Unesite radno vrijeme, kapacitet i način rada: jednokratni termini, paketi posjeta ili mjesečne članarine — ovisno o poslu.',
+    text: 'Radno vrijeme, kapacitet, paketi ili članarine. Uplata može ostati uživo u salonu.',
   },
   {
     n: '03',
-    title: 'Klijenti rezerviraju',
-    text: 'Klijent otvara vašu stranicu, vidi slobodne sate i rezervira. Vi u kalendaru vidite tko dolazi.',
+    title: 'Pošaljite link klijentima',
+    text: 'Oni rezerviraju kod vas. Vi u kalendaru vidite tko dolazi danas — bez WhatsApp bilježnice.',
+  },
+];
+
+const edges = [
+  {
+    title: 'Vaš brand, ne katalog',
+    text: 'Klijent otvara vašu stranicu. Nema pretrage „u blizini” koja ga šalje konkurenciji.',
+  },
+  {
+    title: 'Uplata uživo je OK',
+    text: 'Članarinu evidenirate vi. Ne forsiramo online karticu ni proviziju na svaku rezervaciju.',
+  },
+  {
+    title: 'Jedan jasan dan',
+    text: 'Vlasnik odmah vidi koliko termina danas ima i dijeljenje linka u jednom potezu.',
+  },
+  {
+    title: 'Privola ugrađena',
+    text: 'Bez privole nema rezervacije. Manje sive zone oko podataka nego u marketplace appovima.',
   },
 ];
 
@@ -30,10 +49,10 @@ export default function HomePage() {
         <div className="home__hero-shade" aria-hidden="true" />
         <div className="home__hero-copy">
           <p className="home__brand" id="home-brand">anyminutes</p>
-          <h1>Organizacija termina bez bilježnice i WhatsAppa.</h1>
+          <h1>Termini i članarine na vašoj stranici — bez marketplacea.</h1>
           <p className="home__lead">
-            Za igraonice, wellness, salone i studije — sve koji dogovaraju sate,
-            kapacitet i tko dolazi, bez obzira imaju li „članove” ili samo goste.
+            Za igraonice, wellness, salone i studije. Klijenti rezerviraju kod vas;
+            vi držite kalendar i odnos — ne dijelite ih s katalogom.
           </p>
           <div className="home__actions">
             <Link className="home__cta" to="/register">
@@ -45,34 +64,51 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div
-          className={`home__partners${live ? ' home__partners--live' : ''}`}
-          aria-label={ariaLabel}
-        >
-          <p className="home__partners-label">{label}</p>
-          <div className="home__partners-viewport">
-            <ul className="home__partners-track">
-              {loop.map((partner, index) => (
-                <li key={`${partner.name}-${index}`}>
-                  {partner.href ? (
-                    <Link to={partner.href}>{partner.name}</Link>
-                  ) : (
-                    <span>{partner.name}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
+        {SHOW_HOME_PARTNERS ? (
+          <div
+            className={`home__partners${live ? ' home__partners--live' : ''}`}
+            aria-label={ariaLabel}
+          >
+            <p className="home__partners-label">{label}</p>
+            <div className="home__partners-viewport">
+              <ul className="home__partners-track">
+                {loop.map((partner, index) => (
+                  <li key={`${partner.name}-${index}`}>
+                    {partner.href ? (
+                      <Link to={partner.href}>{partner.name}</Link>
+                    ) : (
+                      <span>{partner.name}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        ) : null}
+      </section>
+
+      <section className="home__block home__block--wide" aria-labelledby="home-edge">
+        <h2 id="home-edge">Zašto drugačije</h2>
+        <p className="home__edge-lead">
+          Katalog-aplikacije donose otkriće, ali i dijeljenje klijenata, složen setup i
+          pritisak na online naplatu. anyminutes je namjerno studio-first.
+        </p>
+        <ul className="home__edges">
+          {edges.map((item) => (
+            <li key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="home__block" aria-labelledby="home-what">
         <h2 id="home-what">Što je anyminutes</h2>
         <p>
-          Alat za raspored: slobodni termini, kapacitet i popis dolazaka na jednom
-          mjestu. Fitness centri često rade na članarinama; igraonice i wellness
-          češće na rezervaciji termina ili paketu posjeta. Ista platforma — drugačiji
-          način rada.
+          Alat za raspored: slobodni termini, kapacitet i popis dolazaka.
+          Fitness često radi na članarinama; igraonice i wellness češće na
+          rezervaciji ili paketu posjeta. Ista platforma — drugi način rada.
         </p>
       </section>
 
@@ -99,10 +135,10 @@ export default function HomePage() {
             „mjesečni član”.
           </p>
           <ul>
-            <li>Javna stranica s radnim vremenom i kontaktom</li>
-            <li>Termini i kapacitet (igraonica, tretman, trening…)</li>
-            <li>Po potrebi: paketi posjeta ili članarine</li>
-            <li>Kalendar dolazaka i postavke računa</li>
+            <li>Vlastita javna stranica (dijelite link, ne katalog)</li>
+            <li>Termini, kapacitet i „tko dolazi danas”</li>
+            <li>Članarine ili paketi — uplata može biti uživo</li>
+            <li>Email potvrde članu + obavijest studiju</li>
           </ul>
           <Link className="home__text-link" to="/register">
             Postanite partner
@@ -111,9 +147,9 @@ export default function HomePage() {
         <div>
           <h2 id="home-member">Za klijente</h2>
           <p>
-            Aktivirali su vam članarinu? Prijavite se i sami odaberite termin.
-            Vidite radno vrijeme svog studija, rezervirate i otkazujete prema
-            njegovim pravilima, a uvijek znate koliko vam je treninga ostalo.
+            Otvorite stranicu svog studija, prijavite se i rezervirajte.
+            Vidite preostale termine, otkazujete prema pravilima studija —
+            bez traženja salona u marketplace feedu.
           </p>
           <Link className="home__text-link" to="/login">
             Prijava klijenta
@@ -124,8 +160,7 @@ export default function HomePage() {
       <section className="home__close" aria-labelledby="home-close">
         <h2 id="home-close">Spremni za red u rasporedu?</h2>
         <p>
-          Prijavite poslovanje kao partner. Klijenti dolaze na vašu stranicu i
-          rezerviraju — vi držite kalendar.
+          Otvorite studio, pošaljite link klijentima i držite kalendar kod sebe.
         </p>
         <div className="home__actions home__actions--close">
           <Link className="home__cta home__cta--solid" to="/register">

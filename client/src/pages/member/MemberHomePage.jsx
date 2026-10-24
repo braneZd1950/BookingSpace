@@ -44,6 +44,10 @@ export default function MemberHomePage() {
             {membership.validUntil ? ` · do ${membership.validUntil}` : ''}
             {' · '}
             <Link to={bookTo}>Rezervirajte termin</Link>
+            <span className="member-home__hint">
+              {' '}
+              · rezervacija je kod ovog studija, ne u marketplaceu
+            </span>
           </p>
         ) : null}
 

@@ -684,6 +684,208 @@ export async function sendStaffBookingCreatedEmail({
   return sendMail({ to, subject, text, html });
 }
 
+export async function sendMemberBookingConfirmedEmail({
+  to,
+  memberName,
+  studioName,
+  studioSlug,
+  serviceName,
+  date,
+  startTime,
+  endTime,
+  cancelWindowMinutes,
+}) {
+  const origin = env.clientOrigin.replace(/\/$/, '');
+  const bookUrl = studioSlug ? `${origin}/s/${studioSlug}/termini` : `${origin}/login`;
+  const when = `${date} · ${startTime}${endTime ? `–${endTime}` : ''}`;
+  const windowLabel = Number(cancelWindowMinutes) > 0
+    ? `Otkaz najkasnije ${cancelWindowMinutes} min prije početka.`
+    : 'Pravila otkazivanja određuje studio.';
+
+  const subject = `Potvrda termina — ${studioName}`;
+  const text = [
+    `Pozdrav ${memberName},`,
+    '',
+    `Rezervacija u studiju ${studioName} je potvrđena.`,
+    '',
+    `Usluga: ${serviceName || 'Termin'}`,
+    `Termin: ${when}`,
+    windowLabel,
+    '',
+    `Upravljajte terminima: ${bookUrl}`,
+    '',
+    'Ovo nije marketplace — rezervacija je izravno kod vašeg studija.',
+  ].join('\n');
+
+  const safeName = escapeHtml(memberName);
+  const safeStudio = escapeHtml(studioName);
+  const safeService = escapeHtml(serviceName || 'Termin');
+  const safeWhen = escapeHtml(when);
+  const safeUrl = escapeAttr(bookUrl);
+  const safeWindow = escapeHtml(windowLabel);
+
+  const html = `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#eef1f4">
+  <tr>
+    <td align="center" style="padding:28px 14px">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;max-width:560px;width:100%;background:#ffffff">
+        <tr>
+          <td style="height:6px;background:#0b3d4a;font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
+              ${safeStudio}
+            </p>
+            <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
+              Potvrda termina
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#1a262b">
+            <p style="margin:0 0 14px;font-size:16px;line-height:1.55">Pozdrav ${safeName},</p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#314046">
+              Rezervacija je potvrđena. Ovo nije marketplace — termin je izravno kod vašeg studija.
+            </p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px;background:#f4f7f8;border:1px solid #dce5e8">
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Usluga</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeService}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Termin</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeWhen}</p>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0 0 18px;font-size:13px;line-height:1.55;color:#314046">${safeWindow}</p>
+            <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px">
+              <tr>
+                <td style="background:#0b3d4a;border-radius:999px">
+                  <a href="${safeUrl}" style="display:inline-block;padding:13px 26px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none">
+                    Moji termini
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+            <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
+              anyminutes · potvrda članu
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+
+  return sendMail({ to, subject, text, html });
+}
+
+export async function sendMemberBookingCancelledEmail({
+  to,
+  memberName,
+  studioName,
+  studioSlug,
+  serviceName,
+  date,
+  startTime,
+  endTime,
+}) {
+  const origin = env.clientOrigin.replace(/\/$/, '');
+  const bookUrl = studioSlug ? `${origin}/s/${studioSlug}/termini` : `${origin}/login`;
+  const when = `${date} · ${startTime}${endTime ? `–${endTime}` : ''}`;
+  const subject = `Otkaz termina — ${studioName}`;
+  const text = [
+    `Pozdrav ${memberName},`,
+    '',
+    `Rezervacija u studiju ${studioName} je otkazana.`,
+    '',
+    `Usluga: ${serviceName || 'Termin'}`,
+    `Termin: ${when}`,
+    '',
+    `Novi termin: ${bookUrl}`,
+  ].join('\n');
+
+  const safeName = escapeHtml(memberName);
+  const safeStudio = escapeHtml(studioName);
+  const safeService = escapeHtml(serviceName || 'Termin');
+  const safeWhen = escapeHtml(when);
+  const safeUrl = escapeAttr(bookUrl);
+
+  const html = `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#eef1f4">
+  <tr>
+    <td align="center" style="padding:28px 14px">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;max-width:560px;width:100%;background:#ffffff">
+        <tr>
+          <td style="height:6px;background:#0b3d4a;font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 18px;border-bottom:1px solid #e6ebef">
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;letter-spacing:-0.02em;color:#0b3d4a;font-weight:700">
+              ${safeStudio}
+            </p>
+            <p style="margin:8px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6a7880;font-weight:700">
+              Otkaz termina
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#1a262b">
+            <p style="margin:0 0 14px;font-size:16px;line-height:1.55">Pozdrav ${safeName},</p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#314046">
+              Rezervacija u studiju <strong style="color:#0b3d4a">${safeStudio}</strong> je otkazana.
+            </p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px;background:#f4f7f8;border:1px solid #dce5e8">
+              <tr>
+                <td style="padding:14px 20px;border-bottom:1px solid #dce5e8">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Usluga</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeService}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:14px 20px">
+                  <p style="margin:0;font-size:12px;color:#6a7880;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">Termin</p>
+                  <p style="margin:4px 0 0;font-weight:700;color:#0b3d4a">${safeWhen}</p>
+                </td>
+              </tr>
+            </table>
+            <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 8px">
+              <tr>
+                <td style="background:#0b3d4a;border-radius:999px">
+                  <a href="${safeUrl}" style="display:inline-block;padding:13px 26px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none">
+                    Odaberite novi termin
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px 28px;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+            <p style="margin:0;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a969c">
+              anyminutes · obavijest članu
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+
+  return sendMail({ to, subject, text, html });
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')

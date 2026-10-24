@@ -28,6 +28,11 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Membership',
     },
+    /** Optional trainer / staff member chosen by the client. */
+    staffId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
     date: {
       type: String,
       required: true,

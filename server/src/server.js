@@ -13,6 +13,14 @@ async function start() {
   server = app.listen(env.port, () => {
     console.log(`API listening on port ${env.port}`);
   });
+
+  server.on('error', (error) => {
+    if (error?.code === 'EADDRINUSE') {
+      console.error(`Port ${env.port} je zauzet. Zaustavite drugi proces ili postavite PORT u server/.env`);
+      process.exit(1);
+    }
+    throw error;
+  });
 }
 
 async function shutdown(signal) {

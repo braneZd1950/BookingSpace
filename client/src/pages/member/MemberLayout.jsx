@@ -128,6 +128,9 @@ export default function MemberLayout() {
           <NavLink to={`${base}/termini`}>
             Termini
           </NavLink>
+          <NavLink to={`${base}/online`}>
+            Online
+          </NavLink>
           {loggedIn ? (
             <NavLink to={`${base}/privatnost`}>
               Privatnost

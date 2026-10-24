@@ -7,7 +7,7 @@ import InstallAppBanner from '@client/components/InstallAppBanner.jsx';
 import { rememberAnalyticsTenant } from '@client/components/UsageTracker.jsx';
 import { StudioMissingPage } from '@client/pages/public/StatusPage.jsx';
 import { paletteFromTenant } from '@client/pages/member/publicSite.js';
-import { IconBook, IconHome, IconLock } from './icons.jsx';
+import { IconBook, IconHome, IconLock, IconPlay } from './icons.jsx';
 
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
@@ -106,6 +106,10 @@ export default function MobileMemberLayout() {
         <NavLink to={`${base}/termini`}>
           <IconBook />
           <span>Termini</span>
+        </NavLink>
+        <NavLink to={`${base}/online`}>
+          <IconPlay />
+          <span>Online</span>
         </NavLink>
         {loggedIn ? (
           <NavLink to={`${base}/privatnost`}>

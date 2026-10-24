@@ -13,7 +13,9 @@ import {
 import paymentRoutes from './payments/routes.js';
 import pushRoutes from './push/routes.js';
 import { serviceCollectionRoutes, serviceItemRoutes } from './services/routes.js';
+import onlineRoutes from './online/routes.js';
 import sessionRoutes from './sessions/routes.js';
+import staffRoutes from './staff/routes.js';
 import tenantRoutes from './tenants/routes.js';
 
 const api = Router();
@@ -27,6 +29,8 @@ api.use('/tenants/:tenantId/services', serviceCollectionRoutes);
 api.use('/tenants/:tenantId/bookings', tenantBookingRoutes);
 api.use('/tenants/:tenantId/membership-plans', planCollectionRoutes);
 api.use('/tenants/:tenantId/memberships', membershipCollectionRoutes);
+api.use('/tenants/:tenantId/staff', staffRoutes);
+api.use('/tenants/:tenantId/online', onlineRoutes);
 api.use('/tenants/:tenantId/payments', paymentRoutes);
 api.use('/tenants/:tenantId/customers', customerRoutes);
 api.use('/tenants', tenantRoutes);

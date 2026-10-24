@@ -8,6 +8,10 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = randomBytes(32).toString('base64url');
 process.env.JWT_EXPIRES_IN = '1h';
 process.env.CLIENT_ORIGIN = 'http://localhost:5173';
+process.env.SMTP_HOST = '';
+process.env.SMTP_USER = '';
+process.env.SMTP_PASS = '';
+process.env.EMAIL_FROM = '';
 
 const memory = await MongoMemoryServer.create();
 process.env.MONGO_URI = memory.getUri();
@@ -272,6 +276,10 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
   assert.equal(consent.status, 200);
   assert.equal(consent.body.consent.isCurrent, true);
 
+  const trainers = publicAfter.body.tenant.trainers || [];
+  assert.ok(trainers.length > 0, 'owner should be bookable trainer');
+  const staffId = trainers[0].id;
+
   const bookingBlocked = await request('/api/bookings', {
     method: 'POST',
     token: ownerToken,
@@ -280,6 +288,7 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
       date: visitDate,
       startTime: '10:00',
       userId: customer.body.user.id,
+      staffId,
     },
   });
   assert.equal(bookingBlocked.status, 403);
@@ -296,7 +305,7 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
   });
   assert.equal(ownerConsent.status, 200);
 
-  const bookingResponse = await request('/api/bookings', {
+  const bookingWithoutStaff = await request('/api/bookings', {
     method: 'POST',
     token: customerToken,
     body: {
@@ -305,8 +314,22 @@ test('MVP flow: business, membership, booking and cancellation', { timeout: 6000
       startTime: '10:00',
     },
   });
+  assert.equal(bookingWithoutStaff.status, 400);
+  assert.equal(bookingWithoutStaff.body.code, 'STAFF_REQUIRED');
+
+  const bookingResponse = await request('/api/bookings', {
+    method: 'POST',
+    token: customerToken,
+    body: {
+      serviceId: service.id,
+      date: visitDate,
+      startTime: '10:00',
+      staffId,
+    },
+  });
   assert.equal(bookingResponse.status, 201);
   assert.equal(bookingResponse.body.booking.status, 'CONFIRMED');
+  assert.equal(String(bookingResponse.body.booking.staffId), String(staffId));
 
   const afterBook = await request(
     `/api/tenants/${tenant.id}/services/${service.id}/availability?date=${visitDate}`,

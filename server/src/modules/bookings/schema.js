@@ -7,6 +7,7 @@ export const createBookingSchema = z.object({
     date: calendarDate,
     startTime: clockTime,
     userId: objectId.optional(),
+    staffId: objectId.optional(),
   }),
 });
 

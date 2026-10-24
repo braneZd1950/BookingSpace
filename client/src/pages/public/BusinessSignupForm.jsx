@@ -113,7 +113,14 @@ function basicsProblems(values) {
 
 function apiMessage(error) {
   if (error?.status === 'FETCH_ERROR') {
-    return 'Poslužitelj nije dostupan. Pokušajte ponovno za trenutak.';
+    return 'Poslužitelj nije dostupan. Provjerite da API radi (npm run dev) na portu 4001.';
+  }
+  const body = error?.data;
+  if (body?.code === 'CSRF_REQUIRED') {
+    return 'Zahtjev je otišao na krivi API. Restartajte npm run dev (BookingApp koristi port 4001).';
+  }
+  if (typeof body?.message === 'string' && body.message.trim()) {
+    return body.message;
   }
   return '';
 }
@@ -213,11 +220,6 @@ export default function BusinessSignupForm({ className = '' }) {
       navigate('/postavljanje', { replace: true, state: { step: 2 } });
     } catch (error) {
       const body = error?.data;
-      const offline = apiMessage(error);
-      if (offline) {
-        setFormError(offline);
-        return;
-      }
       if (body?.code === 'EMAIL_TAKEN') {
         setProblems({ email: 'Ta e-pošta je već registrirana. Prijavite se.' });
         setStep(0);
@@ -226,6 +228,11 @@ export default function BusinessSignupForm({ className = '' }) {
       if (body?.code === 'INVALID_SLUG') {
         setProblems({ businessName: 'Iz ovog naziva ne nastaje valjan slug. Promijenite naziv.' });
         setStep(0);
+        return;
+      }
+      const detail = apiMessage(error);
+      if (detail) {
+        setFormError(detail);
         return;
       }
       setFormError(token

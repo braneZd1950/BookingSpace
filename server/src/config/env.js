@@ -21,12 +21,16 @@ function applyEnvFile(filename, { override }) {
   }
 }
 
+// Root first, then server/ last so server/.env wins for MONGO/JWT/SMTP (as documented).
 applyEnvFile('.env', { override: false });
-applyEnvFile('server/.env', { override: true });
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
 if (nodeEnv !== 'production') {
   applyEnvFile('.env.development', { override: true });
+}
+
+applyEnvFile('server/.env', { override: true });
+if (nodeEnv !== 'production') {
   applyEnvFile('server/.env.development', { override: true });
 }
 
@@ -58,7 +62,7 @@ const extraOrigins = blank('CLIENT_ORIGINS')
 
 const env = {
   nodeEnv: optional('NODE_ENV', 'development'),
-  port: Number(optional('PORT', '4000')),
+  port: Number(optional('PORT', '4001')),
   mongoUri: required('MONGO_URI'),
   clientOrigin,
   clientOrigins: [...new Set([

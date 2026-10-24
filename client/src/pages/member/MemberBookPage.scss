@@ -33,6 +33,37 @@
   font-weight: 750;
 }
 
+.member-book__trust {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+  padding: 0.85rem 0.95rem;
+  list-style: none;
+  border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, #fff 70%, transparent);
+}
+
+.member-book__trust li {
+  position: relative;
+  padding-left: 1rem;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.member-book__trust li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--brand-strong, var(--brand));
+}
+
 .member-book__flow {
   display: grid;
   gap: 1.75rem;
@@ -184,6 +215,56 @@
 .member-book__days button.is-on .member-book__day-name,
 .member-book__days button.is-on .member-book__day-meta {
   color: color-mix(in srgb, var(--on-brand) 78%, transparent);
+}
+
+.member-book__trainers {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.member-book__trainers-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.member-book__trainer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.45rem;
+}
+
+.member-book__trainer-list button {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--brand-soft) 70%, var(--surface));
+  color: var(--brand-strong);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.member-book__trainer-list button strong {
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+}
+
+.member-book__trainer-list button span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.82;
+}
+
+.member-book__trainer-list button.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
 }
 
 .member-book__slots {

@@ -28,6 +28,12 @@ const tenantUserSchema = new Schema(
       default: 'ACTIVE',
       required: true,
     },
+    /** Optional display title for trainers (e.g. Trener, Instruktor). */
+    title: {
+      type: String,
+      trim: true,
+      maxlength: 60,
+    },
   },
   {
     collection: 'tenantUsers',

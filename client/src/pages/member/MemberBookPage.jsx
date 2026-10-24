@@ -96,6 +96,7 @@ export default function MemberBookPage() {
   const tenant = publicData?.tenant || tenantFromLayout;
   const tenantId = String(tenant.id);
   const services = tenant.services || [];
+  const trainers = useMemo(() => tenant.trainers || [], [tenant.trainers]);
   const service = services.find((item) => item.active !== false) || services[0] || null;
   const serviceId = service ? String(service.id) : '';
   const cancelWindow = Number(service?.cancellationWindowMinutes ?? 60) || 60;
@@ -104,6 +105,7 @@ export default function MemberBookPage() {
   const workingHours = tenant.bookingSettings?.workingHours || [];
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => firstOpenKey(days, workingHours));
+  const [staffId, setStaffId] = useState('');
   const [slotTime, setSlotTime] = useState('');
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
@@ -111,6 +113,17 @@ export default function MemberBookPage() {
   const [policyFlash, setPolicyFlash] = useState(false);
   const daysRef = useRef(null);
   const lastWindowRef = useRef(cancelWindow);
+
+  useEffect(() => {
+    if (trainers.length === 0) {
+      setStaffId('');
+      return;
+    }
+    setStaffId((current) => {
+      if (current && trainers.some((item) => String(item.id) === current)) return current;
+      return String(trainers[0].id);
+    });
+  }, [trainers]);
 
   useEffect(() => {
     if (lastWindowRef.current === cancelWindow) return;
@@ -177,6 +190,10 @@ export default function MemberBookPage() {
     event.preventDefault();
     setError('');
     setOk('');
+    if (trainers.length > 0 && !staffId) {
+      setError('Odaberite trenera.');
+      return;
+    }
     if (!slotTime) {
       setError('Odaberite sat.');
       return;
@@ -186,6 +203,7 @@ export default function MemberBookPage() {
         serviceId,
         date,
         startTime: slotTime,
+        ...(staffId ? { staffId } : {}),
       }).unwrap();
       setOk('Termin je rezerviran.');
       setSlotTime('');
@@ -205,6 +223,10 @@ export default function MemberBookPage() {
       }
       if (code === 'BOOKING_CONFLICT') {
         setError('Već imate rezervaciju u tom terminu.');
+        return;
+      }
+      if (code === 'STAFF_REQUIRED' || code === 'STAFF_UNAVAILABLE') {
+        setError('Odaberite dostupnog trenera.');
         return;
       }
       if (code === 'CONSENT_REQUIRED') {
@@ -260,6 +282,12 @@ export default function MemberBookPage() {
 
       {error ? <p className="member-book__error" role="alert">{error}</p> : null}
       {ok ? <p className="member-book__ok" role="status">{ok}</p> : null}
+
+      <ul className="member-book__trust" aria-label="Zašto rezervirati ovdje">
+        <li>Rezervacija izravno kod {tenant.name} — ne u marketplace katalogu</li>
+        <li>Potvrda na e-poštu nakon rezervacije ili otkaza</li>
+        <li>Članarina i uplata dogovaraju se sa studijom; ovdje vodite termine</li>
+      </ul>
 
       {!loggedIn ? (
         <section className="member-book__gate">
@@ -374,6 +402,30 @@ export default function MemberBookPage() {
               </p>
             </header>
 
+            {open && trainers.length > 0 ? (
+              <div className="member-book__trainers" role="group" aria-label="Trener">
+                <p className="member-book__trainers-label">Kod koga rezervirate</p>
+                <div className="member-book__trainer-list">
+                  {trainers.map((trainer) => {
+                    const id = String(trainer.id);
+                    const on = staffId === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        aria-pressed={on}
+                        className={on ? 'is-on' : undefined}
+                        onClick={() => setStaffId(id)}
+                      >
+                        <strong>{trainer.name}</strong>
+                        <span>{trainer.title || 'Trener'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
             {open ? (
               <>
                 <div className="member-book__slots" role="group" aria-label="Termini">
@@ -403,7 +455,11 @@ export default function MemberBookPage() {
                 <div className={`member-book__confirm${selectedSlot ? ' is-ready' : ''}`}>
                   <p>
                     {selectedSlot
-                      ? `${formatDay(selectedDate)} · ${selectedSlot.startTime}`
+                      ? `${formatDay(selectedDate)} · ${selectedSlot.startTime}${
+                        staffId
+                          ? ` · ${trainers.find((item) => String(item.id) === staffId)?.name || ''}`
+                          : ''
+                      }`
                       : 'Odaberite sat za potvrdu rezervacije.'}
                   </p>
                   <button
@@ -447,6 +503,7 @@ export default function MemberBookPage() {
                         </strong>
                         <span>
                           {item.serviceName || 'Termin'}
+                          {item.staff?.name ? ` · ${item.staff.name}` : ''}
                           {' · '}
                           {allowed
                             ? 'Možete otkazati bez gubitka termina'

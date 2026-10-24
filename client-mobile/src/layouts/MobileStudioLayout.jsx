@@ -6,9 +6,9 @@ import { useMyTenantsQuery } from '@client/api/tenantApi.js';
 import { rememberAnalyticsTenant } from '@client/components/UsageTracker.jsx';
 import { findPalette } from '@client/styles/studioPalette.js';
 import { loadStudio, STUDIO_KEY } from '@client/studio.js';
-import { studioHost } from '@client/pages/owner/siteTemplates.js';
+import { studioPublicPath } from '@client/studioPublicUrl.js';
 import { studioFromTenant } from '@client/pages/owner/studioSync.js';
-import { IconCalendar, IconGear, IconHome, IconPeople } from './icons.jsx';
+import { IconCalendar, IconGear, IconHome, IconPeople, IconPlay } from './icons.jsx';
 
 const TOKEN_KEY = 'bookingspace.token';
 
@@ -23,6 +23,7 @@ function IconSlots() {
 const tabs = [
   ['/stranica', 'Početna', IconHome, true],
   ['/stranica/termini', 'Termini', IconSlots, false],
+  ['/stranica/online', 'Online', IconPlay, false],
   ['/stranica/kalendar', 'Kalendar', IconCalendar, false],
   ['/stranica/clanovi', 'Članovi', IconPeople, false],
   ['/stranica/postavke', 'Više', IconGear, false],
@@ -103,7 +104,7 @@ export default function MobileStudioLayout() {
       </header>
       {!studio.guideDone ? (
         <p className="m-missing" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-          Dovršite postavljanje · {studioHost(studio.slug)}
+          Dovršite postavljanje · {studioPublicPath(studio.slug)}
           {' · '}
           <Link to="/postavljanje">Vodič</Link>
         </p>

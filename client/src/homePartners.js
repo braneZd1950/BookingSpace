@@ -1,13 +1,19 @@
 /**
  * Partneri na početnoj (marquee).
  *
+ * UI je trenutno isključen (SHOW_HOME_PARTNERS = false) — kod i podaci ostaju.
+ * Uključi na true kad imaš prave partnere (ili VITE_SHOW_HOME_PARTNERS=true na buildu).
+ *
  * Dok je lista prazna, prikazuju se placeholderi + natpis „Uskoro s nama”.
- * Kad kreneš s pravim studijima: upiši ovdje ILI postavi VITE_HOME_PARTNERS na buildu (Render).
+ * Pravi studiji: upiši u configuredPartners ILI VITE_HOME_PARTNERS na Renderu.
  *
  * VITE_HOME_PARTNERS primjeri:
  *   PowerFit Zadar, Studio Ravnoteža
  *   PowerFit Zadar|/s/powerfit, Studio Ravnoteža|/s/ravnoteza
  */
+
+/** Uključi marquee na početnoj. Env: VITE_SHOW_HOME_PARTNERS=true */
+export const SHOW_HOME_PARTNERS = import.meta.env.VITE_SHOW_HOME_PARTNERS === 'true';
 
 /** @typedef {{ name: string, href?: string }} HomePartner */
 

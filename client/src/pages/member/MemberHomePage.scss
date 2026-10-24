@@ -23,6 +23,11 @@
   text-decoration: none;
 }
 
+.member-home__hint {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-weight: 500;
+}
+
 .member-home__status a:hover {
   text-decoration: underline;
 }

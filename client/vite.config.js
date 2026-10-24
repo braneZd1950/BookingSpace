@@ -11,8 +11,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:4000',
-      '/uploads': 'http://localhost:4000',
+      // BookingApp API (default 4001 — 4000 often zauzme drugi lokalni projekt)
+      '/api': 'http://localhost:4001',
+      '/uploads': 'http://localhost:4001',
     },
   },
 });
+

@@ -4,6 +4,7 @@ import '@client/api/pushApi.js';
 import UsageTracker from '@client/components/UsageTracker.jsx';
 import CalendarPage from '@client/pages/owner/CalendarPage.jsx';
 import MembersPage from '@client/pages/owner/MembersPage.jsx';
+import OnlinePage from '@client/pages/owner/OnlinePage.jsx';
 import SetupPage from '@client/pages/owner/SetupPage.jsx';
 import SettingsPage from '@client/pages/owner/SettingsPage.jsx';
 import TerminiPage from '@client/pages/owner/TerminiPage.jsx';
@@ -11,6 +12,7 @@ import { StudioHome } from '@client/pages/owner/studioPages.jsx';
 import StudioAnalyticsPage from '@client/pages/owner/StudioAnalyticsPage.jsx';
 import MemberBookPage from '@client/pages/member/MemberBookPage.jsx';
 import MemberHomePage from '@client/pages/member/MemberHomePage.jsx';
+import MemberOnlinePage from '@client/pages/member/MemberOnlinePage.jsx';
 import MemberPrivacyPage from '@client/pages/member/MemberPrivacyPage.jsx';
 import ForgotPasswordPage from '@client/pages/public/ForgotPasswordPage.jsx';
 import HomePage from '@client/pages/public/HomePage.jsx';
@@ -52,6 +54,7 @@ export default function App() {
         <Route path="/s/:slug" element={<MobileMemberLayout />}>
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
+          <Route path="online" element={<MemberOnlinePage />} />
           <Route path="privatnost" element={<MemberPrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
@@ -59,6 +62,7 @@ export default function App() {
         <Route path="/stranica" element={<MobileStudioLayout />}>
           <Route index element={<StudioHome />} />
           <Route path="termini" element={<TerminiPage />} />
+          <Route path="online" element={<OnlinePage />} />
           <Route path="kalendar" element={<CalendarPage />} />
           <Route path="clanovi" element={<MembersPage />} />
           <Route path="analitika" element={<StudioAnalyticsPage />} />

@@ -53,3 +53,11 @@ export function IconBook() {
     </svg>
   );
 }
+
+export function IconPlay() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M8 5.5v13l11-6.5L8 5.5z" />
+    </svg>
+  );
+}

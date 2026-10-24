@@ -8,6 +8,7 @@ import {
 } from '../../api/bookingApi.js';
 import { useListMembershipsQuery } from '../../api/membershipApi.js';
 import { useCreateServiceMutation, useListServicesQuery } from '../../api/serviceApi.js';
+import { useListStaffQuery } from '../../api/staffApi.js';
 import { useUpdateTenantMutation } from '../../api/tenantApi.js';
 import { ConsentGate } from '../../components/ConsentBanner.jsx';
 import { usePrivacyConsent } from '../../hooks/usePrivacyConsent.js';
@@ -52,6 +53,7 @@ export default function TerminiPage() {
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => toDateKey(days[0]));
   const [memberId, setMemberId] = useState('');
+  const [staffId, setStaffId] = useState('');
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [slotTime, setSlotTime] = useState('');
   const [error, setError] = useState('');
@@ -63,6 +65,7 @@ export default function TerminiPage() {
     skip: !ready,
   });
   const { data: memberData } = useListMembershipsQuery(tenantId, { skip: !ready });
+  const { data: staffData } = useListStaffQuery(tenantId, { skip: !ready });
   const [createService, { isLoading: creatingService }] = useCreateServiceMutation();
   const [updateTenant] = useUpdateTenantMutation();
   const [createBooking, { isLoading: booking }] = useCreateBookingMutation();
@@ -83,6 +86,10 @@ export default function TerminiPage() {
   );
 
   const memberships = (memberData?.memberships || []).filter((item) => item.status === 'ACTIVE');
+  const trainers = useMemo(
+    () => (staffData?.staff || []).filter((item) => item.status === 'ACTIVE'),
+    [staffData],
+  );
   const memberOptions = useMemo(
     () => (memberData?.memberships || [])
       .filter((item) => item.status === 'ACTIVE')
@@ -94,6 +101,17 @@ export default function TerminiPage() {
       })),
     [memberData],
   );
+
+  useEffect(() => {
+    if (trainers.length === 0) {
+      setStaffId('');
+      return;
+    }
+    setStaffId((current) => {
+      if (current && trainers.some((item) => String(item.id) === current)) return current;
+      return String(trainers[0].id);
+    });
+  }, [trainers]);
   const slots = availability?.slots || [];
   const openSlots = slots.filter((item) => item.status === 'AVAILABLE');
   const dayBookings = (bookingData?.bookings || [])
@@ -178,6 +196,10 @@ export default function TerminiPage() {
       setError('Odaberite člana.');
       return;
     }
+    if (trainers.length > 0 && !staffId) {
+      setError('Odaberite trenera.');
+      return;
+    }
     if (!slotTime) {
       setError('Odaberite sat.');
       return;
@@ -193,6 +215,7 @@ export default function TerminiPage() {
         date,
         startTime: slotTime,
         userId: memberId,
+        ...(staffId ? { staffId } : {}),
       }).unwrap();
       setOk('Rezervacija je spremljena u bazu.');
       setSlotTime('');
@@ -212,6 +235,10 @@ export default function TerminiPage() {
       }
       if (code === 'BOOKING_CONFLICT') {
         setError('Član već ima rezervaciju u tom terminu.');
+        return;
+      }
+      if (code === 'STAFF_REQUIRED' || code === 'STAFF_UNAVAILABLE') {
+        setError('Odaberite dostupnog trenera.');
         return;
       }
       if (code === 'CONSENT_REQUIRED') {
@@ -346,6 +373,23 @@ export default function TerminiPage() {
                   placeholder="Odaberite člana"
                 />
 
+                {trainers.length > 0 ? (
+                  <label className="termini__trainer">
+                    Trener
+                    <select
+                      value={staffId}
+                      onChange={(event) => setStaffId(event.target.value)}
+                    >
+                      {trainers.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                          {item.title ? ` · ${item.title}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+
                 <div className="termini__slots" role="group" aria-label="Slobodni termini">
                   {loadingSlots ? <p className="termini__hint">Učitavamo sate…</p> : null}
                   {!loadingSlots && openSlots.length === 0 ? (
@@ -367,7 +411,13 @@ export default function TerminiPage() {
                 <button
                   className="termini__primary"
                   type="submit"
-                  disabled={booking || !serviceId || !memberId || !slotTime}
+                  disabled={
+                    booking
+                    || !serviceId
+                    || !memberId
+                    || !slotTime
+                    || (trainers.length > 0 && !staffId)
+                  }
                 >
                   {booking ? 'Spremamo…' : 'Spremi rezervaciju'}
                 </button>
@@ -394,7 +444,10 @@ export default function TerminiPage() {
                         –
                         {item.endTime}
                       </strong>
-                      <span>{nameByUser.get(String(item.userId)) || 'Član'}</span>
+                      <span>
+                        {nameByUser.get(String(item.userId)) || 'Član'}
+                        {item.staff?.name ? ` · ${item.staff.name}` : ''}
+                      </span>
                     </div>
                     <button
                       type="button"

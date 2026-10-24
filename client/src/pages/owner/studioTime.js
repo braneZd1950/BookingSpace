@@ -121,15 +121,15 @@ export function formatCancellationWindow(minutes) {
   if (!Number.isFinite(value) || value < 0) return 'nije definirano';
   if (value === 0) return 'do samog početka termina';
   if (value < 60) return `${value} min prije početka`;
-  const hours = value / 60;
-  if (Number.isInteger(hours)) {
-    if (hours === 1) return '1 sat prije početka';
-    if (hours >= 2 && hours <= 4) return `${hours} sata prije početka`;
-    return `${hours} sati prije početka`;
-  }
-  const h = Math.floor(value / 60);
-  const m = value % 60;
-  return `${h} h ${m} min prije početka`;
+  const hours = Math.floor(value / 60);
+  const rest = value % 60;
+  const hoursLabel = hours === 1
+    ? '1 sat'
+    : hours >= 2 && hours <= 4
+      ? `${hours} sata`
+      : `${hours} sati`;
+  if (rest === 0) return `${hoursLabel} prije početka`;
+  return `${hoursLabel} i ${rest} min prije početka`;
 }
 
 /** Convert studio UI hours into API bookingSettings.workingHours. */

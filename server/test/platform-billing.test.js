@@ -7,6 +7,10 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = randomBytes(32).toString('base64url');
 process.env.JWT_EXPIRES_IN = '1h';
 process.env.CLIENT_ORIGIN = 'http://localhost:5173';
+process.env.SMTP_HOST = '';
+process.env.SMTP_USER = '';
+process.env.SMTP_PASS = '';
+process.env.EMAIL_FROM = '';
 
 const stamp = Date.now();
 const adminEmail = `admin-${stamp}@example.com`;

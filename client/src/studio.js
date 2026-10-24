@@ -16,6 +16,6 @@ export function saveStudio(studio) {
 export function mediaUrl(url) {
   if (!url) return '';
   if (/^(https?:|blob:|data:)/.test(url)) return url;
-  const origin = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/api\/?$/, '');
+  const origin = (import.meta.env.VITE_API_URL || 'http://localhost:4001/api').replace(/\/api\/?$/, '');
   return `${origin}${url.startsWith('/') ? url : `/${url}`}`;
 }
