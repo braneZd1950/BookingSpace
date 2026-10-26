@@ -1,16 +1,16 @@
 # Memberships and Physical Payments
 
-> Members UI: [Phase 1](lean/phase-01-frontend.md). Payments UI: [Phase 5](lean/phase-05-frontend.md). Backend frozen: [lean/backend-status.md](lean/backend-status.md).
+> Members UI: done ([Phase 1](lean/phase-01-frontend.md)). Payments till UI: [Phase 5](lean/phase-05-frontend.md). API policy: [lean/backend-status.md](lean/backend-status.md).
 
 ## Goal
 
-A customer may pay physically at the fitness center while still using BookingSpace for online reservations.
+A customer may pay physically at the fitness center while still using anyminutes for online reservations.
 
-No online payment gateway is required for the MVP.
+No online payment gateway is required for the MVP. Payment ledger API exists; dedicated till UI is the remaining Phase 5 gap.
 
 ## Customer identity
 
-The customer has one permanent BookingSpace user, for example `U12345`. Do not create a new user every month.
+The customer has one permanent user account, for example `U12345`. Do not create a new user every month.
 
 ## Membership identity
 

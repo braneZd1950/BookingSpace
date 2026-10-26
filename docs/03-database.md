@@ -1,10 +1,10 @@
 # Database Design
 
-> Read-only reference while backend is frozen: [lean/backend-status.md](lean/backend-status.md).
+> Living reference. Align with Mongoose models under `server/src/models/`. Snapshot: [16-current-status.md](16-current-status.md).
 
 ## Collections
 
-MVP collections:
+### Core MVP
 
 - `users`
 - `tenants`
@@ -14,8 +14,19 @@ MVP collections:
 - `memberships`
 - `payments`
 - `bookings`
-- `waitlistEntries` (optional, phase 1.5)
-- `sitePages` / `siteSettings`
+
+### Shipped beyond original MVP
+
+- `onlineWorkouts`
+- `pushSubscriptions`
+- `consentEvents`
+- `usageEvents`
+- `staffNotifications`
+
+### Spec only (not implemented)
+
+- `waitlistEntries` — roadmap later
+- Separate `sitePages` collection — **not used**; site lives in `tenants.siteSettings`
 
 ## User
 
@@ -26,11 +37,17 @@ email
 passwordHash
 phone
 role
+passwordResetTokenHash      (select: false)
+passwordResetExpires       (select: false)
+notificationPrefs          (email + push toggles)
+privacyConsent             { accepted, version, acceptedAt, withdrawnAt, source }
 createdAt
 updatedAt
 ```
 
 Roles: `CUSTOMER`, `BUSINESS_OWNER`, `STAFF`, `ADMIN`.
+
+Platform admin access: `role === ADMIN` **or** email listed in `ADMIN_EMAILS`.
 
 A user has one permanent `_id`. Do not create a new user every month.
 
@@ -40,7 +57,7 @@ A user has one permanent `_id`. Do not create a new user every month.
 _id
 name
 slug
-niche
+niche                         # powerplate | fitness | pilates | yoga | playroom | generic
 ownerId
 logoUrl
 heroImageUrl
@@ -49,9 +66,10 @@ phone
 email
 address
 timezone
-theme
-siteSettings
-bookingSettings
+theme                         # colors, font, radius, buttonStyle
+siteSettings                  # template, layout, paletteId, visibleSections, gallery, socialLinks, seo
+bookingSettings               # capacityModel PER_SLOT|CONCURRENT, workingHours, blockedPeriods
+billing                       # plan, status TRIAL|PAID|…, dates, notes
 active
 createdAt
 updatedAt
@@ -65,8 +83,8 @@ Associates a user with a business. One user can work with multiple businesses.
 _id
 tenantId
 userId
-role
-status
+role                          # BUSINESS_OWNER | STAFF | CUSTOMER
+status                        # e.g. ACTIVE | INVITED | SUSPENDED
 createdAt
 ```
 
@@ -83,6 +101,7 @@ capacity
 price
 active
 membershipRequired
+cancellationWindowMinutes     # when set, drives cancel/session restore window
 createdAt
 updatedAt
 ```
@@ -91,8 +110,6 @@ Example: Power Plate, duration 30, slot interval 15, capacity 6.
 
 ## MembershipPlan
 
-A reusable product definition.
-
 ```text
 _id
 tenantId
@@ -100,18 +117,14 @@ name
 description
 price
 validityDays
-sessionsIncluded
+sessionsIncluded              # null = unlimited
 allowedServiceIds
 active
 createdAt
 updatedAt
 ```
 
-Examples: 12 treninga / 30 dana, 20 treninga / 60 dana, unlimited / 30 dana.
-
 ## Membership
-
-A customer's actual purchased or assigned membership.
 
 ```text
 _id
@@ -119,22 +132,19 @@ tenantId
 userId
 membershipPlanId
 paymentId
+code                          # e.g. MEM-2026-000125
 validFrom
 validUntil
 sessionsIncluded
 sessionsUsed
-status
+status                        # ACTIVE | EXPIRED | CANCELLED | SUSPENDED
 createdAt
 updatedAt
 ```
 
-Statuses: `ACTIVE`, `EXPIRED`, `CANCELLED`, `SUSPENDED`.
-
-Membership ID is unique and historical, for example `MEM-2026-000125`. The user's permanent ID does not change.
-
 ## Payment
 
-Supports physical payments from day one. Payment is an accounting record. Membership represents the customer's right to use services.
+Physical ledger. Payment is an accounting record; membership is the right to use services.
 
 ```text
 _id
@@ -143,17 +153,13 @@ userId
 membershipId
 amount
 currency
-method
+method                        # CASH | CARD_TERMINAL | BANK_TRANSFER | ONLINE
 status
 paidAt
 note
 createdBy
 createdAt
 ```
-
-Methods: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`, `ONLINE`.
-
-The MVP primarily needs `CASH` and `CARD_TERMINAL`.
 
 ## Booking
 
@@ -163,20 +169,53 @@ tenantId
 serviceId
 userId
 membershipId
+staffId                       # optional trainer; required when tenant has trainers
 date
 startTime
 endTime
-status
-source
+status                        # CONFIRMED | CANCELLED | COMPLETED | NO_SHOW
+source                        # CUSTOMER | STAFF
 createdAt
 updatedAt
 cancelledAt
 completedAt
 ```
 
-Statuses: `CONFIRMED`, `CANCELLED`, `COMPLETED`, `NO_SHOW`.
+## OnlineWorkout
 
-Sources: `CUSTOMER`, `STAFF`.
+```text
+_id
+tenantId
+title
+description
+videoUrl / media fields
+price / access rules
+active
+createdAt
+updatedAt
+```
+
+## PushSubscription
+
+```text
+_id
+userId
+endpoint
+keys
+createdAt
+```
+
+## ConsentEvent
+
+Audit trail for privacy consent accept / withdraw.
+
+## UsageEvent
+
+Platform / studio analytics events.
+
+## StaffNotification
+
+Queued staff notifications (email / push helpers).
 
 ## Indexes
 

@@ -1,30 +1,28 @@
 # Phase 4 — Frontend: Public studio page
 
-**Status:** later (after Phases 2–3 prove the booking loop)  
+**Status:** mostly done (wizard + preview shipped; real DNS later)  
 **Hypothesis:** A simple public page attracts new clients only after booking already works.  
-**Backend:** frozen. Uploads / site PATCH may already exist — use them; do not expand SEO/social APIs.
+**Backend:** uploads / site PATCH exist; expand SEO/social APIs only if product needs them.
 
 ## Goal
 
 Provider gets `{slug}.booking.hr` address in the UI and a setup wizard (`/postavljanje`) for template, layout (header / bar / sidebar), colors, copy, sections, and images. DNS for real subdomains can follow later; slug + host display ship in the frontend now.
 
-## In scope (frontend)
+## In scope (as shipped)
 
 | Area | Behavior |
 | --- | --- |
-| Fixed template | Hero + about + hours/contact + CTA |
-| One image | Optional hero upload if API already exists |
-| CTA | Links into Phase 3 booking flow |
+| Setup wizard | `/postavljanje` — template, layout, palette, content |
+| Preview | Owner home + member home via `SiteFrame` |
+| CTA | Links into member book flow `/s/:slug/termini` |
 
-## Explicitly deferred (again)
+## Explicitly deferred
 
-- Subdomain / custom domain product
-- SEO title/description editor
-- Social link fields
-- Section checkboxes / multi-template wizard
-- Gallery CMS
+- Subdomain / custom domain product (real DNS)
+- Full gallery CMS as a dedicated owner nav item
+- Marketplace discovery
 
-See also historical notes in [`../06-tenant-website.md`](../06-tenant-website.md) — treat that file as **future vision**, not current build order.
+See also [`../06-tenant-website.md`](../06-tenant-website.md).
 
 ## Measure
 
@@ -36,6 +34,7 @@ Without proof from Phases 2–3, the page is decoration — not product.
 
 ## Done when
 
-- [ ] Public page is readable on mobile
-- [ ] CTA reaches a working book flow
+- [x] Public / preview page is readable on mobile
+- [x] CTA reaches a working book flow
+- [ ] Real `{slug}` hostname DNS product (optional / later)
 - [ ] No subdomain settings in the owner UI

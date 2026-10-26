@@ -113,11 +113,17 @@ function basicsProblems(values) {
 
 function apiMessage(error) {
   if (error?.status === 'FETCH_ERROR') {
-    return 'Poslužitelj nije dostupan. Provjerite da API radi (npm run dev) na portu 4001.';
+    if (import.meta.env.DEV) {
+      return 'Poslužitelj nije dostupan. Provjerite da API radi (npm run dev) na portu 4001.';
+    }
+    return 'Poslužitelj nije dostupan. Provjerite da frontend ima VITE_API_URL (Render build) i da API dozvoljava vaš frontend origin (CLIENT_ORIGIN).';
   }
   const body = error?.data;
   if (body?.code === 'CSRF_REQUIRED') {
-    return 'Zahtjev je otišao na krivi API. Restartajte npm run dev (BookingApp koristi port 4001).';
+    if (import.meta.env.DEV) {
+      return 'Zahtjev je otišao na krivi API. Restartajte npm run dev (BookingApp koristi port 4001).';
+    }
+    return 'Zahtjev je otišao na krivi API. Provjerite VITE_API_URL na frontend servisu.';
   }
   if (typeof body?.message === 'string' && body.message.trim()) {
     return body.message;

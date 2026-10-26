@@ -1,95 +1,78 @@
 # Technical Architecture
 
-> **Lean:** delivery order is [lean/README.md](lean/README.md). **Do not change `server/`** during current frontend work — [lean/backend-status.md](lean/backend-status.md).
+> Delivery / status: [lean/README.md](lean/README.md), [16-current-status.md](16-current-status.md). Server change policy: [lean/backend-status.md](lean/backend-status.md).
 
 ## Stack
 
 ### Frontend
 
-- React
-- Vite
+- React + Vite
 - React Router
-- Redux Toolkit
-- RTK Query
+- Redux Toolkit + RTK Query
 - SCSS
+- PWA (manifest + service worker) on web and `client-mobile`
 
 ### Backend
 
-- Node.js
-- Express
-- REST API
-- JWT authentication
-- Mongoose
+- Node.js + Express (modular monolith under `server/src/modules/`)
+- REST API + JWT
+- Mongoose / MongoDB
+- Brevo SMTP for transactional email
+- Web Push (VAPID)
+- Cloudinary for images (local `uploads/` fallback)
 
 ### Database
 
-- MongoDB Atlas
+- MongoDB Atlas — shared DB + `tenantId`
 
 ### Infrastructure
 
 - Render or equivalent hosting
-- Cloudinary for images
-- Email provider later
-- Stripe or another payment provider later
+- GitHub Actions CI (server tests + client/mobile builds)
+- Stripe later (env placeholders only)
 
 ## Architecture style
 
-Use a modular monolith. Do not use microservices for the MVP.
+Modular monolith. Do not use microservices for the MVP.
 
 ## Multi-tenancy
 
-Use one shared MongoDB database with `tenantId` on tenant-owned documents.
+One shared MongoDB database with `tenantId` on tenant-owned documents.
 
-Do not create a physical database for every small business in the MVP.
-
-A potential future enterprise option is a dedicated database, dedicated infrastructure, and a custom domain.
-
-## Domain routing
-
-A request to `powerfit.bookingspace.hr` resolves the hostname to the tenant slug `powerfit`.
-
-The frontend loads tenant configuration from the API. The backend resolves tenant context from the authenticated user's role and the requested hostname or tenant.
+Public access today is **slug-based** (`/s/:slug` + `GET /tenants/:slug/public`), not hostname resolution. A future option is `powerfit.bookingspace.hr` → slug `powerfit`.
 
 Never trust a client-supplied `tenantId` for authorization.
 
-## Application domains
+## Application domains (planned / branded)
 
-- `bookingspace.hr`
-- `app.bookingspace.hr`
-- `api.bookingspace.hr`
-- `*.bookingspace.hr`
+Historical / infra names may still say BookingSpace; product UI brand is **anyminutes**.
+
+- Platform marketing / app origin (local `:5173`, mobile `:5174`)
+- API (local default `:4001`)
+- Future: `*.bookingspace.hr` or product domain equivalents
 
 ## Request flow
 
 Public tenant page:
 
-`hostname -> tenant resolver -> tenant config -> theme/content -> services -> availability`
+`slug → GET /tenants/:slug/public → theme/content → services → availability`
 
 Authenticated dashboard:
 
-`JWT -> user -> tenant membership/role -> authorized tenant`
+`JWT → user → TenantUser role → authorized tenant`
 
 Booking:
 
-`user -> tenant -> service -> membership -> availability -> booking`
+`user → tenant → service → membership → availability → booking` (+ optional `staffId`)
 
 ## Security rules
 
 - Validate JWT on protected endpoints.
-- Resolve tenant context server-side.
+- Resolve tenant context server-side via `TenantUser` / role checks.
 - Check ownership and role on every tenant mutation.
-- Never allow a customer to modify another customer's booking.
-- Never allow a business owner to access another tenant's customers.
-- Validate all dates and times server-side.
-- Use database constraints and indexes to reduce duplicate bookings.
-- Store password hashes, never plaintext passwords.
+- Platform admin: `ADMIN` role or `ADMIN_EMAILS`.
+- Privacy consent recorded before booking flows that need it.
 
-See also [Security and data rules](10-security-rules.md).
+## Mobile
 
-## Time handling
-
-For the MVP, store booking date and time with an explicit tenant timezone.
-
-Default for Croatian tenants: `Europe/Zagreb`.
-
-Do not rely on the browser's timezone for business scheduling.
+`client-mobile` is a thin Vite app that aliases `@client` → `../client/src`. Shared pages and APIs; mobile-specific layouts and PWA assets only.

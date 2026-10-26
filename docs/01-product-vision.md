@@ -1,6 +1,7 @@
 # Product Vision
 
-> **How we ship now:** lean phases in [lean/README.md](lean/README.md). Frontend first; backend frozen until unlocked.
+> **Status:** [16-current-status.md](16-current-status.md) · lean phases: [lean/README.md](lean/README.md).  
+> Product brand in the UI: **anyminutes** (repo may still say BookingSpace).
 
 ## Problem
 
@@ -8,19 +9,19 @@ Small fitness studios and similar businesses often manage bookings, customer lis
 
 ## Solution
 
-BookingSpace combines (full vision):
+anyminutes combines (full vision):
 
 1. Online booking and capacity management.
 2. Memberships and packages.
 3. Customer accounts.
 4. A business dashboard.
-5. A simple public studio page (after the booking loop works).
+5. A simple public studio page.
 
 ## Positioning
 
-> BookingSpace helps a studio run memberships and bookings in one place — then gives clients a simple way to book.
+> anyminutes helps a studio run memberships and bookings in one place — then gives clients a simple way to book.
 
-Lean launch order: **members & hours → owner bookings → member self-book → public page → physical payments.**
+Lean order (1–4 largely shipped): **members & hours → owner bookings → member self-book → public page → physical payments UI.**
 
 ## Initial niche
 
@@ -58,7 +59,7 @@ Creates and manages a business.
 
 ### Customer
 
-Creates one BookingSpace account and can belong to multiple businesses.
+Creates one anyminutes account and can belong to multiple businesses.
 
 ### Staff
 

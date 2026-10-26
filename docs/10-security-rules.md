@@ -1,6 +1,6 @@
 # Security and Data Rules
 
-> Still binding. Frontend must not weaken these rules. Backend changes stay frozen: [lean/backend-status.md](lean/backend-status.md).
+> Still binding. Frontend must not weaken these rules. When changing the API, keep isolation checks intact — [lean/backend-status.md](lean/backend-status.md).
 
 ## Authentication
 

@@ -1,15 +1,15 @@
-/** Lean Startup launch phases — frontend plan only, no backend work required yet. */
+/** Lean Startup launch phases — keep aligned with docs/lean/README.md */
 export const launchPhases = [
   {
     id: 1,
     title: 'Jedan studio, jedan dan',
-    status: 'now',
+    status: 'done',
     hypothesis: 'Vlasnik će voditi članove i radno vrijeme u aplikaciji umjesto u bilježnici.',
     build: [
       'Prijava i registracija studija',
       'Postavke: naziv, kontakt, sati',
       'Članovi: dodaj, obustavi, obnovi',
-      'Pregled termina i kalendara (čitaj)',
+      'Pregled termina i kalendara',
     ],
     measure: '1 stvarni studio tjedan dana upisuje članove ovdje, ne u Excelu.',
     learn: 'Ako ne upisuju, problem nije dizajn stranice — nego vrijednost vođenja članstva.',
@@ -17,7 +17,7 @@ export const launchPhases = [
   {
     id: 2,
     title: 'Prava rezervacija',
-    status: 'next',
+    status: 'done',
     hypothesis: 'Vlasnik će puniti sate i vidjeti tko dolazi, bez telefonskog dogovaranja.',
     build: [
       'Kreiranje termina / usluge s kapacitetom',
@@ -30,7 +30,7 @@ export const launchPhases = [
   {
     id: 3,
     title: 'Klijent sam bira sat',
-    status: 'later',
+    status: 'done',
     hypothesis: 'Član će rezervirati sam ako vidi slobodna mjesta i preostale treninge.',
     build: [
       'Prijava člana',
@@ -43,25 +43,25 @@ export const launchPhases = [
   {
     id: 4,
     title: 'Javna stranica studija',
-    status: 'later',
+    status: 'done',
     hypothesis: 'Tek kad petlja rezervacije radi, stranica s logom i galerijom privlači nove klijente.',
     build: [
-      'Fiksni predložak stranice (bez SEO / društvenih mreža na početku)',
-      'Jedna naslovna fotografija',
-      'Link na rezervaciju',
+      'Čarobnjak postavljanja (predložak, layout, boje)',
+      'Pregled stranice u studiju',
+      'Link na rezervaciju člana',
     ],
     measure: 'Novi upiti ili registracije koje dođu preko stranice.',
-    learn: 'Bez dokaza iz faze 2–3, stranica je ukras — ne produkt.',
+    learn: 'Bez dokaza iz faze 2–3, stranica je ukras — ne produkt. Pravi DNS ostaje kasnije.',
   },
   {
     id: 5,
     title: 'Plaćanja i planovi',
-    status: 'later',
+    status: 'now',
     hypothesis: 'Upis gotovine/kartice u salonu smanjuje pogreške u broju treninga.',
     build: [
-      'Planovi članstva',
-      'Upis fizičkog plaćanja',
-      'Utrošak treninga po rezervaciji',
+      'Eksplicitni upis fizičkog plaćanja (gotovina / kartica / transfer)',
+      'Povijest blagajne u UI',
+      'Usklađenje aktivnih članstava s blagajnom',
     ],
     measure: 'Broj aktivnih članstava točno odgovara blagajni studija.',
     learn: 'Ako brojevi ne sjedaju, prvo popravite petlju — ne Stripe.',
@@ -71,5 +71,6 @@ export const launchPhases = [
 export function phaseLabel(status) {
   if (status === 'now') return 'Sada';
   if (status === 'next') return 'Sljedeće';
+  if (status === 'done') return 'Gotovo';
   return 'Kasnije';
 }

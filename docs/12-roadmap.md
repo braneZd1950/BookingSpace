@@ -1,29 +1,29 @@
 # Roadmap
 
-## Now — lean launch ([docs/lean](lean/README.md))
+## Now
 
-Frontend-only until Phase 1 learning is done. Backend frozen ([backend-status](lean/backend-status.md)).
+See [16-current-status.md](16-current-status.md) and [lean/README.md](lean/README.md).
 
-1. Phase 1 — members + settings + read schedule  
-2. Phase 2 — owner booking loop  
-3. Phase 3 — member self-book  
-4. Phase 4 — simple public page (no subdomain product)  
-5. Phase 5 — physical payments UI  
+1. **Phase 5** — dedicated physical payments / till UI (API already exists)  
+2. Pilot learning — real studio usage of members + bookings  
+3. Turn on **Online workouts** when product is ready (`ONLINE_ENABLED`)  
+4. Keep docs (`07`, `03`, `08`, status) aligned when APIs change  
 
-## After pilot feedback (post lean Phase 5)
+## After pilot feedback
 
 Do not start these before proving core booking usage.
 
 - waitlist  
-- email notifications  
+- richer email / push notification templates  
 - recurring bookings  
 - better staff permissions  
 - attendance check-in  
 - membership reminders  
+- real subdomain / custom domain product  
 
 ## Later product expansion
 
-- online payments  
+- online payments (Stripe)  
 - automatic membership renewal  
 - packages / promo codes  
 - advanced reports  
@@ -47,4 +47,6 @@ Full prep: [15-niches-playroom-wellness.md](15-niches-playroom-wellness.md).
 - resource management  
 - marketplace / cross-studio discovery  
 
-Subdomains and custom domains stay here — not in the lean MVP UI.
+## Already shipped (do not re-plan as “later”)
+
+Owner + member booking, trainers, PWA/Web Push, privacy consent, platform admin + SaaS billing emails, site setup wizard, CI. Details in [16-current-status.md](16-current-status.md).

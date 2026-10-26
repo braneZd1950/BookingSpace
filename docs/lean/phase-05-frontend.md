@@ -1,20 +1,27 @@
 # Phase 5 — Frontend: Payments and plans
 
-**Status:** later  
+**Status:** next (partial — plans/renew shipped; dedicated till UI missing)  
 **Hypothesis:** Recording cash/card in the studio keeps session counts accurate.  
-**Backend:** frozen by default. Prefer existing membership-plan and payment endpoints; list gaps only.
+**Backend:** prefer existing membership-plan and payment endpoints; list gaps in [backend-status](backend-status.md).
 
 ## Goal
 
 Owner UI for membership plans, recording a physical payment, and seeing sessions used after bookings.
 
-## In scope (frontend)
+## Already shipped
 
 | Area | Behavior |
 | --- | --- |
-| Plans | Create/list plans (sessions included, validity) |
-| Physical payment | Record cash / card / transfer → activates or extends membership |
-| Usage | Show remaining sessions after bookings from Phases 2–3 |
+| Plans via members | Auto-create / renew membership when adding a member |
+| Usage | Remaining sessions shown; consume/restore on book/cancel |
+| Payments API | `POST/GET /tenants/:id/payments` |
+
+## Still in scope (this phase)
+
+| Area | Behavior |
+| --- | --- |
+| Physical payment UI | Record cash / card / transfer explicitly → activates or extends membership |
+| Payment history | Owner can see till-style list for the studio |
 
 ## Out of scope
 
@@ -34,6 +41,7 @@ If numbers do not match, fix the booking–membership loop before adding gateway
 
 ## Done when
 
-- [ ] Owner can define a plan and record a physical payment in the UI
-- [ ] Remaining sessions update after member bookings
+- [ ] Owner can record a physical payment in the UI (method + amount → membership)
+- [x] Remaining sessions update after member bookings
 - [ ] No Stripe work
+

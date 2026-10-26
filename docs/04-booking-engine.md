@@ -1,6 +1,7 @@
 # Booking Engine Specification
 
-> UI for this lands in lean [Phase 2](lean/phase-02-frontend.md). Backend remains frozen unless a gap is approved: [lean/backend-status.md](lean/backend-status.md).
+> Implemented in product (Phases 2–3). Gaps: [lean/backend-status.md](lean/backend-status.md). Status: [16-current-status.md](16-current-status.md).  
+> Trainers: optional `staffId` on booking; required when the tenant has bookable staff.
 
 This is the most important technical component of the long-term product.
 

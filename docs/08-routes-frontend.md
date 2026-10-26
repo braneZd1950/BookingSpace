@@ -1,52 +1,80 @@
-# Frontend routes (current + by phase)
+# Frontend routes
 
-> Delivery order: [lean/README.md](lean/README.md). Backend frozen: [lean/backend-status.md](lean/backend-status.md).
+> Source of truth: `client/src/app/App.jsx` and `client-mobile/src/App.jsx`. Snapshot: [16-current-status.md](16-current-status.md).
 
-## Public platform (live)
+## Public platform (web)
 
-| Route | Page | Phase |
-| --- | --- | --- |
-| `/` | B2B home: business signup + live slug preview | 1 |
-| `/login` | Login | 1 |
-| `/register` | Same business signup form | 1 |
-| `/postavljanje` | Provider wizard: subdomain, template, layout, colors, content | 1 / 4 |
-| `/privatnost`, `/uvjeti`, `/kolacici`, `/kontakt`, `/povratna-informacija` | Legal / contact | 1 |
-| `/odrzavanje` | Maintenance status page | 1 |
-| `*` (catch-all) | 404 | 1 |
+| Route | Page |
+| --- | --- |
+| `/` | B2B home (anyminutes) |
+| `/login` | Login |
+| `/register` | Business signup |
+| `/zaboravljena-lozinka` | Forgot password |
+| `/nova-lozinka` | Reset password |
+| `/postavljanje` | Studio setup wizard (template, layout, colors) |
+| `/privatnost`, `/uvjeti`, `/kolacici`, `/kontakt`, `/povratna-informacija` | Legal / contact |
+| `/odrzavanje` | Maintenance |
+| `*` | 404 |
 
-Maintenance mode for the whole app: set `VITE_MAINTENANCE=true` in client env (all routes show održavanje).
+Maintenance for the whole app: `VITE_MAINTENANCE=true`.
 
-## Owner studio (live) — `/stranica`
+## Platform admin (web only) — `/analitika`
 
-| Route | Nav label | Page |
+Gated by `PlatformGate` (`platformAdmin` from `/auth/me`).
+
+| Route | Page |
+| --- | --- |
+| `/analitika` | Summary |
+| `/analitika/studiji` | Studios |
+| `/analitika/korisnici` | Users |
+| `/analitika/aktivnost` | Activity |
+| `/analitika/placanja` | Partner SaaS billing |
+| `/analitika/izvjestaji` | Reports |
+| `/analitika/sustav` | System |
+
+Mobile shell **omits** these routes.
+
+## Owner studio — `/stranica`
+
+| Route | Nav | Page |
 | --- | --- | --- |
 | `/stranica` | Stranica | Public site preview |
-| `/stranica/termini` | Termini | Schedule / bookings |
+| `/stranica/termini` | Termini | Schedule / owner book & cancel |
+| `/stranica/online` | Online | Workouts (hidden when `ONLINE_ENABLED` is false) |
 | `/stranica/kalendar` | Kalendar | Month view |
-| `/stranica/clanovi` | Članovi | Members |
-| `/stranica/galerija` | Galerija | Photos |
-| `/stranica/postavke` | Postavke | Name, contact, hours |
+| `/stranica/clanovi` | Članovi | Members + trainers |
+| `/stranica/analitika` | Analitika | Studio analytics |
+| `/stranica/postavke` | Postavke | Profile, hours, notifications |
 
-## Member studio (live) — `/s/:slug`
+Not mounted: `/stranica/plan` (phase list exists in `launchPhases.js` only), `/stranica/galerija`.
 
-| Route | Nav label | Page |
+## Member studio — `/s/:slug`
+
+| Route | Nav | Page |
 | --- | --- | --- |
-| `/s/:slug` | Početna | Studio overview + membership status |
-| `/s/:slug/termini` | Termini | Member book / cancel (ACTIVE membership) |
+| `/s/:slug` | Početna | Studio overview + membership |
+| `/s/:slug/termini` | Termini | Member book / cancel |
+| `/s/:slug/online` | Online | Catalog (flagged) |
+| `/s/:slug/privatnost` | — | Privacy / consent |
 
-## Later
+## Mobile (`client-mobile`)
 
-| Route idea | Phase |
+Same member + owner pages via `@client` alias. Differences:
+
+- No `/analitika/*` platform admin  
+- Bottom nav skips studio Analitika (route still reachable if typed)  
+- Own PWA manifest + service worker  
+
+## Later / deferred
+
+| Idea | Notes |
 | --- | --- |
-| Real DNS for `{slug}.booking.hr` | 4 |
-| Payments / plans | 5 |
+| Real DNS `{slug}.booking.hr` | Display/copy only today |
+| Dedicated payments / till screen | Phase 5 |
+| Remount `/stranica/plan` | Optional product decision |
 
-## Explicitly not building now
+## Explicitly not building as a product now
 
-- `*.bookingspace.hr` tenant hostname product  
-- `/dashboard/website` style full site editor  
-- Cross-tenant discovery UI  
-
-## UX principle (lean)
-
-Keep the owner shell **operational**: members, hours, then bookings. Marketing website comes after the booking loop works.
+- Tenant hostname routing as the primary public URL  
+- Cross-tenant discovery marketplace  
+- Stripe checkout UI  

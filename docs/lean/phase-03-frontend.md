@@ -1,8 +1,8 @@
 # Phase 3 — Frontend: Member books alone
 
-**Status:** in progress  
+**Status:** done (implemented in product)  
 **Hypothesis:** A member will book if they see free slots and remaining sessions.  
-**Backend:** frozen unless a documented API gap blocks the UI.
+**Backend:** document gaps in [backend-status](backend-status.md) if UI is blocked.
 
 ## Goal
 
@@ -34,5 +34,5 @@ If members do not book, simplify the path first — do not add a marketing page.
 ## Done when
 
 - [x] Member can see availability and book/cancel in the UI (`/s/:slug`, `/s/:slug/termini`)
-- [ ] Owner still sees the same bookings in Termini / Kalendar
-- [x] No backend work unless listed as a blocker in [backend-status](backend-status.md)
+- [x] Owner still sees the same bookings in Termini / Kalendar
+- [x] Backend gaps listed in [backend-status](backend-status.md) when needed

@@ -1,18 +1,18 @@
 # Cursor development instructions
 
-## Active rule (lean)
+## Active rule
 
-1. Read [lean/README.md](lean/README.md) and the **current phase** frontend doc.  
-2. **Do not change `server/`** unless [lean/backend-status.md](lean/backend-status.md) explicitly unlocks a gap.  
-3. Prefer the smallest frontend change that advances the active phase metric.  
-4. Keep owner Settings lean: name, contact, hours — no website/SEO/social/subdomain UI.
+1. Read [16-current-status.md](16-current-status.md) and the relevant lean phase doc.  
+2. Prefer the smallest change that advances the active goal (currently Phase 5 payments UI unless told otherwise).  
+3. Backend may change when needed — document the gap in [lean/backend-status.md](lean/backend-status.md) and update [07-api-spec.md](07-api-spec.md) / [03-database.md](03-database.md).  
+4. Keep Croatian UI copy for owner/customer surfaces. Product brand in UI: **anyminutes**.
 
 ## Before coding
 
-1. Confirm which lean phase owns the task.  
-2. Inspect existing `client/` code and APIs.  
+1. Confirm which area owns the task (lean phase or status-doc gap).  
+2. Inspect existing `client/` / `client-mobile/` / `server/` code.  
 3. Propose the smallest implementation.  
-4. Implement frontend only (default).  
+4. Implement; add or extend a server test for booking/membership/staff/billing changes.  
 5. Smoke-check in the browser.  
 6. Report changed files.
 
@@ -20,34 +20,30 @@
 
 - Clear naming; thin pages; shared helpers when already used.  
 - RTK Query for HTTP (no Axios).  
-- Croatian UI copy for owner/customer surfaces.  
-- Do not put authorization rules only in React — backend remains source of truth when APIs exist.  
-- Avoid premature abstractions and website chrome.
+- Do not put authorization rules only in React — backend is source of truth.  
+- Avoid premature abstractions.  
+- Mobile shares `client/src` via `@client` — change shared code carefully.
 
-## Repo layout (actual)
+## Repo layout
 
 ```text
-client/src/
-  app/           # store, App routes
-  api/           # RTK Query APIs
-  components/    # public chrome
-  pages/
-    owner/       # /stranica/* studio UI + lean Plan
-    public/      # marketing, auth
-  styles/
-server/          # FROZEN for current lean work — read only
+client/src/          # web SPA + shared pages/APIs
+client-mobile/       # PWA shell (layouts + alias to client/src)
+server/src/          # Express modules, models, utils
+server/test/         # mvp-flow, studio-ops, platform-billing
 docs/
-  lean/          # phase-scoped delivery docs (prefer these)
-  01–14          # background / historical specs
+  lean/              # phase learning docs
+  01–16              # specs + current status
+scripts/             # dev, smoke
+.github/workflows/   # CI
 ```
 
 ## Do not
 
-- edit backend during Phase 1 frontend work  
-- re-add subdomain, SEO, social, or section-toggle settings  
-- force `/postavljanje` after login/register  
-- add Stripe, mobile apps, microservices, AI  
+- reintroduce waitlist / Stripe / marketplace without an explicit product ask  
+- turn on Online workouts without flipping `ONLINE_ENABLED` intentionally  
 - trust frontend for capacity authorization  
+- commit secrets (`.env`, `server/.env`)  
 
 ## Task format
 
@@ -55,43 +51,12 @@ docs/
 Goal:
 [one clear goal]
 
-Phase:
-[lean phase number + link]
+Phase / area:
+[lean phase or status-doc item]
 
-Layer:
-frontend only | backend gap (document only)
+Constraints:
+[APIs to reuse, files to avoid]
 
-Requirements:
-- ...
-
-Acceptance criteria:
-- ...
-
-Do not:
-- touch server/
-- …
-```
-
-## Example (Phase 1)
-
-```text
-Goal:
-Keep Postavke limited to name, contact, and working hours.
-
-Phase:
-1 — docs/lean/phase-01-frontend.md
-
-Layer:
-frontend only
-
-Requirements:
-- Save via existing tenant update API.
-- No SEO / social / sections UI.
-
-Acceptance criteria:
-- Owner can update hours and see them on Termini/Kalendar.
-
-Do not:
-- modify server/
-- add subdomain fields
+Done when:
+[checkable outcomes]
 ```

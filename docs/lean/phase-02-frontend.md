@@ -1,8 +1,8 @@
 # Phase 2 — Frontend: Real booking (owner)
 
-**Status:** next  
+**Status:** done (implemented in product)  
 **Hypothesis:** The owner will fill sessions and see who is coming without WhatsApp / phone.  
-**Backend:** frozen. Use existing booking / session / service APIs if they already cover the UI. Only document API gaps — do not implement server changes in this phase’s default plan.
+**Backend:** booking / session / service APIs in use; document new gaps in [backend-status](backend-status.md).
 
 ## Goal
 
@@ -34,9 +34,9 @@ If bookings stay on WhatsApp, the loop is not closed — do not add website chro
 
 ## Done when
 
-- [ ] Owner can create a booking for an existing member from the UI
-- [ ] Occupancy updates after book / cancel
-- [ ] Happy path works without editing `server/` (or gaps are listed in [backend-status](backend-status.md))
+- [x] Owner can create a booking for an existing member from the UI
+- [x] Occupancy updates after book / cancel
+- [x] Happy path works (gaps listed in [backend-status](backend-status.md) when needed)
 
 ## Frontend checklist (when starting this phase)
 

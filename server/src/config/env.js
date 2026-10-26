@@ -94,6 +94,10 @@ const env = {
     .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean),
+  /** When set, Express serves this folder (Vite `client/dist`) for the SPA. */
+  clientDist: blank('CLIENT_DIST'),
+  /** auto = serve if dist exists; true = require; false = API only */
+  serveClient: optional('SERVE_CLIENT', 'auto'),
 };
 
 export default env;
