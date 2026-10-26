@@ -23,11 +23,19 @@ Jedan Web Service: `https://bookingspaceapp.onrender.com` prikazuje React, a `/a
 | **Build Command** | vidi dolje |
 | **Start Command** | `npm start --prefix server` |
 
-**Build Command:**
+**Build Command** (jedna od ovih):
 
 ```bash
-npm ci --prefix server && npm ci --prefix client && npm run build --prefix client
+npm run build:render
 ```
+
+ili eksplicitno:
+
+```bash
+npm ci --prefix server && npm ci --prefix client --include=dev && npm run build --prefix client
+```
+
+`--include=dev` je obavezno: na Renderu je `NODE_ENV=production`, pa obični `npm ci` **ne instalira** `vite` (devDependency) → `vite: not found`.
 
 ### Environment (isti servis)
 
