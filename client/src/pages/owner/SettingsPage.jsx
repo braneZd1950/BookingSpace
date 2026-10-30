@@ -10,11 +10,12 @@ import {
   useListServicesQuery,
   useUpdateServiceMutation,
 } from '../../api/serviceApi.js';
-import { useUpdateTenantMutation } from '../../api/tenantApi.js';
-import { saveStudio, STUDIO_KEY } from '../../studio.js';
+import { useUpdateSiteMutation, useUpdateTenantMutation } from '../../api/tenantApi.js';
+import { saveStudio, STUDIO_KEY } from '../../lib/studio.js';
 import { studioHost } from './siteTemplates.js';
+import { generateAllStudioLegal } from './studioLegal.js';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
-import { disableWebPush, enableWebPush, getPushStatus, pushSupported } from '../../push.js';
+import { disableWebPush, enableWebPush, getPushStatus, pushSupported } from '../../lib/push.js';
 import CancelWindowSelect from './CancelWindowSelect.jsx';
 import TimeSelect from './TimeSelect.jsx';
 import {
@@ -41,6 +42,31 @@ const sections = [
   { id: 'notifications', label: 'Obavijesti' },
 ];
 
+const LEGAL_DOCS = [
+  { id: 'privacy', index: '01', label: 'Privatnost', title: 'Politika privatnosti' },
+  { id: 'terms', index: '02', label: 'Uvjeti', title: 'Uvjeti korištenja' },
+  { id: 'cookies', index: '03', label: 'Kolačići', title: 'Kolačići i sigurnost' },
+];
+
+function studioLegalSource(studio, form = {}) {
+  return {
+    name: form.name || studio.name || 'Studio',
+    email: form.email || studio.email || '',
+    phone: form.phone || studio.phone || '',
+    address: form.address || studio.address || '',
+  };
+}
+
+function resolveLegalState(studio, form = {}) {
+  const stored = studio.siteSettings?.legal || {};
+  const generated = generateAllStudioLegal(studioLegalSource(studio, form));
+  return {
+    privacy: (stored.privacy || '').trim() || generated.privacy,
+    terms: (stored.terms || '').trim() || generated.terms,
+    cookies: (stored.cookies || '').trim() || generated.cookies,
+  };
+}
+
 const defaultPrefs = {
   bookingEmail: true,
   cancelEmail: true,
@@ -64,6 +90,8 @@ function fromStudio(studio) {
     phone: studio.phone || '',
     email: studio.email || '',
     address: studio.address || '',
+    city: studio.city || '',
+    oib: studio.oib || '',
     hours: studioHours(studio),
   };
 }
@@ -169,8 +197,12 @@ export default function SettingsPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const pushClient = import.meta.env.VITE_APP_SHELL === 'mobile' ? 'mobile' : 'web';
   const [updateTenant, { isLoading: savingBusiness }] = useUpdateTenantMutation();
+  const [updateSite, { isLoading: savingLegal }] = useUpdateSiteMutation();
   const [updateMe, { isLoading: savingAccount }] = useUpdateMeMutation();
   const [changePassword, { isLoading: savingPassword }] = useChangePasswordMutation();
+  const [legal, setLegal] = useState(() => resolveLegalState(studio));
+  const [legalTab, setLegalTab] = useState('privacy');
+  const [legalConfirmOpen, setLegalConfirmOpen] = useState(false);
   const [createService] = useCreateServiceMutation();
   const [updateService] = useUpdateServiceMutation();
   const { data: meData } = useGetMeQuery();
@@ -182,13 +214,80 @@ export default function SettingsPage() {
   const host = studioHost(studio.slug);
   const user = meData?.user;
   const activeSection = sections.find((item) => item.id === tab) || sections[0];
+  const activeLegalDoc = LEGAL_DOCS.find((item) => item.id === legalTab) || LEGAL_DOCS[0];
   const primaryService = (serviceData?.services || []).find((item) => item.active !== false)
     || serviceData?.services?.[0]
     || null;
+  const legalUpdatedAt = studio.siteSettings?.legal?.updatedAt
+    ? new Date(studio.siteSettings.legal.updatedAt).toLocaleString('hr-HR')
+    : '';
 
   useEffect(() => {
     setForm(fromStudio(studio));
+    setLegal(resolveLegalState(studio));
   }, [studio]);
+
+  useEffect(() => {
+    if (!legalConfirmOpen) return undefined;
+    function onKey(event) {
+      if (event.key === 'Escape') setLegalConfirmOpen(false);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [legalConfirmOpen]);
+
+  function requestSaveLegal(event) {
+    event.preventDefault();
+    if (!ready) {
+      note('err', 'Studio još nije spreman na poslužitelju.');
+      return;
+    }
+    const nextLegal = {
+      privacy: legal.privacy.trim(),
+      terms: legal.terms.trim(),
+      cookies: legal.cookies.trim(),
+    };
+    if (!nextLegal.privacy || !nextLegal.terms || !nextLegal.cookies) {
+      note('err', 'Sva tri dokumenta moraju imati tekst prije spremanja.');
+      return;
+    }
+    setLegalConfirmOpen(true);
+  }
+
+  async function confirmSaveLegal() {
+    const nextLegal = {
+      privacy: legal.privacy.trim(),
+      terms: legal.terms.trim(),
+      cookies: legal.cookies.trim(),
+    };
+    try {
+      const result = await updateSite({
+        id: studio.id,
+        body: { legal: nextLegal },
+      }).unwrap();
+      saveStudio({
+        ...studio,
+        siteSettings: result.tenant?.siteSettings || {
+          ...studio.siteSettings,
+          legal: {
+            ...nextLegal,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      });
+      setLegalConfirmOpen(false);
+      note('ok', 'Pravila studija su spremljena u bazu i na stranicu.');
+    } catch {
+      setLegalConfirmOpen(false);
+      note('err', 'Pravila nisu spremljena. Pokušajte ponovno.');
+    }
+  }
+
+  function fillLegalTemplate() {
+    const generated = generateAllStudioLegal(studioLegalSource(studio, form));
+    setLegal(generated);
+    note('ok', 'Gotovi predložak je upisan — pregledajte i spremite ako vam odgovara.');
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -211,7 +310,7 @@ export default function SettingsPage() {
     let alive = true;
     getPushStatus().then((status) => {
       if (alive) setPushState(status);
-    }).catch(() => {});
+    }).catch(() => { });
     return () => { alive = false; };
   }, [tab]);
 
@@ -276,6 +375,7 @@ export default function SettingsPage() {
             phone: form.phone.trim(),
             email: form.email.trim(),
             address: form.address.trim(),
+            city: form.city.trim(),
           }),
           bookingSettings: {
             workingHours: hoursPayload(form.hours),
@@ -311,6 +411,7 @@ export default function SettingsPage() {
         phone: form.phone.trim(),
         email: form.email.trim(),
         address: form.address.trim(),
+        city: form.city.trim(),
         hours: form.hours,
       });
       window.dispatchEvent(new Event('studio-changed'));
@@ -332,6 +433,11 @@ export default function SettingsPage() {
       note('error', 'Upišite ispravnu e-poštu računa.');
       return;
     }
+    const oib = form.oib.trim();
+    if (oib && !/^\d{11}$/.test(oib)) {
+      note('error', 'OIB mora imati točno 11 znamenki.');
+      return;
+    }
     try {
       const result = await updateMe({
         name: account.name.trim(),
@@ -339,6 +445,25 @@ export default function SettingsPage() {
         phone: account.phone.trim() || undefined,
       }).unwrap();
       saveSessionUser(result.user);
+
+      if (ready) {
+        await updateTenant({
+          id: studio.id,
+          body: {
+            address: form.address.trim(),
+            city: form.city.trim(),
+            oib,
+          },
+        }).unwrap();
+        saveStudio({
+          ...studio,
+          address: form.address.trim(),
+          city: form.city.trim(),
+          oib,
+        });
+        window.dispatchEvent(new Event('studio-changed'));
+      }
+
       note('ok', 'Račun je ažuriran.');
     } catch (failure) {
       if (failure?.data?.code === 'EMAIL_TAKEN') {
@@ -428,8 +553,17 @@ export default function SettingsPage() {
     navigate('/', { replace: true });
   }
 
+  const emailPrefsOn = ['bookingEmail', 'cancelEmail', 'memberEmail', 'weeklyDigest', 'marketing']
+    .filter((key) => prefs[key]).length;
+  const pushPrefsOn = ['bookingPush', 'cancelPush', 'memberPush', 'reminderPush']
+    .filter((key) => prefs[key]).length;
+
   return (
-    <section className="settings">
+    <section className={`settings${tab === 'notifications' ? ' settings--notify' : ''}`}>
+      <div className="settings__atmosphere" aria-hidden="true">
+        <span className="settings__wash" />
+        <span className="settings__grain" />
+      </div>
       <div className="settings__rail">
         <div className="settings__rail-inner">
           <p className="settings__rail-label">Postavke</p>
@@ -456,7 +590,7 @@ export default function SettingsPage() {
             <h1>{studio.name || 'Postavke'}</h1>
             <p>
               {tab === 'business' && 'Naziv, kontakt, radno vrijeme i rok otkaza koji vide članovi.'}
-              {tab === 'account' && 'Osobni podaci vlasnika za prijavu u anyminutes.'}
+              {tab === 'account' && 'Podaci za prijavu, adresa studija i OIB za buduću naplatu.'}
               {tab === 'security' && 'Lozinka i sesija na ovom uređaju.'}
               {tab === 'privacy' && 'Kako se koriste podaci studija i gdje su pravila.'}
               {tab === 'billing' && 'Plan usluge i naplata — trenutačno u pilotu.'}
@@ -503,8 +637,22 @@ export default function SettingsPage() {
                 />
               </label>
               <label className="settings__full">
-                Adresa
-                <input value={form.address} onChange={(event) => changeBusiness('address', event.target.value)} />
+                Ulica
+                <input
+                  value={form.address}
+                  onChange={(event) => changeBusiness('address', event.target.value)}
+                  placeholder="Ulica i kućni broj"
+                  autoComplete="street-address"
+                />
+              </label>
+              <label>
+                Grad
+                <input
+                  value={form.city}
+                  onChange={(event) => changeBusiness('city', event.target.value)}
+                  placeholder="npr. Zagreb"
+                  autoComplete="address-level2"
+                />
               </label>
             </div>
 
@@ -608,10 +756,46 @@ export default function SettingsPage() {
                   onChange={(event) => setAccount((current) => ({ ...current, email: event.target.value }))}
                 />
               </label>
+              <label className="settings__full">
+                Ulica
+                <input
+                  value={form.address}
+                  onChange={(event) => changeBusiness('address', event.target.value)}
+                  placeholder="Ulica i kućni broj"
+                  autoComplete="street-address"
+                />
+              </label>
+              <label>
+                Grad
+                <input
+                  value={form.city}
+                  onChange={(event) => changeBusiness('city', event.target.value)}
+                  placeholder="npr. Zagreb"
+                  autoComplete="address-level2"
+                />
+              </label>
+              <label className="settings__full">
+                OIB
+                <input
+                  value={form.oib}
+                  onChange={(event) => changeBusiness('oib', event.target.value.replace(/\D/g, '').slice(0, 11))}
+                  inputMode="numeric"
+                  maxLength={11}
+                  placeholder="11 znamenki (opcionalno)"
+                  autoComplete="off"
+                />
+              </label>
             </div>
+            <p className="settings__fine">
+              OIB nije obavezan sada — trebat će ga kad uključimo plaćanje karticom i izdavanje računa.
+            </p>
             <div className="settings__actions">
-              <button className="settings__primary" type="submit" disabled={savingAccount}>
-                {savingAccount ? 'Spremamo…' : 'Spremite račun'}
+              <button
+                className="settings__primary"
+                type="submit"
+                disabled={savingAccount || savingBusiness}
+              >
+                {savingAccount || savingBusiness ? 'Spremamo…' : 'Spremite račun'}
               </button>
             </div>
           </form>
@@ -688,9 +872,120 @@ export default function SettingsPage() {
                 <li>Povlačenjem privole banner se ponovno prikazuje dok se privola ne da.</li>
               </ul>
             </article>
+            <form className="settings__sheet settings__legal" onSubmit={requestSaveLegal}>
+              <h2>Pravila studija</h2>
+              <p className="settings__lead">
+                Gotovi tekstovi (GDPR / RH) već su u bazi od registracije. Uredite ih samo ako
+                trebate — inače ostavite predložak. Vi ste voditelj obrade; anyminutes je
+                platforma. Nije formalni pravni savjet.
+              </p>
+              {legalUpdatedAt ? (
+                <p className="settings__fine">
+                  Zadnja izmjena u bazi:
+                  {' '}
+                  {legalUpdatedAt}
+                </p>
+              ) : null}
+
+              <div className="settings__legal-tabs" role="tablist" aria-label="Dokumenti studija">
+                {LEGAL_DOCS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={legalTab === item.id}
+                    className={legalTab === item.id ? 'is-on' : undefined}
+                    onClick={() => setLegalTab(item.id)}
+                  >
+                    <span>{item.index}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="settings__actions settings__legal-tools">
+                <button className="settings__ghost" type="button" onClick={fillLegalTemplate}>
+                  Vrati gotovi predložak
+                </button>
+                {studio.slug ? (
+                  <Link
+                    className="settings__ghost"
+                    to={`/s/${studio.slug}/${legalTab === 'privacy' ? 'privatnost' : legalTab === 'terms' ? 'uvjeti' : 'kolacici'}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Pregled na stranici
+                  </Link>
+                ) : null}
+              </div>
+
+              <label>
+                {activeLegalDoc.title}
+                <textarea
+                  rows={12}
+                  value={legal[legalTab]}
+                  onChange={(event) => setLegal((current) => ({
+                    ...current,
+                    [legalTab]: event.target.value,
+                  }))}
+                />
+              </label>
+
+              <div className="settings__actions">
+                <button className="settings__primary" type="submit" disabled={savingLegal}>
+                  {savingLegal ? 'Spremamo…' : 'Spremi pravila studija'}
+                </button>
+              </div>
+            </form>
+
+            {legalConfirmOpen ? (
+              <div
+                className="settings__modal"
+                role="presentation"
+                onClick={(event) => {
+                  if (event.target === event.currentTarget && !savingLegal) {
+                    setLegalConfirmOpen(false);
+                  }
+                }}
+              >
+                <div
+                  className="settings__modal-panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="settings-legal-confirm-title"
+                >
+                  <h2 id="settings-legal-confirm-title">Spremiti izmjene pravila?</h2>
+                  <p>
+                    Jeste li sigurni da želite spremiti izmjene privatnosti, uvjeta i kolačića
+                    u bazu? Tekst će odmah biti vidljiv na stranici studija.
+                  </p>
+                  <div className="settings__modal-actions">
+                    <button
+                      type="button"
+                      className="settings__ghost"
+                      disabled={savingLegal}
+                      onClick={() => setLegalConfirmOpen(false)}
+                    >
+                      Odustani
+                    </button>
+                    <button
+                      type="button"
+                      className="settings__primary"
+                      disabled={savingLegal}
+                      onClick={confirmSaveLegal}
+                    >
+                      {savingLegal ? 'Spremamo…' : 'Da, spremi'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <article className="settings__sheet">
               <h2>Pravila platforme</h2>
-              <p className="settings__lead">Puni tekstovi dostupni su javno na anyminutesu.</p>
+              <p className="settings__lead">
+                Odvojeno od studija — obostrana zaštita: vi pokrivate klijente studija,
+                anyminutes pokriva rad aplikacije.
+              </p>
               <ul className="settings__links">
                 <li><Link to="/privatnost">Privatnost</Link></li>
                 <li><Link to="/uvjeti">Uvjeti korištenja</Link></li>
@@ -721,17 +1016,30 @@ export default function SettingsPage() {
             <article className="settings__sheet">
               <h2>Naplata</h2>
               <p className="settings__lead">
-                Kartice i računi nisu dio trenutačne faze. Kad se pretplata uključi,
-                ovdje ćete dodati način plaćanja.
+                Kartice, računi i salonska blagajna nisu dio trenutačnog pilota.
+                Online naplata dolazi kasnije.
               </p>
             </article>
           </div>
         ) : null}
 
         {tab === 'notifications' ? (
-          <form className="settings__sheet" onSubmit={savePrefs}>
-            <div className="settings__notify-group">
-              <h2>E-pošta</h2>
+          <form className="settings__sheet settings__sheet--notify" onSubmit={savePrefs}>
+            <article className="settings__notify-channel">
+              <header className="settings__notify-head">
+                <span className="settings__notify-index" aria-hidden="true">01</span>
+                <div>
+                  <p className="settings__notify-kicker">Kanal</p>
+                  <h2>E-pošta</h2>
+                  <p className="settings__lead">
+                    Obavijesti na adresu vlasnika — rezervacije, otkazi i članovi.
+                  </p>
+                </div>
+                <p className="settings__notify-meta">
+                  <strong>{emailPrefsOn}</strong>
+                  <span>uključeno</span>
+                </p>
+              </header>
               <ul className="settings__toggles">
                 {[
                   ['bookingEmail', 'Nova rezervacija', 'E-pošta kad netko rezervira termin'],
@@ -759,17 +1067,48 @@ export default function SettingsPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </article>
 
-            <div className="settings__notify-group">
-              <h2>Push na uređaj</h2>
-              <p className="settings__lead">
-                Web Push u pregledniku (i na mobitelu kad instalirate anyminutes kao app).
-                Uključite dozvolu na ovom uređaju, zatim odaberite što želite primati.
-              </p>
-              <div className="settings__actions" style={{ marginBottom: '1rem' }}>
+            <article className="settings__notify-channel settings__notify-channel--push">
+              <header className="settings__notify-head">
+                <span className="settings__notify-index" aria-hidden="true">02</span>
+                <div>
+                  <p className="settings__notify-kicker">Kanal</p>
+                  <h2>Push na uređaj</h2>
+                  <p className="settings__lead">
+                    Web Push u pregledniku — i na mobitelu kad instalirate anyminutes kao app.
+                  </p>
+                </div>
+                <p className="settings__notify-meta">
+                  <strong>{pushPrefsOn}</strong>
+                  <span>uključeno</span>
+                </p>
+              </header>
+
+              <div
+                className={`settings__notify-device${pushState.subscribed ? ' is-live' : ''}${!pushState.supported ? ' is-blocked' : ''}`}
+              >
+                <div className="settings__notify-device-copy">
+                  <p className="settings__notify-kicker">Ovaj uređaj</p>
+                  <strong>
+                    {pushState.subscribed
+                      ? 'Obavijesti su uključene'
+                      : pushState.supported
+                        ? 'Obavijesti nisu uključene'
+                        : 'Obavijesti nisu dostupne'}
+                  </strong>
+                  <p className="settings__fine">
+                    {!pushState.supported
+                      ? 'Ovaj preglednik ne podržava push. Na iPhoneu prvo dodajte anyminutes na početni zaslon.'
+                      : pushState.subscribed
+                        ? 'Ovaj uređaj vas obavještava o novim rezervacijama, otkazima i članovima.'
+                        : pushState.permission === 'denied'
+                          ? 'Preglednik je blokirao obavijesti. Uključite ih u postavkama stranice, pa pokušajte ponovno.'
+                          : 'Kliknite na gumb kako biste uključili obavijesti na ovom uređaju i bili u toku s novim rezervacijama.'}
+                  </p>
+                </div>
                 <button
-                  className="settings__primary"
+                  className={pushState.subscribed ? 'settings__ghost' : 'settings__primary'}
                   type="button"
                   disabled={pushBusy || !pushState.supported}
                   onClick={toggleDevicePush}
@@ -777,17 +1116,11 @@ export default function SettingsPage() {
                   {pushBusy
                     ? 'Pripremamo…'
                     : pushState.subscribed
-                      ? 'Isključite push na ovom uređaju'
-                      : 'Uključite push na ovom uređaju'}
+                      ? 'Isključite na ovom uređaju'
+                      : 'Uključite na ovom uređaju'}
                 </button>
               </div>
-              <p className="settings__fine">
-                {pushState.supported
-                  ? (pushState.subscribed
-                    ? 'Ovaj uređaj prima push obavijesti.'
-                    : `Status dozvole: ${pushState.permission}.`)
-                  : 'Ovaj preglednik ne podržava Web Push (na iOS-u treba „Dodaj na početni zaslon”).'}
-              </p>
+
               <ul className="settings__toggles">
                 {[
                   ['bookingPush', 'Nova rezervacija', 'Push kad član rezervira termin'],
@@ -814,16 +1147,16 @@ export default function SettingsPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </article>
 
-            <p className="settings__fine">
-              Odabir se sprema na vaš račun (i lokalno na uređaju).
-            </p>
-            <div className="settings__actions">
+            <footer className="settings__notify-foot">
+              <p className="settings__fine">
+                Odabir se sprema na vaš račun i lokalno na uređaju.
+              </p>
               <button className="settings__primary" type="submit">
                 Spremite obavijesti
               </button>
-            </div>
+            </footer>
           </form>
         ) : null}
       </div>

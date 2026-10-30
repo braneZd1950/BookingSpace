@@ -57,7 +57,8 @@ A user has one permanent `_id`. Do not create a new user every month.
 _id
 name
 slug
-niche                         # powerplate | fitness | pilates | yoga | playroom | generic
+niche                         # powerplate | fitness | pilates | yoga | playroom | services | generic
+nicheCustom                   # free text when niche is generic
 ownerId
 logoUrl
 heroImageUrl

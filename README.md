@@ -56,9 +56,9 @@ npm test             # server tests
 | --- | --- |
 | Web | `http://localhost:5173` |
 | Mobile | `http://localhost:5174` |
-| API | `http://localhost:4001/api` (default; see `server/.env.example`) |
+| API | `http://localhost:4001/api` |
 
-Copy env from `.env.example` and `server/.env.example`. Prefer secrets in `server/.env`.
+Copy `.env.example` to `.env` in the repo root. That one file is used locally by the API and by Vite.
 
 ## Documentation
 

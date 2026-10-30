@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-export const ROLES = ['CUSTOMER', 'BUSINESS_OWNER', 'STAFF', 'ADMIN'];
+/** ADMIN = super admin (samo ručno u bazi). PLATFORM_STAFF = djelatnik platforme (preko /admin). */
+export const ROLES = ['CUSTOMER', 'BUSINESS_OWNER', 'STAFF', 'ADMIN', 'PLATFORM_STAFF'];
 
 const userSchema = new Schema(
   {

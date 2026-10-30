@@ -2,8 +2,23 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-export const NICHES = ['powerplate', 'fitness', 'pilates', 'yoga', 'playroom', 'generic'];
-export const TEMPLATES = ['fitness', 'pilates', 'powerplate', 'playroom', 'generic'];
+export const NICHES = [
+  'powerplate',
+  'fitness',
+  'pilates',
+  'yoga',
+  'playroom',
+  'services',
+  'generic',
+];
+export const TEMPLATES = [
+  'fitness',
+  'pilates',
+  'powerplate',
+  'playroom',
+  'services',
+  'generic',
+];
 export const CAPACITY_MODELS = ['PER_SLOT', 'CONCURRENT'];
 export const BILLING_STATUSES = ['TRIAL', 'PAID', 'UNPAID', 'PAST_DUE', 'EXPIRED'];
 export const BILLING_PLANS = ['pilot', 'standard'];
@@ -69,6 +84,12 @@ const siteSettingsSchema = new Schema(
       title: { type: String, trim: true },
       description: { type: String, trim: true },
     },
+    legal: {
+      privacy: { type: String, trim: true, maxlength: 20000, default: '' },
+      terms: { type: String, trim: true, maxlength: 20000, default: '' },
+      cookies: { type: String, trim: true, maxlength: 20000, default: '' },
+      updatedAt: { type: Date },
+    },
   },
   { _id: false },
 );
@@ -131,6 +152,12 @@ const tenantSchema = new Schema(
       enum: NICHES,
       required: true,
     },
+    nicheCustom: {
+      type: String,
+      trim: true,
+      maxlength: 80,
+      default: '',
+    },
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -142,6 +169,10 @@ const tenantSchema = new Schema(
     phone: { type: String, trim: true },
     email: { type: String, trim: true, lowercase: true },
     address: { type: String, trim: true },
+    /** Grad — za Otkrij pretragu i javni prikaz. */
+    city: { type: String, trim: true, maxlength: 80, default: '' },
+    /** OIB obrta / društva — za račune i kasniju naplatu karticom. */
+    oib: { type: String, trim: true, maxlength: 11, default: '' },
     timezone: {
       type: String,
       required: true,

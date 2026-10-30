@@ -48,6 +48,7 @@ export const launchPhases = [
     build: [
       'Čarobnjak postavljanja (predložak, layout, boje)',
       'Pregled stranice u studiju',
+      'Galerija: upload i prikaz na javnoj stranici',
       'Link na rezervaciju člana',
     ],
     measure: 'Novi upiti ili registracije koje dođu preko stranice.',
@@ -59,6 +60,7 @@ export const launchPhases = [
     status: 'now',
     hypothesis: 'Upis gotovine/kartice u salonu smanjuje pogreške u broju treninga.',
     build: [
+      'Pripremna stranica Blagajna (bez aktivne naplate)',
       'Eksplicitni upis fizičkog plaćanja (gotovina / kartica / transfer)',
       'Povijest blagajne u UI',
       'Usklađenje aktivnih članstava s blagajnom',

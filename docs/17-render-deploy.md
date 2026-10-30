@@ -93,3 +93,36 @@ Aplikaciju otvarate na **frontend** URL-u, ne na API URL-u.
 | FE zove `localhost:4001` | `VITE_API_URL` + clear cache redeploy |
 | CORS | `CLIENT_ORIGIN` = točan frontend origin |
 | Spori prvi request | Render free sleep — pričekajte 30–60 s |
+| PDF prazan / bez fontova | Provjeri da su `client/public/fonts/*.ttf` u repou i da build kopira u `dist/fonts/` |
+
+---
+
+## Lokalno vs produkcija (pravi korisnici)
+
+| | Lokalni razvoj | Render (produkcija) |
+| --- | --- | --- |
+| Podaci | `npm --prefix server run seed:demo` (Ana/Ivan demo) | Pravi studiji i članovi — **ne** seed:demo |
+| Otkrij mock | Samo u Vite DEV | Isključen u produkcijskom buildu |
+| Demo tipke na /login | Samo DEV | Sakrivene |
+| Izvoz arhive | PDF + Excel + CSV; pečat integriteta (HMAC) | Isto; chip „službena arhiva” |
+| Super admin | `promote-super-admin.js` na lokalnoj bazi | Isti script na produkcijskoj bazi **jednom** |
+
+### Checklist prije testiranja s pravim korisnicima
+
+1. Render Environment: `NODE_ENV=production`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `VITE_API_URL` (puni HTTPS URL), SMTP / Cloudinary / VAPID po potrebi.
+2. Build: `npm run build:render` (ili Render Build Command iz Opcije A).
+3. Nakon deploya: `/api/health` → `ok`, `/` → SPA, `/fonts/DejaVuSans.ttf` → 200.
+4. Kreiraj / promoviraj admina: `node server/scripts/promote-super-admin.js admin@…` (prema produkcijskom `MONGO_URI`).
+5. Prijavi se na `/login` → `/admin` / `/analitika` — PDF gumb treba preuzeti **službeni** dokument (bez „TEST” trake).
+6. Registriraj test studio kao pravi vlasnik (ne demo seed) i prođi rezervaciju člana.
+7. **Nikad** ne pokreći `seed:demo` na produkcijskoj bazi (script to odbija ako je `NODE_ENV=production`).
+
+### Lokalni test PDF-a i demo podataka
+
+```bash
+npm run dev
+npm --prefix server run seed:demo   # samo lokalni Mongo
+# Admin → Preuzmite PDF → datoteka anyminutes-TEST-….pdf
+```
+
+Isti predložak i layout koristi produkcija; razlikuju se samo oznaka okruženja i izvor podataka (API).

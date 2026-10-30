@@ -84,9 +84,26 @@ function policyMark(minutes) {
   return `${Math.floor(hours)} h ${value % 60} min`;
 }
 
+function themeStyle(palette) {
+  const theme = palette?.theme;
+  if (!theme) return undefined;
+  return {
+    '--book-brand': theme.primaryColor,
+    '--book-soft': theme.secondaryColor,
+    '--book-ink': theme.ink,
+    '--book-canvas': theme.canvas,
+  };
+}
+
 export default function MemberBookPage() {
   const { slug } = useParams();
-  const { tenant: tenantFromLayout, membership, isMember, loggedIn } = useOutletContext();
+  const {
+    tenant: tenantFromLayout,
+    membership,
+    isMember,
+    loggedIn,
+    palette,
+  } = useOutletContext();
   const { accepted: consentOk } = usePrivacyConsent();
   const { data: publicData } = useGetPublicTenantQuery(slug, {
     skip: !slug,
@@ -260,276 +277,315 @@ export default function MemberBookPage() {
     }
   }
 
+  const railStatus = isMember ? sessionsLabel(membership) : 'Termini';
+
   return (
-    <main className="member-book">
-      <header className="member-book__head">
-        <div>
-          <h1>Termini</h1>
-          <p>
-            {service
-              ? `${service.name} · ${service.durationMinutes} min`
-              : 'Studio još nema objavljenu uslugu za rezervaciju.'}
-          </p>
-        </div>
-        {isMember ? (
-          <p className="member-book__badge">
-            {membership.planName || 'Članarina'}
-            {' · '}
-            {sessionsLabel(membership)}
-          </p>
-        ) : null}
-      </header>
+    <main className="member-book" style={themeStyle(palette)}>
+      <div className="member-book__atmosphere" aria-hidden="true">
+        <span className="member-book__wash" />
+        <span className="member-book__grain" />
+      </div>
 
-      {error ? <p className="member-book__error" role="alert">{error}</p> : null}
-      {ok ? <p className="member-book__ok" role="status">{ok}</p> : null}
+      <div className="member-book__layout">
+        <aside className="member-book__rail" aria-hidden="true">
+          <p className="member-book__rail-mark">Termini</p>
+          <p className="member-book__rail-status">{railStatus || 'Termini'}</p>
+        </aside>
 
-      <ul className="member-book__trust" aria-label="Zašto rezervirati ovdje">
-        <li>Rezervacija izravno kod {tenant.name} — ne u marketplace katalogu</li>
-        <li>Potvrda na e-poštu nakon rezervacije ili otkaza</li>
-        <li>Članarina i uplata dogovaraju se sa studijom; ovdje vodite termine</li>
-      </ul>
-
-      {!loggedIn ? (
-        <section className="member-book__gate">
-          <h2>Prijava je potrebna</h2>
-          <p>Prijavite se da vidite slobodne sate i rezervirate termin.</p>
-          <Link className="member-book__cta" to="/login">
-            Prijava
-          </Link>
-        </section>
-      ) : null}
-
-      {loggedIn && !isMember ? (
-        <section className="member-book__gate">
-          <h2>Članarina je potrebna</h2>
-          <p>
-            Pregled termina je dostupan članovima s aktivnom članarinom.
-            Obratite se studiju da vam je aktiviraju.
-          </p>
-          {(tenant.phone || tenant.email) ? (
-            <p className="member-book__contact">
-              {[tenant.phone, tenant.email].filter(Boolean).join(' · ')}
+        <div className="member-book__stage">
+          <header className="member-book__hero">
+            <p className="member-book__studio">{tenant.name}</p>
+            <h1>Termini</h1>
+            <p className="member-book__lead">
+              {service
+                ? `${service.name} · ${service.durationMinutes} min`
+                : 'Studio još nema objavljenu uslugu za rezervaciju.'}
             </p>
-          ) : null}
-        </section>
-      ) : null}
+            {isMember ? (
+              <p className="member-book__plan">
+                {membership.planName || 'Članarina'}
+                {' · '}
+                {sessionsLabel(membership)}
+              </p>
+            ) : null}
+          </header>
 
-      {loggedIn && isMember && !consentOk ? (
-        <ConsentGate title="Privola je potrebna za rezervacije" />
-      ) : null}
+          {error ? <p className="member-book__error" role="alert">{error}</p> : null}
+          {ok ? <p className="member-book__ok" role="status">{ok}</p> : null}
 
-      {loggedIn && isMember && consentOk && !service ? (
-        <section className="member-book__gate">
-          <h2>Nema usluge</h2>
-          <p>Studio još nije postavio uslugu za termine. Probajte kasnije.</p>
-        </section>
-      ) : null}
-
-      {canFetchSlots ? (
-        <div className="member-book__flow">
-          <aside
-            className={policyFlash ? 'member-book__policy is-updated' : 'member-book__policy'}
-            aria-label="Uvjeti otkazivanja"
-            aria-live="polite"
-          >
-            <div className="member-book__policy-head">
-              <h2>Uvjeti otkazivanja</h2>
-              <span className="member-book__policy-mark" key={cancelWindow}>
-                {policyMark(cancelWindow)}
+          <ol className="member-book__trust" aria-label="Zašto rezervirati ovdje">
+            <li>
+              <span className="member-book__trust-num" aria-hidden="true">01</span>
+              <span>
+                Rezervacija izravno kod
+                {' '}
+                {tenant.name}
+                {' '}
+                — ne u marketplace katalogu
               </span>
-            </div>
-            <p>
-              Termin možete otkazati najkasnije
-              {' '}
-              <strong key={`label-${cancelWindow}`}>{cancelWindowLabel}</strong>
-              .
-              U tom roku rezervacija se briše i termin se
-              {' '}
-              <strong>ne broji kao iskorišten</strong>
-              .
-            </p>
-            <p>
-              Ako otkažete kasnije ili ne dođete, studio zadržava termin kao iskorišten
-              prema svojim pravilima.
-            </p>
-          </aside>
+            </li>
+            <li>
+              <span className="member-book__trust-num" aria-hidden="true">02</span>
+              <span>Potvrda na e-poštu nakon rezervacije ili otkaza</span>
+            </li>
+            <li>
+              <span className="member-book__trust-num" aria-hidden="true">03</span>
+              <span>Članarina i uplata dogovaraju se sa studijom; ovdje vodite termine</span>
+            </li>
+          </ol>
 
-          <section className="member-book__pick" aria-label="Odabir dana">
-            <header className="member-book__section-head">
-              <h2>Dan</h2>
-              <p>Sljedeća dva tjedna</p>
-            </header>
-            <div ref={daysRef} className="member-book__days" role="listbox" aria-label="Dani">
-              {days.map((item) => {
-                const key = toDateKey(item);
-                const works = dayOpen(workingHours, item);
-                const selected = key === date;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    role="option"
-                    aria-selected={selected}
-                    disabled={!works}
-                    className={[
-                      selected ? 'is-on' : '',
-                      !works ? 'is-closed' : '',
-                    ].filter(Boolean).join(' ') || undefined}
-                    onClick={() => setDate(key)}
-                  >
-                    <span className="member-book__day-name">{shortDay(item)}</span>
-                    <strong>{item.getDate()}.</strong>
-                    <span className="member-book__day-meta">
-                      {works ? 'Otvoreno' : 'Zatvoreno'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+          {!loggedIn ? (
+            <section className="member-book__gate">
+              <p className="member-book__kicker">Pristup</p>
+              <h2>Prijava je potrebna</h2>
+              <p>Prijavite se da vidite slobodne sate i rezervirate termin.</p>
+              <Link className="member-book__cta" to="/login">
+                Prijava
+              </Link>
+            </section>
+          ) : null}
 
-          <form className="member-book__pick" onSubmit={onBook}>
-            <header className="member-book__section-head">
-              <h2>{formatDay(selectedDate)}</h2>
+          {loggedIn && !isMember ? (
+            <section className="member-book__gate">
+              <p className="member-book__kicker">Članstvo</p>
+              <h2>Članarina je potrebna</h2>
               <p>
-                {!open
-                  ? 'Studio je zatvoren ovog dana.'
-                  : loadingSlots
-                    ? 'Učitavamo slobodne sate…'
-                    : bookableSlots.length > 0
-                      ? 'Odaberite slobodan sat.'
-                      : 'Nema slobodnih sati za ovaj dan.'}
+                Pregled termina je dostupan članovima s aktivnom članarinom.
+                Obratite se studiju da vam je aktiviraju.
               </p>
-            </header>
+              {(tenant.phone || tenant.email) ? (
+                <p className="member-book__contact">
+                  {[tenant.phone, tenant.email].filter(Boolean).join(' · ')}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
 
-            {open && trainers.length > 0 ? (
-              <div className="member-book__trainers" role="group" aria-label="Trener">
-                <p className="member-book__trainers-label">Kod koga rezervirate</p>
-                <div className="member-book__trainer-list">
-                  {trainers.map((trainer) => {
-                    const id = String(trainer.id);
-                    const on = staffId === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        aria-pressed={on}
-                        className={on ? 'is-on' : undefined}
-                        onClick={() => setStaffId(id)}
-                      >
-                        <strong>{trainer.name}</strong>
-                        <span>{trainer.title || 'Trener'}</span>
-                      </button>
-                    );
-                  })}
+          {loggedIn && isMember && !consentOk ? (
+            <ConsentGate title="Privola je potrebna za rezervacije" />
+          ) : null}
+
+          {loggedIn && isMember && consentOk && !service ? (
+            <section className="member-book__gate">
+              <p className="member-book__kicker">Usluga</p>
+              <h2>Nema usluge</h2>
+              <p>Studio još nije postavio uslugu za termine. Probajte kasnije.</p>
+            </section>
+          ) : null}
+
+          {canFetchSlots ? (
+            <div className="member-book__flow">
+              <aside
+                className={policyFlash ? 'member-book__policy is-updated' : 'member-book__policy'}
+                aria-label="Uvjeti otkazivanja"
+                aria-live="polite"
+              >
+                <div className="member-book__policy-head">
+                  <div>
+                    <p className="member-book__kicker">Pravila</p>
+                    <h2>Uvjeti otkazivanja</h2>
+                  </div>
+                  <span className="member-book__policy-mark" key={cancelWindow}>
+                    {policyMark(cancelWindow)}
+                  </span>
                 </div>
-              </div>
-            ) : null}
+                <p>
+                  Termin možete otkazati najkasnije
+                  {' '}
+                  <strong key={`label-${cancelWindow}`}>{cancelWindowLabel}</strong>
+                  .
+                  U tom roku rezervacija se briše i termin se
+                  {' '}
+                  <strong>ne broji kao iskorišten</strong>
+                  .
+                </p>
+                <p>
+                  Ako otkažete kasnije ili ne dođete, studio zadržava termin kao iskorišten
+                  prema svojim pravilima.
+                </p>
+              </aside>
 
-            {open ? (
-              <>
-                <div className="member-book__slots" role="group" aria-label="Termini">
-                  {slots.map((slot) => {
-                    const free = slot.status === 'AVAILABLE';
-                    const on = slotTime === slot.startTime;
+              <section className="member-book__pick" aria-label="Odabir dana">
+                <header className="member-book__section-head">
+                  <p className="member-book__kicker">Korak 01</p>
+                  <h2>Dan</h2>
+                  <p>Sljedeća dva tjedna</p>
+                </header>
+                <div ref={daysRef} className="member-book__days" role="listbox" aria-label="Dani">
+                  {days.map((item) => {
+                    const key = toDateKey(item);
+                    const works = dayOpen(workingHours, item);
+                    const selected = key === date;
                     return (
                       <button
-                        key={slot.startTime}
+                        key={key}
                         type="button"
-                        disabled={!free}
-                        aria-pressed={on}
+                        role="option"
+                        aria-selected={selected}
+                        disabled={!works}
                         className={[
-                          on ? 'is-on' : '',
-                          slot.status === 'FULL' ? 'is-full' : '',
-                          slot.status === 'PAST' ? 'is-past' : '',
+                          selected ? 'is-on' : '',
+                          !works ? 'is-closed' : '',
                         ].filter(Boolean).join(' ') || undefined}
-                        onClick={() => setSlotTime(slot.startTime)}
+                        onClick={() => setDate(key)}
                       >
-                        <strong>{slot.startTime}</strong>
-                        <span>{slotNote(slot)}</span>
+                        <span className="member-book__day-name">{shortDay(item)}</span>
+                        <strong>{item.getDate()}.</strong>
+                        <span className="member-book__day-meta">
+                          {works ? 'Otvoreno' : 'Zatvoreno'}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
+              </section>
 
-                <div className={`member-book__confirm${selectedSlot ? ' is-ready' : ''}`}>
+              <form className="member-book__pick" onSubmit={onBook}>
+                <header className="member-book__section-head">
+                  <p className="member-book__kicker">Korak 02</p>
+                  <h2>{formatDay(selectedDate)}</h2>
                   <p>
-                    {selectedSlot
-                      ? `${formatDay(selectedDate)} · ${selectedSlot.startTime}${
-                        staffId
-                          ? ` · ${trainers.find((item) => String(item.id) === staffId)?.name || ''}`
-                          : ''
-                      }`
-                      : 'Odaberite sat za potvrdu rezervacije.'}
+                    {!open
+                      ? 'Studio je zatvoren ovog dana.'
+                      : loadingSlots
+                        ? 'Učitavamo slobodne sate…'
+                        : bookableSlots.length > 0
+                          ? 'Odaberite slobodan sat.'
+                          : 'Nema slobodnih sati za ovaj dan.'}
                   </p>
-                  <button
-                    className="member-book__cta"
-                    type="submit"
-                    disabled={booking || !selectedSlot}
-                  >
-                    {booking ? 'Rezerviramo…' : 'Rezerviraj termin'}
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </form>
+                </header>
 
-          <section className="member-book__bookings">
-            <header className="member-book__section-head">
-              <h2>Vaše rezervacije</h2>
-              <p>
-                {dayBookings.length > 0
-                  ? `${dayBookings.length} za odabrani dan · otkaz unutar roka vraća termin`
-                  : `Otkaz najkasnije ${cancelWindowLabel} · inače se termin broji`}
-              </p>
-            </header>
-            {loadingBookings ? <p className="member-book__hint">Učitavamo…</p> : null}
-            {!loadingBookings && myBookings.length === 0 ? (
-              <p className="member-book__hint">Još nemate rezervacija u ovom studiju.</p>
-            ) : null}
-            {myBookings.length > 0 ? (
-              <ul className="member-book__list">
-                {myBookings.map((item) => {
-                  const allowed = canCancelBooking(item, cancelWindow, timeZone);
-                  return (
-                    <li key={item.id} className={item.date === date ? 'is-day' : undefined}>
-                      <div>
-                        <strong>
-                          {formatBookingDay(item.date)}
-                          {' · '}
-                          {item.startTime}
-                          –
-                          {item.endTime}
-                        </strong>
-                        <span>
-                          {item.serviceName || 'Termin'}
-                          {item.staff?.name ? ` · ${item.staff.name}` : ''}
-                          {' · '}
-                          {allowed
-                            ? 'Možete otkazati bez gubitka termina'
-                            : 'Rok za otkaz je istekao'}
-                        </span>
-                      </div>
-                      {allowed ? (
-                        <button
-                          type="button"
-                          className="member-book__cancel"
-                          disabled={cancelling && busyId === item.id}
-                          onClick={() => onCancel(item.id)}
-                        >
-                          {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
-                        </button>
-                      ) : (
-                        <span className="member-book__locked">Zaključano</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : null}
-          </section>
+                {open && trainers.length > 0 ? (
+                  <div className="member-book__trainers" role="group" aria-label="Trener">
+                    <p className="member-book__trainers-label">Kod koga rezervirate</p>
+                    <div className="member-book__trainer-list">
+                      {trainers.map((trainer) => {
+                        const id = String(trainer.id);
+                        const on = staffId === id;
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            aria-pressed={on}
+                            className={on ? 'is-on' : undefined}
+                            onClick={() => setStaffId(id)}
+                          >
+                            <strong>{trainer.name}</strong>
+                            <span>{trainer.title || 'Trener'}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                {open ? (
+                  <>
+                    <div className="member-book__slots" role="group" aria-label="Termini">
+                      {slots.map((slot) => {
+                        const free = slot.status === 'AVAILABLE';
+                        const on = slotTime === slot.startTime;
+                        return (
+                          <button
+                            key={slot.startTime}
+                            type="button"
+                            disabled={!free}
+                            aria-pressed={on}
+                            className={[
+                              on ? 'is-on' : '',
+                              slot.status === 'FULL' ? 'is-full' : '',
+                              slot.status === 'PAST' ? 'is-past' : '',
+                            ].filter(Boolean).join(' ') || undefined}
+                            onClick={() => setSlotTime(slot.startTime)}
+                          >
+                            <strong>{slot.startTime}</strong>
+                            <span>{slotNote(slot)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className={`member-book__confirm${selectedSlot ? ' is-ready' : ''}`}>
+                      <p>
+                        {selectedSlot
+                          ? `${formatDay(selectedDate)} · ${selectedSlot.startTime}${
+                            staffId
+                              ? ` · ${trainers.find((item) => String(item.id) === staffId)?.name || ''}`
+                              : ''
+                          }`
+                          : 'Odaberite sat za potvrdu rezervacije.'}
+                      </p>
+                      <button
+                        className="member-book__cta"
+                        type="submit"
+                        disabled={booking || !selectedSlot}
+                      >
+                        {booking ? 'Rezerviramo…' : 'Rezerviraj termin'}
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+              </form>
+
+              <section className="member-book__bookings">
+                <header className="member-book__section-head">
+                  <p className="member-book__kicker">Pregled</p>
+                  <h2>Vaše rezervacije</h2>
+                  <p>
+                    {dayBookings.length > 0
+                      ? `${dayBookings.length} za odabrani dan · otkaz unutar roka vraća termin`
+                      : `Otkaz najkasnije ${cancelWindowLabel} · inače se termin broji`}
+                  </p>
+                </header>
+                {loadingBookings ? <p className="member-book__hint">Učitavamo…</p> : null}
+                {!loadingBookings && myBookings.length === 0 ? (
+                  <p className="member-book__hint">Još nemate rezervacija u ovom studiju.</p>
+                ) : null}
+                {myBookings.length > 0 ? (
+                  <ul className="member-book__list">
+                    {myBookings.map((item) => {
+                      const allowed = canCancelBooking(item, cancelWindow, timeZone);
+                      return (
+                        <li key={item.id} className={item.date === date ? 'is-day' : undefined}>
+                          <div>
+                            <strong>
+                              {formatBookingDay(item.date)}
+                              {' · '}
+                              {item.startTime}
+                              –
+                              {item.endTime}
+                            </strong>
+                            <span>
+                              {item.serviceName || 'Termin'}
+                              {item.staff?.name ? ` · ${item.staff.name}` : ''}
+                              {' · '}
+                              {allowed
+                                ? 'Možete otkazati bez gubitka termina'
+                                : 'Rok za otkaz je istekao'}
+                            </span>
+                          </div>
+                          {allowed ? (
+                            <button
+                              type="button"
+                              className="member-book__cancel"
+                              disabled={cancelling && busyId === item.id}
+                              onClick={() => onCancel(item.id)}
+                            >
+                              {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
+                            </button>
+                          ) : (
+                            <span className="member-book__locked">Zaključano</span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </section>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </main>
   );
 }

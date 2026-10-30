@@ -8,7 +8,17 @@ import User from '../models/User.js';
 import env from '../config/env.js';
 import { smtpConfigured, verifyMail } from './mail.js';
 
+/** Pristup platformi (/analitika, /admin): super admin, djelatnik ili ADMIN_EMAILS. */
 export function isPlatformAdmin(user) {
+  if (!user) return false;
+  if (user.role === 'ADMIN' || user.role === 'PLATFORM_STAFF') return true;
+  const allowed = env.adminEmails;
+  if (!allowed.length) return false;
+  return allowed.includes(String(user.email || '').toLowerCase());
+}
+
+/** Upravljanje djelatnicima: samo ADMIN u bazi (ili bootstrap e-pošta iz ADMIN_EMAILS). */
+export function isPlatformSuperAdmin(user) {
   if (!user) return false;
   if (user.role === 'ADMIN') return true;
   const allowed = env.adminEmails;
@@ -123,7 +133,7 @@ export async function listPlatformStudios({ days = 30 } = {}) {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const tenants = await Tenant.find({})
     .sort({ createdAt: -1 })
-    .select('name slug niche email phone active createdAt');
+    .select('name slug niche nicheCustom email phone active createdAt');
 
   const ids = tenants.map((item) => item._id);
   const [members, bookings, views] = await Promise.all([
@@ -178,6 +188,7 @@ export async function listPlatformStudios({ days = 30 } = {}) {
       name: tenant.name,
       slug: tenant.slug,
       niche: tenant.niche,
+      nicheCustom: tenant.nicheCustom || '',
       email: tenant.email || '',
       phone: tenant.phone || '',
       active: Boolean(tenant.active),

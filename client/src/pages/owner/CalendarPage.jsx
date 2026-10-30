@@ -294,116 +294,148 @@ export default function CalendarPage() {
 
   return (
     <section className="studio-panel cal">
-      <div className="cal__head">
-        <div>
-          <h1>Kalendar</h1>
-          <p>
-            {showDemo
-              ? 'Primjer rasporeda — nije povezan s bazom.'
-              : 'Zauzeti termini iz baze, po danima i kapacitetu usluge.'}
-          </p>
-        </div>
-        <div className="cal__head-actions">
-          <label className="cal__demo-toggle">
-            <input
-              type="checkbox"
-              checked={showDemo}
-              onChange={(event) => {
-                setShowDemo(event.target.checked);
-                setSelected(null);
-              }}
-            />
-            Primjer rasporeda
-          </label>
-          <div className="cal__month-nav">
-            <button type="button" onClick={() => shiftMonth(-1)} aria-label="Prethodni mjesec">
-              ‹
-            </button>
-            <strong>{monthLabel(cursor)}</strong>
-            <button type="button" onClick={() => shiftMonth(1)} aria-label="Sljedeći mjesec">
-              ›
-            </button>
+      <div className="cal__atmosphere" aria-hidden="true">
+        <span className="cal__wash" />
+        <span className="cal__grain" />
+      </div>
+
+      <div className="cal__stage">
+        <header className="cal__head">
+          <div>
+            <p className="cal__eyebrow">Pregled</p>
+            <h1>Kalendar</h1>
+            <p className="cal__lede">
+              {showDemo
+                ? 'Primjer rasporeda — nije povezan s bazom.'
+                : 'Zauzeti termini iz baze, po danima i kapacitetu usluge.'}
+            </p>
           </div>
-        </div>
+          <div className="cal__head-actions">
+            <label className="cal__demo-toggle">
+              <input
+                type="checkbox"
+                checked={showDemo}
+                onChange={(event) => {
+                  setShowDemo(event.target.checked);
+                  setSelected(null);
+                }}
+              />
+              Primjer rasporeda
+            </label>
+            <div className="cal__month-nav">
+              <button type="button" onClick={() => shiftMonth(-1)} aria-label="Prethodni mjesec">
+                ‹
+              </button>
+              <strong>{monthLabel(cursor)}</strong>
+              <button type="button" onClick={() => shiftMonth(1)} aria-label="Sljedeći mjesec">
+                ›
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {!ready ? (
+          <p className="cal__hint">Studio još nije u bazi. Dovršite registraciju da vidite stvarne termine.</p>
+        ) : null}
+
+        {ready && !showDemo && loadingBookings ? (
+          <p className="cal__hint">Učitavamo termine iz baze…</p>
+        ) : null}
+
+        {ready && !showDemo && bookingsError ? (
+          <p className="cal__error">
+            {bookingsErr?.status === 'FETCH_ERROR'
+              ? 'Poslužitelj nije dostupan. Kalendar se nije učitao.'
+              : 'Rezervacije se nisu učitale. Pokušajte ponovno.'}
+          </p>
+        ) : null}
+
+        <section className="cal__board">
+          <header className="cal__panel-head">
+            <span className="cal__index" aria-hidden="true">01</span>
+            <div>
+              <p className="cal__kicker">Popunjenost</p>
+              <h2>Legenda</h2>
+              <p>
+                Boja dana = najpuniji termin tog dana u odnosu na kapacitet
+                {services[0] ? ` (${capacity} mjesta)` : ` (${DEFAULT_CAPACITY} mjesta)`}.
+              </p>
+            </div>
+          </header>
+          <ul className="cal__legend" aria-label="Legenda popunjenosti">
+            {loadLegend.map((item) => (
+              <li key={item.id} className={`cal__legend-item is-${item.id}`}>
+                <span className="cal__legend-swatch" aria-hidden="true" />
+                <span>
+                  <strong>{item.label}</strong>
+                  <em>{item.note}</em>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="cal__month">
+          <header className="cal__panel-head">
+            <span className="cal__index" aria-hidden="true">02</span>
+            <div>
+              <p className="cal__kicker">Mjesec</p>
+              <h2>{monthLabel(cursor)}</h2>
+              <p>Odaberite dan za pregled rezervacija.</p>
+            </div>
+            <p className="cal__meta">
+              <strong>{bookings.length}</strong>
+              <span>{showDemo ? 'primjer' : 'upisa'}</span>
+            </p>
+          </header>
+
+          <div className="cal__grid" role="grid" aria-label={`Kalendar ${monthLabel(cursor)}`}>
+            {weekLabels.map((label) => (
+              <span key={label} className="cal__weekday" role="columnheader">
+                {label}
+              </span>
+            ))}
+            {cells.map((date, index) => {
+              if (!date) {
+                return <span key={`empty-${index}`} className="cal__cell cal__cell--empty" />;
+              }
+
+              const key = toKey(date);
+              const open = dayHours(date, hours).works;
+              const current = sameDay(date, today);
+              const list = byDay.get(key) || [];
+              const stats = dayPeak(list, capacity);
+              const level = occupancyLevel(stats.ratio, open);
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="gridcell"
+                  className={[
+                    'cal__cell',
+                    `is-load-${level}`,
+                    current ? 'is-today' : '',
+                    selected && sameDay(date, selected) ? 'is-selected' : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => setSelected(date)}
+                  aria-label={`${formatDay(date)}, ${loadLabel(level)}${stats.count ? `, ${stats.count} upisa` : ''}`}
+                >
+                  <span className="cal__day">{date.getDate()}</span>
+                  <span className="cal__hint-label">{loadLabel(level)}</span>
+                  {stats.count > 0 ? <span className="cal__count">{stats.count}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {ready && !showDemo && !loadingBookings && !bookingsError && liveBookings.length === 0 ? (
+          <p className="cal__hint">
+            Još nema rezervacija u bazi za ovaj mjesec. Uključite „Primjer rasporeda” za pregled izgleda.
+          </p>
+        ) : null}
       </div>
-
-      {!ready ? (
-        <p className="studio-empty">Studio još nije u bazi. Dovršite registraciju da vidite stvarne termine.</p>
-      ) : null}
-
-      {ready && !showDemo && loadingBookings ? (
-        <p className="studio-empty">Učitavamo termine iz baze…</p>
-      ) : null}
-
-      {ready && !showDemo && bookingsError ? (
-        <p className="cal__error">
-          {bookingsErr?.status === 'FETCH_ERROR'
-            ? 'Poslužitelj nije dostupan. Kalendar se nije učitao.'
-            : 'Rezervacije se nisu učitale. Pokušajte ponovno.'}
-        </p>
-      ) : null}
-
-      <ul className="cal__legend" aria-label="Legenda popunjenosti">
-        {loadLegend.map((item) => (
-          <li key={item.id} className={`cal__legend-item is-${item.id}`}>
-            <span className="cal__legend-swatch" aria-hidden="true" />
-            <span>
-              <strong>{item.label}</strong>
-              <em>{item.note}</em>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="cal__legend-note">
-        Boja dana = najpuniji termin tog dana u odnosu na kapacitet
-        {services[0] ? ` (${capacity} mjesta)` : ` (${DEFAULT_CAPACITY} mjesta)`}.
-      </p>
-
-      <div className="cal__grid" role="grid" aria-label={`Kalendar ${monthLabel(cursor)}`}>
-        {weekLabels.map((label) => (
-          <span key={label} className="cal__weekday" role="columnheader">
-            {label}
-          </span>
-        ))}
-        {cells.map((date, index) => {
-          if (!date) {
-            return <span key={`empty-${index}`} className="cal__cell cal__cell--empty" />;
-          }
-
-          const key = toKey(date);
-          const open = dayHours(date, hours).works;
-          const current = sameDay(date, today);
-          const list = byDay.get(key) || [];
-          const stats = dayPeak(list, capacity);
-          const level = occupancyLevel(stats.ratio, open);
-
-          return (
-            <button
-              key={key}
-              type="button"
-              role="gridcell"
-              className={[
-                'cal__cell',
-                `is-load-${level}`,
-                current ? 'is-today' : '',
-                selected && sameDay(date, selected) ? 'is-selected' : '',
-              ].filter(Boolean).join(' ')}
-              onClick={() => setSelected(date)}
-              aria-label={`${formatDay(date)}, ${loadLabel(level)}${stats.count ? `, ${stats.count} upisa` : ''}`}
-            >
-              <span className="cal__day">{date.getDate()}</span>
-              <span className="cal__hint">{loadLabel(level)}</span>
-              {stats.count > 0 ? <span className="cal__count">{stats.count}</span> : null}
-            </button>
-          );
-        })}
-      </div>
-
-      {ready && !showDemo && !loadingBookings && !bookingsError && liveBookings.length === 0 ? (
-        <p className="studio-empty">
-          Još nema rezervacija u bazi za ovaj mjesec. Uključite „Primjer rasporeda” za pregled izgleda.
-        </p>
-      ) : null}
 
       {selected ? (
         <div
@@ -421,6 +453,7 @@ export default function CalendarPage() {
           >
             <header className="cal-modal__head">
               <div>
+                <p className="cal__kicker">Dan</p>
                 <h2 id={titleId}>{formatDay(selected)}</h2>
                 <p>
                   {dayBookings.length === 0
@@ -462,7 +495,9 @@ export default function CalendarPage() {
                           {slot.endTime}
                         </time>
                         <span className="cal-modal__cap">
-                          {filled}/{cap}
+                          {filled}
+                          /
+                          {cap}
                           {full ? ' · popunjeno' : ''}
                           {slot.serviceName ? ` · ${slot.serviceName}` : ''}
                         </span>

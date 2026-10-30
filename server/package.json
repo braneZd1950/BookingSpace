@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "test": "node --test test/*.test.js",
     "test:ci": "node --test --test-reporter=spec test/*.test.js",
+    "seed:demo": "node scripts/seed-demo.js",
     "mail:check": "node scripts/check-mail.js",
     "generate:jwt-secret": "node src/utils/generateJwtSecret.js",
     "generate:jwt-secret:write": "node src/utils/generateJwtSecret.js --write",

@@ -63,3 +63,22 @@ export const updateBillingSchema = z.object({
     markPaid: z.boolean().optional(),
   }).refine((body) => Object.keys(body).length > 0, 'No changes'),
 });
+
+export const exportSealSchema = z.object({
+  body: z.object({
+    documentId: z.string().trim().min(8).max(80),
+    contentHash: z.string().trim().regex(/^[a-f0-9]{64}$/i),
+    title: z.string().trim().max(200).optional(),
+    fileStem: z.string().trim().max(80).optional(),
+  }),
+});
+
+export const exportVerifySchema = z.object({
+  body: z.object({
+    documentId: z.string().trim().min(8).max(80),
+    contentHash: z.string().trim().regex(/^[a-f0-9]{64}$/i),
+    signedAt: z.string().trim().min(10).max(40),
+    signature: z.string().trim().regex(/^[a-f0-9]{64}$/i),
+    signerEmail: z.string().trim().email().max(200),
+  }),
+});

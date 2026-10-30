@@ -1,5 +1,5 @@
-import { contactEmail } from '../../contact.js';
-import { legalEntity } from '../../legal.js';
+import { contactEmail } from '../../lib/contact.js';
+import { legalEntity } from '../../lib/legal.js';
 import InfoPage from './InfoPage.jsx';
 import LegalPage from './LegalPage.jsx';
 

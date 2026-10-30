@@ -16,7 +16,7 @@ async function start() {
 
   server.on('error', (error) => {
     if (error?.code === 'EADDRINUSE') {
-      console.error(`Port ${env.port} je zauzet. Zaustavite drugi proces ili postavite PORT u server/.env`);
+      console.error(`Port ${env.port} je zauzet. Zaustavite drugi proces ili postavite PORT u .env`);
       process.exit(1);
     }
     throw error;

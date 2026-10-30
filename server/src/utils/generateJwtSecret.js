@@ -5,7 +5,7 @@ import { randomString } from './randomString.js';
 
 const envFile = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../../.env.development',
+  '../../../.env',
 );
 
 const secret = randomString(32);
@@ -30,4 +30,4 @@ if (!/^JWT_EXPIRES_IN=.*$/m.test(text)) {
 }
 
 fs.writeFileSync(envFile, text);
-process.stdout.write('JWT_SECRET written to .env.development\n');
+process.stdout.write('JWT_SECRET written to .env\n');

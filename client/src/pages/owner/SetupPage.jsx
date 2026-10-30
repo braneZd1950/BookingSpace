@@ -6,12 +6,13 @@ import {
   useUpdateTenantMutation,
   useUploadImageMutation,
 } from '../../api/tenantApi.js';
-import { loadStudio, mediaUrl, saveStudio } from '../../studio.js';
+import { loadStudio, mediaUrl, saveStudio } from '../../lib/studio.js';
 import { findLayout, pageLayouts } from './layouts.js';
-import { findPalette, studioPalettes, themePayload } from '../../styles/studioPalette.js';
+import { findPalette, palettesForNiche, themePayload } from '../../styles/studioPalette.js';
 import SiteFrame, { frameSources } from './SiteFrame.jsx';
 import {
   findTemplate,
+  nicheFromTemplate,
   siteTemplates,
   studioHost,
   templateForNiche,
@@ -49,6 +50,7 @@ function draftFrom(studio) {
     phone: studio.phone || '',
     email: studio.email || '',
     address: studio.address || '',
+    city: studio.city || '',
     hours: studioHours(studio),
     sections: { ...defaultSections, ...studio.sections, services: true, schedule: true },
     template: template.id,
@@ -157,6 +159,7 @@ export default function SetupPage() {
 
   const hostname = studioHost(studio.slug);
   const chosen = findPalette(draft.palette);
+  const { recommendedIds, palettes } = palettesForNiche(nicheFromTemplate(draft.template));
   const previewStyle = {
     background: chosen.theme.canvas,
     color: chosen.theme.ink,
@@ -174,11 +177,12 @@ export default function SetupPage() {
 
   function pickTemplate(templateId) {
     const item = findTemplate(templateId);
+    const { recommendedIds: nextRecommended } = palettesForNiche(item.niches[0] || 'generic');
     setDraft((current) => ({
       ...current,
       template: item.id,
       layout: item.layout,
-      palette: item.palette,
+      palette: nextRecommended[0] || item.palette,
     }));
     setFormError('');
   }
@@ -266,6 +270,7 @@ export default function SetupPage() {
             phone: draft.phone.trim(),
             email: draft.email.trim(),
             address: draft.address.trim(),
+            city: draft.city.trim(),
           }),
           bookingSettings: { workingHours: hoursPayload(draft.hours) },
         },
@@ -385,27 +390,35 @@ export default function SetupPage() {
         <>
           <h1>Odaberite boje.</h1>
           <p className="setup__lead">
-            Dvije boje za {hostname}. Klijenti ih vide čim otvore stranicu.
+            Prvih pet je preporučeno za vaš predložak. Ostale su dostupne ispod.
           </p>
           <div className="setup__palette" role="radiogroup" aria-label="Paleta boja">
-            {studioPalettes.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="radio"
-                aria-label={item.name}
-                aria-checked={draft.palette === item.id}
-                className={draft.palette === item.id ? 'setup__choice is-selected' : 'setup__choice'}
-                onClick={() => change('palette', item.id)}
-              >
-                <span
-                  className="setup__swatch"
-                  style={{
-                    background: `linear-gradient(90deg, ${item.theme.primaryColor} 62%, ${item.theme.secondaryColor} 62%)`,
-                  }}
-                />
-              </button>
-            ))}
+            {palettes.map((item) => {
+              const isRecommended = recommendedIds.includes(item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="radio"
+                  aria-label={isRecommended ? `${item.name}, preporučeno` : item.name}
+                  aria-checked={draft.palette === item.id}
+                  className={[
+                    'setup__choice',
+                    draft.palette === item.id ? 'is-selected' : '',
+                    isRecommended ? 'is-recommended' : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => change('palette', item.id)}
+                >
+                  <span
+                    className="setup__swatch"
+                    style={{
+                      background: `linear-gradient(90deg, ${item.theme.primaryColor} 62%, ${item.theme.secondaryColor} 62%)`,
+                    }}
+                  />
+                  {isRecommended ? <span className="setup__choice-badge">Preporučeno</span> : null}
+                </button>
+              );
+            })}
           </div>
           <article className="setup__preview" style={previewStyle}>
             <p className="setup__preview-host">{hostname}</p>
@@ -467,12 +480,23 @@ export default function SetupPage() {
                 </label>
               </div>
               <label>
-                Ulica i grad
+                Ulica
                 <input
                   name="street-address"
                   autoComplete="street-address"
                   value={draft.address}
                   onChange={(event) => change('address', event.target.value)}
+                  placeholder="Ulica i kućni broj"
+                />
+              </label>
+              <label>
+                Grad
+                <input
+                  name="address-level2"
+                  autoComplete="address-level2"
+                  value={draft.city}
+                  onChange={(event) => change('city', event.target.value)}
+                  placeholder="npr. Zagreb"
                 />
               </label>
             </section>
@@ -620,8 +644,11 @@ export default function SetupPage() {
               logoSrc={frameSources(draft, heroPreview, logoPreview).logoSrc}
               palette={chosen}
               sections={draft.sections}
+              galleryImages={studio.siteSettings?.gallery || []}
               hours={draft.hours}
               layout={draft.layout}
+              slug={studio.slug}
+              legalBase={studio.slug ? `/s/${studio.slug}` : ''}
             />
           </div>
           {formError ? <p className="setup__form-error">{formError}</p> : null}

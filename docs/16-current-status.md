@@ -1,4 +1,4 @@
-# Current status (audit 2026-10-25)
+# Current status (audit 2026-10-29)
 
 Product UI brand: **anyminutes**. Repo package / historical docs may still say BookingSpace.
 
@@ -10,7 +10,8 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | --- | --- | --- |
 | Auth (register, login, JWT, profile, password change) | Done | Forgot / reset password + email |
 | Multi-tenant studios (`tenantId`) | Done | Public by slug; no hostname resolver product yet |
-| Owner studio shell `/stranica` | Done | Termini, Kalendar, Članovi, Analitika, Postavke, Online |
+| Owner studio shell `/stranica` | Done (pilot) | Početna, Termini, Kalendar, Članovi, Analitika, Postavke |
+| Owner gallery / Online / Blagajna / Plan | Held | Flagged off in `studioFeatures.js` — not in pilot nav |
 | Owner booking loop | Done | Create / cancel; capacity; optional trainer |
 | Member self-book `/s/:slug` | Done | Book / cancel with ACTIVE membership |
 | Members + plans (add / renew / suspend) | Done | Physical payment **ledger API** exists; dedicated cash-entry UI still thin (Phase 5 gap) |
@@ -19,6 +20,7 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | Web Push + PWA (web + mobile shell) | Done | VAPID; `client-mobile` reuses `client/src` |
 | Privacy consent | Done | Banner + `POST /consent` + gate before booking |
 | Platform admin `/analitika` | Done (web) | Studios, users, activity, SaaS billing, reports, system |
+| Admin arhivski izvoz | Done (web) | PDF + Excel + CSV; digitalni pečat integriteta (HMAC) preko `/analytics/platform/exports/seal` |
 | SaaS billing fields + warn/invoice email | Done | Trial / paid / unpaid on tenant |
 | Online workouts | Built, **flagged off** | `ONLINE_ENABLED = false` in `client/src/onlineFeature.js` |
 | Server tests + GitHub CI | Done | `mvp-flow`, `studio-ops`, `platform-billing`; build client + mobile |
@@ -29,10 +31,8 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | --- | --- |
 | Waitlist | Spec only (`waitlistEntries`) — no model/API |
 | Hostname → tenant product | Slug routes only (`/s/:slug`); `{slug}.booking.hr` is display/copy |
-| Dedicated physical-payment UI | API `POST …/payments` exists; owner UI renews membership without a full till flow |
-| Online workouts in production UI | Code + API ready; feature flag off |
-| `/stranica/plan` route | `LaunchPlanPage` / `launchPhases.js` exist but are **not mounted** |
-| Gallery CMS as owner nav | No `/stranica/galerija` route |
+| Dedicated physical-payment UI | Held for later; API `POST …/payments` exists |
+| Online / gallery / launch plan UI | Held — `GALLERY_ENABLED` / `ONLINE_ENABLED` / `PAYMENTS_UI_ENABLED` / `LAUNCH_PLAN_ENABLED` = false |
 | Stripe / online checkout | Not used |
 | Socket.io realtime | Dependency present; unused in `server/src` |
 
@@ -55,7 +55,7 @@ npm run build:client
 npm run build:mobile
 ```
 
-Env templates: root `.env.example`, `server/.env.example`. Prefer secrets in `server/.env` (wins over root).
+Local secrets live in one gitignored file: repo-root `.env` (copy from `.env.example`). Vite only exposes `VITE_*`. Render uses its own Environment panel.
 
 ## Doc map after this audit
 

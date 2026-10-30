@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const keys = webpush.generateVAPIDKeys();
 const write = process.argv.includes('--write');
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const envPath = path.join(root, '.env');
 
 console.log('VAPID_PUBLIC_KEY=' + keys.publicKey);
@@ -13,7 +13,7 @@ console.log('VAPID_PRIVATE_KEY=' + keys.privateKey);
 console.log('VAPID_SUBJECT=mailto:kontakt@anyminutes.hr');
 
 if (!write) {
-  console.log('\nDodaj u server/.env ili pokreni: npm run generate:vapid -- --write');
+  console.log('\nDodaj u .env u rootu repoa ili pokreni: npm run generate:vapid -- --write');
   process.exit(0);
 }
 

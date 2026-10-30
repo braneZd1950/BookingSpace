@@ -6,6 +6,7 @@ import ConsentBanner from '@client/components/ConsentBanner.jsx';
 import InstallAppBanner from '@client/components/InstallAppBanner.jsx';
 import { rememberAnalyticsTenant } from '@client/components/UsageTracker.jsx';
 import { StudioMissingPage } from '@client/pages/public/StatusPage.jsx';
+import { ONLINE_ENABLED } from '@client/lib/studioFeatures.js';
 import { paletteFromTenant } from '@client/pages/member/publicSite.js';
 import { IconBook, IconHome, IconLock, IconPlay } from './icons.jsx';
 
@@ -107,10 +108,12 @@ export default function MobileMemberLayout() {
           <IconBook />
           <span>Termini</span>
         </NavLink>
-        <NavLink to={`${base}/online`}>
-          <IconPlay />
-          <span>Online</span>
-        </NavLink>
+        {ONLINE_ENABLED ? (
+          <NavLink to={`${base}/online`}>
+            <IconPlay />
+            <span>Online</span>
+          </NavLink>
+        ) : null}
         {loggedIn ? (
           <NavLink to={`${base}/privatnost`}>
             <IconLock />

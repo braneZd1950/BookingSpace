@@ -1,7 +1,9 @@
 import {
   createTenant,
+  discoverTenants,
   getPublicTenant,
   listMyTenants,
+  removeGalleryImage,
   updateSite,
   updateTenant,
   uploadImage,
@@ -15,6 +17,11 @@ export async function create(req, res) {
 export async function mine(req, res) {
   const tenants = await listMyTenants(req.user);
   res.json({ tenants });
+}
+
+export async function discover(req, res) {
+  const result = await discoverTenants(req.input.query);
+  res.json(result);
 }
 
 export async function publicProfile(req, res) {
@@ -38,6 +45,15 @@ export async function upload(req, res) {
     req.input.params.tenantId,
     req.file,
     req.input.body.purpose,
+  );
+  res.json({ tenant });
+}
+
+export async function removeGallery(req, res) {
+  const tenant = await removeGalleryImage(
+    req.user,
+    req.input.params.tenantId,
+    req.input.body.publicId,
   );
   res.json({ tenant });
 }

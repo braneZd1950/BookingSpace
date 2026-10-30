@@ -18,6 +18,7 @@ import {
   sendBillingWarning,
   updatePlatformBilling,
 } from '../../utils/billing.js';
+import { createExportSeal, verifyExportSeal } from '../../utils/exportSeal.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
 
 async function optionalUser(req) {
@@ -146,5 +147,27 @@ export async function platformBillingInvoiceHandler(req, res) {
     throw new HttpError(403, 'Forbidden', { code: 'FORBIDDEN' });
   }
   const result = await sendBillingInvoice(req.input.params.tenantId);
+  res.json(result);
+}
+
+export async function platformExportSealHandler(req, res) {
+  if (!isPlatformAdmin(req.user)) {
+    throw new HttpError(403, 'Forbidden', { code: 'FORBIDDEN' });
+  }
+  const seal = createExportSeal({
+    documentId: req.input.body.documentId,
+    title: req.input.body.title,
+    fileStem: req.input.body.fileStem,
+    contentHash: req.input.body.contentHash,
+    user: req.user,
+  });
+  res.json({ seal });
+}
+
+export async function platformExportVerifyHandler(req, res) {
+  if (!isPlatformAdmin(req.user)) {
+    throw new HttpError(403, 'Forbidden', { code: 'FORBIDDEN' });
+  }
+  const result = verifyExportSeal(req.input.body);
   res.json(result);
 }

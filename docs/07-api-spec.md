@@ -29,6 +29,7 @@ Health: `GET /api/health`
 | PATCH | `/tenants/:tenantId` | Update profile / hours / billing-related fields |
 | PATCH | `/tenants/:tenantId/site` | Theme, layout, SEO, gallery |
 | POST | `/tenants/:tenantId/images` | Upload logo / hero / gallery (Cloudinary or local) |
+| DELETE | `/tenants/:tenantId/gallery` | Remove gallery image (`publicId` in body) |
 
 ## Services
 

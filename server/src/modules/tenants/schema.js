@@ -19,12 +19,32 @@ export const createTenantSchema = z.object({
   body: z.object({
     name: z.string().trim().min(1).max(80),
     niche: z.enum(NICHES),
+    nicheCustom: z.string().trim().max(80).optional(),
     description: z.string().trim().max(2000).optional(),
     phone: z.string().trim().max(30).optional(),
     email: email.optional(),
     address: z.string().trim().max(200).optional(),
+    city: z.string().trim().max(80).optional(),
+    oib: z.union([z.literal(''), z.string().trim().regex(/^\d{11}$/, 'OIB mora imati 11 znamenki')]).optional(),
     timezone: timeZone.optional(),
     template: z.enum(TEMPLATES).optional(),
+    layout: z.enum(['banner', 'bar', 'sidebar']).optional(),
+    paletteId: z.string().trim().max(40).optional(),
+    visibleSections: z.object({
+      hero: z.boolean().optional(),
+      about: z.boolean().optional(),
+      services: z.boolean().optional(),
+      schedule: z.boolean().optional(),
+      gallery: z.boolean().optional(),
+      contact: z.boolean().optional(),
+      location: z.boolean().optional(),
+      openingHours: z.boolean().optional(),
+    }).optional(),
+    legal: z.object({
+      privacy: z.string().trim().max(20000).optional(),
+      terms: z.string().trim().max(20000).optional(),
+      cookies: z.string().trim().max(20000).optional(),
+    }).optional(),
   }),
 });
 
@@ -38,15 +58,26 @@ export const publicTenantSchema = z.object({
   }),
 });
 
+export const discoverTenantsSchema = z.object({
+  query: z.object({
+    q: z.string().trim().max(80).optional().default(''),
+    category: z.enum(['all', 'fitness', 'services', 'playroom', 'generic']).optional().default('all'),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(60),
+  }),
+});
+
 export const updateTenantSchema = z.object({
   params: z.object({ tenantId: objectId }),
   body: z.object({
     name: z.string().trim().min(1).max(80).optional(),
     niche: z.enum(NICHES).optional(),
+    nicheCustom: z.string().trim().max(80).optional(),
     description: z.string().trim().max(2000).optional(),
     phone: z.string().trim().max(30).optional(),
     email: email.optional(),
     address: z.string().trim().max(200).optional(),
+    city: z.string().trim().max(80).optional(),
+    oib: z.union([z.literal(''), z.string().trim().regex(/^\d{11}$/, 'OIB mora imati 11 znamenki')]).optional(),
     timezone: timeZone.optional(),
     active: z.boolean().optional(),
     bookingSettings: z.object({
@@ -90,6 +121,11 @@ export const updateSiteSchema = z.object({
       title: z.string().trim().max(120).optional(),
       description: z.string().trim().max(300).optional(),
     }).optional(),
+    legal: z.object({
+      privacy: z.string().trim().max(20000).optional(),
+      terms: z.string().trim().max(20000).optional(),
+      cookies: z.string().trim().max(20000).optional(),
+    }).optional(),
   }).refine((body) => Object.keys(body).length > 0, 'No changes'),
 });
 
@@ -97,5 +133,12 @@ export const uploadImageSchema = z.object({
   params: z.object({ tenantId: objectId }),
   body: z.object({
     purpose: z.enum(['logo', 'hero', 'gallery']),
+  }),
+});
+
+export const removeGalleryImageSchema = z.object({
+  params: z.object({ tenantId: objectId }),
+  body: z.object({
+    publicId: z.string().trim().min(1).max(500),
   }),
 });

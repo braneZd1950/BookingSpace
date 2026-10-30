@@ -1,22 +1,126 @@
 .register {
-  width: min(26rem, calc(100% - 2.5rem));
+  --reg-ink: #132824;
+  --reg-paper: #f4f8f6;
+  --reg-panel: rgb(255 255 255 / 72%);
+  --reg-line: color-mix(in srgb, var(--brand) 14%, var(--line));
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 clamp(3rem, 7vw, 5rem);
+  overflow: clip;
+  color: var(--reg-ink);
+  background:
+    linear-gradient(180deg, #e4eeea 0%, var(--reg-paper) 18rem, var(--bg) 100%);
+}
+
+.register__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.register__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(8px);
+  animation: register-orb 14s ease-in-out infinite alternate;
+}
+
+.register__orb--a {
+  top: -8rem;
+  left: -6rem;
+  width: min(34rem, 70vw);
+  height: min(34rem, 70vw);
+  background:
+    radial-gradient(circle at 40% 40%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 68%);
+}
+
+.register__orb--b {
+  top: 12rem;
+  right: -10rem;
+  width: min(28rem, 60vw);
+  height: min(28rem, 60vw);
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+  animation-delay: -4s;
+}
+
+.register__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  background:
+    repeating-linear-gradient(
+      -22deg,
+      transparent,
+      transparent 10px,
+      rgb(19 40 36 / 2.4%) 10px,
+      rgb(19 40 36 / 2.4%) 11px
+    );
+}
+
+.register__watermark {
+  position: absolute;
+  top: 4.5rem;
+  right: -2%;
+  color: color-mix(in srgb, var(--brand) 9%, transparent);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(5rem, 18vw, 14rem);
+  font-weight: 640;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  white-space: nowrap;
+  user-select: none;
+  transform: rotate(-8deg);
+  animation: register-mark 18s ease-in-out infinite alternate;
+}
+
+.register__shell {
+  position: relative;
+  z-index: 1;
+  width: min(68rem, calc(100% - 2.4rem));
   margin: 0 auto;
-  padding: 3.2rem 0 3.5rem;
+  padding-top: clamp(2.4rem, 6vh, 4rem);
 }
 
-.register--wide {
-  width: min(40rem, calc(100% - 2.5rem));
+.register__intro {
+  width: min(36rem, 100%);
+  margin-bottom: 1.6rem;
+  animation: register-rise 0.85s ease both;
 }
 
-.register--wide .biz-form {
-  margin-top: 1.4rem;
+.register__brand {
+  margin: 0 0 0.85rem;
+  color: var(--brand-strong);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  font-weight: 640;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.register__brand::after {
+  content: '';
+  display: block;
+  width: 3.2rem;
+  height: 0.22rem;
+  margin-top: 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: register-underline 0.9s 0.25s ease both;
 }
 
 .register h1 {
-  margin: 0 0 0.6rem;
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(2rem, 5vw, 2.7rem);
-  font-weight: 640;
+  margin: 0 0 0.7rem;
+  max-width: 14ch;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.55rem, 3.6vw, 2.15rem);
+  font-weight: 650;
+  font-optical-sizing: auto;
   line-height: 1.12;
   letter-spacing: -0.03em;
 }
@@ -25,7 +129,45 @@
 .register__login {
   margin: 0;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.register__lead {
+  max-width: 38rem;
+  font-size: 1.02rem;
+}
+
+.register__desk {
+  margin-top: 0.4rem;
+  animation: register-rise 0.9s 0.12s ease both;
+}
+
+.register__login {
+  margin-top: 1.35rem;
+  font-size: 0.95rem;
+  animation: register-rise 0.9s 0.2s ease both;
+}
+
+.register__login a {
+  color: var(--brand-strong);
+  font-weight: 700;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+/* Shared auth pages still use .register without atelier shell */
+.register:not(:has(.register__shell)) {
+  width: min(26rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 3.2rem 0 3.5rem;
+  background: transparent;
+}
+
+.register:not(:has(.register__shell)) h1 {
+  max-width: none;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 2.7rem);
+  font-weight: 640;
 }
 
 .register__form {
@@ -110,7 +252,7 @@
   margin-top: 0.3rem;
   padding: 0.85rem 1.2rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0.55rem;
   background: var(--brand);
   color: var(--on-brand);
   font: inherit;
@@ -134,12 +276,55 @@
   outline-offset: 3px;
 }
 
-.register__login {
-  margin-top: 1.1rem;
-  font-size: 0.95rem;
+@keyframes register-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.9rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.register__login a {
-  color: var(--brand);
-  font-weight: 600;
+@keyframes register-underline {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes register-orb {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(2%, 3%, 0) scale(1.06);
+  }
+}
+
+@keyframes register-mark {
+  from {
+    transform: rotate(-8deg) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: rotate(-6deg) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register__intro,
+  .register__desk,
+  .register__login,
+  .register__brand::after,
+  .register__orb,
+  .register__watermark {
+    animation: none;
+  }
 }

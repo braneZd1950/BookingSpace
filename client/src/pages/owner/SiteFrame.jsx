@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { mediaUrl, STUDIO_KEY } from '../../studio.js';
+import PlatformFooter from '../../components/PlatformFooter.jsx';
+import { mediaUrl, STUDIO_KEY } from '../../lib/studio.js';
 import { hourRows } from './studioTime.js';
 import './SiteFrame.scss';
 
@@ -32,6 +33,53 @@ function telHref(phone) {
   return digits ? `tel:${digits}` : '';
 }
 
+function galleryShots(galleryImages, heroSrc) {
+  const uploaded = (galleryImages || [])
+    .map((item) => mediaUrl(typeof item === 'string' ? item : item?.url))
+    .filter(Boolean);
+  if (uploaded.length) return uploaded;
+  return [
+    heroSrc || ambient.shotA,
+    heroSrc || ambient.shotB,
+    heroSrc || ambient.shotC,
+  ];
+}
+
+function GalleryBlock({ shots, emptyCopy = false }) {
+  if (!shots.length) {
+    return emptyCopy ? (
+      <section>
+        <h3>Galerija</h3>
+        <p>Fotografije dolaze ovdje.</p>
+      </section>
+    ) : null;
+  }
+  const filled = shots.length > 3;
+  return (
+    <section className="site__gallery">
+      <h3>Galerija</h3>
+      <div className={filled ? 'site__shots site__shots--filled' : 'site__shots'}>
+        {shots.map((src, index) => {
+          const role = index === 0 ? 'a' : index === 1 ? 'b' : 'c';
+          return (
+            <figure
+              key={`${src}-${index}`}
+              className={filled ? 'site__shot' : `site__shot site__shot--${role}`}
+              style={photoStyle(src, 'center')}
+            />
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function studioLegalPath(legalBase, slug, page) {
+  const base = (legalBase || (slug ? `/s/${slug}` : '')).replace(/\/$/, '');
+  if (!base) return null;
+  return `${base}/${page}`;
+}
+
 function LiveFooter({
   name,
   phone,
@@ -40,16 +88,23 @@ function LiveFooter({
   hours,
   sections,
   bookTo,
+  legalBase = '',
+  slug = '',
 }) {
-  const year = new Date().getFullYear();
   const showHours = sections.openingHours;
   const showContact = sections.contact || sections.location;
   const phoneLink = telHref(phone);
+  const privacyTo = studioLegalPath(legalBase, slug, 'privatnost');
+  const termsTo = studioLegalPath(legalBase, slug, 'uvjeti');
+  const cookiesTo = studioLegalPath(legalBase, slug, 'kolacici');
+  const hasStudioLegal = Boolean(privacyTo && termsTo && cookiesTo);
 
   return (
     <footer className="site__foot">
+      <div className="site__foot-aura" aria-hidden="true" />
       <div className="site__foot-grid">
         <div className="site__foot-brand">
+          <p className="site__foot-eyebrow">Vaša poveznica</p>
           <strong>{name}</strong>
           <p>Rezervirajte termin online — prema radnom vremenu i pravilima studija.</p>
           {bookTo ? (
@@ -98,27 +153,28 @@ function LiveFooter({
         ) : null}
       </div>
 
-      <div className="site__foot-bar">
-        <span>
-          ©
-          {' '}
-          {year}
-          {' '}
-          {name}
-        </span>
-        <nav className="site__foot-legal" aria-label="Pravila">
-          <Link to="/privatnost">Privatnost</Link>
-          <Link to="/uvjeti">Uvjeti</Link>
-          <Link to="/kolacici">Kolačići</Link>
-          <Link className="site__foot-credit" to="/" onClick={leaveToAppHome}>
-            anyminutes
-          </Link>
-        </nav>
+      {hasStudioLegal ? (
+        <div className="site__foot-rules">
+          <div>
+            <p className="site__foot-eyebrow">Pravila poslovanja</p>
+            <p className="site__foot-rules-lead">
+              Pravila privatnosti, uvjeti korištenja i kolačići ovog studija —
+              odvojeno od pravila platforme anyminutes ispod.
+            </p>
+          </div>
+          <nav className="site__foot-legal" aria-label="Pravila poslovanja">
+            <Link to={privacyTo}>Privatnost</Link>
+            <span aria-hidden="true">·</span>
+            <Link to={termsTo}>Uvjeti korištenja</Link>
+            <span aria-hidden="true">·</span>
+            <Link to={cookiesTo}>Kolačići</Link>
+          </nav>
+        </div>
+      ) : null}
+
+      <div className="site__foot-platform">
+        <PlatformFooter credit={name} onHomeClick={leaveToAppHome} />
       </div>
-      <p className="site__foot-note">
-        Rezervacije idu preko anyminutesa. Studio postavlja termine i pravila;
-        platforma obrađuje podatke potrebne za prijavu i rezervaciju.
-      </p>
     </footer>
   );
 }
@@ -144,8 +200,11 @@ export default function SiteFrame({
   palette,
   sections,
   hours,
+  galleryImages = [],
   layout = 'banner',
   bookTo = '',
+  legalBase = '',
+  slug = '',
   withBar = true,
 }) {
   const theme = palette.theme;
@@ -164,9 +223,7 @@ export default function SiteFrame({
   const book = canBook ? <BookControl bookTo={bookTo} /> : null;
   const heroPhoto = heroSrc || ambient.hero;
   const aboutPhoto = heroSrc || ambient.about;
-  const galleryA = heroSrc || ambient.shotA;
-  const galleryB = heroSrc ? heroSrc : ambient.shotB;
-  const galleryC = heroSrc ? heroSrc : ambient.shotC;
+  const shots = galleryShots(galleryImages, heroSrc);
   const heroBackground = `linear-gradient(180deg, rgb(12 18 24 / 28%), rgb(12 18 24 / 72%)), url("${heroPhoto}")`;
 
   if (!withBar) {
@@ -208,25 +265,7 @@ export default function SiteFrame({
           </section>
         ) : null}
 
-        {sections.gallery ? (
-          <section className="site__gallery">
-            <h3>Galerija</h3>
-            <div className="site__shots">
-              <figure
-                className="site__shot site__shot--a"
-                style={photoStyle(galleryA, 'center')}
-              />
-              <figure
-                className="site__shot site__shot--b"
-                style={photoStyle(galleryB, heroSrc ? 'center 70%' : 'center')}
-              />
-              <figure
-                className="site__shot site__shot--c"
-                style={photoStyle(galleryC, heroSrc ? 'right center' : 'center')}
-              />
-            </div>
-          </section>
-        ) : null}
+        {sections.gallery ? <GalleryBlock shots={shots} /> : null}
 
         <LiveFooter
           name={name}
@@ -236,6 +275,8 @@ export default function SiteFrame({
           hours={hours}
           sections={sections}
           bookTo={bookTo}
+          legalBase={legalBase}
+          slug={slug}
         />
       </article>
     );
@@ -268,12 +309,7 @@ export default function SiteFrame({
       {sections.location ? <p>{address || 'Lokacija još nije upisana.'}</p> : null}
     </section>
   ) : null;
-  const gallery = sections.gallery ? (
-    <section>
-      <h3>Galerija</h3>
-      <p>Fotografije dolaze ovdje.</p>
-    </section>
-  ) : null;
+  const gallery = sections.gallery ? <GalleryBlock shots={shots} emptyCopy={!shots.length} /> : null;
   const about = sections.about && description ? (
     <section>
       <h3>O studiju</h3>

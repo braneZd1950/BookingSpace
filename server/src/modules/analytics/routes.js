@@ -9,6 +9,8 @@ import {
   platformBillingInvoiceHandler,
   platformBillingUpdateHandler,
   platformBillingWarnHandler,
+  platformExportSealHandler,
+  platformExportVerifyHandler,
   platformHandler,
   platformReportsHandler,
   platformStudiosHandler,
@@ -19,6 +21,8 @@ import {
 } from './controller.js';
 import {
   billingTenantParamsSchema,
+  exportSealSchema,
+  exportVerifySchema,
   platformActivitySchema,
   platformSummarySchema,
   studioSummarySchema,
@@ -99,6 +103,18 @@ router.get(
   requireAuth,
   validate(studioSummarySchema),
   studioHandler,
+);
+router.post(
+  '/platform/exports/seal',
+  requireAuth,
+  validate(exportSealSchema),
+  platformExportSealHandler,
+);
+router.post(
+  '/platform/exports/verify',
+  requireAuth,
+  validate(exportVerifySchema),
+  platformExportVerifyHandler,
 );
 
 export default router;

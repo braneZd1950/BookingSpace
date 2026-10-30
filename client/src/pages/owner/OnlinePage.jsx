@@ -7,7 +7,7 @@ import {
   useUpdateOnlineWorkoutMutation,
   useUploadOnlineVideoMutation,
 } from '../../api/onlineApi.js';
-import { ONLINE_ENABLED } from '../../onlineFeature.js';
+import { ONLINE_ENABLED } from '../../lib/onlineFeature.js';
 import './OnlinePage.scss';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
@@ -51,20 +51,50 @@ export default function OnlinePage() {
 
   if (!ONLINE_ENABLED) {
     return (
-      <section className="studio-panel online-admin">
-        <div className="online-admin__head">
-          <div>
-            <h1>Online</h1>
-            <p>Snimljeni treninzi za članove — upload, članarina i kasnije plaćanje.</p>
-          </div>
-          <span className="online-admin__soon-badge">Uskoro</span>
+      <section className="studio-panel online-admin online-admin--soon">
+        <div className="online-admin__atmosphere" aria-hidden="true">
+          <span className="online-admin__wash" />
+          <span className="online-admin__grain" />
         </div>
-        <div className="online-admin__empty">
-          <strong>Uskoro dolazi</strong>
-          <p>
-            Ovu značajku još ne uključujemo u produkciju. Kad bude spremna, ovdje ćete
-            dodavati video treninge koje članovi gledaju preko paketa ili pojedinačne kupnje.
-          </p>
+        <div className="online-admin__stage">
+          <header className="online-admin__head">
+            <div>
+              <p className="online-admin__eyebrow">Biblioteka</p>
+              <h1>Online</h1>
+              <p className="online-admin__lede">
+                Snimljeni treninzi za članove — upload, članarina i kasnije plaćanje.
+              </p>
+            </div>
+            <span className="online-admin__soon-badge">Uskoro</span>
+          </header>
+
+          <article className="online-admin__soon">
+            <header className="online-admin__panel-head">
+              <span className="online-admin__index" aria-hidden="true">01</span>
+              <div>
+                <p className="online-admin__kicker">Status</p>
+                <h2>Uskoro dolazi</h2>
+                <p>
+                  Ovu značajku još ne uključujemo u produkciju. Kad bude spremna, ovdje ćete
+                  dodavati video treninge koje članovi gledaju preko paketa ili pojedinačne kupnje.
+                </p>
+              </div>
+            </header>
+            <ul className="online-admin__roadmap">
+              <li>
+                <strong>Upload videa</strong>
+                <span>Snimke treninga na Cloudinary ili vanjski link</span>
+              </li>
+              <li>
+                <strong>Pristup preko paketa</strong>
+                <span>Članovi s aktivnom članarinom gledaju besplatno</span>
+              </li>
+              <li>
+                <strong>Pojedinačna kupnja</strong>
+                <span>Plaćanje karticom za one izvan paketa — kasnije</span>
+              </li>
+            </ul>
+          </article>
         </div>
       </section>
     );
@@ -202,11 +232,14 @@ export default function OnlinePage() {
   if (!ready) {
     return (
       <section className="studio-panel online-admin">
-        <div className="online-admin__head">
-          <div>
-            <h1>Online</h1>
-            <p>Studio još nije u bazi.</p>
-          </div>
+        <div className="online-admin__atmosphere" aria-hidden="true">
+          <span className="online-admin__wash" />
+          <span className="online-admin__grain" />
+        </div>
+        <div className="online-admin__stage">
+          <p className="online-admin__eyebrow">Online</p>
+          <h1>Još nije spremno</h1>
+          <p className="online-admin__lede">Studio još nije u bazi.</p>
         </div>
       </section>
     );
@@ -214,82 +247,109 @@ export default function OnlinePage() {
 
   return (
     <section className="studio-panel online-admin">
-      <div className="online-admin__head">
-        <div>
-          <h1>Online</h1>
-          <p>
-            Snimljeni treninzi za članove. Tko ima preostale termine u paketu — gleda besplatno.
-            Ostali će kasnije moći platiti pojedinačno.
-          </p>
-        </div>
-        <button
-          className="online-admin__primary"
-          type="button"
-          onClick={() => {
-            setOpen(true);
-            setFormError('');
-            setNotice('');
-          }}
-        >
-          Dodajte trening
-        </button>
+      <div className="online-admin__atmosphere" aria-hidden="true">
+        <span className="online-admin__wash" />
+        <span className="online-admin__grain" />
       </div>
-
-      {notice ? <p className="online-admin__notice" role="status">{notice}</p> : null}
-
-      {isLoading ? <p className="studio-empty">Učitavamo…</p> : null}
-      {isError ? <p className="online-admin__error">Lista se nije učitala.</p> : null}
-
-      {!isLoading && !isError && workouts.length === 0 ? (
-        <div className="online-admin__empty">
-          <strong>Još nema online treninga</strong>
-          <p>Dodajte prvi snimljeni trening — članovi ga vide u navigaciji Online.</p>
-          <button className="online-admin__primary" type="button" onClick={() => setOpen(true)}>
+      <div className="online-admin__stage">
+        <header className="online-admin__head">
+          <div>
+            <p className="online-admin__eyebrow">Biblioteka</p>
+            <h1>Online</h1>
+            <p className="online-admin__lede">
+              Snimljeni treninzi za članove. Tko ima preostale termine u paketu — gleda besplatno.
+              Ostali će kasnije moći platiti pojedinačno.
+            </p>
+          </div>
+          <button
+            className="online-admin__primary"
+            type="button"
+            onClick={() => {
+              setOpen(true);
+              setFormError('');
+              setNotice('');
+            }}
+          >
             Dodajte trening
           </button>
-        </div>
-      ) : null}
+        </header>
 
-      {workouts.length > 0 ? (
-        <ul className="online-admin__list">
-          {workouts.map((item) => {
-            const busy = busyId === item.id;
-            return (
-              <li key={item.id} className={item.active ? undefined : 'is-off'}>
-                <div>
-                  <div className="online-admin__title-row">
-                    <strong>{item.title}</strong>
-                    <em>{item.active ? 'Objavljeno' : 'Skriveno'}</em>
-                  </div>
-                  <p>
-                    {item.durationMinutes}
-                    {' min · '}
-                    {priceLabel(item.price)}
-                  </p>
-                  {item.description ? <p className="online-admin__desc">{item.description}</p> : null}
-                </div>
-                <div className="online-admin__actions">
-                  <button
-                    type="button"
-                    disabled={busy || updating}
-                    onClick={() => onToggle(item)}
-                  >
-                    {item.active ? 'Sakrijte' : 'Objavite'}
-                  </button>
-                  <button
-                    type="button"
-                    className="is-danger"
-                    disabled={busy || removing}
-                    onClick={() => onRemove(item)}
-                  >
-                    Obrišite
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
+        {notice ? <p className="online-admin__notice" role="status">{notice}</p> : null}
+
+        {isLoading ? <p className="online-admin__hint">Učitavamo…</p> : null}
+        {isError ? <p className="online-admin__error">Lista se nije učitala.</p> : null}
+
+        {!isLoading && !isError && workouts.length === 0 ? (
+          <article className="online-admin__empty">
+            <header className="online-admin__panel-head">
+              <span className="online-admin__index" aria-hidden="true">01</span>
+              <div>
+                <p className="online-admin__kicker">Biblioteka</p>
+                <h2>Još nema treninga</h2>
+                <p>Dodajte prvi snimljeni trening — članovi ga vide u navigaciji Online.</p>
+              </div>
+            </header>
+            <button className="online-admin__primary" type="button" onClick={() => setOpen(true)}>
+              Dodajte trening
+            </button>
+          </article>
+        ) : null}
+
+        {workouts.length > 0 ? (
+          <section className="online-admin__library">
+            <header className="online-admin__panel-head">
+              <span className="online-admin__index" aria-hidden="true">01</span>
+              <div>
+                <p className="online-admin__kicker">Objavljeno</p>
+                <h2>Treninzi</h2>
+                <p>Upravljajte snimkama koje članovi vide online.</p>
+              </div>
+              <p className="online-admin__meta">
+                <strong>{workouts.length}</strong>
+                <span>ukupno</span>
+              </p>
+            </header>
+            <ul className="online-admin__list">
+              {workouts.map((item) => {
+                const busy = busyId === item.id;
+                return (
+                  <li key={item.id} className={item.active ? undefined : 'is-off'}>
+                    <div>
+                      <div className="online-admin__title-row">
+                        <strong>{item.title}</strong>
+                        <em>{item.active ? 'Objavljeno' : 'Skriveno'}</em>
+                      </div>
+                      <p>
+                        {item.durationMinutes}
+                        {' min · '}
+                        {priceLabel(item.price)}
+                      </p>
+                      {item.description ? <p className="online-admin__desc">{item.description}</p> : null}
+                    </div>
+                    <div className="online-admin__actions">
+                      <button
+                        type="button"
+                        disabled={busy || updating}
+                        onClick={() => onToggle(item)}
+                      >
+                        {item.active ? 'Sakrijte' : 'Objavite'}
+                      </button>
+                      <button
+                        type="button"
+                        className="is-danger"
+                        disabled={busy || removing}
+                        onClick={() => onRemove(item)}
+                      >
+                        Obrišite
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+      </div>
 
       {open ? (
         <div

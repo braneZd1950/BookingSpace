@@ -8,7 +8,7 @@ import { findPalette } from '@client/styles/studioPalette.js';
 import { loadStudio, STUDIO_KEY } from '@client/studio.js';
 import { studioPublicPath } from '@client/studioPublicUrl.js';
 import { studioFromTenant } from '@client/pages/owner/studioSync.js';
-import { IconCalendar, IconGear, IconHome, IconPeople, IconPlay } from './icons.jsx';
+import { IconCalendar, IconGear, IconHome, IconPeople } from './icons.jsx';
 
 const TOKEN_KEY = 'bookingspace.token';
 
@@ -23,7 +23,6 @@ function IconSlots() {
 const tabs = [
   ['/stranica', 'Početna', IconHome, true],
   ['/stranica/termini', 'Termini', IconSlots, false],
-  ['/stranica/online', 'Online', IconPlay, false],
   ['/stranica/kalendar', 'Kalendar', IconCalendar, false],
   ['/stranica/clanovi', 'Članovi', IconPeople, false],
   ['/stranica/postavke', 'Više', IconGear, false],
@@ -57,7 +56,9 @@ export default function MobileStudioLayout() {
       && current.id === next.id
       && current.name === next.name
       && current.palette === next.palette
-      && current.guideDone === next.guideDone;
+      && current.guideDone === next.guideDone
+      && JSON.stringify(current.siteSettings?.gallery || [])
+        === JSON.stringify(next.siteSettings?.gallery || []);
     if (same) return;
     localStorage.setItem(STUDIO_KEY, JSON.stringify(next));
     setStudio(next);

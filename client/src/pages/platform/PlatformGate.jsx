@@ -14,7 +14,7 @@ export default function PlatformGate() {
       <main className="analytics">
         <h1>Platforma</h1>
         <p className="analytics__lead">
-          Prijavite se računom s <code>ADMIN_EMAILS</code> za pristup analitici.
+          Prijavite se običnom prijavom kao super admin ili djelatnik platforme.
         </p>
         <Link to="/login">Prijava</Link>
       </main>

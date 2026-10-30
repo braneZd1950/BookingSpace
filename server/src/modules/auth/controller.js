@@ -1,4 +1,4 @@
-import { isPlatformAdmin } from '../../utils/analytics.js';
+import { isPlatformAdmin, isPlatformSuperAdmin } from '../../utils/analytics.js';
 import {
   changePassword,
   loginUser,
@@ -27,6 +27,7 @@ export function me(req, res) {
   res.json({
     user: toPublicUser(req.user),
     platformAdmin: isPlatformAdmin(req.user),
+    platformSuperAdmin: isPlatformSuperAdmin(req.user),
   });
 }
 

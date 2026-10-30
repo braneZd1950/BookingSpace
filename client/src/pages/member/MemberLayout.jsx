@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useGetMeQuery } from '../../api/authApi.js';
 import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
 import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
+import { ONLINE_ENABLED } from '../../lib/studioFeatures.js';
 import { paletteFromTenant } from './publicSite.js';
 import './MemberLayout.scss';
 
@@ -41,12 +43,17 @@ function readSession() {
   }
 }
 
+function writeSession(next) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(next));
+}
+
 export default function MemberLayout() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(readSession);
   const token = localStorage.getItem(TOKEN_KEY);
-  const loggedIn = Boolean(token && session);
+  const loggedIn = Boolean(token);
+  const { data: meData } = useGetMeQuery(undefined, { skip: !token });
 
   const { data, isLoading, isError, error } = useGetPublicTenantQuery(slug, {
     skip: !slug,
@@ -60,6 +67,31 @@ export default function MemberLayout() {
   useEffect(() => {
     if (tenantId) rememberAnalyticsTenant(tenantId);
   }, [tenantId]);
+
+  useEffect(() => {
+    const user = meData?.user;
+    if (!token || !user) return;
+    const next = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      detail: session?.detail || '',
+    };
+    const same = session
+      && session.email === next.email
+      && session.role === next.role
+      && session.name === next.name;
+    if (same) return;
+    writeSession(next);
+    setSession(next);
+  }, [token, meData, session]);
+
+  const activeSession = session || (meData?.user ? {
+    name: meData.user.name,
+    email: meData.user.email,
+    role: meData.user.role,
+    detail: '',
+  } : null);
 
   const membership = loggedIn
     ? (membershipData?.memberships || []).find((item) => {
@@ -128,14 +160,19 @@ export default function MemberLayout() {
           <NavLink to={`${base}/termini`}>
             Termini
           </NavLink>
-          <NavLink to={`${base}/online`}>
-            Online
-          </NavLink>
-          {loggedIn ? (
-            <NavLink to={`${base}/privatnost`}>
-              Privatnost
+          {ONLINE_ENABLED ? (
+            <NavLink to={`${base}/online`}>
+              Online
             </NavLink>
           ) : null}
+          {loggedIn ? (
+            <NavLink to={`${base}/otkrij`}>
+              Otkrij
+            </NavLink>
+          ) : null}
+          <NavLink to={`${base}/privatnost`}>
+            Privatnost
+          </NavLink>
           {loggedIn ? (
             <button
               type="button"
@@ -151,7 +188,7 @@ export default function MemberLayout() {
           )}
         </nav>
       </header>
-      <Outlet context={{ tenant, membership, isMember, loggedIn, session, palette }} />
+      <Outlet context={{ tenant, membership, isMember, loggedIn, session: activeSession, palette }} />
       <ConsentBanner />
       <InstallAppBanner />
     </div>

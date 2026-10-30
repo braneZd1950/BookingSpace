@@ -205,6 +205,10 @@ async function main() {
       const status = await web(route);
       ok(`Preview ${route}`, status === 200, String(status));
     }
+    for (const font of ['/fonts/DejaVuSans.ttf', '/fonts/DejaVuSans-Bold.ttf']) {
+      const response = await fetch(`${webBase}${font}`, { method: 'HEAD' });
+      ok(`PDF font ${font}`, response.ok, String(response.status));
+    }
   } catch (error) {
     ok('Preview web reachable', false, error.message);
   }

@@ -1,137 +1,357 @@
 .studio-panel.termini {
+  --termini-brand: var(--site-brand, var(--brand, #0e6b73));
+  --termini-soft: var(--site-soft, var(--brand-soft, #dceff0));
+  --termini-ink: var(--site-ink, var(--fg, #112b2e));
+  --termini-edge: color-mix(in srgb, var(--termini-brand) 16%, transparent);
+  --termini-accent: var(--accent, #f2a33a);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 clamp(3rem, 7vw, 4.5rem);
+  overflow: clip;
+  color: var(--termini-ink);
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--termini-soft) 48%, #fff) 0%,
+      color-mix(in srgb, var(--bg, #f5f8f8) 92%, #fff) 22rem,
+      #fff 100%
+    );
+}
+
+.termini__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.termini__wash {
+  position: absolute;
+  top: -10%;
+  right: -6%;
+  width: min(36rem, 72vw);
+  height: 58%;
+  background:
+    radial-gradient(
+      ellipse at 45% 40%,
+      color-mix(in srgb, var(--termini-brand) 16%, transparent),
+      transparent 72%
+    );
+  filter: blur(4px);
+  animation: termini-wash 18s ease-in-out infinite alternate;
+}
+
+.termini__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  background:
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 12px,
+      color-mix(in srgb, var(--termini-ink) 2.8%, transparent) 12px,
+      color-mix(in srgb, var(--termini-ink) 2.8%, transparent) 13px
+    );
+}
+
+.termini__stage {
+  position: relative;
+  z-index: 1;
   width: min(72rem, calc(100% - 2.4rem));
+  margin: 0 auto;
+  padding-top: clamp(1.75rem, 4vw, 2.5rem);
+  animation: termini-rise 0.55s ease both;
 }
 
 .termini__head {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.1rem 1.5rem;
   align-items: flex-end;
   justify-content: space-between;
+  padding-bottom: 1.45rem;
+  border-bottom: 1px solid var(--termini-edge);
+}
+
+.termini__eyebrow,
+.termini__kicker,
+.termini__rail-label {
+  margin: 0;
+  color: var(--termini-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .termini__head h1 {
-  margin: 0;
+  margin: 0.4rem 0 0;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(2rem, 4.4vw, 2.75rem);
+  font-weight: 640;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
-.termini__head p {
+.termini__head h1::after {
+  content: '';
+  display: block;
+  width: 2.6rem;
+  height: 0.18rem;
+  margin-top: 0.7rem;
+  border-radius: 999px;
+  background: var(--termini-accent);
+  transform-origin: left center;
+  animation: termini-rule-x 0.7s 0.12s ease both;
+}
+
+.termini__lede {
   max-width: 36rem;
-  margin: 0.45rem 0 0;
+  margin: 0.65rem 0 0;
+  color: color-mix(in srgb, var(--termini-ink) 58%, transparent);
+  font-size: 1.02rem;
+  line-height: 1.55;
 }
 
 .termini__link {
-  padding: 0.7rem 1rem;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--site-brand);
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.55rem;
+  padding: 0.65rem 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--termini-brand) 28%, transparent);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, #fff 80%, transparent);
+  color: var(--termini-brand);
   font-weight: 750;
   text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.termini__link:hover {
+  background: color-mix(in srgb, var(--termini-soft) 55%, #fff);
+  transform: translateY(-1px);
 }
 
 .termini__stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin-top: 1.25rem;
+  gap: 0;
+  margin-top: 1.35rem;
+  border: 1px solid var(--termini-edge);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, #fff 88%, var(--termini-soft));
+  overflow: hidden;
+  animation: termini-channel-in 0.5s 0.05s ease both;
 }
 
 .termini__stats article {
   display: grid;
-  gap: 0.3rem;
-  padding: 1rem 1.05rem;
-  border-radius: 0.95rem;
-  background: #fff;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-left: 1px solid var(--termini-edge);
+}
+
+.termini__stats article:first-child {
+  border-left: 0;
 }
 
 .termini__stats span {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 700;
+  color: color-mix(in srgb, var(--termini-ink) 48%, transparent);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .termini__stats strong {
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .termini__layout {
   display: grid;
-  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
-  gap: 1rem;
-  margin-top: 1.2rem;
+  grid-template-columns: minmax(12rem, 15.5rem) minmax(0, 1fr);
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  margin-top: 1.35rem;
   align-items: start;
 }
 
 .termini__days {
   display: grid;
-  gap: 0.4rem;
-  padding: 0.45rem;
-  border-radius: 1rem;
-  background: #fff;
+  gap: 0.15rem;
+  padding: 0.85rem 0.7rem;
+  border: 1px solid var(--termini-edge);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, #fff 90%, var(--termini-soft));
+  animation: termini-channel-in 0.55s 0.08s ease both;
+}
+
+.termini__rail-label {
+  margin: 0 0.35rem 0.55rem;
+  color: color-mix(in srgb, var(--termini-ink) 48%, transparent);
 }
 
 .termini__days button {
+  position: relative;
   display: grid;
   gap: 0.15rem;
-  padding: 0.75rem 0.85rem;
+  padding: 0.7rem 0.75rem;
   border: 0;
-  border-radius: 0.75rem;
+  border-radius: 0.15rem;
   background: transparent;
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.termini__days button strong {
+  font-size: 0.92rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
 }
 
 .termini__days button span {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 650;
+  color: color-mix(in srgb, var(--termini-ink) 48%, transparent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.termini__days button:hover {
+  background: color-mix(in srgb, var(--termini-soft) 55%, transparent);
 }
 
 .termini__days button.is-closed {
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .termini__days button.is-on {
-  background: var(--site-brand);
+  background: var(--termini-brand);
   color: var(--site-on, #fff);
 }
 
 .termini__days button.is-on span {
-  color: color-mix(in srgb, var(--site-on, #fff) 75%, transparent);
+  color: color-mix(in srgb, var(--site-on, #fff) 72%, transparent);
+}
+
+.termini__days button.is-on::before {
+  content: '';
+  position: absolute;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  left: 0;
+  width: 0.18rem;
+  border-radius: 999px;
+  background: var(--termini-accent);
 }
 
 .termini__main {
   display: grid;
-  gap: 1rem;
+  gap: 1.1rem;
   min-width: 0;
 }
 
 .termini__book,
 .termini__list-wrap {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.95rem;
   padding: 1.2rem 1.25rem 1.3rem;
-  border-radius: 1.05rem;
-  background: #fff;
-  box-shadow: 0 10px 24px color-mix(in srgb, #000 5%, transparent);
+  border: 1px solid var(--termini-edge);
+  border-radius: 0.2rem;
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, #fff 92%, var(--termini-soft)),
+      #fff 55%
+    );
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--termini-ink) 4%, transparent);
+  animation: termini-channel-in 0.55s ease both;
 }
 
-.termini__book header h2,
-.termini__list-wrap header h2 {
+.termini__list-wrap {
+  animation-delay: 0.1s;
+}
+
+.termini__panel-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem 1rem;
+  align-items: start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--termini-edge);
+  margin-bottom: 0.1rem;
+}
+
+.termini__index {
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--termini-accent);
+}
+
+.termini__kicker {
+  margin-bottom: 0.2rem;
+  color: color-mix(in srgb, var(--termini-ink) 48%, transparent);
+}
+
+.termini__panel-head h2 {
   margin: 0;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
 }
 
-.termini__book header p,
-.termini__list-wrap header p {
-  margin: 0.3rem 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+.termini__panel-head p:last-child {
+  margin: 0.35rem 0 0;
+  color: color-mix(in srgb, var(--termini-ink) 55%, transparent);
+  font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.45;
 }
 
-.termini__book label {
+.termini__meta {
+  display: grid;
+  gap: 0.1rem;
+  justify-items: end;
+  margin: 0;
+  text-align: right;
+}
+
+.termini__meta strong {
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--termini-brand);
+}
+
+.termini__meta span {
+  color: color-mix(in srgb, var(--termini-ink) 48%, transparent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.termini__book label,
+.termini__trainer {
   display: grid;
   gap: 0.4rem;
   font-weight: 650;
@@ -143,13 +363,18 @@
 
 .termini__trainer select {
   width: 100%;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: 0.65rem;
-  background: var(--surface, #f7f8fa);
-  color: var(--fg);
+  padding: 0.78rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--termini-brand) 16%, #d5dde2);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, #fff 88%, var(--termini-soft));
+  color: var(--termini-ink);
   font: inherit;
   font-weight: 550;
+}
+
+.termini__trainer select:focus {
+  outline: 2px solid var(--termini-brand);
+  outline-offset: 1px;
 }
 
 .termini__slots {
@@ -160,36 +385,45 @@
 
 .termini__slots button {
   display: grid;
-  gap: 0.1rem;
-  min-width: 4.6rem;
-  padding: 0.55rem 0.7rem;
-  border: 0;
-  border-radius: 0.7rem;
-  background: var(--site-soft, #e8eef2);
-  color: var(--site-brand);
+  gap: 0.12rem;
+  min-width: 4.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--termini-edge);
+  border-radius: 0.15rem;
+  background: color-mix(in srgb, var(--termini-soft) 45%, #fff);
+  color: var(--termini-brand);
   font: inherit;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.termini__slots button:hover {
+  border-color: color-mix(in srgb, var(--termini-brand) 35%, transparent);
+  transform: translateY(-1px);
 }
 
 .termini__slots button strong {
   font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .termini__slots button span {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  opacity: 0.8;
+  opacity: 0.78;
 }
 
 .termini__slots button.is-on {
-  background: var(--site-brand);
+  border-color: var(--termini-brand);
+  background: var(--termini-brand);
   color: var(--site-on, #fff);
 }
 
 .termini__primary,
 .termini__cancel {
   border: 0;
-  border-radius: 999px;
+  border-radius: 0.2rem;
   font: inherit;
   font-weight: 750;
   cursor: pointer;
@@ -197,9 +431,15 @@
 
 .termini__primary {
   justify-self: start;
-  padding: 0.8rem 1.15rem;
-  background: var(--site-brand);
+  padding: 0.82rem 1.2rem;
+  background: var(--termini-brand);
   color: var(--site-on, #fff);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.termini__primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 .termini__primary:disabled {
@@ -209,7 +449,7 @@
 
 .termini__list {
   display: grid;
-  gap: 0.55rem;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -221,18 +461,31 @@
   gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 0.95rem;
-  border-radius: 0.8rem;
-  background: color-mix(in srgb, var(--site-soft, #e8eef2) 45%, #fff);
+  padding: 0.95rem 0.15rem;
+  border-top: 1px solid var(--termini-edge);
+  transition: background 0.15s ease;
+}
+
+.termini__list li:first-child {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+.termini__list li:hover {
+  background: color-mix(in srgb, var(--termini-soft) 35%, transparent);
 }
 
 .termini__list strong {
   display: block;
   font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .termini__list span {
-  color: var(--muted);
+  display: block;
+  margin-top: 0.2rem;
+  color: color-mix(in srgb, var(--termini-ink) 52%, transparent);
   font-size: 0.9rem;
   font-weight: 650;
 }
@@ -240,38 +493,112 @@
 .termini__cancel {
   padding: 0.5rem 0.85rem;
   background: transparent;
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #a82e2e 40%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #a82e2e 42%, transparent);
   color: #a82e2e;
+  transition: background 0.15s ease;
+}
+
+.termini__cancel:hover:not(:disabled) {
+  background: color-mix(in srgb, #a82e2e 8%, transparent);
 }
 
 .termini__empty,
 .termini__hint {
   margin: 0;
-  color: var(--muted);
-  line-height: 1.45;
+  color: color-mix(in srgb, var(--termini-ink) 55%, transparent);
+  line-height: 1.5;
 }
 
 .termini__empty a {
-  color: var(--site-brand);
+  color: var(--termini-brand);
   font-weight: 750;
+  text-decoration: none;
+}
+
+.termini__empty a:hover {
+  text-decoration: underline;
 }
 
 .termini__error,
 .termini__ok {
   margin: 1rem 0 0;
   padding: 0.85rem 1rem;
-  border-radius: 0.8rem;
+  border-radius: 0.2rem;
   font-weight: 700;
 }
 
 .termini__error {
-  background: #f0d0d0;
+  background: color-mix(in srgb, #a82e2e 12%, #fff);
   color: #a82e2e;
 }
 
 .termini__ok {
-  background: #d7eee2;
-  color: #1f5c3d;
+  background: color-mix(in srgb, var(--ok, #1f8a5b) 14%, #fff);
+  color: var(--ok-ink, #14663f);
+}
+
+@keyframes termini-wash {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-4%, 3%, 0) scale(1.06);
+  }
+}
+
+@keyframes termini-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes termini-channel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.65rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes termini-rule-x {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .termini__stage,
+  .termini__stats,
+  .termini__days,
+  .termini__book,
+  .termini__list-wrap,
+  .termini__wash,
+  .termini__head h1::after {
+    animation: none;
+  }
+
+  .termini__link:hover,
+  .termini__slots button:hover,
+  .termini__primary:hover:not(:disabled) {
+    transform: none;
+  }
 }
 
 @media (max-width: 64rem) {
@@ -281,6 +608,25 @@
 
   .termini__days {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .termini__rail-label {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 48rem) {
+  .termini__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .termini__stats article:nth-child(2n + 1) {
+    border-left: 0;
+  }
+
+  .termini__stats article:nth-child(n + 3) {
+    border-top: 1px solid var(--termini-edge);
   }
 }
 
@@ -288,5 +634,24 @@
   .termini__stats,
   .termini__days {
     grid-template-columns: 1fr;
+  }
+
+  .termini__stats article {
+    border-left: 0;
+    border-top: 1px solid var(--termini-edge);
+  }
+
+  .termini__stats article:first-child {
+    border-top: 0;
+  }
+
+  .termini__panel-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .termini__meta {
+    grid-column: 2;
+    justify-items: start;
+    text-align: left;
   }
 }

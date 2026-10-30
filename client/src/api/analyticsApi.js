@@ -73,6 +73,20 @@ const analyticsApi = api.injectEndpoints({
       providesTags: ['Analytics'],
       keepUnusedDataFor: 20,
     }),
+    sealPlatformExport: build.mutation({
+      query: (body) => ({
+        url: '/analytics/platform/exports/seal',
+        method: 'POST',
+        body,
+      }),
+    }),
+    verifyPlatformExport: build.mutation({
+      query: (body) => ({
+        url: '/analytics/platform/exports/verify',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -89,6 +103,8 @@ export const {
   useSendBillingWarningMutation,
   useSendBillingInvoiceMutation,
   useGetStudioAnalyticsQuery,
+  useSealPlatformExportMutation,
+  useVerifyPlatformExportMutation,
 } = analyticsApi;
 
 /** Shared live-poll options for platform admin screens. */

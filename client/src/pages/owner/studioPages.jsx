@@ -1,4 +1,5 @@
 import { Link, useOutletContext } from 'react-router-dom';
+import { GALLERY_ENABLED } from '../../lib/studioFeatures.js';
 import { findLayout } from './layouts.js';
 import SiteFrame, { frameSources } from './SiteFrame.jsx';
 import { studioHost } from './siteTemplates.js';
@@ -43,15 +44,18 @@ export function StudioHome() {
         about: true,
         services: true,
         schedule: true,
-        gallery: false,
         contact: true,
         location: true,
         openingHours: true,
         ...studio.sections,
+        gallery: GALLERY_ENABLED ? Boolean(studio.sections?.gallery) : false,
       }}
+      galleryImages={GALLERY_ENABLED ? (studio.siteSettings?.gallery || []) : []}
       hours={studio.hours}
       layout={findLayout(studio.layout).id}
       bookTo="/stranica/termini"
+      slug={studio.slug}
+      legalBase={studio.slug ? `/s/${studio.slug}` : ''}
       withBar={false}
     />
   );

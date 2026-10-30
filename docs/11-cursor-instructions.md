@@ -43,7 +43,7 @@ scripts/             # dev, smoke
 - reintroduce waitlist / Stripe / marketplace without an explicit product ask  
 - turn on Online workouts without flipping `ONLINE_ENABLED` intentionally  
 - trust frontend for capacity authorization  
-- commit secrets (`.env`, `server/.env`)  
+- commit secrets (root `.env`)  
 
 ## Task format
 

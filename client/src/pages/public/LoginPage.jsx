@@ -4,12 +4,14 @@ import { useLazyGetMeQuery, useLoginMutation } from '../../api/authApi.js';
 import { useLazyListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
 import { business, member } from '../../mock/data.js';
-import { loadStudio, saveStudio } from '../../studio.js';
+import { loadStudio, saveStudio } from '../../lib/studio.js';
+import { IS_DEV } from '../../lib/runtimeEnv.js';
 import { studioFromTenant } from '../owner/studioSync.js';
-import './RegisterPage.scss';
+import './LoginPage.scss';
 
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
+const showDemoKeys = IS_DEV;
 
 const trials = [
   {
@@ -68,6 +70,25 @@ function EyeOffIcon() {
         d="M3.3 2.2 2.2 3.3l3.1 3.1C3.5 7.6 1.9 9.4 1 12.5 2.7 16.9 7 20 12 20c2 0 3.9-.5 5.5-1.3l3.2 3.2 1.1-1.1L3.3 2.2zM12 18.5c-4.1 0-7.6-2.5-9.1-6 1-2.2 2.6-3.8 4.5-4.7l1.7 1.7A5 5 0 0 0 12 17a4.9 4.9 0 0 0 2.5-.7l1.5 1.5c-1.2.5-2.6.7-4 .7zm9.9-6C20.4 8.6 17.5 6.3 14 5.5l1.7 1.7c1.6.8 3 2.1 3.9 3.8-.5 1.2-1.3 2.3-2.3 3.1l1.2 1.2c1.4-1.1 2.5-2.6 3.4-4.3zM9.2 8.1l1.6 1.6A2.8 2.8 0 0 1 14.3 13l1.5 1.5a5 5 0 0 0-6.6-6.4z"
       />
     </svg>
+  );
+}
+
+function LoginShell({ done = false, children }) {
+  return (
+    <main className={`login${done ? ' login--done' : ''}`}>
+      <div className="login__atmosphere" aria-hidden="true">
+        <span className="login__shaft" />
+        <span className="login__orb login__orb--a" />
+        <span className="login__orb login__orb--b" />
+        <span className="login__grain" />
+      </div>
+      <div className="login__layout">
+        <aside className="login__spine" aria-hidden="true">
+          <p className="login__spine-mark">anyminutes</p>
+        </aside>
+        <div className="login__stage">{children}</div>
+      </div>
+    </main>
   );
 }
 
@@ -141,7 +162,7 @@ export default function LoginPage() {
         name: result.user.name,
         email: result.user.email,
         role: result.user.role,
-        detail: result.user.role === 'ADMIN'
+        detail: (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF')
           ? 'Platforma anyminutes'
           : result.user.role === 'BUSINESS_OWNER'
             ? (trial?.session.detail || 'Račun studija je otvoren.')
@@ -151,13 +172,17 @@ export default function LoginPage() {
 
       try {
         const me = await loadMe().unwrap();
-        if (me.platformAdmin || result.user.role === 'ADMIN') {
-          navigate('/analitika', { replace: true });
+        if (
+          me.platformAdmin
+          || result.user.role === 'ADMIN'
+          || result.user.role === 'PLATFORM_STAFF'
+        ) {
+          navigate('/admin', { replace: true });
           return;
         }
       } catch {
-        if (result.user.role === 'ADMIN') {
-          navigate('/analitika', { replace: true });
+        if (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF') {
+          navigate('/admin', { replace: true });
           return;
         }
       }
@@ -220,38 +245,47 @@ export default function LoginPage() {
 
   if (session) {
     return (
-      <main className="register">
-        <h1>Prijavljeni ste.</h1>
-        <p className="register__lead">
-          {session.name}
-          <br />
-          {session.detail}
-        </p>
-        <Link className="register__submit" to="/">
-          Natrag na početnu
-        </Link>
-        {session.role === 'BUSINESS_OWNER' ? (
-          <p className="register__login">
-            <Link to="/stranica">Otvorite stranicu</Link>
+      <LoginShell done>
+        <header className="login__intro">
+          <p className="login__kicker">Sesija otvorena</p>
+          <h1>Prijavljeni ste.</h1>
+          <p className="login__done-detail">
+            {session.name}
+            <br />
+            {session.detail}
           </p>
-        ) : (
-          <p className="register__login">
-            Kad studio aktivira članarinu, ovdje ćete otvoriti termine na
-            {' '}
-            <code>/s/…</code>
-            .
-          </p>
-        )}
-      </main>
+        </header>
+        <div className="login__done-actions">
+          <Link className="login__submit" to="/">
+            Natrag na početnu
+          </Link>
+          {session.role === 'BUSINESS_OWNER' ? (
+            <p className="login__links">
+              <Link to="/stranica">Otvorite stranicu</Link>
+            </p>
+          ) : (
+            <p className="login__done-detail">
+              Kad studio aktivira članarinu, ovdje ćete otvoriti termine na
+              {' '}
+              <code>/s/…</code>
+              .
+            </p>
+          )}
+        </div>
+      </LoginShell>
     );
   }
 
   return (
-    <main className="register">
-      <h1>Prijavite se.</h1>
-      <p className="register__lead">Ista prijava za člana i za studio.</p>
-      <form className="register__form" onSubmit={onSubmit} noValidate>
-        <label>
+    <LoginShell>
+      <header className="login__intro">
+        <p className="login__kicker">Jedan ulaz</p>
+        <h1>Prijavite se.</h1>
+        <p className="login__lead">Ista prijava za člana i za studio.</p>
+      </header>
+
+      <form className="login__panel" onSubmit={onSubmit} noValidate>
+        <label className="login__field">
           E-pošta
           <input
             name="email"
@@ -262,11 +296,12 @@ export default function LoginPage() {
             onChange={(event) => update('email', event.target.value)}
             aria-invalid={Boolean(problems.email)}
           />
-          {problems.email ? <span className="register__error">{problems.email}</span> : null}
+          {problems.email ? <span className="login__error">{problems.email}</span> : null}
         </label>
-        <label className="register__password">
+
+        <label className="login__field">
           Lozinka
-          <span className="register__password-wrap">
+          <span className="login__password-wrap">
             <input
               name="password"
               type={showPassword ? 'text' : 'password'}
@@ -277,7 +312,7 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              className="register__eye"
+              className="login__eye"
               onClick={() => setShowPassword((current) => !current)}
               title={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
               aria-label={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
@@ -285,26 +320,41 @@ export default function LoginPage() {
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </span>
-          {problems.password ? <span className="register__error">{problems.password}</span> : null}
+          {problems.password ? <span className="login__error">{problems.password}</span> : null}
         </label>
-        {formError ? <p className="register__form-error">{formError}</p> : null}
-        <button className="register__submit" type="submit" disabled={isLoading}>
+
+        {formError ? <p className="login__form-error">{formError}</p> : null}
+
+        <button className="login__submit" type="submit" disabled={isLoading}>
           {isLoading ? 'Prijavljujemo…' : 'Prijavite se'}
         </button>
       </form>
-      <p className="register__login">
+
+      <p className="login__links">
         <Link to="/zaboravljena-lozinka">Zaboravljena lozinka?</Link>
+        <span>
+          Nemate račun?
+          {' '}
+          <Link to="/register">Registrirajte se</Link>
+        </span>
       </p>
-      <p className="register__login">
-        Član: {member.email}
-        <br />
-        Studio: {business.owner.email}
-        <br />
-        Lozinka: {member.password}
-      </p>
-      <p className="register__login">
-        Nemate račun? <Link to="/register">Registrirajte se</Link>
-      </p>
-    </main>
+
+      {showDemoKeys ? (
+        <p className="login__keys">
+          <strong>Probni ključevi</strong>
+          Član:
+          {' '}
+          <code>{member.email}</code>
+          <br />
+          Studio:
+          {' '}
+          <code>{business.owner.email}</code>
+          <br />
+          Lozinka:
+          {' '}
+          <code>{member.password}</code>
+        </p>
+      ) : null}
+    </LoginShell>
   );
 }

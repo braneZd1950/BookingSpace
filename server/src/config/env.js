@@ -21,18 +21,9 @@ function applyEnvFile(filename, { override }) {
   }
 }
 
-// Root first, then server/ last so server/.env wins for MONGO/JWT/SMTP (as documented).
+// One local file: repo-root .env. Vite reads the same file and only exposes VITE_*.
+// Render injects process env and does not use this file.
 applyEnvFile('.env', { override: false });
-
-const nodeEnv = (process.env.NODE_ENV || 'development').trim();
-if (nodeEnv !== 'production') {
-  applyEnvFile('.env.development', { override: true });
-}
-
-applyEnvFile('server/.env', { override: true });
-if (nodeEnv !== 'production') {
-  applyEnvFile('server/.env.development', { override: true });
-}
 
 function required(name) {
   const value = process.env[name];

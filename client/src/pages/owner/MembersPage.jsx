@@ -416,11 +416,14 @@ export default function MembersPage() {
   if (!ready) {
     return (
       <section className="studio-panel members">
-        <div className="members__head">
-          <div>
-            <h1>Članovi</h1>
-            <p>Studio još nije u bazi. Otvorite ga registracijom, pa dodajte članove.</p>
-          </div>
+        <div className="members__atmosphere" aria-hidden="true">
+          <span className="members__wash" />
+          <span className="members__grain" />
+        </div>
+        <div className="members__stage">
+          <p className="members__eyebrow">Članovi</p>
+          <h1>Još nije spremno</h1>
+          <p className="members__lede">Studio još nije u bazi. Otvorite ga registracijom, pa dodajte članove.</p>
         </div>
       </section>
     );
@@ -428,72 +431,79 @@ export default function MembersPage() {
 
   return (
     <section className="studio-panel members">
-      <div className="members__head">
-        <div>
-          <h1>{section === 'team' ? 'Tim' : 'Članovi'}</h1>
-          <p>
-            {section === 'team'
-              ? 'Treneri i vlasnik — članovi ih biraju pri rezervaciji termina.'
-              : 'Članarine, preostali termini, dolasci iz rezervacija i brza obnova.'}
-          </p>
+      <div className="members__atmosphere" aria-hidden="true">
+        <span className="members__wash" />
+        <span className="members__grain" />
+      </div>
+
+      <div className="members__stage">
+        <header className="members__head">
+          <div>
+            <p className="members__eyebrow">{section === 'team' ? 'Osoblje' : 'Zajednica'}</p>
+            <h1>{section === 'team' ? 'Tim' : 'Članovi'}</h1>
+            <p className="members__lede">
+              {section === 'team'
+                ? 'Treneri i vlasnik — članovi ih biraju pri rezervaciji termina.'
+                : 'Članarine, preostali termini, dolasci iz rezervacija i brza obnova.'}
+            </p>
+          </div>
+          {section === 'members' ? (
+            <button
+              className="members__primary"
+              type="button"
+              onClick={() => {
+                setOpen(true);
+                setFormError('');
+                setNotice('');
+              }}
+            >
+              Dodajte člana
+            </button>
+          ) : (
+            <button
+              className="members__primary"
+              type="button"
+              onClick={() => {
+                setStaffOpen(true);
+                setStaffFormError('');
+                setNotice('');
+              }}
+            >
+              Dodajte trenera
+            </button>
+          )}
+        </header>
+
+        <div className="members__sections" role="tablist" aria-label="Odjeljak">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={section === 'members'}
+            className={section === 'members' ? 'is-on' : undefined}
+            onClick={() => {
+              setSection('members');
+              setActionError('');
+            }}
+          >
+            Članovi ({memberships.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={section === 'team'}
+            className={section === 'team' ? 'is-on' : undefined}
+            onClick={() => {
+              setSection('team');
+              setActionError('');
+            }}
+          >
+            Tim ({activeStaff.length})
+          </button>
         </div>
+
+        {notice ? <p className="members__notice" role="status">{notice}</p> : null}
+
         {section === 'members' ? (
-          <button
-            className="members__primary"
-            type="button"
-            onClick={() => {
-              setOpen(true);
-              setFormError('');
-              setNotice('');
-            }}
-          >
-            Dodajte člana
-          </button>
-        ) : (
-          <button
-            className="members__primary"
-            type="button"
-            onClick={() => {
-              setStaffOpen(true);
-              setStaffFormError('');
-              setNotice('');
-            }}
-          >
-            Dodajte trenera
-          </button>
-        )}
-      </div>
-
-      <div className="members__sections" role="tablist" aria-label="Odjeljak">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={section === 'members'}
-          className={section === 'members' ? 'is-on' : undefined}
-          onClick={() => {
-            setSection('members');
-            setActionError('');
-          }}
-        >
-          Članovi ({memberships.length})
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={section === 'team'}
-          className={section === 'team' ? 'is-on' : undefined}
-          onClick={() => {
-            setSection('team');
-            setActionError('');
-          }}
-        >
-          Tim ({activeStaff.length})
-        </button>
-      </div>
-
-      {notice ? <p className="members__notice" role="status">{notice}</p> : null}
-
-      {section === 'members' ? (
         <>
           <div className="members__stats" aria-label="Sažetak članova">
             <article>
@@ -672,107 +682,127 @@ export default function MembersPage() {
           ) : null}
 
           {!isLoading && !isError && visible.length === 0 ? (
-            <div className="members__empty">
-              <strong>{query ? 'Nema rezultata' : 'Još nema članova'}</strong>
-              <p>
-                {query
-                  ? 'Pokušajte drugi pojam ili promijenite filter.'
-                  : 'Dodajte prvog člana da počnete pratiti članarine i termine.'}
-              </p>
+            <article className="members__empty">
+              <header className="members__panel-head">
+                <span className="members__index" aria-hidden="true">01</span>
+                <div>
+                  <p className="members__kicker">Popis</p>
+                  <h2>{query ? 'Nema rezultata' : 'Još nema članova'}</h2>
+                  <p>
+                    {query
+                      ? 'Pokušajte drugi pojam ili promijenite filter.'
+                      : 'Dodajte prvog člana da počnete pratiti članarine i termine.'}
+                  </p>
+                </div>
+              </header>
               {!query && !open ? (
                 <button className="members__primary" type="button" onClick={() => setOpen(true)}>
                   Dodajte člana
                 </button>
               ) : null}
-            </div>
+            </article>
           ) : null}
 
           {visible.length > 0 ? (
-            <ul className="members__list">
-              {visible.map((item) => {
-                const progress = sessionsProgress(item);
-                const left = daysLeft(item.validUntil);
-                const tone = statusTone(item.status);
-                const name = item.user?.name || 'Član';
-                const busy = busyId === item.id;
+            <section className="members__roster">
+              <header className="members__panel-head">
+                <span className="members__index" aria-hidden="true">01</span>
+                <div>
+                  <p className="members__kicker">Popis</p>
+                  <h2>Članarine</h2>
+                  <p>Obnova, termini i status u jednom pregledu.</p>
+                </div>
+                <p className="members__count">
+                  <strong>{visible.length}</strong>
+                  <span>prikazano</span>
+                </p>
+              </header>
+              <ul className="members__list">
+                {visible.map((item) => {
+                  const progress = sessionsProgress(item);
+                  const left = daysLeft(item.validUntil);
+                  const tone = statusTone(item.status);
+                  const name = item.user?.name || 'Član';
+                  const busy = busyId === item.id;
 
-                return (
-                  <li key={item.id} className={item.status !== 'ACTIVE' ? 'is-archived' : undefined}>
-                    <div className="members__identity">
-                      <span className="members__avatar" aria-hidden="true">{initials(name)}</span>
-                      <div>
-                        <div className="members__title-row">
-                          <strong>{name}</strong>
-                          <em className={`members__badge is-${tone}`}>{statusLabel(item.status)}</em>
+                  return (
+                    <li key={item.id} className={item.status !== 'ACTIVE' ? 'is-archived' : undefined}>
+                      <div className="members__identity">
+                        <span className="members__avatar" aria-hidden="true">{initials(name)}</span>
+                        <div>
+                          <div className="members__title-row">
+                            <strong>{name}</strong>
+                            <em className={`members__badge is-${tone}`}>{statusLabel(item.status)}</em>
+                          </div>
+                          <p className="members__meta">
+                            <span>{item.user?.email || 'Bez e-pošte'}</span>
+                            {item.user?.phone ? <span>{item.user.phone}</span> : null}
+                            {item.code ? <span>{item.code}</span> : null}
+                          </p>
                         </div>
-                        <p className="members__meta">
-                          <span>{item.user?.email || 'Bez e-pošte'}</span>
-                          {item.user?.phone ? <span>{item.user.phone}</span> : null}
-                          {item.code ? <span>{item.code}</span> : null}
-                        </p>
                       </div>
-                    </div>
 
-                    <div className="members__plan">
-                      <span className="members__plan-name">{item.planName || 'Plan'}</span>
-                      <span className="members__dates">
-                        {formatDate(item.validFrom)}
-                        {' – '}
-                        {formatDate(item.validUntil)}
-                      </span>
-                      {item.status === 'ACTIVE' && left != null ? (
-                        <span className={left <= 7 ? 'members__expiry is-soon' : 'members__expiry'}>
-                          {left < 0 ? 'Isteklo' : left === 0 ? 'Ističe danas' : `Još ${left} dana`}
+                      <div className="members__plan">
+                        <span className="members__plan-name">{item.planName || 'Plan'}</span>
+                        <span className="members__dates">
+                          {formatDate(item.validFrom)}
+                          {' – '}
+                          {formatDate(item.validUntil)}
                         </span>
-                      ) : null}
-                    </div>
-
-                    <div className="members__sessions">
-                      <div className="members__sessions-top">
-                        <span>Dolasci / paket</span>
-                        <strong>{progress.label}</strong>
+                        {item.status === 'ACTIVE' && left != null ? (
+                          <span className={left <= 7 ? 'members__expiry is-soon' : 'members__expiry'}>
+                            {left < 0 ? 'Isteklo' : left === 0 ? 'Ističe danas' : `Još ${left} dana`}
+                          </span>
+                        ) : null}
                       </div>
-                      <div
-                        className={[
-                          'members__bar',
-                          progress.unlimited ? 'is-unlimited' : '',
-                          !progress.unlimited && progress.ratio >= 0.85 ? 'is-hot' : '',
-                        ].filter(Boolean).join(' ')}
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={progress.unlimited ? 100 : progress.total}
-                        aria-valuenow={progress.unlimited ? 0 : progress.used}
-                        aria-label="Iskorišteni termini"
-                      >
-                        <i style={{ width: progress.unlimited ? '100%' : `${progress.ratio * 100}%` }} />
-                      </div>
-                    </div>
 
-                    <div className="members__actions">
-                      {(item.status === 'ACTIVE' || item.status === 'EXPIRED' || item.status === 'SUSPENDED') ? (
-                        <button
-                          type="button"
-                          onClick={() => onRenew(item)}
-                          disabled={busy || creating || removing}
+                      <div className="members__sessions">
+                        <div className="members__sessions-top">
+                          <span>Dolasci / paket</span>
+                          <strong>{progress.label}</strong>
+                        </div>
+                        <div
+                          className={[
+                            'members__bar',
+                            progress.unlimited ? 'is-unlimited' : '',
+                            !progress.unlimited && progress.ratio >= 0.85 ? 'is-hot' : '',
+                          ].filter(Boolean).join(' ')}
+                          role="progressbar"
+                          aria-valuemin={0}
+                          aria-valuemax={progress.unlimited ? 100 : progress.total}
+                          aria-valuenow={progress.unlimited ? 0 : progress.used}
+                          aria-label="Iskorišteni termini"
                         >
-                          {busy ? 'Radimo…' : 'Obnovite'}
-                        </button>
-                      ) : null}
-                      {item.status === 'ACTIVE' ? (
-                        <button
-                          type="button"
-                          className="is-danger"
-                          onClick={() => onRemove(item)}
-                          disabled={busy || creating || removing}
-                        >
-                          Uklonite
-                        </button>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                          <i style={{ width: progress.unlimited ? '100%' : `${progress.ratio * 100}%` }} />
+                        </div>
+                      </div>
+
+                      <div className="members__actions">
+                        {(item.status === 'ACTIVE' || item.status === 'EXPIRED' || item.status === 'SUSPENDED') ? (
+                          <button
+                            type="button"
+                            onClick={() => onRenew(item)}
+                            disabled={busy || creating || removing}
+                          >
+                            {busy ? 'Radimo…' : 'Obnovite'}
+                          </button>
+                        ) : null}
+                        {item.status === 'ACTIVE' ? (
+                          <button
+                            type="button"
+                            className="is-danger"
+                            onClick={() => onRemove(item)}
+                            disabled={busy || creating || removing}
+                          >
+                            Uklonite
+                          </button>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           ) : null}
         </>
       ) : (
@@ -889,58 +919,79 @@ export default function MembersPage() {
           {staffError ? <p className="members__error">Tim se nije učitao.</p> : null}
 
           {!loadingStaff && !staffError && activeStaff.length === 0 ? (
-            <div className="members__empty">
-              <strong>Još nema tima</strong>
-              <p>Dodajte trenera da članovi mogu birati kod koga rezerviraju termin.</p>
+            <article className="members__empty">
+              <header className="members__panel-head">
+                <span className="members__index" aria-hidden="true">01</span>
+                <div>
+                  <p className="members__kicker">Tim</p>
+                  <h2>Još nema tima</h2>
+                  <p>Dodajte trenera da članovi mogu birati kod koga rezerviraju termin.</p>
+                </div>
+              </header>
               {!staffOpen ? (
                 <button className="members__primary" type="button" onClick={() => setStaffOpen(true)}>
                   Dodajte trenera
                 </button>
               ) : null}
-            </div>
+            </article>
           ) : null}
 
           {activeStaff.length > 0 ? (
-            <ul className="members__list members__list--team">
-              {activeStaff.map((item) => {
-                const busy = busyId === item.id;
-                return (
-                  <li key={item.id}>
-                    <div className="members__identity">
-                      <span className="members__avatar" aria-hidden="true">{initials(item.name)}</span>
-                      <div>
-                        <div className="members__title-row">
-                          <strong>{item.name}</strong>
-                          <em className="members__badge is-ok">{item.title || 'Trener'}</em>
+            <section className="members__roster">
+              <header className="members__panel-head">
+                <span className="members__index" aria-hidden="true">01</span>
+                <div>
+                  <p className="members__kicker">Tim</p>
+                  <h2>Osoblje</h2>
+                  <p>Treneri dostupni pri rezervaciji.</p>
+                </div>
+                <p className="members__count">
+                  <strong>{activeStaff.length}</strong>
+                  <span>aktivno</span>
+                </p>
+              </header>
+              <ul className="members__list members__list--team">
+                {activeStaff.map((item) => {
+                  const busy = busyId === item.id;
+                  return (
+                    <li key={item.id}>
+                      <div className="members__identity">
+                        <span className="members__avatar" aria-hidden="true">{initials(item.name)}</span>
+                        <div>
+                          <div className="members__title-row">
+                            <strong>{item.name}</strong>
+                            <em className="members__badge is-ok">{item.title || 'Trener'}</em>
+                          </div>
+                          <p className="members__meta">
+                            <span>{item.email || 'Bez e-pošte'}</span>
+                            {item.phone ? <span>{item.phone}</span> : null}
+                            <span>{item.role === 'BUSINESS_OWNER' ? 'Vlasnik' : 'Trener'}</span>
+                          </p>
                         </div>
-                        <p className="members__meta">
-                          <span>{item.email || 'Bez e-pošte'}</span>
-                          {item.phone ? <span>{item.phone}</span> : null}
-                          <span>{item.role === 'BUSINESS_OWNER' ? 'Vlasnik' : 'Trener'}</span>
-                        </p>
                       </div>
-                    </div>
-                    <div className="members__actions">
-                      {item.role === 'STAFF' ? (
-                        <button
-                          type="button"
-                          className="is-danger"
-                          onClick={() => onRemoveStaff(item)}
-                          disabled={busy || creatingStaff || removingStaff}
-                        >
-                          {busy ? 'Radimo…' : 'Uklonite'}
-                        </button>
-                      ) : (
-                        <span className="members__team-note">Uvijek dostupan za rezervacije</span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                      <div className="members__actions">
+                        {item.role === 'STAFF' ? (
+                          <button
+                            type="button"
+                            className="is-danger"
+                            onClick={() => onRemoveStaff(item)}
+                            disabled={busy || creatingStaff || removingStaff}
+                          >
+                            {busy ? 'Radimo…' : 'Uklonite'}
+                          </button>
+                        ) : (
+                          <span className="members__team-note">Uvijek dostupan za rezervacije</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           ) : null}
         </>
       )}
+      </div>
     </section>
   );
 }

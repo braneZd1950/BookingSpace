@@ -9,10 +9,8 @@ export function previewSlug(name) {
 }
 
 export const niches = [
-  ['fitness', 'Fitness / teretana'],
-  ['pilates', 'Pilates'],
-  ['yoga', 'Yoga'],
-  ['powerplate', 'Power Plate'],
-  ['playroom', 'Igraonica'],
-  ['generic', 'Ostalo (salon, tečaj, usluge)'],
+  ['fitness', 'Treninzi i grupe'],
+  ['services', 'Pojedinačni termini'],
+  ['playroom', 'Igraonice i događaji'],
+  ['generic', 'Nešto drugo'],
 ];

@@ -373,6 +373,7 @@
 }
 
 .setup__choice {
+  position: relative;
   display: block;
   padding: 0.35rem;
   border: 1px solid var(--line);
@@ -385,6 +386,21 @@
   border-color: var(--fg);
   outline: 2px solid var(--fg);
   outline-offset: 1px;
+}
+
+.setup__choice.is-recommended:not(.is-selected) {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
+}
+
+.setup__choice-badge {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--brand-strong, var(--brand));
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .setup__swatch {

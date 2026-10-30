@@ -1,5 +1,5 @@
 import { findPalette, studioPalettes } from '../../styles/studioPalette.js';
-import { loadStudio, saveStudio } from '../../studio.js';
+import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { fallbackHours } from './studioTime.js';
 
 function dayRow(workingHours, day) {
@@ -78,10 +78,13 @@ export function studioFromTenant(tenant, current = {}) {
     name: tenant.name,
     slug: tenant.slug,
     niche: tenant.niche || current.niche,
+    nicheCustom: tenant.nicheCustom || current.nicheCustom || '',
     description: tenant.description || '',
     phone: tenant.phone || '',
     email: tenant.email || '',
     address: tenant.address || '',
+    city: tenant.city || '',
+    oib: tenant.oib || '',
     timezone: tenant.timezone || current.timezone || 'Europe/Zagreb',
     heroImageUrl: tenant.heroImageUrl || '',
     logoUrl: tenant.logoUrl || '',
@@ -90,6 +93,7 @@ export function studioFromTenant(tenant, current = {}) {
     layout: tenant.siteSettings?.layout || current.layout || 'banner',
     palette: palette.id === 'tenant' ? (current.palette || 'teal') : palette.id,
     template: tenant.siteSettings?.template || current.template,
+    siteSettings: tenant.siteSettings || current.siteSettings || {},
     guideDone: current.guideDone || published,
   };
 }

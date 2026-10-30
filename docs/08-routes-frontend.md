@@ -38,15 +38,14 @@ Mobile shell **omits** these routes.
 
 | Route | Nav | Page |
 | --- | --- | --- |
-| `/stranica` | Stranica | Public site preview |
+| `/stranica` | Početna | Public site preview |
 | `/stranica/termini` | Termini | Schedule / owner book & cancel |
-| `/stranica/online` | Online | Workouts (hidden when `ONLINE_ENABLED` is false) |
 | `/stranica/kalendar` | Kalendar | Month view |
 | `/stranica/clanovi` | Članovi | Members + trainers |
 | `/stranica/analitika` | Analitika | Studio analytics |
 | `/stranica/postavke` | Postavke | Profile, hours, notifications |
 
-Not mounted: `/stranica/plan` (phase list exists in `launchPhases.js` only), `/stranica/galerija`.
+Held (flags in `client/src/lib/studioFeatures.js`): galerija, online, placanja, plan.
 
 ## Member studio — `/s/:slug`
 
@@ -70,8 +69,7 @@ Same member + owner pages via `@client` alias. Differences:
 | Idea | Notes |
 | --- | --- |
 | Real DNS `{slug}.booking.hr` | Display/copy only today |
-| Dedicated payments / till screen | Phase 5 |
-| Remount `/stranica/plan` | Optional product decision |
+| Full till / physical-payment UI | Phase 5 (prep route mounted) |
 
 ## Explicitly not building as a product now
 

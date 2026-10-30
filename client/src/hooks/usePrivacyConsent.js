@@ -10,7 +10,7 @@ import {
   hasValidConsent,
   hasValidLocalConsent,
   withdrawLocally,
-} from '../consent.js';
+} from '../lib/consent.js';
 
 const TOKEN_KEY = 'bookingspace.token';
 

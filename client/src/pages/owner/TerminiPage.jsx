@@ -273,195 +273,240 @@ export default function TerminiPage() {
   if (!ready) {
     return (
       <section className="studio-panel termini">
-        <h1>Termini</h1>
-        <p>Studio još nije u bazi. Dovršite registraciju pa dodajte rezervacije.</p>
+        <div className="termini__atmosphere" aria-hidden="true">
+          <span className="termini__wash" />
+          <span className="termini__grain" />
+        </div>
+        <div className="termini__stage">
+          <p className="termini__eyebrow">Termini</p>
+          <h1>Još nije spremno</h1>
+          <p className="termini__lede">Studio još nije u bazi. Dovršite registraciju pa dodajte rezervacije.</p>
+        </div>
       </section>
     );
   }
 
   return (
     <section className="studio-panel termini">
-      <div className="termini__head">
-        <div>
-          <h1>Termini</h1>
-          <p>Dodajte rezervacije članovima — sve ide u bazu i vidi se u kalendaru.</p>
+      <div className="termini__atmosphere" aria-hidden="true">
+        <span className="termini__wash" />
+        <span className="termini__grain" />
+      </div>
+
+      <div className="termini__stage">
+        <header className="termini__head">
+          <div>
+            <p className="termini__eyebrow">Kalendar</p>
+            <h1>Termini</h1>
+            <p className="termini__lede">
+              Dodajte rezervacije članovima — sve ide u bazu i vidi se u kalendaru.
+            </p>
+          </div>
+          <Link className="termini__link" to="/stranica/clanovi">
+            Upravljajte članovima
+          </Link>
+        </header>
+
+        {!consentOk ? (
+          <ConsentGate title="Privola je potrebna za rezervacije u studiju" />
+        ) : null}
+
+        <div className="termini__stats" aria-label="Pregled dana">
+          <article>
+            <span>Odabrani dan</span>
+            <strong>{formatDay(selectedDate)}</strong>
+          </article>
+          <article>
+            <span>Slobodni sati</span>
+            <strong>{dayOpen ? openSlots.length : 0}</strong>
+          </article>
+          <article>
+            <span>Rezervacije</span>
+            <strong>{dayBookings.length}</strong>
+          </article>
+          <article>
+            <span>Kapacitet / sat</span>
+            <strong>{service?.capacity || '—'}</strong>
+          </article>
         </div>
-        <Link className="termini__link" to="/stranica/clanovi">
-          Upravljajte članovima
-        </Link>
-      </div>
 
-      {!consentOk ? (
-        <ConsentGate title="Privola je potrebna za rezervacije u studiju" />
-      ) : null}
+        {error ? <p className="termini__error">{error}</p> : null}
+        {ok ? <p className="termini__ok">{ok}</p> : null}
 
-      <div className="termini__stats">
-        <article>
-          <span>Odabrani dan</span>
-          <strong>{formatDay(selectedDate)}</strong>
-        </article>
-        <article>
-          <span>Slobodni sati</span>
-          <strong>{dayOpen ? openSlots.length : 0}</strong>
-        </article>
-        <article>
-          <span>Rezervacije</span>
-          <strong>{dayBookings.length}</strong>
-        </article>
-        <article>
-          <span>Kapacitet / sat</span>
-          <strong>{service?.capacity || '—'}</strong>
-        </article>
-      </div>
-
-      {error ? <p className="termini__error">{error}</p> : null}
-      {ok ? <p className="termini__ok">{ok}</p> : null}
-
-      <div className="termini__layout">
-        <aside className="termini__days" aria-label="Odabir dana">
-          {days.map((item) => {
-            const key = toDateKey(item);
-            const open = dayHours(item, hours).works;
-            return (
-              <button
-                key={key}
-                type="button"
-                className={[
-                  key === date ? 'is-on' : '',
-                  !open ? 'is-closed' : '',
-                ].filter(Boolean).join(' ') || undefined}
-                onClick={() => setDate(key)}
-              >
-                <strong>{formatDay(item)}</strong>
-                <span>{open ? 'Otvoreno' : 'Zatvoreno'}</span>
-              </button>
-            );
-          })}
-        </aside>
-
-        <div className="termini__main">
-          <form className="termini__book" onSubmit={onBook}>
-            <header>
-              <h2>Nova rezervacija</h2>
-              <p>
-                {service
-                  ? `${service.name} · ${service.durationMinutes} min · max ${service.capacity}`
-                  : creatingService || loadingServices
-                    ? 'Pripremamo uslugu…'
-                    : 'Nema usluge'}
-              </p>
-            </header>
-
-            {!dayOpen ? (
-              <p className="termini__empty">Studio je zatvoren ovog dana. Odaberite drugi dan ili uredite sate u Postavkama.</p>
-            ) : memberships.length === 0 ? (
-              <p className="termini__empty">
-                Nema aktivnih članova.{' '}
-                <Link to="/stranica/clanovi">Dodajte člana</Link>
-                {' '}pa se vratite ovdje.
-              </p>
-            ) : (
-              <>
-                <MemberSelect
-                  label="Član"
-                  value={memberId}
-                  options={memberOptions}
-                  open={memberMenuOpen}
-                  onOpen={() => setMemberMenuOpen(true)}
-                  onClose={() => setMemberMenuOpen(false)}
-                  onChange={setMemberId}
-                  placeholder="Odaberite člana"
-                />
-
-                {trainers.length > 0 ? (
-                  <label className="termini__trainer">
-                    Trener
-                    <select
-                      value={staffId}
-                      onChange={(event) => setStaffId(event.target.value)}
-                    >
-                      {trainers.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                          {item.title ? ` · ${item.title}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ) : null}
-
-                <div className="termini__slots" role="group" aria-label="Slobodni termini">
-                  {loadingSlots ? <p className="termini__hint">Učitavamo sate…</p> : null}
-                  {!loadingSlots && openSlots.length === 0 ? (
-                    <p className="termini__hint">Nema slobodnih sati za ovaj dan.</p>
-                  ) : null}
-                  {openSlots.map((slot) => (
-                    <button
-                      key={slot.startTime}
-                      type="button"
-                      className={slotTime === slot.startTime ? 'is-on' : undefined}
-                      onClick={() => setSlotTime(slot.startTime)}
-                    >
-                      <strong>{slot.startTime}</strong>
-                      <span>{slot.available}/{slot.capacity}</span>
-                    </button>
-                  ))}
-                </div>
-
+        <div className="termini__layout">
+          <aside className="termini__days" aria-label="Odabir dana">
+            <p className="termini__rail-label">Dan</p>
+            {days.map((item) => {
+              const key = toDateKey(item);
+              const open = dayHours(item, hours).works;
+              return (
                 <button
-                  className="termini__primary"
-                  type="submit"
-                  disabled={
-                    booking
-                    || !serviceId
-                    || !memberId
-                    || !slotTime
-                    || (trainers.length > 0 && !staffId)
-                  }
+                  key={key}
+                  type="button"
+                  className={[
+                    key === date ? 'is-on' : '',
+                    !open ? 'is-closed' : '',
+                  ].filter(Boolean).join(' ') || undefined}
+                  onClick={() => setDate(key)}
                 >
-                  {booking ? 'Spremamo…' : 'Spremi rezervaciju'}
+                  <strong>{formatDay(item)}</strong>
+                  <span>{open ? 'Otvoreno' : 'Zatvoreno'}</span>
                 </button>
-              </>
-            )}
-          </form>
+              );
+            })}
+          </aside>
 
-          <section className="termini__list-wrap">
-            <header>
-              <h2>Rezervacije tog dana</h2>
-              <p>Potvrđeni upisi iz baze.</p>
-            </header>
-            {loadingBookings ? <p className="termini__hint">Učitavamo rezervacije…</p> : null}
-            {!loadingBookings && dayBookings.length === 0 ? (
-              <p className="termini__empty">Još nema rezervacija za {formatDay(selectedDate)}.</p>
-            ) : null}
-            {dayBookings.length > 0 ? (
-              <ul className="termini__list">
-                {dayBookings.map((item) => (
-                  <li key={item.id}>
-                    <div>
-                      <strong>
-                        {item.startTime}
-                        –
-                        {item.endTime}
-                      </strong>
-                      <span>
-                        {nameByUser.get(String(item.userId)) || 'Član'}
-                        {item.staff?.name ? ` · ${item.staff.name}` : ''}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      className="termini__cancel"
-                      disabled={cancelling && busyId === item.id}
-                      onClick={() => onCancel(item.id)}
-                    >
-                      {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
+          <div className="termini__main">
+            <form className="termini__book" onSubmit={onBook}>
+              <header className="termini__panel-head">
+                <span className="termini__index" aria-hidden="true">01</span>
+                <div>
+                  <p className="termini__kicker">Upis</p>
+                  <h2>Nova rezervacija</h2>
+                  <p>
+                    {service
+                      ? `${service.name} · ${service.durationMinutes} min · max ${service.capacity}`
+                      : creatingService || loadingServices
+                        ? 'Pripremamo uslugu…'
+                        : 'Nema usluge'}
+                  </p>
+                </div>
+              </header>
+
+              {!dayOpen ? (
+                <p className="termini__empty">
+                  Studio je zatvoren ovog dana. Odaberite drugi dan ili uredite sate u Postavkama.
+                </p>
+              ) : memberships.length === 0 ? (
+                <p className="termini__empty">
+                  Nema aktivnih članova.{' '}
+                  <Link to="/stranica/clanovi">Dodajte člana</Link>
+                  {' '}pa se vratite ovdje.
+                </p>
+              ) : (
+                <>
+                  <MemberSelect
+                    label="Član"
+                    value={memberId}
+                    options={memberOptions}
+                    open={memberMenuOpen}
+                    onOpen={() => setMemberMenuOpen(true)}
+                    onClose={() => setMemberMenuOpen(false)}
+                    onChange={setMemberId}
+                    placeholder="Odaberite člana"
+                  />
+
+                  {trainers.length > 0 ? (
+                    <label className="termini__trainer">
+                      Trener
+                      <select
+                        value={staffId}
+                        onChange={(event) => setStaffId(event.target.value)}
+                      >
+                        {trainers.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                            {item.title ? ` · ${item.title}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+
+                  <div className="termini__slots" role="group" aria-label="Slobodni termini">
+                    {loadingSlots ? <p className="termini__hint">Učitavamo sate…</p> : null}
+                    {!loadingSlots && openSlots.length === 0 ? (
+                      <p className="termini__hint">Nema slobodnih sati za ovaj dan.</p>
+                    ) : null}
+                    {openSlots.map((slot) => (
+                      <button
+                        key={slot.startTime}
+                        type="button"
+                        className={slotTime === slot.startTime ? 'is-on' : undefined}
+                        onClick={() => setSlotTime(slot.startTime)}
+                      >
+                        <strong>{slot.startTime}</strong>
+                        <span>
+                          {slot.available}
+                          /
+                          {slot.capacity}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    className="termini__primary"
+                    type="submit"
+                    disabled={
+                      booking
+                      || !serviceId
+                      || !memberId
+                      || !slotTime
+                      || (trainers.length > 0 && !staffId)
+                    }
+                  >
+                    {booking ? 'Spremamo…' : 'Spremi rezervaciju'}
+                  </button>
+                </>
+              )}
+            </form>
+
+            <section className="termini__list-wrap">
+              <header className="termini__panel-head">
+                <span className="termini__index" aria-hidden="true">02</span>
+                <div>
+                  <p className="termini__kicker">Dan</p>
+                  <h2>Rezervacije</h2>
+                  <p>
+                    {formatDay(selectedDate)}
+                    {' · '}
+                    potvrđeni upisi
+                  </p>
+                </div>
+                <p className="termini__meta">
+                  <strong>{dayBookings.length}</strong>
+                  <span>upisa</span>
+                </p>
+              </header>
+              {loadingBookings ? <p className="termini__hint">Učitavamo rezervacije…</p> : null}
+              {!loadingBookings && dayBookings.length === 0 ? (
+                <p className="termini__empty">
+                  Još nema rezervacija za
+                  {' '}
+                  {formatDay(selectedDate)}
+                  .
+                </p>
+              ) : null}
+              {dayBookings.length > 0 ? (
+                <ul className="termini__list">
+                  {dayBookings.map((item) => (
+                    <li key={item.id}>
+                      <div>
+                        <strong>
+                          {item.startTime}
+                          –
+                          {item.endTime}
+                        </strong>
+                        <span>
+                          {nameByUser.get(String(item.userId)) || 'Član'}
+                          {item.staff?.name ? ` · ${item.staff.name}` : ''}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="termini__cancel"
+                        disabled={cancelling && busyId === item.id}
+                        onClick={() => onCancel(item.id)}
+                      >
+                        {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          </div>
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { contactEmail } from '../../contact.js';
+import { contactEmail } from '../../lib/contact.js';
 import './StatusPage.scss';
 
 export function StatusPage({

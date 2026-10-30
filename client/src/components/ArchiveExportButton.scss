@@ -1,0 +1,75 @@
+.archive-export {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: end;
+  max-width: 20rem;
+}
+
+.archive-export__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.archive-export__btn {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--brand, #0e6b73);
+  border-radius: 0;
+  background: #fff;
+  color: var(--brand, #0e6b73);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archive-export__btn.is-primary {
+  background: var(--brand, #0e6b73);
+  color: var(--on-brand, #fff);
+}
+
+.archive-export__btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand, #0e6b73) 88%, #000);
+  border-color: color-mix(in srgb, var(--brand, #0e6b73) 88%, #000);
+  color: var(--on-brand, #fff);
+}
+
+.archive-export__btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.archive-export__hint,
+.archive-export__error {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.archive-export__hint {
+  color: color-mix(in srgb, var(--fg, #112b2e) 48%, transparent);
+}
+
+.archive-export__error {
+  color: var(--danger, #b42318);
+}
+
+@media (max-width: 640px) {
+  .archive-export {
+    justify-items: start;
+    max-width: none;
+  }
+
+  .archive-export__row {
+    justify-content: flex-start;
+  }
+
+  .archive-export__hint,
+  .archive-export__error {
+    text-align: left;
+  }
+}

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './app/store.js';
-import { registerPushServiceWorker } from './push.js';
+import { registerPushServiceWorker } from './lib/push.js';
 import App from './app/App.jsx';
 import './styles/global.scss';
 

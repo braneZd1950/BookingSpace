@@ -1,7 +1,7 @@
 import { Link, useOutletContext } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useListOnlineCatalogQuery } from '../../api/onlineApi.js';
-import { ONLINE_ENABLED } from '../../onlineFeature.js';
+import { ONLINE_ENABLED } from '../../lib/onlineFeature.js';
 import './MemberOnlinePage.scss';
 
 function apiOrigin() {
@@ -67,43 +67,85 @@ function accessMessage(access, loggedIn, isMember) {
   return 'Nema preostalih termina u paketu. Pojedinačna kupnja online treninga stiže uskoro.';
 }
 
-function ComingSoon({ tenant }) {
-  return (
-    <main className="member-online">
-      <header className="member-online__head">
-        <div>
-          <h1>Online</h1>
-          <p>Snimljeni treninzi studija {tenant.name} — kod kuće, vlastitim tempom.</p>
-        </div>
-        <p className="member-online__badge">Uskoro</p>
-      </header>
+function themeStyle(palette) {
+  const theme = palette?.theme;
+  if (!theme) return undefined;
+  return {
+    '--online-brand': theme.primaryColor,
+    '--online-soft': theme.secondaryColor,
+    '--online-ink': theme.ink,
+    '--online-canvas': theme.canvas,
+  };
+}
 
+function OnlineShell({ tenant, palette, children, status = 'Online' }) {
+  return (
+    <main className="member-online" style={themeStyle(palette)}>
+      <div className="member-online__atmosphere" aria-hidden="true">
+        <span className="member-online__wash" />
+        <span className="member-online__grain" />
+      </div>
+
+      <div className="member-online__layout">
+        <aside className="member-online__rail" aria-hidden="true">
+          <p className="member-online__rail-mark">Online</p>
+          <p className="member-online__rail-status">{status}</p>
+        </aside>
+
+        <div className="member-online__stage">
+          <header className="member-online__hero">
+            <p className="member-online__studio">{tenant.name}</p>
+            <h1>Online</h1>
+            <p className="member-online__lead">
+              Snimljeni treninzi — kod kuće, vlastitim tempom.
+            </p>
+          </header>
+          {children}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function ComingSoon({ tenant, palette }) {
+  return (
+    <OnlineShell tenant={tenant} palette={palette} status="Uskoro">
       <section className="member-online__soon" aria-live="polite">
+        <p className="member-online__kicker">Stanje</p>
         <strong>Uskoro dolazi</strong>
         <p>
-          Online treninzi još nisu uključeni. Radimo na snimkama, otključavanju preko članarine
-          i plaćanju za one bez preostalih termina.
+          Online treninzi još nisu uključeni. Radimo na snimkama, otključavanju
+          preko članarine i plaćanju za one bez preostalih termina.
         </p>
         <Link className="member-online__cta" to={`/s/${tenant.slug}/termini`}>
           Idi na Termine
         </Link>
       </section>
-    </main>
+    </OnlineShell>
   );
 }
 
 export default function MemberOnlinePage() {
-  const { tenant, membership, isMember, loggedIn } = useOutletContext();
+  const { tenant, membership, isMember, loggedIn, palette } = useOutletContext();
   const tenantId = String(tenant.id);
 
   if (!ONLINE_ENABLED) {
-    return <ComingSoon tenant={tenant} />;
+    return <ComingSoon tenant={tenant} palette={palette} />;
   }
 
-  return <MemberOnlineLive tenant={tenant} tenantId={tenantId} membership={membership} isMember={isMember} loggedIn={loggedIn} />;
+  return (
+    <MemberOnlineLive
+      tenant={tenant}
+      tenantId={tenantId}
+      membership={membership}
+      isMember={isMember}
+      loggedIn={loggedIn}
+      palette={palette}
+    />
+  );
 }
 
-function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn }) {
+function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn, palette }) {
   const { data, isLoading, isError } = useListOnlineCatalogQuery(tenantId, {
     skip: !tenantId,
     refetchOnMountOrArgChange: true,
@@ -118,22 +160,19 @@ function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn }) 
   );
   const player = active?.videoUrl ? embedUrl(active.videoUrl) : null;
 
+  const status = isMember
+    ? (membership.sessionsIncluded == null
+      ? 'Neograničeno'
+      : `${Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0))} preostalo`)
+    : 'Katalog';
+
   return (
-    <main className="member-online">
-      <header className="member-online__head">
-        <div>
-          <h1>Online</h1>
-          <p>Snimljeni treninzi studija {tenant.name} — kod kuće, vlastitim tempom.</p>
-        </div>
-        {isMember ? (
-          <p className="member-online__badge">
-            {membership.planName || 'Članarina'}
-            {membership.sessionsIncluded == null
-              ? ' · neograničeno'
-              : ` · ${Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0))} preostalo`}
-          </p>
-        ) : null}
-      </header>
+    <OnlineShell tenant={tenant} palette={palette} status={status}>
+      {isMember ? (
+        <p className="member-online__plan">
+          {membership.planName || 'Članarina'}
+        </p>
+      ) : null}
 
       <p className="member-online__access" role="status">
         {accessMessage(access, loggedIn, isMember)}
@@ -149,7 +188,8 @@ function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn }) 
       {isError ? <p className="member-online__error">Treninzi se nisu učitali.</p> : null}
 
       {!isLoading && !isError && workouts.length === 0 ? (
-        <section className="member-online__empty">
+        <section className="member-online__soon">
+          <p className="member-online__kicker">Katalog</p>
           <strong>Još nema online treninga</strong>
           <p>Studio uskoro može objaviti snimke. Provjerite Termine za uživo rezervacije.</p>
           <Link className="member-online__cta" to={`/s/${tenant.slug}/termini`}>
@@ -187,12 +227,15 @@ function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn }) 
       ) : null}
 
       {workouts.length > 0 ? (
-        <ul className="member-online__list">
-          {workouts.map((item) => {
+        <ol className="member-online__list">
+          {workouts.map((item, index) => {
             const on = String(item.id) === String(activeId);
             return (
               <li key={item.id} className={item.locked ? 'is-locked' : undefined}>
-                <div>
+                <span className="member-online__index" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <div className="member-online__item">
                   <strong>{item.title}</strong>
                   <span>
                     {item.durationMinutes}
@@ -218,8 +261,8 @@ function MemberOnlineLive({ tenant, tenantId, membership, isMember, loggedIn }) 
               </li>
             );
           })}
-        </ul>
+        </ol>
       ) : null}
-    </main>
+    </OnlineShell>
   );
 }

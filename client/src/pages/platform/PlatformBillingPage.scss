@@ -1,0 +1,573 @@
+.platform-billing {
+  --pb-brand: var(--brand, #0e6b73);
+  --pb-soft: var(--brand-soft, #dceff0);
+  --pb-ink: var(--fg, #112b2e);
+  --pb-edge: color-mix(in srgb, var(--pb-brand) 16%, transparent);
+  --pb-accent: var(--accent, #f2a33a);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 clamp(3rem, 7vw, 4.5rem);
+  overflow: clip;
+  color: var(--pb-ink);
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--pb-soft) 52%, #fff) 0%,
+      color-mix(in srgb, var(--bg, #f5f8f8) 92%, #fff) 18rem,
+      #fff 100%
+    );
+}
+
+.platform-billing__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.platform-billing__wash {
+  position: absolute;
+  top: -12%;
+  right: -8%;
+  width: min(34rem, 70vw);
+  height: 58%;
+  background:
+    radial-gradient(
+      ellipse at 48% 38%,
+      color-mix(in srgb, var(--pb-brand) 18%, transparent),
+      transparent 72%
+    );
+  filter: blur(5px);
+  animation: platform-billing-wash 16s ease-in-out infinite alternate;
+}
+
+.platform-billing__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  background:
+    repeating-linear-gradient(
+      -20deg,
+      transparent,
+      transparent 11px,
+      color-mix(in srgb, var(--pb-ink) 3%, transparent) 11px,
+      color-mix(in srgb, var(--pb-ink) 3%, transparent) 12px
+    );
+}
+
+.platform-billing__stage {
+  position: relative;
+  z-index: 1;
+  width: min(52rem, calc(100% - 2.4rem));
+  margin: 0 auto;
+  padding-top: clamp(1.75rem, 4vw, 2.6rem);
+  animation: platform-billing-rise 0.55s ease both;
+}
+
+.platform-billing__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem 1.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1.45rem;
+  border-bottom: 1px solid var(--pb-edge);
+}
+
+.platform-billing__eyebrow,
+.platform-billing__kicker {
+  margin: 0;
+  color: var(--pb-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.platform-billing__head h1 {
+  margin: 0.4rem 0 0;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.9rem, 4.2vw, 2.55rem);
+  font-weight: 640;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.platform-billing__head h1::after {
+  content: '';
+  display: block;
+  width: 2.6rem;
+  height: 0.18rem;
+  margin-top: 0.7rem;
+  border-radius: 999px;
+  background: var(--pb-accent);
+  transform-origin: left center;
+  animation: platform-billing-rule-x 0.7s 0.12s ease both;
+}
+
+.platform-billing__lede {
+  max-width: 36rem;
+  margin: 0.65rem 0 0;
+  color: color-mix(in srgb, var(--pb-ink) 58%, transparent);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.platform-billing__head-actions {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: end;
+}
+
+.platform-billing__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--ok-ink, #14663f);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.platform-billing__live::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+  animation: platform-billing-pulse 1.6s ease-out infinite;
+}
+
+.platform-billing__live.is-busy {
+  color: var(--pb-brand);
+}
+
+.platform-billing__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 1.5rem 0 0;
+  border: 1px solid var(--pb-edge);
+  background: color-mix(in srgb, #fff 88%, var(--pb-soft));
+  overflow: hidden;
+  animation: platform-billing-channel-in 0.5s 0.08s ease both;
+}
+
+@media (min-width: 900px) {
+  .platform-billing__metrics {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.platform-billing__metrics article {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.1rem 1rem;
+  border-right: 1px solid var(--pb-edge);
+  border-bottom: 1px solid var(--pb-edge);
+}
+
+@media (min-width: 900px) {
+  .platform-billing__metrics article {
+    border-bottom: 0;
+  }
+
+  .platform-billing__metrics article:last-child {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .platform-billing__metrics article:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .platform-billing__metrics article:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+.platform-billing__metrics span {
+  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.platform-billing__metrics strong {
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.platform-billing__block {
+  margin-top: 2.2rem;
+}
+
+.platform-billing__block-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.platform-billing__index,
+.platform-billing__n {
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  color: var(--pb-brand);
+}
+
+.platform-billing__n {
+  font-size: 1.1rem;
+  padding-top: 0.15rem;
+}
+
+.platform-billing__block-head h2 {
+  margin: 0.15rem 0 0;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.platform-billing__block-head p:last-child {
+  margin: 0.35rem 0 0;
+  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  line-height: 1.45;
+}
+
+.platform-billing__toolbar {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.platform-billing__search input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--pb-edge);
+  border-radius: 0;
+  background: color-mix(in srgb, #fff 92%, var(--pb-soft));
+  color: var(--pb-ink);
+  font: inherit;
+}
+
+.platform-billing__search input:focus {
+  outline: 2px solid var(--pb-brand);
+  outline-offset: 2px;
+}
+
+.platform-billing__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.platform-billing__filters button {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--pb-edge);
+  border-radius: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--pb-ink) 70%, transparent);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.platform-billing__filters button:hover {
+  border-color: color-mix(in srgb, var(--pb-brand) 35%, var(--pb-edge));
+  color: var(--pb-brand);
+}
+
+.platform-billing__filters button.is-on {
+  border-color: var(--pb-brand);
+  background: var(--pb-brand);
+  color: var(--on-brand, #fff);
+}
+
+.platform-billing__flash {
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.85rem;
+  border-left: 2px solid var(--pb-brand);
+  background: color-mix(in srgb, var(--pb-soft) 55%, #fff);
+  color: var(--pb-ink);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.platform-billing__list {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--pb-edge);
+}
+
+.platform-billing__list > li {
+  padding: 1.15rem 0 1.25rem;
+  border-bottom: 1px solid var(--pb-edge);
+  animation: platform-billing-channel-in 0.45s ease both;
+}
+
+.platform-billing__row-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.platform-billing__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  align-items: center;
+}
+
+.platform-billing__title strong {
+  font-size: 1.12rem;
+  letter-spacing: -0.02em;
+}
+
+.platform-billing__pill {
+  padding: 0.18rem 0.45rem;
+  border: 1px solid var(--pb-edge);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.platform-billing__pill.is-ok {
+  border-color: color-mix(in srgb, var(--ok, #1f8a5b) 35%, transparent);
+  background: var(--ok-soft, #ddf3e8);
+  color: var(--ok-ink, #14663f);
+}
+
+.platform-billing__pill.is-trial {
+  border-color: color-mix(in srgb, var(--pb-brand) 35%, transparent);
+  background: color-mix(in srgb, var(--pb-soft) 70%, #fff);
+  color: var(--pb-brand);
+}
+
+.platform-billing__pill.is-warn {
+  border-color: color-mix(in srgb, var(--warn, #c47a1a) 35%, transparent);
+  background: color-mix(in srgb, var(--pb-accent) 22%, #fff);
+  color: color-mix(in srgb, var(--pb-accent) 55%, #5a3200);
+}
+
+.platform-billing__pill.is-off {
+  border-color: color-mix(in srgb, var(--danger, #b42318) 30%, transparent);
+  background: color-mix(in srgb, var(--danger, #b42318) 8%, #fff);
+  color: var(--danger, #b42318);
+}
+
+.platform-billing__sub {
+  margin: 0.35rem 0 0;
+  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.platform-billing__sub a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.platform-billing__sub a:hover {
+  color: var(--pb-brand);
+}
+
+.platform-billing__until {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  text-align: right;
+}
+
+.platform-billing__until span {
+  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.platform-billing__until strong {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.platform-billing__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.9rem 0 0;
+}
+
+.platform-billing__meta div {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  background: color-mix(in srgb, var(--pb-soft) 35%, #fff);
+  border-left: 2px solid color-mix(in srgb, var(--pb-brand) 28%, transparent);
+}
+
+.platform-billing__meta dt {
+  margin: 0;
+  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.platform-billing__meta dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.platform-billing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.platform-billing__actions button {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--pb-edge);
+  border-radius: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--pb-ink) 75%, transparent);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.platform-billing__actions button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--pb-brand) 40%, var(--pb-edge));
+  color: var(--pb-brand);
+}
+
+.platform-billing__actions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.platform-billing__note {
+  margin: 0.65rem 0 0;
+  color: color-mix(in srgb, var(--pb-ink) 52%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.platform-billing__empty {
+  margin: 0.8rem 0 0;
+  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .platform-billing__row-top {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .platform-billing__until {
+    grid-column: 2;
+    text-align: left;
+    margin-top: 0.35rem;
+  }
+
+  .platform-billing__meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes platform-billing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.7rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes platform-billing-rule-x {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes platform-billing-channel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes platform-billing-wash {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-2%, 3%, 0) scale(1.05);
+  }
+}
+
+@keyframes platform-billing-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 0.55rem transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-billing__stage,
+  .platform-billing__metrics,
+  .platform-billing__head h1::after,
+  .platform-billing__wash,
+  .platform-billing__live::before,
+  .platform-billing__list > li {
+    animation: none;
+  }
+}

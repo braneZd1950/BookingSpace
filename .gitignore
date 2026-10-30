@@ -8,3 +8,8 @@ uploads/
 server/.env
 server/.env.development
 server/.env.local
+
+# Prep pages kept local until pilot flags turn on
+client/src/pages/owner/GalleryPage.jsx
+client/src/pages/owner/GalleryPage.scss
+client/src/pages/owner/PaymentsPreparePage.jsx

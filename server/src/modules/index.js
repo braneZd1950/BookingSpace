@@ -11,6 +11,7 @@ import {
   planItemRoutes,
 } from './memberships/routes.js';
 import paymentRoutes from './payments/routes.js';
+import platformStaffRoutes from './platformStaff/routes.js';
 import pushRoutes from './push/routes.js';
 import { serviceCollectionRoutes, serviceItemRoutes } from './services/routes.js';
 import onlineRoutes from './online/routes.js';
@@ -21,6 +22,7 @@ import tenantRoutes from './tenants/routes.js';
 const api = Router();
 
 api.use('/analytics', analyticsRoutes);
+api.use('/platform/staff', platformStaffRoutes);
 api.use('/auth', authRoutes);
 api.use('/consent', consentRoutes);
 api.use('/push', pushRoutes);

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
 import {
   PLATFORM_POLL,
   useGetPlatformBillingQuery,
@@ -6,21 +7,13 @@ import {
   useSendBillingWarningMutation,
   useUpdatePlatformBillingMutation,
 } from '../../api/analyticsApi.js';
-import PlatformSection from './PlatformSection.jsx';
-import '../public/AnalyticsPage.scss';
+import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
+import { archiveAuthor } from '../../lib/archivePdf.js';
+import './PlatformBillingPage.scss';
 
 const planLabel = {
   pilot: 'Pilot',
   standard: 'Standard',
-};
-
-const bucketClass = {
-  paid: 'is-ok',
-  trial: 'is-trial',
-  expiring: 'is-warn',
-  unpaid: 'is-off',
-  expired: 'is-off',
-  unknown: '',
 };
 
 function formatDate(value) {
@@ -38,6 +31,10 @@ function formatDate(value) {
   }).format(date);
 }
 
+function formatCount(value) {
+  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
+}
+
 function daysLabel(daysLeft) {
   if (daysLeft == null) return '—';
   if (daysLeft < 0) return `${Math.abs(daysLeft)} d. kasni`;
@@ -45,12 +42,21 @@ function daysLabel(daysLeft) {
   return `${daysLeft} d.`;
 }
 
+function pillClass(bucket) {
+  if (bucket === 'paid') return 'is-ok';
+  if (bucket === 'trial') return 'is-trial';
+  if (bucket === 'expiring') return 'is-warn';
+  if (bucket === 'unpaid' || bucket === 'expired') return 'is-off';
+  return '';
+}
+
 export default function PlatformBillingPage() {
+  const { me } = useOutletContext() || {};
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [busyId, setBusyId] = useState('');
   const [flash, setFlash] = useState('');
-  const { data, isLoading, isError, refetch } = useGetPlatformBillingQuery(
+  const { data, isLoading, isError, isFetching, refetch } = useGetPlatformBillingQuery(
     undefined,
     PLATFORM_POLL.billing,
   );
@@ -98,207 +104,300 @@ export default function PlatformBillingPage() {
 
   if (isLoading) {
     return (
-      <PlatformSection title="Plaćanja" lead="Učitavamo pretplate…">
-        <p className="analytics__lead">Trenutak.</p>
-      </PlatformSection>
+      <main className="platform-billing">
+        <div className="platform-billing__stage">
+          <p className="platform-billing__lede">Učitavamo pretplate…</p>
+        </div>
+      </main>
     );
   }
 
   if (isError || !data) {
     return (
-      <PlatformSection title="Plaćanja" lead="Podaci trenutno nisu dostupni.">
-        <p className="analytics__lead">Pokušajte osvježiti stranicu.</p>
-      </PlatformSection>
+      <main className="platform-billing">
+        <div className="platform-billing__stage">
+          <header className="platform-billing__head">
+            <div>
+              <p className="platform-billing__eyebrow">Platforma</p>
+              <h1>Plaćanja</h1>
+              <p className="platform-billing__lede">Podaci trenutno nisu dostupni.</p>
+            </div>
+          </header>
+        </div>
+      </main>
     );
   }
 
   return (
-    <PlatformSection
-      title="Plaćanja"
-      lead={`Pretplate partnera · stanje na ${formatDate(data.today)}. Upozorenja i pripremni e-računi idu na e-poštu studija.`}
-    >
-      <div className="analytics__stats" aria-label="Sažetak plaćanja">
-        <article>
-          <span>Ukupno</span>
-          <strong>{summary.total}</strong>
-        </article>
-        <article>
-          <span>Plaćeno</span>
-          <strong>{summary.paid}</strong>
-        </article>
-        <article>
-          <span>Probni</span>
-          <strong>{summary.trial}</strong>
-        </article>
-        <article>
-          <span>Pred istek</span>
-          <strong>{summary.expiring}</strong>
-        </article>
-        <article>
-          <span>Neplaćeno</span>
-          <strong>{summary.unpaid}</strong>
-        </article>
-        <article>
-          <span>Isteklo</span>
-          <strong>{summary.expired}</strong>
-        </article>
+    <main className="platform-billing">
+      <div className="platform-billing__atmosphere" aria-hidden="true">
+        <span className="platform-billing__wash" />
+        <span className="platform-billing__grain" />
       </div>
 
-      <div className="analytics__toolbar">
-        <label className="analytics__search">
-          <span className="visually-hidden">Pretraži pretplate</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Traži studio ili kontakt…"
-          />
-        </label>
-        <div className="analytics__filters" role="tablist" aria-label="Filter plaćanja">
-          {[
-            ['all', `Svi (${summary.total})`],
-            ['paid', `Plaćeno (${summary.paid})`],
-            ['trial', `Probni (${summary.trial})`],
-            ['expiring', `Pred istek (${summary.expiring})`],
-            ['unpaid', `Neplaćeno (${summary.unpaid})`],
-            ['expired', `Isteklo (${summary.expired})`],
-          ].map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={filter === id}
-              className={filter === id ? 'is-on' : undefined}
-              onClick={() => setFilter(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="platform-billing__stage">
+        <header className="platform-billing__head">
+          <div>
+            <p className="platform-billing__eyebrow">Platforma</p>
+            <h1>Plaćanja</h1>
+            <p className="platform-billing__lede">
+              Pretplate partnera · stanje na
+              {' '}
+              {formatDate(data.today)}
+              . Upozorenja i pripremni e-računi idu na e-poštu studija.
+            </p>
+          </div>
+          <div className="platform-billing__head-actions">
+            <p className={`platform-billing__live${isFetching ? ' is-busy' : ''}`}>
+              uživo
+            </p>
+            <ArchiveExportButton
+              build={() => ({
+                title: 'Pretplate i plaćanja partnera',
+                subtitle: `Stanje na ${formatDate(data.today)}. Financijski pregled pretplata studija.`,
+                fileStem: 'placanja',
+                generatedBy: archiveAuthor(me),
+                summary: [
+                  { label: 'Ukupno', value: formatCount(summary.total) },
+                  { label: 'Plaćeno', value: formatCount(summary.paid) },
+                  { label: 'Probni', value: formatCount(summary.trial) },
+                  { label: 'Pred istek', value: formatCount(summary.expiring) },
+                  { label: 'Neplaćeno', value: formatCount(summary.unpaid) },
+                  { label: 'Isteklo', value: formatCount(summary.expired) },
+                ],
+                sections: [{
+                  title: 'Pretplate',
+                  lead: `Ispisano ${studios.length} studija.`,
+                  columns: ['Studio', 'Slug', 'Kontakt', 'Stanje', 'Plan', 'Vrijedi do', 'Preostalo', 'Iznos', 'Upozorenje', 'E-račun'],
+                  rows: studios.map((item) => [
+                    item.name || '—',
+                    item.slug ? `/s/${item.slug}` : '—',
+                    item.email || '—',
+                    item.label || item.bucket || '—',
+                    planLabel[item.plan] || item.plan || '—',
+                    formatDate(item.validUntil),
+                    daysLabel(item.daysLeft),
+                    item.amount > 0 ? `${item.amount} ${item.currency || 'EUR'}` : '—',
+                    formatDate(item.lastWarningSentAt),
+                    formatDate(item.lastInvoiceSentAt),
+                  ]),
+                }],
+                notes: [
+                  'Dokument je namijenjen knjigovodstvenoj / ugovornoj arhivi izvan baze.',
+                  'E-računi i upozorenja šalju se na e-poštu studija; ovdje je samo trag stanja.',
+                ],
+              })}
+            />
+          </div>
+        </header>
 
-      {flash ? <p className="analytics__flash" role="status">{flash}</p> : null}
+        <section className="platform-billing__metrics" aria-label="Sažetak plaćanja">
+          <article>
+            <span>Ukupno</span>
+            <strong>{formatCount(summary.total)}</strong>
+          </article>
+          <article>
+            <span>Plaćeno</span>
+            <strong>{formatCount(summary.paid)}</strong>
+          </article>
+          <article>
+            <span>Probni</span>
+            <strong>{formatCount(summary.trial)}</strong>
+          </article>
+          <article>
+            <span>Pred istek</span>
+            <strong>{formatCount(summary.expiring)}</strong>
+          </article>
+          <article>
+            <span>Neplaćeno</span>
+            <strong>{formatCount(summary.unpaid)}</strong>
+          </article>
+          <article>
+            <span>Isteklo</span>
+            <strong>{formatCount(summary.expired)}</strong>
+          </article>
+        </section>
 
-      {visible.length === 0 ? (
-        <p className="analytics__lead">Nema studija za ovaj filter.</p>
-      ) : (
-        <div className="analytics__table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Studio</th>
-                <th>Stanje</th>
-                <th>Plan</th>
-                <th>Vrijedi do</th>
-                <th>Preostalo</th>
-                <th>Iznos</th>
-                <th>Akcije</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((item) => {
+        <section className="platform-billing__block" aria-labelledby="billing-list-title">
+          <header className="platform-billing__block-head">
+            <span className="platform-billing__index" aria-hidden="true">01</span>
+            <div>
+              <p className="platform-billing__kicker">Pretplate</p>
+              <h2 id="billing-list-title">Popis partnera</h2>
+              <p>
+                Prikazano
+                {' '}
+                {visible.length}
+                {' '}
+                od
+                {' '}
+                {summary.total}
+                .
+              </p>
+            </div>
+          </header>
+
+          <div className="platform-billing__toolbar">
+            <label className="platform-billing__search">
+              <span className="visually-hidden">Pretraži pretplate</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Traži studio ili kontakt…"
+              />
+            </label>
+            <div className="platform-billing__filters" role="tablist" aria-label="Filter plaćanja">
+              {[
+                ['all', `Svi (${summary.total})`],
+                ['paid', `Plaćeno (${summary.paid})`],
+                ['trial', `Probni (${summary.trial})`],
+                ['expiring', `Pred istek (${summary.expiring})`],
+                ['unpaid', `Neplaćeno (${summary.unpaid})`],
+                ['expired', `Isteklo (${summary.expired})`],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === id}
+                  className={filter === id ? 'is-on' : undefined}
+                  onClick={() => setFilter(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {flash ? (
+            <p className="platform-billing__flash" role="status">{flash}</p>
+          ) : null}
+
+          {visible.length === 0 ? (
+            <p className="platform-billing__empty">Nema studija za ovaj filter.</p>
+          ) : (
+            <ul className="platform-billing__list">
+              {visible.map((item, index) => {
                 const busy = busyId === item.id;
+                const amount = item.amount > 0
+                  ? `${item.amount} ${item.currency || 'EUR'}`
+                  : '—';
                 return (
-                  <tr key={item.id}>
-                    <td>
-                      <strong>{item.name}</strong>
-                      <div className="analytics__sub">
-                        /s/
-                        {item.slug}
-                        {item.email ? ` · ${item.email}` : ''}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`analytics__pill ${bucketClass[item.bucket] || ''}`.trim()}>
-                        {item.label}
+                  <li key={item.id}>
+                    <div className="platform-billing__row-top">
+                      <span className="platform-billing__n" aria-hidden="true">
+                        {String(index + 1).padStart(2, '0')}
                       </span>
-                    </td>
-                    <td>{planLabel[item.plan] || item.plan}</td>
-                    <td>{formatDate(item.validUntil)}</td>
-                    <td>{daysLabel(item.daysLeft)}</td>
-                    <td>
-                      {item.amount > 0
-                        ? `${item.amount} ${item.currency || 'EUR'}`
-                        : '—'}
-                    </td>
-                    <td>
-                      <div className="analytics__row-actions">
+                      <div className="platform-billing__identity">
+                        <div className="platform-billing__title">
+                          <strong>{item.name}</strong>
+                          <span className={`platform-billing__pill ${pillClass(item.bucket)}`.trim()}>
+                            {item.label}
+                          </span>
+                        </div>
+                        <p className="platform-billing__sub">
+                          <Link to={`/s/${item.slug}`}>
+                            /s/
+                            {item.slug}
+                          </Link>
+                          {item.email ? ` · ${item.email}` : ''}
+                        </p>
+                      </div>
+                      <p className="platform-billing__until">
+                        <span>Vrijedi do</span>
+                        <strong>{formatDate(item.validUntil)}</strong>
+                      </p>
+                    </div>
+
+                    <dl className="platform-billing__meta">
+                      <div>
+                        <dt>Plan</dt>
+                        <dd>{planLabel[item.plan] || item.plan}</dd>
+                      </div>
+                      <div>
+                        <dt>Preostalo</dt>
+                        <dd>{daysLabel(item.daysLeft)}</dd>
+                      </div>
+                      <div>
+                        <dt>Iznos</dt>
+                        <dd>{amount}</dd>
+                      </div>
+                    </dl>
+
+                    <div className="platform-billing__actions">
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => runAction(
+                          item.id,
+                          'Označeno kao plaćeno',
+                          () => updateBilling({
+                            tenantId: item.id,
+                            body: { markPaid: true },
+                          }).unwrap(),
+                        )}
+                      >
+                        Plaćeno
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => runAction(
+                          item.id,
+                          'Upozorenje poslano',
+                          () => sendWarning(item.id).unwrap(),
+                        )}
+                      >
+                        Upozorenje
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => runAction(
+                          item.id,
+                          'Pripremni e-račun poslan',
+                          () => sendInvoice(item.id).unwrap(),
+                        )}
+                      >
+                        E-račun
+                      </button>
+                      {(item.bucket === 'trial' || item.bucket === 'paid') ? null : (
                         <button
                           type="button"
-                          className="analytics__refresh"
                           disabled={busy}
                           onClick={() => runAction(
                             item.id,
-                            'Označeno kao plaćeno',
+                            'Označeno kao neplaćeno',
                             () => updateBilling({
                               tenantId: item.id,
-                              body: { markPaid: true },
+                              body: { status: 'UNPAID' },
                             }).unwrap(),
                           )}
                         >
-                          Plaćeno
+                          Neplaćeno
                         </button>
-                        <button
-                          type="button"
-                          className="analytics__refresh"
-                          disabled={busy}
-                          onClick={() => runAction(
-                            item.id,
-                            'Upozorenje poslano',
-                            () => sendWarning(item.id).unwrap(),
-                          )}
-                        >
-                          Upozorenje
-                        </button>
-                        <button
-                          type="button"
-                          className="analytics__refresh"
-                          disabled={busy}
-                          onClick={() => runAction(
-                            item.id,
-                            'Pripremni e-račun poslan',
-                            () => sendInvoice(item.id).unwrap(),
-                          )}
-                        >
-                          E-račun
-                        </button>
-                        {(item.bucket === 'trial' || item.bucket === 'paid') ? null : (
-                          <button
-                            type="button"
-                            className="analytics__refresh"
-                            disabled={busy}
-                            onClick={() => runAction(
-                              item.id,
-                              'Označeno kao neplaćeno',
-                              () => updateBilling({
-                                tenantId: item.id,
-                                body: { status: 'UNPAID' },
-                              }).unwrap(),
-                            )}
-                          >
-                            Neplaćeno
-                          </button>
-                        )}
-                      </div>
-                      {(item.lastWarningSentAt || item.lastInvoiceSentAt) ? (
-                        <div className="analytics__sub">
-                          {item.lastWarningSentAt
-                            ? `Upozorenje: ${formatDate(item.lastWarningSentAt)}`
-                            : ''}
-                          {item.lastWarningSentAt && item.lastInvoiceSentAt ? ' · ' : ''}
-                          {item.lastInvoiceSentAt
-                            ? `E-račun: ${formatDate(item.lastInvoiceSentAt)}`
-                            : ''}
-                        </div>
-                      ) : null}
-                    </td>
-                  </tr>
+                      )}
+                    </div>
+
+                    {(item.lastWarningSentAt || item.lastInvoiceSentAt) ? (
+                      <p className="platform-billing__note">
+                        {item.lastWarningSentAt
+                          ? `Upozorenje: ${formatDate(item.lastWarningSentAt)}`
+                          : ''}
+                        {item.lastWarningSentAt && item.lastInvoiceSentAt ? ' · ' : ''}
+                        {item.lastInvoiceSentAt
+                          ? `E-račun: ${formatDate(item.lastInvoiceSentAt)}`
+                          : ''}
+                      </p>
+                    ) : null}
+                  </li>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </PlatformSection>
+            </ul>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }

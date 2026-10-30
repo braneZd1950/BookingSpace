@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { entityLine, legalEntity } from '../../legal.js';
+import { entityLine, legalEntity } from '../../lib/legal.js';
 import './LegalPage.scss';
 
 const docs = [

@@ -3,6 +3,7 @@ import '@client/api/consentApi.js';
 import '@client/api/pushApi.js';
 import UsageTracker from '@client/components/UsageTracker.jsx';
 import CalendarPage from '@client/pages/owner/CalendarPage.jsx';
+import LaunchPlanPage from '@client/pages/owner/LaunchPlanPage.jsx';
 import MembersPage from '@client/pages/owner/MembersPage.jsx';
 import OnlinePage from '@client/pages/owner/OnlinePage.jsx';
 import SetupPage from '@client/pages/owner/SetupPage.jsx';
@@ -30,6 +31,10 @@ import {
   PrivacyPage,
   TermsPage,
 } from '@client/pages/public/sitePages.jsx';
+import {
+  LAUNCH_PLAN_ENABLED,
+  ONLINE_ENABLED,
+} from '@client/lib/studioFeatures.js';
 import MobileMemberLayout from './layouts/MobileMemberLayout.jsx';
 import MobilePublicLayout from './layouts/MobilePublicLayout.jsx';
 import MobileStudioLayout from './layouts/MobileStudioLayout.jsx';
@@ -54,7 +59,7 @@ export default function App() {
         <Route path="/s/:slug" element={<MobileMemberLayout />}>
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
-          <Route path="online" element={<MemberOnlinePage />} />
+          {ONLINE_ENABLED ? <Route path="online" element={<MemberOnlinePage />} /> : null}
           <Route path="privatnost" element={<MemberPrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
@@ -62,10 +67,11 @@ export default function App() {
         <Route path="/stranica" element={<MobileStudioLayout />}>
           <Route index element={<StudioHome />} />
           <Route path="termini" element={<TerminiPage />} />
-          <Route path="online" element={<OnlinePage />} />
+          {ONLINE_ENABLED ? <Route path="online" element={<OnlinePage />} /> : null}
           <Route path="kalendar" element={<CalendarPage />} />
           <Route path="clanovi" element={<MembersPage />} />
           <Route path="analitika" element={<StudioAnalyticsPage />} />
+          {LAUNCH_PLAN_ENABLED ? <Route path="plan" element={<LaunchPlanPage />} /> : null}
           <Route path="postavke" element={<SettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

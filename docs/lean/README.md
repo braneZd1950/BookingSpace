@@ -1,6 +1,6 @@
 # Lean launch — documentation by phase
 
-anyminutes follows **Build → Measure → Learn**. The five launch phases remain the learning narrative. **Phases 1–3 are implemented in the product**; Phase 4 is mostly done (wizard + preview); Phase 5 (physical payments UI) is the main remaining lean gap.
+anyminutes follows **Build → Measure → Learn**. The five launch phases remain the learning narrative. **Phases 1–4 are implemented** (including gallery CMS); Phase 5 has a **prep page** (`/stranica/placanja`) — full till UI is still the main remaining lean gap.
 
 Backend is **no longer frozen** — see [backend-status.md](backend-status.md). Prefer documenting API gaps before expanding the server; ship the smallest change that unblocks learning.
 
