@@ -50,7 +50,11 @@ export function assertProductionReady(env) {
   }
 
   const origins = Array.isArray(env.clientOrigins) ? env.clientOrigins : [env.clientOrigin];
-  for (const origin of origins.filter(Boolean)) {
+  const listed = origins.filter(Boolean);
+  if (!listed.length) {
+    errors.push('CLIENT_ORIGIN is required in production (https://your-app.onrender.com)');
+  }
+  for (const origin of listed) {
     if (isLocalhostUrl(origin)) {
       errors.push(`CLIENT_ORIGIN(S) must not be localhost in production (${origin})`);
     } else if (!isHttpsUrl(origin)) {

@@ -45,20 +45,26 @@ function blank(name) {
   return value.trim();
 }
 
-const clientOrigin = optional('CLIENT_ORIGIN', 'http://localhost:5173');
+const nodeEnv = optional('NODE_ENV', 'development');
+const isProd = nodeEnv === 'production';
+// Local defaults only outside production — never inject localhost into Render CORS.
+const clientOrigin = blank('CLIENT_ORIGIN')
+  || (isProd ? '' : 'http://localhost:5173');
+const mobileOrigin = blank('CLIENT_ORIGIN_MOBILE')
+  || (isProd ? '' : 'http://localhost:5174');
 const extraOrigins = blank('CLIENT_ORIGINS')
   .split(',')
   .map((item) => item.trim())
   .filter(Boolean);
 
 const env = {
-  nodeEnv: optional('NODE_ENV', 'development'),
+  nodeEnv,
   port: Number(optional('PORT', '4001')),
   mongoUri: required('MONGO_URI'),
   clientOrigin,
   clientOrigins: [...new Set([
     clientOrigin,
-    optional('CLIENT_ORIGIN_MOBILE', 'http://localhost:5174'),
+    mobileOrigin,
     ...extraOrigins,
   ].filter(Boolean))],
   jwtSecret: required('JWT_SECRET'),
