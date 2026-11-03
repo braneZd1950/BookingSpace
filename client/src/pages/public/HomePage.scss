@@ -318,6 +318,16 @@
   background: #fff;
 }
 
+.home__cta--app {
+  background: color-mix(in srgb, var(--home-deep) 92%, #fff);
+  color: #f4f8f6;
+}
+
+.home__cta--app:hover {
+  background: var(--home-deep);
+  color: #fff;
+}
+
 .home__cta:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;

@@ -2,13 +2,11 @@ import crypto from 'crypto';
 import env from '../config/env.js';
 
 function sealSecret() {
-  return blank('EXPORT_SEAL_SECRET') || env.jwtSecret;
-}
-
-function blank(name) {
-  const value = process.env[name];
-  if (!value || !value.trim()) return '';
-  return value.trim();
+  if (env.exportSealSecret) return env.exportSealSecret;
+  if (env.nodeEnv === 'production') {
+    console.warn('[security] EXPORT_SEAL_SECRET missing — falling back to JWT_SECRET');
+  }
+  return env.jwtSecret;
 }
 
 function canonicalPayload({ documentId, contentHash, signedAt, signerEmail }) {

@@ -3,7 +3,6 @@ import './PlatformFooter.scss';
 
 export default function PlatformFooter({
   credit = 'anyminutes',
-  onHomeClick,
 }) {
   const year = new Date().getFullYear();
 
@@ -15,7 +14,6 @@ export default function PlatformFooter({
           <Link
             className="platform-foot__wordmark"
             to="/"
-            onClick={onHomeClick}
           >
             anyminutes
           </Link>
@@ -26,16 +24,20 @@ export default function PlatformFooter({
         </div>
 
         <nav className="platform-foot__nav" aria-label="Pravila platforme">
-          <Link to="/privatnost">
+          <Link to="/o-nama">
             <span className="platform-foot__index">01</span>
+            O nama
+          </Link>
+          <Link to="/privatnost">
+            <span className="platform-foot__index">02</span>
             Privatnost
           </Link>
           <Link to="/uvjeti">
-            <span className="platform-foot__index">02</span>
+            <span className="platform-foot__index">03</span>
             Uvjeti korištenja
           </Link>
           <Link to="/kolacici">
-            <span className="platform-foot__index">03</span>
+            <span className="platform-foot__index">04</span>
             Kolačići
           </Link>
         </nav>

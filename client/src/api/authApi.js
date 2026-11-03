@@ -10,6 +10,14 @@ const authApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Analytics'],
     }),
+    googleAuth: build.mutation({
+      query: (body) => ({
+        url: '/auth/google',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Analytics', 'Me', 'MyTenants', 'MyMemberships'],
+    }),
     register: build.mutation({
       query: (body) => ({
         url: '/auth/register',
@@ -64,6 +72,7 @@ const authApi = api.injectEndpoints({
 
 export const {
   useLoginMutation,
+  useGoogleAuthMutation,
   useRegisterMutation,
   useCreateTenantMutation,
   useGetMeQuery,

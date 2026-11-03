@@ -77,6 +77,13 @@ export async function registerUser(input) {
 
 export async function loginUser(input) {
   const user = await User.findOne({ email: input.email }).select('+passwordHash');
+
+  if (user && !user.passwordHash) {
+    throw new HttpError(401, 'Ovaj račun koristi Google prijavu.', {
+      code: 'GOOGLE_ONLY',
+    });
+  }
+
   const passwordOk = await bcrypt.compare(input.password, user?.passwordHash || dummyHash);
 
   if (!user || !passwordOk) {
@@ -93,6 +100,85 @@ export async function loginUser(input) {
   return {
     user: toPublicUser(user),
     token: signAccessToken(user),
+  };
+}
+
+/**
+ * Verify Google ID token and login / create account.
+ * @param {{ idToken: string, intent?: 'login' | 'register' }} input
+ */
+export async function loginWithGoogle(input) {
+  const { OAuth2Client } = await import('google-auth-library');
+  const audiences = env.googleClientIds || [];
+  if (!audiences.length) {
+    throw new HttpError(503, 'Google prijava nije konfigurirana.', {
+      code: 'GOOGLE_NOT_CONFIGURED',
+    });
+  }
+
+  const client = new OAuth2Client();
+  let payload;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: input.idToken,
+      audience: audiences,
+    });
+    payload = ticket.getPayload();
+  } catch {
+    throw new HttpError(401, 'Google prijava nije uspjela.', { code: 'GOOGLE_INVALID' });
+  }
+
+  const googleId = payload?.sub;
+  const email = String(payload?.email || '').trim().toLowerCase();
+  const emailVerified = Boolean(payload?.email_verified);
+  const name = String(payload?.name || email.split('@')[0] || 'Korisnik').trim();
+
+  if (!googleId || !email || !emailVerified) {
+    throw new HttpError(401, 'Google račun nije potvrđen.', { code: 'GOOGLE_INVALID' });
+  }
+
+  let user = await User.findOne({ googleId });
+  let created = false;
+
+  if (!user) {
+    user = await User.findOne({ email });
+    if (user) {
+      user.googleId = googleId;
+      if (!user.name) user.name = name;
+      await user.save();
+    }
+  }
+
+  if (!user) {
+    const intent = input.intent === 'register' ? 'register' : 'login';
+    const role = intent === 'register' ? 'BUSINESS_OWNER' : 'CUSTOMER';
+    try {
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        role,
+      });
+      created = true;
+    } catch (error) {
+      if (error?.code === 11000) {
+        throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
+      }
+      throw error;
+    }
+  }
+
+  trackUsage({
+    type: created ? 'register_success' : 'login_success',
+    userId: user._id,
+    role: user.role,
+    path: input.intent === 'register' ? '/register' : '/login',
+  });
+
+  return {
+    user: toPublicUser(user),
+    token: signAccessToken(user),
+    created,
   };
 }
 
@@ -131,6 +217,16 @@ export async function changePassword(user, input) {
   current.passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
   current.passwordResetTokenHash = undefined;
   current.passwordResetExpires = undefined;
+  current.tokenVersion = Number(current.tokenVersion || 0) + 1;
+  await current.save();
+  return { ok: true, token: signAccessToken(current) };
+}
+
+/** Invalidate all existing access tokens for this user. */
+export async function revokeAccessTokens(user) {
+  const current = await User.findById(user._id);
+  if (!current) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+  current.tokenVersion = Number(current.tokenVersion || 0) + 1;
   await current.save();
   return { ok: true };
 }
@@ -187,6 +283,7 @@ export async function resetPasswordWithToken(input) {
   user.passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
   user.passwordResetTokenHash = undefined;
   user.passwordResetExpires = undefined;
+  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
   await user.save();
 
   return { ok: true };

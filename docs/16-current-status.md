@@ -18,6 +18,7 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | Site setup wizard `/postavljanje` | Done | Templates, layout, palette, preview; real DNS deferred |
 | Staff / trainers | Done | Invite, list, suspend; required on book when trainers exist |
 | Web Push + PWA (web + mobile shell) | Done | VAPID; `client-mobile` reuses `client/src` |
+| Native mobile (`mobile/`) | Scaffold | Expo + TS + Paper + NativeWind; auth shell; booking screens TBD — [18-native-mobile.md](18-native-mobile.md) |
 | Privacy consent | Done | Banner + `POST /consent` + gate before booking |
 | Platform admin `/analitika` | Done (web) | Studios, users, activity, SaaS billing, reports, system |
 | Admin arhivski izvoz | Done (web) | PDF + Excel + CSV; digitalni pečat integriteta (HMAC) preko `/analytics/platform/exports/seal` |
@@ -42,6 +43,7 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | --- | --- | --- |
 | Web | `client/` | `http://localhost:5173` |
 | Mobile PWA shell | `client-mobile/` | `http://localhost:5174` (`npm run dev:mobile`) |
+| Native (Expo) | `mobile/` | `npm run start:native` / Expo Go |
 | API | `server/` | `http://localhost:4001` (default; override with `PORT`) |
 
 ## How to run / verify

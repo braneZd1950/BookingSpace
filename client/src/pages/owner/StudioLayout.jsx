@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
 import InstallAppBanner from '../../components/InstallAppBanner.jsx';
+import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
+import { useGetMeQuery } from '../../api/authApi.js';
+import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useMyTenantsQuery } from '../../api/tenantApi.js';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { findPalette } from '../../styles/studioPalette.js';
+import { clearSession } from '../../lib/clearSession.js';
+import { resolvePostLoginPath } from '../../lib/resolvePostLoginPath.js';
 import { loadStudio, STUDIO_KEY } from '../../lib/studio.js';
 import { studioPublicPath } from '../../lib/studioPublicUrl.js';
 import {
@@ -135,9 +141,16 @@ const links = allLinks.filter((item) => !item.flag || featureOn[item.flag]);
 
 export default function StudioLayout() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
   const [studio, setStudio] = useState(() => loadStudio());
   const token = localStorage.getItem(TOKEN_KEY);
-  const { data: mine } = useMyTenantsQuery(undefined, { skip: !token });
+  const { data: meData, isLoading: meLoading } = useGetMeQuery(undefined, { skip: !token });
+  const { data: mine, isLoading: mineLoading } = useMyTenantsQuery(undefined, { skip: !token });
+  const { data: membershipsData } = useListMyMembershipsQuery(50, { skip: !token });
+  /* Početna already renders SiteFrame with the full PlatformFooter. */
+  const showLegalStrip = location.pathname !== '/stranica'
+    && location.pathname !== '/stranica/';
 
   useEffect(() => {
     function refresh() {
@@ -152,8 +165,9 @@ export default function StudioLayout() {
   }, [studio?.id]);
 
   useEffect(() => {
+    // Never fall back to CUSTOMER tenant — that opened the owner shell for members.
     const owned = mine?.tenants?.find((item) => item.role === 'BUSINESS_OWNER')
-      || mine?.tenants?.[0];
+      || mine?.tenants?.find((item) => item.role === 'STAFF');
     if (!owned?.tenant) return;
     const next = studioFromTenant(owned.tenant, loadStudio() || {});
     const current = loadStudio();
@@ -174,11 +188,60 @@ export default function StudioLayout() {
     setStudio(next);
   }, [mine]);
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(STUDIO_KEY);
-    window.dispatchEvent(new Event('studio-changed'));
+  useEffect(() => {
+    if (!token) {
+      localStorage.removeItem(STUDIO_KEY);
+      window.dispatchEvent(new Event('studio-changed'));
+      navigate('/login', { replace: true });
+      return;
+    }
+    if (meLoading || mineLoading || !meData?.user || !mine) return;
+    const user = {
+      ...meData.user,
+      platformAdmin: meData.platformAdmin,
+    };
+    const isOwner = user.role === 'BUSINESS_OWNER'
+      || user.platformAdmin
+      || user.role === 'ADMIN'
+      || user.role === 'PLATFORM_STAFF';
+    const hasStudioLink = (mine.tenants || []).some(
+      (row) => row.role === 'BUSINESS_OWNER' || row.role === 'STAFF',
+    );
+    if (isOwner || hasStudioLink) return;
+    const memberships = Array.isArray(membershipsData)
+      ? membershipsData
+      : membershipsData?.memberships || [];
+    const dest = resolvePostLoginPath(user, {
+      memberships,
+      tenants: mine.tenants || [],
+    });
+    if (dest && dest !== '/stranica' && !dest.startsWith('/stranica/')) {
+      localStorage.removeItem(STUDIO_KEY);
+      navigate(dest, { replace: true });
+    }
+  }, [token, meLoading, mineLoading, meData, mine, membershipsData, navigate]);
+
+  async function logout() {
+    await clearSession({ dispatch });
     navigate('/', { replace: true });
+  }
+
+  if (!token) {
+    return (
+      <main className="studio-missing">
+        <h1>Prijava je potrebna</h1>
+        <p>Vlasnički studio zahtijeva prijavljeni račun.</p>
+        <Link to="/login">Prijava</Link>
+      </main>
+    );
+  }
+
+  if (token && (meLoading || mineLoading)) {
+    return (
+      <main className="studio-missing">
+        <p>Učitavamo studio…</p>
+      </main>
+    );
   }
 
   if (!studio?.name) {
@@ -253,6 +316,15 @@ export default function StudioLayout() {
         </p>
       ) : null}
       <Outlet context={{ studio, palette }} />
+      {showLegalStrip ? (
+        <PlatformLegalStrip
+          studioLinks={{
+            privacy: `/s/${studio.slug}/privatnost`,
+            terms: `/s/${studio.slug}/uvjeti`,
+            cookies: `/s/${studio.slug}/kolacici`,
+          }}
+        />
+      ) : null}
       <ConsentBanner />
       <InstallAppBanner />
     </div>

@@ -4,14 +4,19 @@
  * Usage:
  *   node scripts/prod-smoke.js
  *
- * Requires API on :4000. For admin checks:
+ * Requires API on :4001 (default). For admin checks:
  *   $env:SMOKE_ADMIN_EMAIL="admin@gmail.com"
  *   $env:SMOKE_ADMIN_PASS="..."
  *   node scripts/prod-smoke.js
  *
+ * Against deployed production:
+ *   $env:SMOKE_API="https://VAS-SERVIS.onrender.com/api"
+ *   $env:SMOKE_WEB="https://VAS-SERVIS.onrender.com"
+ *   npm run smoke
+ *
  * Preview UI (production build against local API):
  *   cd client
- *   $env:VITE_API_URL="http://localhost:4000/api"
+ *   $env:VITE_API_URL="http://localhost:4001/api"
  *   npm run build
  *   npx vite preview --host 127.0.0.1 --port 4173
  */
@@ -20,7 +25,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const apiBase = process.env.SMOKE_API || 'http://localhost:4000/api';
+const apiBase = process.env.SMOKE_API || 'http://localhost:4001/api';
 const webBase = process.env.SMOKE_WEB || 'http://localhost:4173';
 
 function loadEnvFile(filePath) {

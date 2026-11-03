@@ -21,8 +21,16 @@ const userSchema = new Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      // Optional when the account is Google-only.
+      required: false,
       select: false,
+    },
+    /** Google subject (`sub`) — sparse unique so email/password users stay null. */
+    googleId: {
+      type: String,
+      trim: true,
+      sparse: true,
+      unique: true,
     },
     phone: {
       type: String,
@@ -60,6 +68,11 @@ const userSchema = new Schema(
       acceptedAt: { type: Date },
       withdrawnAt: { type: Date },
       source: { type: String, trim: true, maxlength: 40 },
+    },
+    /** Bump on logout / password change to invalidate existing JWTs. */
+    tokenVersion: {
+      type: Number,
+      default: 0,
     },
   },
   {

@@ -196,6 +196,68 @@ export async function sendMemberInviteEmail({
   return sendMail({ to, subject, text, html });
 }
 
+export async function sendPlatformStaffInviteEmail({
+  to,
+  memberName,
+  password,
+}) {
+  const origin = env.clientOrigin.replace(/\/$/, '');
+  const loginUrl = `${origin}/login`;
+  const adminUrl = `${origin}/admin`;
+  const subject = 'Vaša prijava — anyminutes platforma';
+  const text = [
+    `Pozdrav ${memberName},`,
+    '',
+    'Otvoren vam je račun djelatnika na anyminutes platformi.',
+    'Ispod su podaci za prvu prijavu — lozinku je automatski generirao sustav.',
+    '',
+    `E-pošta: ${to}`,
+    `Privremena lozinka: ${password}`,
+    '',
+    `Prijava: ${loginUrl}`,
+    `Admin: ${adminUrl}`,
+    '',
+    'Ako niste očekivali ovu poruku, zanemarite je ili javite administratoru.',
+    'Lozinku nemojte dijeliti — namijenjena je samo vama.',
+  ].join('\n');
+
+  const safeName = escapeHtml(memberName);
+  const safeEmail = escapeHtml(to);
+  const safePassword = escapeHtml(password);
+  const safeLogin = escapeAttr(loginUrl);
+  const safeAdmin = escapeAttr(adminUrl);
+
+  const html = `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#eef1f4">
+  <tr>
+    <td align="center" style="padding:28px 14px">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;max-width:560px;width:100%;background:#ffffff">
+        <tr>
+          <td style="padding:28px 36px">
+            <p style="margin:0 0 12px;font-size:16px;color:#0b3d4a">Pozdrav ${safeName},</p>
+            <p style="margin:0 0 16px;font-size:14px;line-height:1.55;color:#314046">
+              Otvoren vam je račun djelatnika na anyminutes platformi.
+            </p>
+            <p style="margin:0 0 8px;font-size:14px;color:#314046">E-pošta: <strong>${safeEmail}</strong></p>
+            <p style="margin:0 0 18px;font-size:14px;color:#314046">
+              Privremena lozinka: <strong style="font-family:Consolas,monospace">${safePassword}</strong>
+            </p>
+            <p style="margin:0 0 8px">
+              <a href="${safeLogin}" style="font-weight:700;color:#0e6b73">Prijavite se</a>
+              ·
+              <a href="${safeAdmin}" style="font-weight:700;color:#0e6b73">Admin</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+
+  return sendMail({ to, subject, text, html });
+}
+
 export async function sendPasswordResetEmail({
   to,
   memberName,

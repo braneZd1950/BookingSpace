@@ -2,9 +2,11 @@ import { isPlatformAdmin, isPlatformSuperAdmin } from '../../utils/analytics.js'
 import {
   changePassword,
   loginUser,
+  loginWithGoogle,
   registerUser,
   requestPasswordReset,
   resetPasswordWithToken,
+  revokeAccessTokens,
   toPublicUser,
   updateMe,
 } from './service.js';
@@ -19,7 +21,13 @@ export async function login(req, res) {
   res.json(result);
 }
 
-export function logout(req, res) {
+export async function googleAuth(req, res) {
+  const result = await loginWithGoogle(req.input.body);
+  res.status(result.created ? 201 : 200).json(result);
+}
+
+export async function logout(req, res) {
+  await revokeAccessTokens(req.user);
   res.status(204).send();
 }
 

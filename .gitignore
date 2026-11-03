@@ -1,13 +1,17 @@
 node_modules/
 dist/
+.expo/
 uploads/
 .env
 .env.development
+.env.production
 .env.local
 .env.*.local
 server/.env
 server/.env.development
 server/.env.local
+mobile/.env
+mobile/.env.production
 
 # Prep pages kept local until pilot flags turn on
 client/src/pages/owner/GalleryPage.jsx

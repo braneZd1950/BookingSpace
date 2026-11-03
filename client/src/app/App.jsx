@@ -23,6 +23,7 @@ import {
   LAUNCH_PLAN_ENABLED,
   ONLINE_ENABLED,
 } from '../lib/studioFeatures.js';
+import DownloadAppPage from '../pages/public/DownloadAppPage.jsx';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage.jsx';
 import HomePage from '../pages/public/HomePage.jsx';
 import LoginPage from '../pages/public/LoginPage.jsx';
@@ -39,9 +40,11 @@ import {
   PlatformUsersPage,
 } from '../pages/platform/platformPages.jsx';
 import PlatformAnalyticsPage from '../pages/public/PlatformAnalyticsPage.jsx';
+import AboutPage from '../pages/public/AboutPage.jsx';
 import RegisterPage from '../pages/public/RegisterPage.jsx';
 import ResetPasswordPage from '../pages/public/ResetPasswordPage.jsx';
 import {
+  ErrorPage,
   MaintenancePage,
   NotFoundPage,
 } from '../pages/public/StatusPage.jsx';
@@ -98,6 +101,7 @@ export default function App() {
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/preuzmi" element={<DownloadAppPage />} />
           <Route path="/admin" element={<AdminGate />}>
             <Route index element={<AdminHomePage />} />
             <Route path="djelatnici" element={<AdminStaffPage />} />
@@ -112,12 +116,14 @@ export default function App() {
             <Route path="sustav" element={<PlatformSystemPage />} />
           </Route>
           <Route path="/postavljanje" element={<SetupPage />} />
+          <Route path="/o-nama" element={<AboutPage />} />
           <Route path="/privatnost" element={<PrivacyPage />} />
           <Route path="/uvjeti" element={<TermsPage />} />
           <Route path="/kolacici" element={<CookiesPage />} />
           <Route path="/kontakt" element={<ContactPage />} />
           <Route path="/povratna-informacija" element={<FeedbackPage />} />
           <Route path="/odrzavanje" element={<MaintenancePage />} />
+          <Route path="/greska" element={<ErrorPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

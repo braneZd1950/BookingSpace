@@ -15,7 +15,12 @@ export function saveStudio(studio) {
 
 export function mediaUrl(url) {
   if (!url) return '';
-  if (/^(https?:|blob:|data:)/.test(url)) return url;
+  const raw = String(url).trim();
+  // Block CSS url("…") breakout and non-http(s) remote schemes in production media.
+  if (/["')\\\s]/.test(raw)) return '';
+  if (/^(https:|blob:|data:image\/)/i.test(raw)) return raw;
+  if (/^http:/i.test(raw) && !import.meta.env.PROD) return raw;
+  if (/^https?:/i.test(raw)) return '';
   const origin = (import.meta.env.VITE_API_URL || 'http://localhost:4001/api').replace(/\/api\/?$/, '');
-  return `${origin}${url.startsWith('/') ? url : `/${url}`}`;
+  return `${origin}${raw.startsWith('/') ? raw : `/${raw}`}`;
 }

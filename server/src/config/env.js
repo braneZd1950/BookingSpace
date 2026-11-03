@@ -62,7 +62,19 @@ const env = {
     ...extraOrigins,
   ].filter(Boolean))],
   jwtSecret: required('JWT_SECRET'),
-  jwtExpiresIn: optional('JWT_EXPIRES_IN', '7d'),
+  jwtExpiresIn: optional('JWT_EXPIRES_IN', '24h'),
+  /**
+   * ADMIN_EMAILS bootstrap:
+   * - true / false = force on/off
+   * - unset = allowed outside production only
+   */
+  adminEmailBootstrap: (() => {
+    const raw = blank('ADMIN_EMAIL_BOOTSTRAP').toLowerCase();
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    return null;
+  })(),
+  exportSealSecret: blank('EXPORT_SEAL_SECRET'),
   cloudinary: {
     cloudName: blank('CLOUDINARY_CLOUD_NAME'),
     apiKey: blank('CLOUDINARY_API_KEY'),
@@ -85,6 +97,16 @@ const env = {
     .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean),
+  /**
+   * Google Sign-In client IDs (Web / iOS / Android). Comma-separated.
+   * At least the Web client ID is required for GIS + token verify.
+   */
+  googleClientIds: blank('GOOGLE_CLIENT_IDS')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .concat(blank('GOOGLE_CLIENT_ID') ? [blank('GOOGLE_CLIENT_ID')] : [])
+    .filter((value, index, all) => all.indexOf(value) === index),
   /** When set, Express serves this folder (Vite `client/dist`) for the SPA. */
   clientDist: blank('CLIENT_DIST'),
   /** auto = serve if dist exists; true = require; false = API only */

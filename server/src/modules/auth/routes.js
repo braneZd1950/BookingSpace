@@ -5,6 +5,7 @@ import { validate } from '../../middleware/validate.js';
 import { HttpError } from '../../utils/httpError.js';
 import {
   forgotPassword,
+  googleAuth,
   login,
   logout,
   me,
@@ -16,6 +17,7 @@ import {
 import {
   changePasswordSchema,
   forgotPasswordSchema,
+  googleAuthSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
@@ -50,6 +52,7 @@ const router = Router();
 
 router.post('/register', authLimiter, validate(registerSchema), register);
 router.post('/login', authLimiter, validate(loginSchema), login);
+router.post('/google', authLimiter, validate(googleAuthSchema), googleAuth);
 router.post('/forgot-password', forgotLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', authLimiter, validate(resetPasswordSchema), resetPassword);
 router.post('/logout', requireAuth, logout);

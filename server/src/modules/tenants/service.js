@@ -10,6 +10,7 @@ import User from '../../models/User.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { defaultTrialBilling } from '../../utils/billing.js';
 import { HttpError } from '../../utils/httpError.js';
+import { assertImageBuffer } from '../../utils/mediaMagic.js';
 import { generateAllStudioLegal } from '../../utils/studioLegal.js';
 import { createDoc, withTransaction } from '../../utils/transaction.js';
 import { requireMember } from '../access.js';
@@ -168,6 +169,23 @@ export function toTenant(tenant) {
   };
 }
 
+/** Members must not receive tax IDs or full internal booking config. */
+export function toTenantForRole(tenant, role) {
+  const full = toTenant(tenant);
+  if (role === 'BUSINESS_OWNER' || role === 'STAFF' || role === 'ADMIN') {
+    return full;
+  }
+  const { oib: _oib, bookingSettings, ...safe } = full;
+  return {
+    ...safe,
+    bookingSettings: {
+      workingHours: bookingSettings?.workingHours || [],
+      cancellationWindowMinutes: bookingSettings?.cancellationWindowMinutes,
+      capacityModel: bookingSettings?.capacityModel,
+    },
+  };
+}
+
 /** Dopuni prazna pravila gotovim predloškom i spremi u bazu (stariji studiji). */
 async function ensureTenantLegal(tenant) {
   const current = tenant.siteSettings?.legal || {};
@@ -203,7 +221,7 @@ export async function listMyTenants(user) {
   return links.flatMap((link) => {
     const tenant = byId.get(String(link.tenantId));
     if (!tenant) return [];
-    return [{ role: link.role, tenant: toTenant(tenant) }];
+    return [{ role: link.role, tenant: toTenantForRole(tenant, link.role) }];
   });
 }
 
@@ -374,6 +392,7 @@ export async function uploadImage(user, tenantId, file, purpose) {
   if (!IMAGE_TYPES.has(file.mimetype)) {
     throw new HttpError(400, 'Unsupported image type', { code: 'UNSUPPORTED_MEDIA' });
   }
+  assertImageBuffer(file.buffer, file.mimetype);
   if (file.size > MAX_IMAGE_BYTES) {
     throw new HttpError(413, 'Image is too large', { code: 'PAYLOAD_TOO_LARGE' });
   }

@@ -3,6 +3,7 @@ import {
   listForMember,
   listManaged,
   removeWorkout,
+  streamWorkoutMedia,
   updateWorkout,
   uploadVideo,
 } from './service.js';
@@ -44,4 +45,20 @@ export async function remove(req, res) {
 export async function catalog(req, res) {
   const result = await listForMember(req.user || null, req.input.params.tenantId);
   res.json(result);
+}
+
+export async function media(req, res, next) {
+  try {
+    const absolute = await streamWorkoutMedia(
+      req.user || null,
+      req.input.params.tenantId,
+      req.input.params.workoutId,
+      req.input.query?.m || req.query?.m,
+    );
+    res.sendFile(absolute, (err) => {
+      if (err) next(err);
+    });
+  } catch (error) {
+    next(error);
+  }
 }

@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "anyminutes",
+    "slug": "anyminutes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "anyminutes",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0e6b73"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anyminutes.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0e6b73",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.anyminutes.app",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "replace-with-eas-project-id"
+      }
+    }
+  }
+}

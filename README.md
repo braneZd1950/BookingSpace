@@ -39,7 +39,8 @@ Phases 1–3 are **implemented in product**. Remaining learning focus is Phase 5
 | Layer | Choice |
 | --- | --- |
 | Frontend | React, Vite, React Router, Redux Toolkit, RTK Query, SCSS |
-| Mobile | `client-mobile` PWA shell; reuses `client/src` |
+| Mobile PWA | `client-mobile/` — Vite shell; reuses `client/src` |
+| Native mobile | `mobile/` — Expo + TypeScript + Paper + NativeWind ([docs/18](docs/18-native-mobile.md)) |
 | Backend | Node.js, Express, REST, JWT, Mongoose |
 | Database | MongoDB Atlas, shared DB + `tenantId` |
 | CI | GitHub Actions — server tests + client/mobile builds |
@@ -47,18 +48,35 @@ Phases 1–3 are **implemented in product**. Remaining learning focus is Phase 5
 ## Run locally
 
 ```bash
-npm run dev          # web :5173 + API
-npm run dev:mobile   # mobile :5174 + API
-npm test             # server tests
+npm run dev            # web :5173 + API
+npm run dev:mobile     # PWA shell :5174 + API
+npm run start:native   # Expo native app (mobile/)
+npm test               # server tests
 ```
 
-| Service | URL |
+| Service | URL / tool |
 | --- | --- |
 | Web | `http://localhost:5173` |
-| Mobile | `http://localhost:5174` |
+| Mobile PWA | `http://localhost:5174` |
+| Native | Expo Go / emulator (`mobile/`) |
 | API | `http://localhost:4001/api` |
 
 Copy `.env.example` to `.env` in the repo root. That one file is used locally by the API and by Vite.
+
+## Production / go-live
+
+Localhost workflow stays the same (`npm run dev`). For real traffic:
+
+| Step | Command / doc |
+| --- | --- |
+| Checklist | **[docs/20-production-launch.md](docs/20-production-launch.md)** |
+| Env template | `.env.production.example` → Render Environment |
+| Validate secrets | `node scripts/check-production-env.js --file .env.production --force` |
+| Build | `npm run build:prod` (same as Render `build:render`) |
+| Deploy | [docs/17-render-deploy.md](docs/17-render-deploy.md) · optional `render.yaml` |
+| Smoke | `SMOKE_API=https://…/api npm run smoke` |
+| Limits / stress | `npm run test:limits` ([docs/21](docs/21-limits-testing.md)) |
+| Never on prod DB | `seed:demo` |
 
 ## Documentation
 
@@ -67,6 +85,7 @@ Copy `.env.example` to `.env` in the repo root. That one file is used locally by
 | Document | What it covers |
 | --- | --- |
 | [Current status](docs/16-current-status.md) | What is shipped vs deferred |
+| [Production launch](docs/20-production-launch.md) | Go-live checklist (web + API + native) |
 | [Lean phases](docs/lean/README.md) | Learning phases + remaining work |
 | [Backend status](docs/lean/backend-status.md) | Server change policy + gap log |
 | [API spec](docs/07-api-spec.md) | REST map |
@@ -74,6 +93,7 @@ Copy `.env.example` to `.env` in the repo root. That one file is used locally by
 | [Cursor instructions](docs/11-cursor-instructions.md) | How to implement in this repo |
 | [Roadmap](docs/12-roadmap.md) | After current gaps |
 | [Render deploy](docs/17-render-deploy.md) | Jedan URL (SPA+API) ili odvojeni FE/API na Renderu |
+| [Native mobile](docs/18-native-mobile.md) | Expo TypeScript app (`mobile/`) — Paper + NativeWind |
 
 ### Reference
 
@@ -86,6 +106,8 @@ Copy `.env.example` to `.env` in the repo root. That one file is used locally by
 | [Memberships / payments](docs/05-memberships-physical-payments.md) | Physical payment rules |
 | [Tenant website](docs/06-tenant-website.md) | Public site vision |
 | [Security](docs/10-security-rules.md) | Auth, isolation |
+| [Security maintenance](docs/19-security-maintenance.md) | Ops checklist, hardening, incidents |
+| [Limits testing](docs/21-limits-testing.md) | Security + load stress suite |
 | [MVP build plan](docs/09-mvp-build-plan.md) | Acceptance |
 | [Decisions](docs/13-decisions.md) | ADR |
 | [Power Plate example](docs/14-example-powerplate.md) | Pilot scenario |

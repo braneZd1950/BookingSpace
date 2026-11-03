@@ -61,10 +61,11 @@ jobs:
       - name: Build
         env:
           VITE_API_URL: https://api.example.com/api
+          VITE_APP_MODE: production
         run: npm run build
 
-  mobile-build:
-    name: Mobile production build
+  mobile-pwa-build:
+    name: Mobile PWA production build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -93,4 +94,62 @@ jobs:
       - name: Build
         env:
           VITE_API_URL: https://api.example.com/api
+          VITE_APP_MODE: production
         run: npm run build
+
+  native-checks:
+    name: Native Expo unit + typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  production-env-template:
+    name: Production env template present
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Soft check (dev skip)
+        run: node scripts/check-production-env.js
+
+      - name: Guard rejects weak prod secrets
+        run: |
+          printf '%s\n' \
+            'NODE_ENV=production' \
+            'MONGO_URI=mongodb://example' \
+            'JWT_SECRET=short' \
+            'CLIENT_ORIGIN=http://localhost:5173' \
+            'VITE_API_URL=http://localhost:4001/api' \
+            > /tmp/bad.prod.env
+          if node scripts/check-production-env.js --file /tmp/bad.prod.env --force; then
+            echo "expected failure"
+            exit 1
+          fi

@@ -82,11 +82,16 @@ export default function AdminStaffPage() {
         password: form.password.trim() || undefined,
       }).unwrap();
       setForm(empty);
-      if (result.temporaryPassword) {
-        setCreatedSecret(result.temporaryPassword);
+      setCreatedSecret('');
+      if (result.accountCreated && result.inviteSent) {
         setMessage({
           type: 'ok',
-          text: 'Djelatnik je dodan. Privremenu lozinku pokažite samo jednom.',
+          text: 'Djelatnik je dodan. Privremena lozinka poslana je e-poštom.',
+        });
+      } else if (result.accountCreated) {
+        setMessage({
+          type: 'ok',
+          text: 'Djelatnik je dodan. Provjerite SMTP — pozivnica možda nije poslana.',
         });
       } else {
         setMessage({ type: 'ok', text: 'Djelatnik je dodan / ažuriran.' });

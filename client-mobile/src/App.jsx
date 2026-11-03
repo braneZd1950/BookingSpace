@@ -24,6 +24,7 @@ import {
   MaintenancePage,
   NotFoundPage,
 } from '@client/pages/public/StatusPage.jsx';
+import AboutPage from '@client/pages/public/AboutPage.jsx';
 import {
   ContactPage,
   CookiesPage,
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/postavljanje" element={<SetupPage />} />
+          <Route path="/o-nama" element={<AboutPage />} />
           <Route path="/privatnost" element={<PrivacyPage />} />
           <Route path="/uvjeti" element={<TermsPage />} />
           <Route path="/kolacici" element={<CookiesPage />} />

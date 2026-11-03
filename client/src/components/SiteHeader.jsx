@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { api } from '../api/api.js';
 import { useGetMeQuery } from '../api/authApi.js';
+import { clearSession } from '../lib/clearSession.js';
 import './SiteHeader.scss';
 
 const TOKEN_KEY = 'bookingspace.token';
@@ -84,6 +84,22 @@ function IconHelp() {
   );
 }
 
+function IconAbout() {
+  return (
+    <NavIcon>
+      <circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5.5 19.2c.8-3.2 3.1-5 6.5-5s5.7 1.8 6.5 5"
+      />
+    </NavIcon>
+  );
+}
+
 function IconLogin() {
   return (
     <NavIcon>
@@ -162,14 +178,14 @@ function NavItem({ to, label, icon, className = '', end }) {
 
   if (end !== undefined) {
     return (
-      <NavLink to={to} end={end} className={className} aria-label={label} title={label}>
+      <NavLink to={to} end={end} className={className} aria-label={label}>
         {content}
       </NavLink>
     );
   }
 
   return (
-    <Link to={to} className={className} aria-label={label} title={label}>
+    <Link to={to} className={className} aria-label={label}>
       {content}
     </Link>
   );
@@ -183,10 +199,8 @@ export default function SiteHeader() {
   // Without token, ignore cached /me — otherwise admin nav sticks after logout.
   const platformAdmin = Boolean(token && meData?.platformAdmin);
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(SESSION_KEY);
-    dispatch(api.util.resetApiState());
+  async function logout() {
+    await clearSession({ dispatch });
     navigate('/', { replace: true });
   }
 
@@ -211,7 +225,6 @@ export default function SiteHeader() {
             className="site-header__logout"
             onClick={logout}
             aria-label="Odjava"
-            title="Odjava"
           >
             <IconLogout />
             <span className="site-header__label">Odjava</span>
@@ -233,6 +246,7 @@ export default function SiteHeader() {
           <NavItem to="/#kako" label="Kako funkcionira" icon={<IconSteps />} />
           <NavItem to="/#prednosti" label="Prednosti" icon={<IconStar />} />
           <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
+          <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
           {role === 'BUSINESS_OWNER' ? (
             <NavItem to="/stranica" label="Studio" icon={<IconStudio />} />
           ) : null}
@@ -241,7 +255,6 @@ export default function SiteHeader() {
             className="site-header__logout"
             onClick={logout}
             aria-label="Odjava"
-            title="Odjava"
           >
             <IconLogout />
             <span className="site-header__label">Odjava</span>
@@ -261,6 +274,7 @@ export default function SiteHeader() {
         <NavItem to="/#kako" label="Kako funkcionira" icon={<IconSteps />} />
         <NavItem to="/#prednosti" label="Prednosti" icon={<IconStar />} />
         <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
+        <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
         <NavItem to="/login" label="Prijava" icon={<IconLogin />} />
         <NavItem
           to="/register"

@@ -1,18 +1,8 @@
 import { Link } from 'react-router-dom';
 import PlatformFooter from '../../components/PlatformFooter.jsx';
-import { mediaUrl, STUDIO_KEY } from '../../lib/studio.js';
+import { mediaUrl } from '../../lib/studio.js';
 import { hourRows } from './studioTime.js';
 import './SiteFrame.scss';
-
-const TOKEN_KEY = 'bookingspace.token';
-const SESSION_KEY = 'bookingspace.session';
-
-function leaveToAppHome() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(STUDIO_KEY);
-  window.dispatchEvent(new Event('studio-changed'));
-}
 
 /** Atmosphere photos when the studio has not uploaded its own yet. */
 const ambient = {
@@ -173,7 +163,7 @@ function LiveFooter({
       ) : null}
 
       <div className="site__foot-platform">
-        <PlatformFooter credit={name} onHomeClick={leaveToAppHome} />
+        <PlatformFooter credit={name} />
       </div>
     </footer>
   );

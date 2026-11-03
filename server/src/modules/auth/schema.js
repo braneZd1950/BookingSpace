@@ -20,6 +20,13 @@ export const loginSchema = z.object({
   }),
 });
 
+export const googleAuthSchema = z.object({
+  body: z.object({
+    idToken: z.string().trim().min(20).max(4096),
+    intent: z.enum(['login', 'register']).optional().default('login'),
+  }),
+});
+
 const notificationPrefsSchema = z.object({
   bookingEmail: z.boolean().optional(),
   cancelEmail: z.boolean().optional(),

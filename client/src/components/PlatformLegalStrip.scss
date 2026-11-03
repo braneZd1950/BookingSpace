@@ -1,0 +1,61 @@
+.platform-legal-strip {
+  margin-top: auto;
+  border-top: 1px solid color-mix(in srgb, var(--site-ink, var(--fg, #112b2e)) 10%, transparent);
+  background: color-mix(in srgb, #fff 72%, var(--site-soft, var(--brand-soft, #dceff0)));
+}
+
+.platform-legal-strip__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  width: min(52rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0.7rem 0 0.85rem;
+}
+
+.platform-legal-strip__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.45rem;
+  align-items: center;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--site-ink, var(--fg, #112b2e)) 58%, transparent);
+}
+
+.platform-legal-strip__kicker {
+  margin-right: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--site-brand, var(--brand, #0e6b73)) 88%, #000);
+}
+
+.platform-legal-strip__nav a {
+  color: inherit;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.platform-legal-strip__nav a:hover {
+  color: var(--site-brand, var(--brand, #0e6b73));
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.platform-legal-strip__nav a:focus-visible {
+  outline: 2px solid var(--site-brand, var(--brand, #0e6b73));
+  outline-offset: 2px;
+}
+
+.member-shell .platform-legal-strip {
+  border-top-color: color-mix(in srgb, var(--brand, #0e6b73) 16%, transparent);
+  background: color-mix(in srgb, #fff 78%, var(--brand-soft, #dceff0));
+}
+
+.member-shell .platform-legal-strip__kicker {
+  color: var(--brand, #0e6b73);
+}

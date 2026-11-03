@@ -4,7 +4,10 @@ import { HttpError } from './httpError.js';
 
 export function signAccessToken(user) {
   return jwt.sign(
-    { sub: String(user._id) },
+    {
+      sub: String(user._id),
+      v: Number(user.tokenVersion || 0),
+    },
     env.jwtSecret,
     { expiresIn: env.jwtExpiresIn },
   );

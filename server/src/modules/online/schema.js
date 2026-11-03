@@ -2,7 +2,9 @@ import { z } from 'zod';
 import { objectId } from '../fields.js';
 
 const videoUrl = z.string().trim().min(1).max(500).refine(
-  (value) => /^https?:\/\//i.test(value) || value.startsWith('/uploads/'),
+  (value) => /^https?:\/\//i.test(value)
+    || value.startsWith('/uploads/')
+    || value.startsWith('/api/tenants/'),
   'Invalid video url',
 );
 
@@ -44,4 +46,14 @@ export const onlineItemParamsSchema = z.object({
     tenantId: objectId,
     workoutId: objectId,
   }),
+});
+
+export const onlineMediaSchema = z.object({
+  params: z.object({
+    tenantId: objectId,
+    workoutId: objectId,
+  }),
+  query: z.object({
+    m: z.string().trim().min(10).max(2000).optional(),
+  }).optional(),
 });

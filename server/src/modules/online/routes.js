@@ -3,10 +3,11 @@ import multer from 'multer';
 import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { requireTenantRole } from '../access.js';
-import { catalog, create, list, remove, update, upload } from './controller.js';
+import { catalog, create, list, media, remove, update, upload } from './controller.js';
 import {
   createOnlineSchema,
   onlineItemParamsSchema,
+  onlineMediaSchema,
   tenantOnlineParamsSchema,
   updateOnlineSchema,
 } from './schema.js';
@@ -23,6 +24,13 @@ onlineRoutes.get(
   optionalAuth,
   validate(tenantOnlineParamsSchema),
   catalog,
+);
+
+onlineRoutes.get(
+  '/:workoutId/media',
+  optionalAuth,
+  validate(onlineMediaSchema),
+  media,
 );
 
 onlineRoutes.get(

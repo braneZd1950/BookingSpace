@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import User from '../../models/User.js';
 import { isPlatformSuperAdmin } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
+import { sendPlatformStaffInviteEmail } from '../../utils/mail.js';
 import { generateMemberPassword } from '../../utils/password.js';
 
 const BCRYPT_ROUNDS = 12;
@@ -81,7 +82,7 @@ export async function createPlatformStaff(actor, input) {
     return {
       staff: toStaff(existing),
       accountCreated: false,
-      temporaryPassword: null,
+      inviteSent: false,
     };
   }
 
@@ -105,10 +106,25 @@ export async function createPlatformStaff(actor, input) {
     },
   });
 
+  let inviteSent = false;
+  if (temporaryPassword) {
+    try {
+      const mail = await sendPlatformStaffInviteEmail({
+        to: email,
+        memberName: name,
+        password: temporaryPassword,
+      });
+      inviteSent = Boolean(mail.delivered);
+    } catch (error) {
+      console.error('[mail] Pozivnica platform djelatniku nije poslana:', error?.message || error);
+    }
+  }
+
   return {
     staff: toStaff(created),
     accountCreated: true,
-    temporaryPassword,
+    inviteSent,
+    // Never return plaintext passwords in API responses.
   };
 }
 

@@ -1,12 +1,16 @@
 import { randomBytes } from 'crypto';
-import fs from 'fs/promises';
+import fs from 'fs';
+import fsPromises from 'fs/promises';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import env from '../../config/env.js';
 import Membership from '../../models/Membership.js';
 import OnlineWorkout from '../../models/OnlineWorkout.js';
 import Tenant from '../../models/Tenant.js';
+import User from '../../models/User.js';
 import { HttpError } from '../../utils/httpError.js';
+import { assertVideoBuffer } from '../../utils/mediaMagic.js';
+import { signMediaAccessToken, verifyMediaAccessToken } from '../../utils/mediaToken.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
 
 const VIDEO_TYPES = new Set([
@@ -32,13 +36,16 @@ function videoExtension(mimetype) {
   return 'mp4';
 }
 
-function toManage(workout) {
+function toManage(workout, actor) {
+  const rawUrl = workout.videoUrl;
   return {
     id: workout._id,
     tenantId: workout.tenantId,
     title: workout.title,
     description: workout.description || '',
-    videoUrl: workout.videoUrl,
+    videoUrl: isLocalUploadPath(rawUrl) && actor
+      ? memberFacingVideoUrl(workout, actor)
+      : rawUrl,
     videoPublicId: workout.videoPublicId || null,
     durationMinutes: workout.durationMinutes,
     price: workout.price,
@@ -51,9 +58,25 @@ async function storeLocalVideo(file, tenantId) {
   const safeId = String(tenantId).replace(/[^a-f\d]/gi, '');
   const filename = `${randomBytes(12).toString('hex')}.${videoExtension(file.mimetype)}`;
   const dir = path.resolve(process.cwd(), 'uploads', safeId, 'video');
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, filename), file.buffer);
+  await fsPromises.mkdir(dir, { recursive: true });
+  await fsPromises.writeFile(path.join(dir, filename), file.buffer);
   return `/uploads/${safeId}/video/${filename}`;
+}
+
+function isLocalUploadPath(url) {
+  return String(url || '').startsWith('/uploads/') && String(url).includes('/video/');
+}
+
+function memberFacingVideoUrl(workout, actor) {
+  const raw = workout.videoUrl || '';
+  if (!isLocalUploadPath(raw)) return raw;
+  if (!actor?._id) return null;
+  const token = signMediaAccessToken({
+    userId: actor._id,
+    tenantId: workout.tenantId,
+    workoutId: workout._id,
+  });
+  return `/api/tenants/${workout.tenantId}/online/${workout._id}/media?m=${encodeURIComponent(token)}`;
 }
 
 function uploadToCloudinary(file, tenantId) {
@@ -100,7 +123,7 @@ function accessFor(membership) {
   return { free: false, reason: 'NO_SESSIONS', sessionsRemaining: 0 };
 }
 
-function toMemberCard(workout, access) {
+function toMemberCard(workout, access, actor) {
   const unlocked = access.free;
   return {
     id: workout._id,
@@ -111,7 +134,7 @@ function toMemberCard(workout, access) {
     free: unlocked,
     accessReason: access.reason,
     sessionsRemaining: access.sessionsRemaining,
-    videoUrl: unlocked ? workout.videoUrl : null,
+    videoUrl: unlocked ? memberFacingVideoUrl(workout, actor) : null,
     locked: !unlocked,
   };
 }
@@ -119,7 +142,7 @@ function toMemberCard(workout, access) {
 export async function listManaged(actor, tenantId) {
   await requireMember(actor, tenantId, MANAGE_ROLES);
   const rows = await OnlineWorkout.find({ tenantId }).sort({ createdAt: -1 });
-  return rows.map(toManage);
+  return rows.map((row) => toManage(row, actor));
 }
 
 export async function uploadVideo(actor, tenantId, file) {
@@ -128,6 +151,7 @@ export async function uploadVideo(actor, tenantId, file) {
   if (!VIDEO_TYPES.has(file.mimetype)) {
     throw new HttpError(400, 'Unsupported video type', { code: 'UNSUPPORTED_MEDIA' });
   }
+  assertVideoBuffer(file.buffer, file.mimetype);
   if (file.size > MAX_VIDEO_BYTES) {
     throw new HttpError(413, 'Video is too large (max 100 MB)', { code: 'PAYLOAD_TOO_LARGE' });
   }
@@ -178,7 +202,7 @@ export async function createWorkout(actor, tenantId, input) {
     active: input.active !== false,
     createdBy: actor._id,
   });
-  return toManage(workout);
+  return toManage(workout, actor);
 }
 
 export async function updateWorkout(actor, tenantId, workoutId, input) {
@@ -194,7 +218,7 @@ export async function updateWorkout(actor, tenantId, workoutId, input) {
   if (input.price != null) workout.price = input.price;
   if (input.active != null) workout.active = input.active;
   await workout.save();
-  return toManage(workout);
+  return toManage(workout, actor);
 }
 
 export async function removeWorkout(actor, tenantId, workoutId) {
@@ -228,6 +252,60 @@ export async function listForMember(actor, tenantId) {
       reason: access.reason,
       sessionsRemaining: access.sessionsRemaining ?? null,
     },
-    workouts: rows.map((item) => toMemberCard(item, access)),
+    workouts: rows.map((item) => toMemberCard(item, access, actor)),
   };
+}
+
+async function actorCanStreamWorkout(actor, tenantId, workout) {
+  try {
+    await requireMember(actor, tenantId, MANAGE_ROLES);
+    return true;
+  } catch {
+    // fall through to membership check
+  }
+  const membership = await activeMembershipFor(actor._id, tenantId);
+  const access = accessFor(membership);
+  return Boolean(access.free && workout.active);
+}
+
+function resolveLocalVideoPath(videoUrl, tenantId) {
+  if (!isLocalUploadPath(videoUrl)) return null;
+  const safeTenant = String(tenantId).replace(/[^a-f\d]/gi, '');
+  const expectedPrefix = `/uploads/${safeTenant}/video/`;
+  if (!String(videoUrl).startsWith(expectedPrefix)) return null;
+  const filename = path.basename(videoUrl);
+  if (!/^[a-f0-9]+\.(mp4|webm|mov|avi|mkv)$/i.test(filename)) return null;
+  return path.resolve(process.cwd(), 'uploads', safeTenant, 'video', filename);
+}
+
+/**
+ * Stream local online video after membership/staff check.
+ * Accepts Bearer auth or short-lived `?m=` media token (for <video src>).
+ */
+export async function streamWorkoutMedia(actor, tenantId, workoutId, mediaToken) {
+  let user = actor || null;
+  if (!user && mediaToken) {
+    const payload = verifyMediaAccessToken(mediaToken);
+    if (String(payload.tenantId) !== String(tenantId) || String(payload.workoutId) !== String(workoutId)) {
+      throw new HttpError(401, 'Unauthorized');
+    }
+    user = await User.findById(payload.sub);
+  }
+  if (!user) throw new HttpError(401, 'Unauthorized');
+
+  const workout = await OnlineWorkout.findOne({ _id: workoutId, tenantId });
+  if (!workout) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+
+  const allowed = await actorCanStreamWorkout(user, tenantId, workout);
+  if (!allowed) throw new HttpError(403, 'Forbidden', { code: 'FORBIDDEN' });
+
+  const absolute = resolveLocalVideoPath(workout.videoUrl, tenantId);
+  if (!absolute) {
+    // Cloudinary / external URL — clients should use videoUrl directly.
+    throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+  }
+  if (!fs.existsSync(absolute)) {
+    throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+  }
+  return absolute;
 }

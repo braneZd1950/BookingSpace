@@ -8,22 +8,31 @@ import User from '../models/User.js';
 import env from '../config/env.js';
 import { smtpConfigured, verifyMail } from './mail.js';
 
-/** Pristup platformi (/analitika, /admin): super admin, djelatnik ili ADMIN_EMAILS. */
-export function isPlatformAdmin(user) {
-  if (!user) return false;
-  if (user.role === 'ADMIN' || user.role === 'PLATFORM_STAFF') return true;
+function adminEmailBootstrapEnabled() {
+  if (env.adminEmailBootstrap === true) return true;
+  if (env.adminEmailBootstrap === false) return false;
+  return env.nodeEnv !== 'production';
+}
+
+function emailOnAdminBootstrapList(user) {
+  if (!adminEmailBootstrapEnabled()) return false;
   const allowed = env.adminEmails;
   if (!allowed.length) return false;
   return allowed.includes(String(user.email || '').toLowerCase());
 }
 
-/** Upravljanje djelatnicima: samo ADMIN u bazi (ili bootstrap e-pošta iz ADMIN_EMAILS). */
+/** Pristup platformi (/analitika, /admin): DB role, or temporary ADMIN_EMAILS bootstrap. */
+export function isPlatformAdmin(user) {
+  if (!user) return false;
+  if (user.role === 'ADMIN' || user.role === 'PLATFORM_STAFF') return true;
+  return emailOnAdminBootstrapList(user);
+}
+
+/** Upravljanje djelatnicima: ADMIN u bazi, ili bootstrap e-pošta izvan produkcije. */
 export function isPlatformSuperAdmin(user) {
   if (!user) return false;
   if (user.role === 'ADMIN') return true;
-  const allowed = env.adminEmails;
-  if (!allowed.length) return false;
-  return allowed.includes(String(user.email || '').toLowerCase());
+  return emailOnAdminBootstrapList(user);
 }
 
 function asObjectId(value) {

@@ -37,6 +37,44 @@ function hasSessions(membership) {
   return membership.sessionsIncluded == null || membership.sessionsUsed < membership.sessionsIncluded;
 }
 
+/**
+ * After insert, keep only the first `capacity` confirmed occupants for the slot.
+ * Works without Mongo transactions (memory server / standalone).
+ */
+async function assertCapacityAfterCreate({
+  tenantId,
+  serviceId,
+  date,
+  startTime,
+  endTime,
+  capacity,
+  capacityModel,
+  bookingId,
+  session,
+}) {
+  const confirmed = await bind(
+    Booking.find({
+      tenantId,
+      serviceId,
+      date,
+      status: 'CONFIRMED',
+    }).select('_id startTime endTime').sort({ _id: 1 }),
+    session,
+  );
+
+  const occupying = confirmed.filter((booking) => {
+    if (capacityModel === 'CONCURRENT') {
+      return overlaps(startTime, endTime, booking.startTime, booking.endTime);
+    }
+    return booking.startTime === startTime;
+  });
+
+  const keep = new Set(occupying.slice(0, Math.max(0, capacity)).map((row) => String(row._id)));
+  if (keep.has(String(bookingId))) return;
+
+  throw new HttpError(409, 'Slot is not available', { code: 'SLOT_UNAVAILABLE' });
+}
+
 function bind(query, session) {
   return session ? query.session(session) : query;
 }
@@ -145,6 +183,8 @@ export async function createBooking(actor, input) {
     if (conflict) throw new HttpError(409, 'Conflicting booking', { code: 'BOOKING_CONFLICT' });
 
     let membershipId;
+    let sessionsDebited = false;
+    const capacityModel = tenant.bookingSettings?.capacityModel || 'PER_SLOT';
     if (service.membershipRequired) {
       const memberships = await bind(Membership.find({
         tenantId: tenant._id,
@@ -177,6 +217,7 @@ export async function createBooking(actor, input) {
           { new: true, ...sessionOptions(session) },
         );
         if (!updated) throw new HttpError(409, 'No sessions remaining', { code: 'NO_SESSIONS' });
+        sessionsDebited = true;
       }
       membershipId = chosen._id;
     }
@@ -194,8 +235,9 @@ export async function createBooking(actor, input) {
       }, session);
     }
 
+    let created;
     try {
-      return await createDoc(Booking, {
+      created = await createDoc(Booking, {
         tenantId: tenant._id,
         serviceId: service._id,
         userId: customerId,
@@ -213,6 +255,32 @@ export async function createBooking(actor, input) {
       }
       throw error;
     }
+
+    try {
+      await assertCapacityAfterCreate({
+        tenantId: tenant._id,
+        serviceId: service._id,
+        date: input.date,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        capacity: service.capacity,
+        capacityModel,
+        bookingId: created._id,
+        session,
+      });
+    } catch (error) {
+      await Booking.deleteOne({ _id: created._id }, sessionOptions(session));
+      if (sessionsDebited && membershipId) {
+        await Membership.updateOne(
+          { _id: membershipId, sessionsUsed: { $gt: 0 } },
+          { $inc: { sessionsUsed: -1 } },
+          sessionOptions(session),
+        );
+      }
+      throw error;
+    }
+
+    return created;
   });
 
   trackUsage({

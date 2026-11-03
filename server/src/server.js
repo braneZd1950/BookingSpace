@@ -1,17 +1,23 @@
 import app from './app.js';
 import { connectDb, disconnectDb } from './config/db.js';
 import env from './config/env.js';
+import { assertProductionReady } from './config/productionGuard.js';
 import { verifyMail } from './utils/mail.js';
 
 let server;
 
 async function start() {
+  const readiness = assertProductionReady(env);
+  for (const warning of readiness.warnings) {
+    console.warn(`[production] ${warning}`);
+  }
+
   await connectDb();
   const mail = await verifyMail();
   console.log(`[mail] ${mail.message}`);
 
   server = app.listen(env.port, () => {
-    console.log(`API listening on port ${env.port}`);
+    console.log(`API listening on port ${env.port} (${env.nodeEnv})`);
   });
 
   server.on('error', (error) => {

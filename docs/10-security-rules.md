@@ -1,13 +1,23 @@
 # Security and Data Rules
 
 > Still binding. Frontend must not weaken these rules. When changing the API, keep isolation checks intact — [lean/backend-status.md](lean/backend-status.md).
+>
+> Day-to-day ops checklist: **[19-security-maintenance.md](19-security-maintenance.md)**.
 
 ## Authentication
 
-- Hash passwords with a strong password hashing algorithm.
-- Use secure JWT or session practices.
-- Rate-limit authentication endpoints.
+- Hash passwords with a strong password hashing algorithm (bcrypt, 12 rounds).
+- JWT access tokens include `sub` + `tokenVersion`; bump version on logout / password change / reset.
+- Rate-limit authentication endpoints and booking creation.
 - Never log passwords or tokens.
+- Never return temporary passwords in API JSON — deliver by email only.
+- Prefer short JWT lifetimes in production (`JWT_EXPIRES_IN`, default `24h`).
+
+## Platform admin
+
+- Production: only `User.role` of `ADMIN` or `PLATFORM_STAFF`.
+- `ADMIN_EMAILS` is a **non-production bootstrap** (or explicit `ADMIN_EMAIL_BOOTSTRAP=true`). Do not rely on it in prod.
+- Super admin for staff management: promote with `server/scripts/promote-super-admin.js`.
 
 ## Tenant isolation
 
@@ -24,6 +34,8 @@ JWT user
   -> authorized tenant
   -> service tenantId must match
 ```
+
+`GET /tenants/mine` must be **role-scoped**: customers must not receive OIB or full internal booking/admin config.
 
 ## Customer privacy
 
@@ -51,13 +63,14 @@ A future version can include a full audit log.
 
 ## Upload security
 
-For images:
+For images and videos:
 
-- validate MIME type
+- validate MIME type **and** magic bytes
 - validate size
 - restrict formats
-- use Cloudinary transformations
+- use Cloudinary in production when possible
 - never trust filename extensions alone
+- never serve membership/paid video files as public static assets — use authenticated / signed media routes
 
 ## GDPR basics
 

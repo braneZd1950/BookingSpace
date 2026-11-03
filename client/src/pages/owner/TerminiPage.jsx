@@ -252,6 +252,10 @@ export default function TerminiPage() {
   async function onCancel(bookingId) {
     setError('');
     setOk('');
+    if (!consentOk) {
+      setError('Potrebna je privola za otkaz. Prihvatite je u banneru ili u Postavke → Privatnost.');
+      return;
+    }
     setBusyId(bookingId);
     try {
       await cancelBooking(bookingId).unwrap();
@@ -496,7 +500,7 @@ export default function TerminiPage() {
                       <button
                         type="button"
                         className="termini__cancel"
-                        disabled={cancelling && busyId === item.id}
+                        disabled={!consentOk || (cancelling && busyId === item.id)}
                         onClick={() => onCancel(item.id)}
                       >
                         {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}

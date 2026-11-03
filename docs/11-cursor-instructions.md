@@ -29,14 +29,17 @@
 ```text
 client/src/          # web SPA + shared pages/APIs
 client-mobile/       # PWA shell (layouts + alias to client/src)
+mobile/              # native Expo app (TS + Paper + NativeWind) — see docs/18
 server/src/          # Express modules, models, utils
 server/test/         # mvp-flow, studio-ops, platform-billing
 docs/
   lean/              # phase learning docs
-  01–16              # specs + current status
+  01–18              # specs + current status + native
 scripts/             # dev, smoke
 .github/workflows/   # CI
 ```
+
+Native work lives only under `mobile/`. Do not import web Vite/SCSS pages into Expo.
 
 ## Do not
 

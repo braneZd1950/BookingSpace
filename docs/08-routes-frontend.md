@@ -9,6 +9,7 @@
 | `/` | B2B home (anyminutes) |
 | `/login` | Login |
 | `/register` | Business signup |
+| `/preuzmi` | Direct Android app download (APK from site) |
 | `/zaboravljena-lozinka` | Forgot password |
 | `/nova-lozinka` | Reset password |
 | `/postavljanje` | Studio setup wizard (template, layout, colors) |
@@ -16,7 +17,9 @@
 | `/odrzavanje` | Maintenance |
 | `*` | 404 |
 
-Maintenance for the whole app: `VITE_MAINTENANCE=true`.
+Maintenance for the whole app: `VITE_MAINTENANCE=true`.  
+Crash / unexpected UI error: React `ErrorBoundary` → `ErrorPage` (also `/greska`).  
+Native: `EXPO_PUBLIC_MAINTENANCE=true`, Expo Router `+not-found`, `AppErrorBoundary`.
 
 ## Platform admin (web only) — `/analitika`
 
@@ -56,13 +59,18 @@ Held (flags in `client/src/lib/studioFeatures.js`): galerija, online, placanja, 
 | `/s/:slug/online` | Online | Catalog (flagged) |
 | `/s/:slug/privatnost` | — | Privacy / consent |
 
-## Mobile (`client-mobile`)
+## Mobile PWA (`client-mobile`)
 
 Same member + owner pages via `@client` alias. Differences:
 
 - No `/analitika/*` platform admin  
 - Bottom nav skips studio Analitika (route still reachable if typed)  
 - Own PWA manifest + service worker  
+
+## Native Expo (`mobile/`)
+
+File-based Expo Router (not React Router). Scaffold tabs: home / studio / member + auth login.  
+Full route map and build notes: [18-native-mobile.md](18-native-mobile.md).
 
 ## Later / deferred
 

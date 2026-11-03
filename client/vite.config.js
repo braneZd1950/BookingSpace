@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react()],
   envDir: path.resolve(clientDir, '..'),
   server: {
+    host: true,
     port: 5173,
     proxy: {
       // BookingApp API (default 4001 — 4000 often zauzme drugi lokalni projekt)

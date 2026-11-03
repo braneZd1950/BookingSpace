@@ -156,6 +156,9 @@ export default function HomePage() {
             <a className="home__cta home__cta--ghost" href="#kako">
               Pogledajte kako radi
             </a>
+            <Link className="home__cta home__cta--app" to="/preuzmi">
+              Preuzmite aplikaciju
+            </Link>
           </div>
           <p className="home__trust">
             Postavljanje traje svega nekoliko minuta. Bez komplikacija.
@@ -189,14 +192,14 @@ export default function HomePage() {
         <h2 id="home-problem">Poznato vam je ovo?</h2>
         <div className="home__prose">
           <p>
-            Dan vam je pun, a telefon ne prestaje zvoniti. Poruke o terminima stižu
-            kasno navečer i u pauzama. Netko otkaže u zadnji čas, a vi ručno tražite
-            kome taj termin ponuditi.
+            Dan vam je pun, a termini i klijenti još uvijek žive po papirima,
+            bilježnicama i porukama. Poruke stižu kasno navečer i u pauzama.
+            Netko otkaže u zadnji čas, a vi ručno tražite kome taj termin ponuditi.
           </p>
           <p>
             Raspored vam je na papiru, u glavi i u tri različite aplikacije.
             Teško je pratiti tko dolazi, tko još nije platio članarinu i koji je
-            termin slobodan.
+            termin slobodan — lako se nešto izgubi.
           </p>
           <p>
             Umjesto da radite svoj posao, veći dio dana provodite dogovarajući se oko njega.
@@ -320,13 +323,31 @@ export default function HomePage() {
           </p>
           <p className="home__split-extra">
             Vi dobivate vlastiti online prostor i vlastiti link, a mi vam dajemo
-            alate da sve vodite lakše. Odnos s vašim klijentima ostaje vaš —
-            mi smo tu samo da vam olakšamo svakodnevni posao.
+            samo alate da sve vodite lakše. Vaša stranica, vaši klijenti i vaši
+            odnosi pripadaju vama — mi smo tu da vam vratimo vrijeme za posao.
           </p>
           <Link className="home__text-link" to="/register">
             Napravite svoju stranicu
           </Link>
         </div>
+      </section>
+
+      <section className="home__block" aria-labelledby="home-story">
+        <h2 id="home-story">Jedna ideja da vođenje posla bude jednostavnije</h2>
+        <div className="home__prose">
+          <p>
+            AnyMinutes je nastao od stvarnog problema malih poslova — studija,
+            salona i igraonica — kojima složeni programi samo dodaju posla.
+            Gradimo ga uz prve korisnike: jednostavan, pregledan i bez priručnika.
+          </p>
+          <p>
+            Cilj je vratiti vam vrijeme koje danas trošite na poruke, papire i
+            dogovaranje — da se možete vratiti klijentima.
+          </p>
+        </div>
+        <Link className="home__text-link" to="/o-nama">
+          Pročitajte više o nama
+        </Link>
       </section>
 
       <section className="home__close" aria-labelledby="home-close">
@@ -341,6 +362,9 @@ export default function HomePage() {
           </Link>
           <Link className="home__cta home__cta--line" to="/login">
             Prijava
+          </Link>
+          <Link className="home__cta home__cta--app" to="/preuzmi">
+            Preuzmite aplikaciju
           </Link>
         </div>
         <p className="home__trust home__trust--close">

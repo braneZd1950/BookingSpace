@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useGetMeQuery } from '../../api/authApi.js';
 import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
 import InstallAppBanner from '../../components/InstallAppBanner.jsx';
+import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
+import { clearSession } from '../../lib/clearSession.js';
 import { ONLINE_ENABLED } from '../../lib/studioFeatures.js';
 import { paletteFromTenant } from './publicSite.js';
 import './MemberLayout.scss';
@@ -50,6 +53,8 @@ function writeSession(next) {
 export default function MemberLayout() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
   const [session, setSession] = useState(readSession);
   const token = localStorage.getItem(TOKEN_KEY);
   const loggedIn = Boolean(token);
@@ -101,9 +106,8 @@ export default function MemberLayout() {
     : null;
   const isMember = Boolean(membership);
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(SESSION_KEY);
+  async function logout() {
+    await clearSession({ dispatch });
     setSession(null);
     navigate('/', { replace: true });
   }
@@ -135,6 +139,12 @@ export default function MemberLayout() {
   const base = `/s/${slug}`;
   const palette = paletteFromTenant(tenant);
   const theme = palette.theme;
+  const path = location.pathname.replace(/\/$/, '') || base;
+  /* Home + policy pages already ship the full PlatformFooter. */
+  const showLegalStrip = path !== base
+    && path !== `${base}/privatnost`
+    && path !== `${base}/uvjeti`
+    && path !== `${base}/kolacici`;
 
   return (
     <div
@@ -189,6 +199,15 @@ export default function MemberLayout() {
         </nav>
       </header>
       <Outlet context={{ tenant, membership, isMember, loggedIn, session: activeSession, palette }} />
+      {showLegalStrip ? (
+        <PlatformLegalStrip
+          studioLinks={{
+            privacy: `${base}/privatnost`,
+            terms: `${base}/uvjeti`,
+            cookies: `${base}/kolacici`,
+          }}
+        />
+      ) : null}
       <ConsentBanner />
       <InstallAppBanner />
     </div>

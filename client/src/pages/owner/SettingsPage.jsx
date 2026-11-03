@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import {
   useChangePasswordMutation,
@@ -11,7 +12,8 @@ import {
   useUpdateServiceMutation,
 } from '../../api/serviceApi.js';
 import { useUpdateSiteMutation, useUpdateTenantMutation } from '../../api/tenantApi.js';
-import { saveStudio, STUDIO_KEY } from '../../lib/studio.js';
+import { clearSession } from '../../lib/clearSession.js';
+import { saveStudio } from '../../lib/studio.js';
 import { studioHost } from './siteTemplates.js';
 import { generateAllStudioLegal } from './studioLegal.js';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
@@ -178,6 +180,7 @@ function PasswordField({
 export default function SettingsPage() {
   const { studio } = useOutletContext();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [tab, setTab] = useState('business');
   const [form, setForm] = useState(() => fromStudio(studio));
   const [account, setAccount] = useState({ name: '', email: '', phone: '' });
@@ -487,10 +490,19 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await changePassword({
+      const result = await changePassword({
         currentPassword: password.currentPassword,
         newPassword: password.newPassword,
       }).unwrap();
+      // Server bumps tokenVersion — keep the fresh JWT or the session dies immediately.
+      if (result?.token) {
+        localStorage.setItem(TOKEN_KEY, result.token);
+      } else {
+        await clearSession({ dispatch });
+        note('error', 'Lozinka je promijenjena — prijavite se ponovo.');
+        navigate('/login', { replace: true });
+        return;
+      }
       setPassword({ currentPassword: '', newPassword: '', again: '' });
       note('ok', 'Lozinka je promijenjena.');
     } catch (failure) {
@@ -545,11 +557,8 @@ export default function SettingsPage() {
     }
   }
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(STUDIO_KEY);
-    localStorage.removeItem(SESSION_KEY);
-    window.dispatchEvent(new Event('studio-changed'));
+  async function logout() {
+    await clearSession({ dispatch });
     navigate('/', { replace: true });
   }
 

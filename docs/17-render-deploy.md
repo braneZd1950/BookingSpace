@@ -39,16 +39,23 @@ npm ci --prefix server && npm ci --prefix client --include=dev && npm run build 
 
 ### Environment (isti servis)
 
+Pun predložak: [`.env.production.example`](../.env.production.example) · checklist: [20-production-launch.md](20-production-launch.md).  
+Opcionalni Blueprint: [`render.yaml`](../render.yaml).
+
 | Key | Value |
 | --- | --- |
 | `NODE_ENV` | `production` |
 | `MONGO_URI` | Atlas URI |
-| `JWT_SECRET` | tajni string |
+| `JWT_SECRET` | ≥ 32 znakova (ne placeholder) |
+| `EXPORT_SEAL_SECRET` | **obavezno**, drugačiji od `JWT_SECRET` |
 | `CLIENT_ORIGIN` | `https://bookingspaceapp.onrender.com` |
 | `VITE_API_URL` | `https://bookingspaceapp.onrender.com/api` |
-| `SERVE_CLIENT` | `true` (opcionalno; default `auto` serviše ako postoji `client/dist`) |
+| `VITE_APP_MODE` | `production` |
+| `SERVE_CLIENT` | `true` |
+| `ADMIN_EMAIL_BOOTSTRAP` | `false` |
+| SMTP / Cloudinary / VAPID | preporučeno (mail + mediji + push) |
 
-Ostalo (SMTP, VAPID, Cloudinary, `ADMIN_EMAILS`) po potrebi.
+API **neće startati** u produkciji ako su tajne slabe / localhost origin / bootstrap uključen (`productionGuard`).
 
 **Važno:** `VITE_API_URL` mora biti postavljen **prije builda**. Nakon izmjene: **Clear build cache & deploy**.
 

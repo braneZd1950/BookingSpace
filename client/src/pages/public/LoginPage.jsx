@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useLazyGetMeQuery, useLoginMutation } from '../../api/authApi.js';
+import {
+  useGoogleAuthMutation,
+  useLazyGetMeQuery,
+  useLoginMutation,
+} from '../../api/authApi.js';
 import { useLazyListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
+import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
 import { business, member } from '../../mock/data.js';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { IS_DEV } from '../../lib/runtimeEnv.js';
@@ -100,6 +105,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
+  const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
   const [loadMe] = useLazyGetMeQuery();
   const [loadMine] = useLazyMyTenantsQuery();
   const [loadMemberships] = useLazyListMyMembershipsQuery();
@@ -146,6 +152,76 @@ export default function LoginPage() {
     setFormError('');
   }
 
+  async function finishAuth(result, trial) {
+    const nextSession = {
+      name: result.user.name,
+      email: result.user.email,
+      role: result.user.role,
+      detail: (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF')
+        ? 'Platforma anyminutes'
+        : result.user.role === 'BUSINESS_OWNER'
+          ? (trial?.session.detail || 'Račun studija je otvoren.')
+          : (trial?.session.detail || 'Račun člana je otvoren.'),
+    };
+    remember(nextSession, result.token);
+
+    try {
+      const me = await loadMe().unwrap();
+      if (
+        me.platformAdmin
+        || result.user.role === 'ADMIN'
+        || result.user.role === 'PLATFORM_STAFF'
+      ) {
+        navigate('/admin', { replace: true });
+        return;
+      }
+    } catch {
+      if (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+    }
+
+    if (result.user.role === 'BUSINESS_OWNER') {
+      try {
+        const mine = await loadMine().unwrap();
+        const owned = mine.tenants?.find((item) => item.role === 'BUSINESS_OWNER')
+          || mine.tenants?.find((item) => item.role === 'STAFF');
+        if (owned?.tenant) {
+          const tenant = owned.tenant;
+          nextSession.detail = tenant.name;
+          remember(nextSession, result.token);
+          saveStudio(studioFromTenant(tenant, loadStudio() || {}));
+          window.dispatchEvent(new Event('studio-changed'));
+        }
+      } catch {
+        // owner can still continue into studio shell
+      }
+      await openGuide(nextSession);
+      return;
+    }
+
+    await openMemberStudio(nextSession);
+  }
+
+  async function onGoogleCredential(idToken, intent = 'login') {
+    setFormError('');
+    try {
+      const result = await googleAuth({ idToken, intent }).unwrap();
+      await finishAuth(result);
+    } catch (error) {
+      if (error?.status === 'FETCH_ERROR') {
+        setFormError('Poslužitelj nije dostupan. Pokušajte ponovno za trenutak.');
+        return;
+      }
+      if (error?.data?.code === 'GOOGLE_NOT_CONFIGURED') {
+        setFormError('Google prijava nije uključena na poslužitelju.');
+        return;
+      }
+      setFormError(error?.data?.message || 'Google prijava nije uspjela.');
+    }
+  }
+
   async function onSubmit(event) {
     event.preventDefault();
     const nextProblems = localProblems(values);
@@ -158,55 +234,7 @@ export default function LoginPage() {
 
     try {
       const result = await login({ email, password: values.password }).unwrap();
-      const nextSession = {
-        name: result.user.name,
-        email: result.user.email,
-        role: result.user.role,
-        detail: (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF')
-          ? 'Platforma anyminutes'
-          : result.user.role === 'BUSINESS_OWNER'
-            ? (trial?.session.detail || 'Račun studija je otvoren.')
-            : (trial?.session.detail || 'Račun člana je otvoren.'),
-      };
-      remember(nextSession, result.token);
-
-      try {
-        const me = await loadMe().unwrap();
-        if (
-          me.platformAdmin
-          || result.user.role === 'ADMIN'
-          || result.user.role === 'PLATFORM_STAFF'
-        ) {
-          navigate('/admin', { replace: true });
-          return;
-        }
-      } catch {
-        if (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF') {
-          navigate('/admin', { replace: true });
-          return;
-        }
-      }
-
-      if (result.user.role === 'BUSINESS_OWNER') {
-        try {
-          const mine = await loadMine().unwrap();
-          const owned = mine.tenants?.find((item) => item.role === 'BUSINESS_OWNER')
-            || mine.tenants?.[0];
-          if (owned?.tenant) {
-            const tenant = owned.tenant;
-            nextSession.detail = tenant.name;
-            remember(nextSession, result.token);
-            saveStudio(studioFromTenant(tenant, loadStudio() || {}));
-            window.dispatchEvent(new Event('studio-changed'));
-          }
-        } catch {
-          // owner can still continue into studio shell
-        }
-        await openGuide(nextSession);
-        return;
-      }
-
-      await openMemberStudio(nextSession);
+      await finishAuth(result, trial);
       return;
     } catch (error) {
       if (error?.status === 'FETCH_ERROR') {
@@ -233,6 +261,10 @@ export default function LoginPage() {
           return;
         }
         setFormError('Poslužitelj nije dostupan. Pokušajte ponovno za trenutak.');
+        return;
+      }
+      if (error?.data?.code === 'GOOGLE_ONLY') {
+        setFormError('Ovaj račun koristi Google prijavu — kliknite gumb ispod.');
         return;
       }
       if (error?.data?.code === 'INVALID_CREDENTIALS') {
@@ -325,9 +357,16 @@ export default function LoginPage() {
 
         {formError ? <p className="login__form-error">{formError}</p> : null}
 
-        <button className="login__submit" type="submit" disabled={isLoading}>
+        <button className="login__submit" type="submit" disabled={isLoading || googleLoading}>
           {isLoading ? 'Prijavljujemo…' : 'Prijavite se'}
         </button>
+
+        <GoogleAuthButton
+          intent="login"
+          disabled={isLoading || googleLoading}
+          onCredential={onGoogleCredential}
+          onError={(message) => setFormError(message)}
+        />
       </form>
 
       <p className="login__links">
