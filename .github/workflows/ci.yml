@@ -64,43 +64,10 @@ jobs:
           VITE_APP_MODE: production
         run: npm run build
 
-  mobile-pwa-build:
-    name: Mobile PWA production build
+  mobile-tests:
+    name: Mobile Expo unit tests + typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: client-mobile
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: |
-            client-mobile/package-lock.json
-            client/package-lock.json
-
-      - name: Install mobile dependencies
-        run: npm ci
-
-      - name: Install shared client dependencies
-        working-directory: client
-        run: npm ci
-
-      - name: Build
-        env:
-          VITE_API_URL: https://api.example.com/api
-          VITE_APP_MODE: production
-        run: npm run build
-
-  native-checks:
-    name: Native Expo unit + typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     defaults:
       run:
         working-directory: mobile

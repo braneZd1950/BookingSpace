@@ -10,7 +10,8 @@
 - React Router
 - Redux Toolkit + RTK Query
 - SCSS
-- PWA (manifest + service worker) on web and `client-mobile`
+- PWA (manifest + service worker) on web (`client/`)
+- Native mobile via Expo (`mobile/`)
 
 ### Backend
 
@@ -47,7 +48,8 @@ Never trust a client-supplied `tenantId` for authorization.
 
 Historical / infra names may still say BookingSpace; product UI brand is **anyminutes**.
 
-- Platform marketing / app origin (local `:5173`, mobile `:5174`)
+- Platform marketing / web origin (local `:5173`)
+- Native Expo app (`mobile/`)
 - API (local default `:4001`)
 - Future: `*.bookingspace.hr` or product domain equivalents
 
@@ -75,4 +77,4 @@ Booking:
 
 ## Mobile
 
-`client-mobile` is a thin Vite app that aliases `@client` → `../client/src`. Shared pages and APIs; mobile-specific layouts and PWA assets only.
+`mobile/` is the Expo (React Native) app. It talks to the same Express API as `client/`. Unit tests live in `mobile/test/` and run in GitHub Actions.

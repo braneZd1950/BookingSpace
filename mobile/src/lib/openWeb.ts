@@ -1,9 +1,11 @@
 import { Alert, Linking, Platform } from 'react-native';
 import { env } from '../config/env';
+import { joinWebUrl } from './webUrl';
+
+export { joinWebUrl } from './webUrl';
 
 export function webUrl(path: string): string {
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  return `${env.webOrigin}${normalized}`;
+  return joinWebUrl(env.webOrigin, path);
 }
 
 /**

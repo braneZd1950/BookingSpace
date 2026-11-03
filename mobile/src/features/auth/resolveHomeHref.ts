@@ -2,17 +2,23 @@ import { ApiError } from '../../api/client';
 import type { AuthUser } from '../../api/auth';
 import { listMyMemberships } from '../../api/memberships';
 import { listMyTenants } from '../../api/tenants';
-import { isOwnerRole, resolveHomeHrefFromContext } from './homeRouting';
+import {
+  HOME_UNAVAILABLE,
+  isOwnerRole,
+  resolveHomeHrefAfterFetch,
+} from './homeRouting';
 
-export { isOwnerRole, resolveHomeHrefFromContext } from './homeRouting';
+export {
+  HOME_UNAVAILABLE,
+  isOwnerRole,
+  resolveHomeHrefAfterFetch,
+  resolveHomeHrefFromContext,
+} from './homeRouting';
 
 export type ResolveHomeDeps = {
   listMyMemberships?: typeof listMyMemberships;
   listMyTenants?: typeof listMyTenants;
 };
-
-/** Transient failure — callers should retry / stay, not redirect to login. */
-export const HOME_UNAVAILABLE = '__HOME_UNAVAILABLE__';
 
 /**
  * Mirror web LoginPage routing:
@@ -55,9 +61,5 @@ export async function resolveHomeHref(
     }
   }
 
-  if (networkFail && memberships.length === 0 && tenants.length === 0) {
-    return HOME_UNAVAILABLE;
-  }
-
-  return resolveHomeHrefFromContext(user, { memberships, tenants });
+  return resolveHomeHrefAfterFetch(user, { memberships, tenants, networkFail });
 }

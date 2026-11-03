@@ -13,8 +13,9 @@ function run(args, cwd) {
   });
 }
 
+/** Expo native app + API (replaces removed Vite client-mobile PWA). */
 const children = [
-  run(['run', 'dev'], path.join(root, 'client-mobile')),
+  run(['start'], path.join(root, 'mobile')),
   run(['start'], path.join(root, 'server')),
 ];
 

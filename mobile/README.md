@@ -2,7 +2,7 @@
 
 Expo (SDK 58) + **TypeScript** + **Expo Router** + **React Native Paper** + **NativeWind**.
 
-This app is the **store-ready native shell**. The web pilot (`client/`) and PWA shell (`client-mobile/`) remain the production booking surface until native screens catch up.
+This app is the **native iOS/Android client**. The web SPA (`client/`) remains the browser product; both talk to the same Express API.
 
 ## Stack
 
@@ -56,7 +56,7 @@ Then open in **Expo Go**, Android emulator, or iOS simulator.
 
 ## Design rules (follow web SCSS)
 
-React Native **cannot import `.scss`**. Instead we **mirror** the web design system in `mobile/` (not `client-mobile/`):
+React Native **cannot import `.scss`**. Instead we **mirror** the web design system in `mobile/`:
 
 | Web (`client/`) | Native (`mobile/`) |
 | --- | --- |
@@ -95,8 +95,7 @@ See [docs/18-native-mobile.md](../docs/18-native-mobile.md).
 
 | App | Role |
 | --- | --- |
-| `client/` | Web SPA — pilot with real users |
-| `client-mobile/` | Mobile **PWA** shell (Vite) |
+| `client/` | Web SPA |
 | `mobile/` | Native iOS/Android (this package) |
 | `server/` | Shared API |
 

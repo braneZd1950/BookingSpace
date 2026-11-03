@@ -10,6 +10,9 @@ export type TenantHint = {
   tenant?: { slug?: string };
 };
 
+/** Transient failure — callers should retry / stay, not redirect to login. */
+export const HOME_UNAVAILABLE = '__HOME_UNAVAILABLE__';
+
 export function isOwnerRole(user: AuthUser | null | undefined): boolean {
   if (!user) return false;
   return user.role === 'BUSINESS_OWNER'
@@ -42,4 +45,26 @@ export function resolveHomeHrefFromContext(
 
   // No studio membership — send to login rather than empty member shell (loop risk).
   return '/(auth)/login';
+}
+
+/**
+ * Apply fetch outcome after memberships/tenants load (pure; safe for Node tests).
+ */
+export function resolveHomeHrefAfterFetch(
+  user: AuthUser | null | undefined,
+  ctx: {
+    memberships?: MembershipHint[];
+    tenants?: TenantHint[];
+    networkFail?: boolean;
+  } = {},
+): string {
+  if (!user) return '/(auth)/login';
+  if (isOwnerRole(user)) return '/(app)';
+
+  const memberships = ctx.memberships || [];
+  const tenants = ctx.tenants || [];
+  if (ctx.networkFail && memberships.length === 0 && tenants.length === 0) {
+    return HOME_UNAVAILABLE;
+  }
+  return resolveHomeHrefFromContext(user, { memberships, tenants });
 }

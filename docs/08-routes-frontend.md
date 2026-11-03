@@ -1,6 +1,6 @@
 # Frontend routes
 
-> Source of truth: `client/src/app/App.jsx` and `client-mobile/src/App.jsx`. Snapshot: [16-current-status.md](16-current-status.md).
+> Source of truth: `client/src/app/App.jsx` (web) and `mobile/app/` (Expo Router). Snapshot: [16-current-status.md](16-current-status.md).
 
 ## Public platform (web)
 
@@ -59,17 +59,9 @@ Held (flags in `client/src/lib/studioFeatures.js`): galerija, online, placanja, 
 | `/s/:slug/online` | Online | Catalog (flagged) |
 | `/s/:slug/privatnost` | — | Privacy / consent |
 
-## Mobile PWA (`client-mobile`)
-
-Same member + owner pages via `@client` alias. Differences:
-
-- No `/analitika/*` platform admin  
-- Bottom nav skips studio Analitika (route still reachable if typed)  
-- Own PWA manifest + service worker  
-
 ## Native Expo (`mobile/`)
 
-File-based Expo Router (not React Router). Scaffold tabs: home / studio / member + auth login.  
+File-based Expo Router (not React Router). Owner shell `/(app)`, member `/(member)/[slug]`, auth `/(auth)/login`.  
 Full route map and build notes: [18-native-mobile.md](18-native-mobile.md).
 
 ## Later / deferred

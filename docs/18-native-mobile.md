@@ -6,9 +6,7 @@
 
 ## Purpose
 
-Ship a **true native** iOS/Android client that reuses the same Express API as the web SPA. The web pilot (`client/`) remains the product under real-user testing. Native screens are filled in after the booking loop is proven.
-
-`client-mobile/` is a **PWA shell** (Vite + shared React pages). Keep it for installable web-on-phone; do not confuse it with `mobile/`.
+Ship a **true native** iOS/Android client that reuses the same Express API as the web SPA. The web pilot (`client/`) remains the browser product; `mobile/` is the Expo app for phones.
 
 ## Stack decision
 

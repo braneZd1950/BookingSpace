@@ -76,11 +76,11 @@ UI, PWA, and legal contact use **anyminutes**. Repo / npm package / some env dom
 
 Reason: brand can ship in the product without a disruptive monorepo rename.
 
-## Decision 13 — Mobile as shared-source PWA shell
+## Decision 13 — Mobile as Expo native app
 
-`client-mobile` reuses `client/src` via Vite alias instead of a separate React Native app for MVP.
+`mobile/` is an Expo + TypeScript client. The former Vite PWA shell (`client-mobile/`) was removed; phones use Expo Go / store builds, browsers use `client/`.
 
-Reason: one booking UI, installable on phones, lower maintenance.
+Reason: true native UX and store distribution without maintaining a second web shell.
 
 ## Decision 14 — Online workouts behind a feature flag
 

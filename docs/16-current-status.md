@@ -17,14 +17,14 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | Members + plans (add / renew / suspend) | Done | Physical payment **ledger API** exists; dedicated cash-entry UI still thin (Phase 5 gap) |
 | Site setup wizard `/postavljanje` | Done | Templates, layout, palette, preview; real DNS deferred |
 | Staff / trainers | Done | Invite, list, suspend; required on book when trainers exist |
-| Web Push + PWA (web + mobile shell) | Done | VAPID; `client-mobile` reuses `client/src` |
-| Native mobile (`mobile/`) | Scaffold | Expo + TS + Paper + NativeWind; auth shell; booking screens TBD — [18-native-mobile.md](18-native-mobile.md) |
+| Web Push + PWA (web) | Done | VAPID on `client/` |
+| Native mobile (`mobile/`) | In progress | Expo + TS + Paper + NativeWind; auth + studio/member shells — [18-native-mobile.md](18-native-mobile.md) |
 | Privacy consent | Done | Banner + `POST /consent` + gate before booking |
 | Platform admin `/analitika` | Done (web) | Studios, users, activity, SaaS billing, reports, system |
 | Admin arhivski izvoz | Done (web) | PDF + Excel + CSV; digitalni pečat integriteta (HMAC) preko `/analytics/platform/exports/seal` |
 | SaaS billing fields + warn/invoice email | Done | Trial / paid / unpaid on tenant |
 | Online workouts | Built, **flagged off** | `ONLINE_ENABLED = false` in `client/src/onlineFeature.js` |
-| Server tests + GitHub CI | Done | `mvp-flow`, `studio-ops`, `platform-billing`; build client + mobile |
+| Server tests + GitHub CI | Done | API tests; client build; Expo unit tests + typecheck |
 
 ## Explicitly not done
 
@@ -42,7 +42,6 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | App | Path | Local |
 | --- | --- | --- |
 | Web | `client/` | `http://localhost:5173` |
-| Mobile PWA shell | `client-mobile/` | `http://localhost:5174` (`npm run dev:mobile`) |
 | Native (Expo) | `mobile/` | `npm run start:native` / Expo Go |
 | API | `server/` | `http://localhost:4001` (default; override with `PORT`) |
 
@@ -50,11 +49,11 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 
 ```bash
 npm run dev          # web + API
-npm run dev:mobile   # mobile shell + API
-npm test             # server tests
-npm run test:ci      # CI-style server tests
+npm run dev:mobile   # Expo + API
+npm test             # server + client + mobile tests
+npm run test:mobile  # Expo unit tests only
+npm run test:ci      # CI-style suite
 npm run build:client
-npm run build:mobile
 ```
 
 Local secrets live in one gitignored file: repo-root `.env` (copy from `.env.example`). Vite only exposes `VITE_*`. Render uses its own Environment panel.

@@ -39,25 +39,23 @@ Phases 1–3 are **implemented in product**. Remaining learning focus is Phase 5
 | Layer | Choice |
 | --- | --- |
 | Frontend | React, Vite, React Router, Redux Toolkit, RTK Query, SCSS |
-| Mobile PWA | `client-mobile/` — Vite shell; reuses `client/src` |
 | Native mobile | `mobile/` — Expo + TypeScript + Paper + NativeWind ([docs/18](docs/18-native-mobile.md)) |
 | Backend | Node.js, Express, REST, JWT, Mongoose |
 | Database | MongoDB Atlas, shared DB + `tenantId` |
-| CI | GitHub Actions — server tests + client/mobile builds |
+| CI | GitHub Actions — server tests, web build, Expo unit tests + typecheck |
 
 ## Run locally
 
 ```bash
 npm run dev            # web :5173 + API
-npm run dev:mobile     # PWA shell :5174 + API
-npm run start:native   # Expo native app (mobile/)
-npm test               # server tests
+npm run dev:mobile     # Expo native (mobile/) + API
+npm run start:native   # Expo only
+npm test               # server + client + mobile tests
 ```
 
 | Service | URL / tool |
 | --- | --- |
 | Web | `http://localhost:5173` |
-| Mobile PWA | `http://localhost:5174` |
 | Native | Expo Go / emulator (`mobile/`) |
 | API | `http://localhost:4001/api` |
 

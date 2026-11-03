@@ -10,7 +10,7 @@
 ## Before coding
 
 1. Confirm which area owns the task (lean phase or status-doc gap).  
-2. Inspect existing `client/` / `client-mobile/` / `server/` code.  
+2. Inspect existing `client/` / `mobile/` / `server/` code.
 3. Propose the smallest implementation.  
 4. Implement; add or extend a server test for booking/membership/staff/billing changes.  
 5. Smoke-check in the browser.  
@@ -28,7 +28,7 @@
 
 ```text
 client/src/          # web SPA + shared pages/APIs
-client-mobile/       # PWA shell (layouts + alias to client/src)
+mobile/              # Expo native app (Expo Router + TypeScript)
 mobile/              # native Expo app (TS + Paper + NativeWind) — see docs/18
 server/src/          # Express modules, models, utils
 server/test/         # mvp-flow, studio-ops, platform-billing
