@@ -1,15 +1,13 @@
 .member-discover {
-  /* Fiksne boje aplikacije — ne nasljeđuje paletu studija. */
+  /* Fiksne brand boje aplikacije — tekst/bg prate temu. */
   --brand: #0e6b73;
   --on-brand: #ffffff;
   --brand-strong: #0a4f56;
   --brand-soft: #dceff0;
   --accent: #f2a33a;
-  --fg: #112b2e;
-  --bg: #f5f8f8;
   --discover-brand: #0e6b73;
-  --discover-soft: #dceff0;
-  --discover-ink: #112b2e;
+  --discover-soft: var(--brand-soft);
+  --discover-ink: var(--fg);
   --discover-edge: color-mix(in srgb, var(--discover-brand) 16%, transparent);
   --discover-accent: #f2a33a;
   position: relative;
@@ -23,9 +21,8 @@
   background:
     linear-gradient(
       155deg,
-      color-mix(in srgb, var(--discover-soft) 52%, #fff) 0%,
-      color-mix(in srgb, var(--bg) 92%, #fff) 18rem,
-      #fff 100%
+      color-mix(in srgb, var(--discover-soft) 52%, var(--surface)) 0%,
+      color-mix(in srgb, var(--bg) 92%, var(--surface)) 18rem, var(--bg) 100%
     );
 }
 
@@ -120,7 +117,7 @@
 .member-discover__lede {
   max-width: 34rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--discover-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -134,13 +131,13 @@
   background:
     linear-gradient(
       135deg,
-      color-mix(in srgb, var(--discover-soft) 55%, #fff),
-      color-mix(in srgb, #fff 70%, transparent)
+      color-mix(in srgb, var(--discover-soft) 55%, var(--surface)),
+      color-mix(in srgb, var(--surface) 70%, transparent)
     );
 }
 
 .member-discover__chip span {
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -168,7 +165,7 @@
   padding: 0.85rem 1rem;
   border: 1px solid var(--discover-edge);
   border-radius: 0.2rem;
-  background: color-mix(in srgb, #fff 88%, var(--discover-soft));
+  background: color-mix(in srgb, var(--surface) 88%, var(--discover-soft));
   color: var(--discover-ink);
   font: inherit;
   font-weight: 550;
@@ -181,7 +178,7 @@
 
 .member-discover__search-note {
   margin: 0;
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
   font-size: 0.82rem;
   font-weight: 650;
 }
@@ -200,8 +197,8 @@
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--discover-edge);
   border-radius: 0.2rem;
-  background: color-mix(in srgb, #fff 85%, var(--discover-soft));
-  color: color-mix(in srgb, var(--discover-ink) 72%, transparent);
+  background: color-mix(in srgb, var(--surface) 85%, var(--discover-soft));
+  color: color-mix(in srgb, var(--discover-ink) 72%, var(--bg));
   font: inherit;
   font-size: 0.88rem;
   font-weight: 750;
@@ -213,7 +210,7 @@
   min-width: 1.2rem;
   padding: 0.08rem 0.35rem;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--discover-soft) 70%, #fff);
+  background: color-mix(in srgb, var(--discover-soft) 70%, var(--surface));
   color: var(--discover-brand);
   font-size: 0.72rem;
   font-weight: 800;
@@ -233,7 +230,7 @@
 }
 
 .member-discover__niches-nav button.is-on span {
-  background: color-mix(in srgb, #fff 22%, transparent);
+  background: color-mix(in srgb, var(--surface) 22%, transparent);
   color: var(--on-brand, #fff);
 }
 
@@ -256,7 +253,7 @@
 }
 
 .member-discover__count span {
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -309,7 +306,7 @@
 .member-discover__place-title em {
   padding: 0.15rem 0.45rem;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--discover-soft) 70%, #fff);
+  background: color-mix(in srgb, var(--discover-soft) 70%, var(--surface));
   color: var(--discover-brand);
   font-size: 0.68rem;
   font-style: normal;
@@ -320,14 +317,14 @@
 
 .member-discover__place-meta {
   margin: 0.25rem 0 0;
-  color: color-mix(in srgb, var(--discover-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 68%, var(--bg));
   font-size: 0.86rem;
   font-weight: 700;
 }
 
 .member-discover__place-note {
   margin: 0.3rem 0 0;
-  color: color-mix(in srgb, var(--discover-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 70%, var(--bg));
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.45;
@@ -344,7 +341,7 @@
   padding: 0.18rem 0.45rem;
   border: 1px solid var(--discover-edge);
   border-radius: 0.15rem;
-  color: color-mix(in srgb, var(--discover-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 74%, var(--bg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.04em;
@@ -365,18 +362,18 @@
 }
 
 .member-discover__places a:hover {
-  background: color-mix(in srgb, var(--discover-soft) 55%, #fff);
+  background: color-mix(in srgb, var(--discover-soft) 55%, var(--surface));
 }
 
 .member-discover__soon {
   border: 1px dashed color-mix(in srgb, var(--discover-ink) 18%, transparent);
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
   font-size: 0.82rem;
 }
 
 .member-discover__empty {
   margin: 0;
-  color: color-mix(in srgb, var(--discover-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 70%, var(--bg));
   font-weight: 600;
   line-height: 1.45;
 }
@@ -400,8 +397,7 @@
   background:
     linear-gradient(
       165deg,
-      color-mix(in srgb, #fff 92%, var(--discover-soft)),
-      #fff 55%
+      color-mix(in srgb, var(--surface) 92%, var(--discover-soft)), var(--surface) 55%
     );
   box-shadow: 0 18px 40px color-mix(in srgb, var(--discover-ink) 4%, transparent);
   animation: member-discover-channel-in 0.55s ease both;
@@ -434,7 +430,7 @@
 
 .member-discover__kicker {
   margin-bottom: 0.2rem;
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
 }
 
 .member-discover__panel-head h2 {
@@ -447,7 +443,7 @@
 
 .member-discover__panel-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--discover-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 70%, var(--bg));
   font-size: 0.94rem;
   font-weight: 600;
   line-height: 1.45;
@@ -491,7 +487,7 @@
 
 .member-discover__niches p {
   margin: 0.3rem 0 0;
-  color: color-mix(in srgb, var(--discover-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 70%, var(--bg));
   font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.45;
@@ -529,7 +525,7 @@
 .member-discover__studios span {
   display: block;
   margin-top: 0.15rem;
-  color: color-mix(in srgb, var(--discover-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--discover-ink) 64%, var(--bg));
   font-size: 0.84rem;
   font-weight: 650;
 }
@@ -544,7 +540,7 @@
 }
 
 .member-discover__studios a:hover {
-  background: color-mix(in srgb, var(--discover-soft) 55%, #fff);
+  background: color-mix(in srgb, var(--discover-soft) 55%, var(--surface));
 }
 
 .member-discover__actions {
@@ -575,7 +571,7 @@
 }
 
 .member-discover__ghost:hover {
-  background: color-mix(in srgb, var(--discover-soft) 55%, #fff);
+  background: color-mix(in srgb, var(--discover-soft) 55%, var(--surface));
 }
 
 @keyframes member-discover-wash {
@@ -621,6 +617,40 @@
   to {
     transform: scaleX(1);
     opacity: 1;
+  }
+}
+
+:root[data-theme='dark'] .member-discover {
+  --brand: #5ecdd5;
+  --on-brand: #ffffff;
+  --brand-strong: #9fe0e5;
+  --brand-soft: #123a3e;
+  --accent: #f5bc66;
+  --discover-brand: #5ecdd5;
+  --discover-soft: #123a3e;
+  --discover-ink: var(--fg);
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .member-discover :is(h1, h2, h3, h4) {
+  color: var(--fg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .member-discover {
+    --brand: #5ecdd5;
+    --on-brand: #ffffff;
+    --brand-strong: #9fe0e5;
+    --brand-soft: #123a3e;
+    --accent: #f5bc66;
+    --discover-brand: #5ecdd5;
+    --discover-soft: #123a3e;
+    --discover-ink: var(--fg);
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .member-discover :is(h1, h2, h3, h4) {
+    color: var(--fg);
   }
 }
 

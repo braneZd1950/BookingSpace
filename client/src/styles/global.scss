@@ -27,3 +27,30 @@ body {
   background: var(--bg);
   overscroll-behavior-x: none;
 }
+
+/* Dark mode: keep headings and form fields bright/readable */
+:root[data-theme='dark'] :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] :is(input, textarea, select) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] :is(input, textarea, select)::placeholder {
+  color: color-mix(in srgb, var(--fg) 62%, var(--bg));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) :is(h1, h2, h3, h4, h5, h6) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) :is(input, textarea, select) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) :is(input, textarea, select)::placeholder {
+    color: color-mix(in srgb, var(--fg) 62%, var(--bg));
+  }
+}

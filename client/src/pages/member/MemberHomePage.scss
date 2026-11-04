@@ -8,8 +8,8 @@
   background:
     linear-gradient(
       105deg,
-      color-mix(in srgb, var(--brand-soft) 78%, #fff) 0%,
-      color-mix(in srgb, var(--brand-soft) 35%, #fff) 100%
+      color-mix(in srgb, var(--brand-soft) 78%, var(--surface)) 0%,
+      color-mix(in srgb, var(--brand-soft) 35%, var(--surface)) 100%
     );
   color: var(--fg);
 }
@@ -47,7 +47,7 @@
 
 .member-home__pass-label {
   margin: 0;
-  color: color-mix(in srgb, var(--brand-strong, var(--brand)) 78%, transparent);
+  color: color-mix(in srgb, var(--brand-strong, var(--brand)) 78%, var(--bg));
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -70,7 +70,7 @@
   margin: 0.35rem 0 0;
   padding: 0;
   list-style: none;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  color: color-mix(in srgb, var(--fg) 76%, var(--bg));
   font-size: 0.88rem;
   font-weight: 550;
 }

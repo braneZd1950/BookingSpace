@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import '../api/consentApi.js';
 import '../api/pushApi.js';
 import PublicLayout from '../components/PublicLayout.jsx';
+import ThemeSync from '../components/ThemeSync.jsx';
 import CalendarPage from '../pages/owner/CalendarPage.jsx';
 import LaunchPlanPage from '../pages/owner/LaunchPlanPage.jsx';
 import MembersPage from '../pages/owner/MembersPage.jsx';
@@ -71,6 +72,7 @@ export default function App() {
 
   return (
     <>
+      <ThemeSync />
       <UsageTracker />
       <Routes>
         <Route path="/s/:slug" element={<MemberLayout />}>

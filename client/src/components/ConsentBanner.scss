@@ -8,9 +8,9 @@
   background:
     linear-gradient(
       180deg,
-      rgb(19 36 31 / 0%) 0%,
-      rgb(19 36 31 / 28%) 28%,
-      rgb(19 36 31 / 55%) 100%
+      color-mix(in srgb, var(--fg) 0%, transparent) 0%,
+      color-mix(in srgb, var(--fg) 18%, transparent) 28%,
+      color-mix(in srgb, var(--fg) 35%, transparent) 100%
     );
   pointer-events: none;
 }
@@ -22,21 +22,22 @@
   width: min(44rem, 100%);
   margin: 0 auto;
   padding: 1.05rem 1.15rem 1.1rem;
-  border: 1px solid color-mix(in srgb, #0e6b73 22%, #d5dfda);
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--line));
   border-radius: 1.1rem;
   background:
     linear-gradient(
       145deg,
-      #f4f8f6 0%,
-      #fff 55%
+      color-mix(in srgb, var(--brand-soft) 40%, var(--surface)) 0%,
+      var(--surface) 55%
     );
-  box-shadow: 0 18px 40px rgb(19 36 31 / 18%);
-  color: #13241f;
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--fg) 18%, transparent);
+  color: var(--fg);
   animation: consent-up 0.45s ease both;
 }
 
 .consent-banner__brand {
   margin: 0;
+  color: var(--fg);
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: 1.35rem;
   font-weight: 640;
@@ -46,6 +47,7 @@
 
 .consent-banner__copy h2 {
   margin: 0.45rem 0 0;
+  color: var(--fg);
   font-size: 1.05rem;
   font-weight: 750;
   letter-spacing: -0.02em;
@@ -53,14 +55,14 @@
 
 .consent-banner__copy p {
   margin: 0.55rem 0 0;
-  color: color-mix(in srgb, #13241f 72%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
   font-size: 0.92rem;
   font-weight: 550;
   line-height: 1.5;
 }
 
 .consent-banner__copy a {
-  color: #0e6b73;
+  color: var(--brand);
   font-weight: 750;
 }
 
@@ -82,22 +84,23 @@
 
 .consent-banner__accept {
   border: 0;
-  background: #13241f;
-  color: #f4f7f5;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .consent-banner__browse {
-  border: 1px solid color-mix(in srgb, #0e6b73 28%, #c9d8d0);
-  background: #fff;
-  color: #13241f;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
+  background: var(--surface);
+  color: var(--fg);
 }
 
 .consent-banner__accept:hover {
-  background: #0e6b73;
+  background: var(--brand);
+  color: var(--on-brand);
 }
 
 .consent-banner__browse:hover {
-  border-color: #0e6b73;
+  border-color: var(--brand);
 }
 
 .consent-chip {
@@ -106,20 +109,20 @@
   bottom: calc(1rem + env(safe-area-inset-bottom, 0));
   z-index: 59;
   padding: 0.65rem 0.95rem;
-  border: 1px solid color-mix(in srgb, #0e6b73 30%, #c9d8d0);
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--line));
   border-radius: 999px;
-  background: #fff;
-  color: #13241f;
+  background: var(--surface);
+  color: var(--fg);
   font: inherit;
   font-size: 0.88rem;
   font-weight: 750;
-  box-shadow: 0 10px 24px rgb(19 36 31 / 14%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--fg) 14%, transparent);
   cursor: pointer;
 }
 
 .consent-chip:hover {
-  border-color: #0e6b73;
-  color: #0e6b73;
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .consent-gate {
@@ -132,20 +135,22 @@
   background:
     linear-gradient(
       145deg,
-      color-mix(in srgb, var(--brand-soft, #e8f0ec) 70%, #fff) 0%,
-      #fff 70%
+      color-mix(in srgb, var(--brand-soft) 70%, var(--surface)) 0%,
+      var(--surface) 70%
     );
+  color: var(--fg);
 }
 
 .consent-gate h2 {
   margin: 0;
+  color: var(--fg);
   font-size: 1.05rem;
   letter-spacing: -0.02em;
 }
 
 .consent-gate p {
   margin: 0;
-  color: var(--muted, #5c6b66);
+  color: var(--muted);
   font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.45;
@@ -172,13 +177,13 @@
 
 .consent-gate__actions button {
   border: 0;
-  background: var(--brand, #13241f);
-  color: var(--on-brand, #fff);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 
 .consent-gate__actions a {
-  border: 1px solid color-mix(in srgb, var(--brand, #0e6b73) 28%, var(--line, #c9d8d0));
-  color: var(--fg, #13241f);
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
+  color: var(--fg);
 }
 
 @keyframes consent-up {

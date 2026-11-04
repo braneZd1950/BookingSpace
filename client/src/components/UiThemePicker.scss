@@ -1,0 +1,99 @@
+.ui-theme-picker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.ui-theme-picker__legend {
+  padding: 0;
+  color: var(--fg);
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.ui-theme-picker__lead {
+  margin: 0.35rem 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.ui-theme-picker__options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.ui-theme-picker__option {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: start;
+  padding: 0.75rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+}
+
+.ui-theme-picker__option:hover,
+.ui-theme-picker__option:focus-visible {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+  outline: none;
+}
+
+.ui-theme-picker__option.is-active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand-soft) 70%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.ui-theme-picker__swatch {
+  width: 100%;
+  height: 2.1rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--line);
+}
+
+.ui-theme-picker__swatch--system {
+  background:
+    linear-gradient(90deg, #f5f8f8 50%, #0d1a1c 50%);
+}
+
+.ui-theme-picker__swatch--light {
+  background: linear-gradient(135deg, #f5f8f8, #ffffff 55%, #dceff0);
+}
+
+.ui-theme-picker__swatch--dark {
+  background: linear-gradient(135deg, #0d1a1c, #142528 55%, #123a3e);
+}
+
+.ui-theme-picker__copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.ui-theme-picker__copy strong {
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.ui-theme-picker__copy em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.ui-theme-picker:disabled .ui-theme-picker__option {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+@media (max-width: 36rem) {
+  .ui-theme-picker__options {
+    grid-template-columns: 1fr;
+  }
+}

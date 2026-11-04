@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { STUDIO_KEY } from '../lib/studio.js';
+import { applyPublicLightTheme } from '../lib/uiTheme.js';
 
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
@@ -33,6 +34,7 @@ async function baseQueryWithAuth(args, api, extraOptions) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(STUDIO_KEY);
+    applyPublicLightTheme();
     window.dispatchEvent(new Event('studio-changed'));
     if (apiRef) {
       api.dispatch(apiRef.util.resetApiState());

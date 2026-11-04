@@ -15,9 +15,9 @@
   background:
     linear-gradient(
       155deg,
-      color-mix(in srgb, var(--online-soft) 52%, #fff) 0%,
+      color-mix(in srgb, var(--online-soft) 52%, var(--surface)) 0%,
       var(--online-canvas) 18rem,
-      color-mix(in srgb, var(--online-canvas) 90%, #fff) 100%
+      color-mix(in srgb, var(--online-canvas) 90%, var(--surface)) 100%
     );
 }
 
@@ -109,7 +109,7 @@
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   margin: 0;
-  color: color-mix(in srgb, var(--online-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.18em;
@@ -166,14 +166,14 @@
 .member-online__lead {
   margin: 0;
   max-width: 30ch;
-  color: color-mix(in srgb, var(--online-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 76%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.5;
 }
 
 .member-online__plan {
   margin: -0.35rem 0 0;
-  color: color-mix(in srgb, var(--online-brand) 78%, transparent);
+  color: color-mix(in srgb, var(--online-brand) 78%, var(--bg));
   font-size: 0.78rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -182,7 +182,7 @@
 
 .member-online__kicker {
   margin: 0;
-  color: color-mix(in srgb, var(--online-brand) 72%, transparent);
+  color: color-mix(in srgb, var(--online-brand) 72%, var(--bg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -206,7 +206,7 @@
 .member-online__soon p {
   margin: 0;
   max-width: 34rem;
-  color: color-mix(in srgb, var(--online-ink) 64%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 64%, var(--bg));
   line-height: 1.55;
 }
 
@@ -233,7 +233,7 @@
 }
 
 .member-online__error {
-  color: #9b1c1c;
+  color: var(--full-ink);
 }
 
 .member-online__cta,
@@ -315,7 +315,7 @@
 
 .member-online__player-copy p {
   margin: 0.4rem 0 0.75rem;
-  color: color-mix(in srgb, var(--online-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 76%, var(--bg));
   line-height: 1.5;
 }
 
@@ -364,21 +364,21 @@
 .member-online__item span {
   display: block;
   margin-top: 0.2rem;
-  color: color-mix(in srgb, var(--online-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 70%, var(--bg));
   font-size: 0.86rem;
   font-weight: 650;
 }
 
 .member-online__item p {
   margin: 0.45rem 0 0;
-  color: color-mix(in srgb, var(--online-ink) 78%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 78%, var(--bg));
   font-size: 0.92rem;
   line-height: 1.45;
 }
 
 .member-online__lock {
   padding-top: 0.2rem;
-  color: color-mix(in srgb, var(--online-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 64%, var(--bg));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -474,6 +474,48 @@
   .member-online__list .member-online__cta,
   .member-online__lock {
     grid-column: 2;
+  }
+}
+
+:root[data-theme='dark'] .member-online {
+  --online-ink: var(--fg);
+  --online-canvas: var(--bg);
+  --online-soft: color-mix(in srgb, var(--online-brand) 26%, var(--surface));
+  color: var(--fg);
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--online-soft) 52%, var(--surface)) 0%,
+      var(--bg) 18rem,
+      var(--bg) 100%
+    );
+}
+
+:root[data-theme='dark'] .member-online :is(h1, h2, h3, strong) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .member-online p,
+:root[data-theme='dark'] .member-online .member-online__lead,
+:root[data-theme='dark'] .member-online .member-online__rail-status,
+:root[data-theme='dark'] .member-online .member-online__hint {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+:root[data-theme='dark'] .member-online .member-online__cta {
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .member-online {
+    --online-ink: var(--fg);
+    --online-canvas: var(--bg);
+    --online-soft: color-mix(in srgb, var(--online-brand) 26%, var(--surface));
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .member-online :is(h1, h2, h3, strong) {
+    color: var(--fg);
   }
 }
 

@@ -1,15 +1,15 @@
 .legal {
-  --legal-ink: #13241f;
-  --legal-soft: #e8f0ec;
-  --legal-line: #c9d8d0;
-  --legal-accent: #0e6b73;
-  --legal-wash: #dfeae4;
+  --legal-ink: var(--fg);
+  --legal-soft: var(--brand-soft);
+  --legal-line: var(--line);
+  --legal-accent: var(--brand);
+  --legal-wash: color-mix(in srgb, var(--brand-soft) 55%, var(--bg));
   position: relative;
   isolation: isolate;
   overflow: clip;
   color: var(--legal-ink);
   background:
-    linear-gradient(180deg, var(--legal-wash) 0%, #f7faf8 18rem, var(--bg, #fff) 100%);
+    linear-gradient(180deg, var(--legal-wash) 0%, var(--bg) 18rem, var(--bg) 100%);
 }
 
 .legal__wash {
@@ -58,7 +58,7 @@
 
 .legal__kicker {
   margin: 1.15rem 0 0;
-  color: color-mix(in srgb, var(--legal-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 70%, var(--bg));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -68,7 +68,7 @@
 .legal__hero h1 {
   margin: 0.4rem 0 0;
   max-width: 16ch;
-  color: color-mix(in srgb, var(--legal-ink) 82%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 82%, var(--bg));
   font-family: Figtree, system-ui, sans-serif;
   font-size: clamp(1.2rem, 2.8vw, 1.5rem);
   font-weight: 650;
@@ -79,7 +79,7 @@
 .legal__lead {
   margin: 1rem 0 0;
   max-width: 34rem;
-  color: color-mix(in srgb, var(--legal-ink) 72%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 72%, var(--bg));
   font-size: 1.05rem;
   font-weight: 550;
   line-height: 1.55;
@@ -91,7 +91,7 @@
   padding: 0.7rem 0.85rem;
   border-left: 3px solid var(--legal-accent);
   background: color-mix(in srgb, #fff 70%, var(--legal-soft));
-  color: color-mix(in srgb, var(--legal-ink) 72%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 72%, var(--bg));
   font-size: 0.84rem;
   font-weight: 650;
   line-height: 1.45;
@@ -99,7 +99,7 @@
 
 .legal__meta {
   margin: 1.1rem 0 0;
-  color: color-mix(in srgb, var(--legal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 64%, var(--bg));
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -122,7 +122,7 @@
   min-width: 5.5rem;
   padding: 0.62rem 1rem;
   border-radius: 999px;
-  color: color-mix(in srgb, var(--legal-ink) 70%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 70%, var(--bg));
   font-size: 0.92rem;
   font-weight: 750;
   text-align: center;
@@ -191,7 +191,7 @@
   padding: 0.7rem 0.8rem;
   border-radius: 0.65rem;
   background: color-mix(in srgb, var(--legal-accent) 9%, #fff);
-  color: color-mix(in srgb, var(--legal-ink) 82%, transparent) !important;
+  color: color-mix(in srgb, var(--legal-ink) 88%, var(--bg)) !important;
   font-size: 0.95rem !important;
   font-weight: 600 !important;
   line-height: 1.45 !important;
@@ -207,7 +207,7 @@
 
 .legal__copy p {
   margin: 0 0 0.7rem;
-  color: color-mix(in srgb, var(--legal-ink) 78%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 78%, var(--bg));
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.6;
@@ -215,7 +215,7 @@
 
 .legal__law {
   margin: 0.75rem 0 0 !important;
-  color: color-mix(in srgb, var(--legal-ink) 48%, transparent) !important;
+  color: color-mix(in srgb, var(--legal-ink) 74%, var(--bg)) !important;
   font-size: 0.78rem !important;
   font-weight: 650 !important;
   line-height: 1.4 !important;
@@ -228,7 +228,7 @@
 .legal__bullets {
   margin: 0.15rem 0 0.85rem;
   padding: 0 0 0 1.15rem;
-  color: color-mix(in srgb, var(--legal-ink) 78%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 78%, var(--bg));
   font-size: 0.98rem;
   font-weight: 500;
   line-height: 1.55;
@@ -248,7 +248,7 @@
   padding: 0.65rem 0.75rem;
   border-radius: 0.55rem;
   background: color-mix(in srgb, var(--legal-accent) 7%, #fff);
-  color: color-mix(in srgb, var(--legal-ink) 75%, transparent) !important;
+  color: color-mix(in srgb, var(--legal-ink) 86%, var(--bg)) !important;
   font-size: 0.92rem !important;
   font-weight: 600 !important;
   line-height: 1.5 !important;
@@ -271,7 +271,7 @@
 }
 
 .legal__id-note {
-  color: color-mix(in srgb, var(--legal-ink) 62%, transparent) !important;
+  color: color-mix(in srgb, var(--legal-ink) 80%, var(--bg)) !important;
   font-size: 0.88rem !important;
   font-weight: 550 !important;
 }
@@ -292,7 +292,7 @@
 
 .legal__closing p {
   margin: 0;
-  color: color-mix(in srgb, var(--legal-ink) 68%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 68%, var(--bg));
   font-size: 0.9rem;
   font-weight: 550;
   line-height: 1.55;
@@ -310,7 +310,7 @@
 
 .legal__aside-label {
   margin: 0;
-  color: color-mix(in srgb, var(--legal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -336,7 +336,7 @@
 }
 
 .legal__roles span {
-  color: color-mix(in srgb, var(--legal-ink) 68%, transparent);
+  color: color-mix(in srgb, var(--legal-ink) 68%, var(--bg));
   font-size: 0.92rem;
   font-weight: 550;
   line-height: 1.45;

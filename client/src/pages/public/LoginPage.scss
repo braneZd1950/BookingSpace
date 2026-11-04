@@ -1,7 +1,7 @@
 .login {
-  --login-ink: #102c2f;
-  --login-mist: #e8f1f0;
-  --login-panel: rgb(250 253 252 / 88%);
+  --login-ink: var(--fg);
+  --login-mist: color-mix(in srgb, var(--brand-soft) 70%, var(--bg));
+  --login-panel: color-mix(in srgb, var(--surface) 88%, transparent);
   --login-edge: color-mix(in srgb, var(--brand) 18%, transparent);
   position: relative;
   isolation: isolate;
@@ -11,7 +11,12 @@
   overflow: clip;
   color: var(--login-ink);
   background:
-    linear-gradient(125deg, #d7e8e6 0%, var(--login-mist) 42%, #f7faf9 100%);
+    linear-gradient(
+      125deg,
+      color-mix(in srgb, var(--brand-soft) 55%, var(--bg)) 0%,
+      var(--login-mist) 42%,
+      var(--bg) 100%
+    );
 }
 
 .login__atmosphere {
@@ -155,7 +160,7 @@
 .login__lead {
   margin: 0;
   max-width: 28ch;
-  color: color-mix(in srgb, var(--login-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--login-ink) 76%, var(--bg));
   font-size: 1.05rem;
   line-height: 1.5;
 }
@@ -219,7 +224,7 @@
   border: 0;
   border-radius: 0.35rem;
   background: transparent;
-  color: color-mix(in srgb, var(--login-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--login-ink) 45%, var(--bg));
   cursor: pointer;
   transform: translateY(-50%);
 }
@@ -288,7 +293,7 @@
   justify-content: space-between;
   gap: 0.65rem 1.25rem;
   margin: 0;
-  color: color-mix(in srgb, var(--login-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--login-ink) 70%, var(--bg));
   font-size: 0.92rem;
   animation: login-rise 0.9s 0.16s ease both;
 }
@@ -304,7 +309,7 @@
   margin: 0;
   padding: 0.85rem 0 0;
   border-top: 1px dashed color-mix(in srgb, var(--brand) 24%, transparent);
-  color: color-mix(in srgb, var(--login-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--login-ink) 74%, var(--bg));
   font-size: 0.8rem;
   line-height: 1.55;
   animation: login-rise 0.9s 0.22s ease both;
@@ -331,7 +336,7 @@
 
 .login__done-detail {
   margin: 0;
-  color: color-mix(in srgb, var(--login-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--login-ink) 76%, var(--bg));
   font-size: 1.05rem;
   line-height: 1.5;
 }

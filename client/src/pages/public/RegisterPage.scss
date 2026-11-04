@@ -1,7 +1,7 @@
 .register {
-  --reg-ink: #132824;
-  --reg-paper: #f4f8f6;
-  --reg-panel: rgb(255 255 255 / 72%);
+  --reg-ink: var(--fg);
+  --reg-paper: color-mix(in srgb, var(--brand-soft) 35%, var(--bg));
+  --reg-panel: color-mix(in srgb, var(--surface) 88%, transparent);
   --reg-line: color-mix(in srgb, var(--brand) 14%, var(--line));
   position: relative;
   isolation: isolate;
@@ -11,7 +11,12 @@
   overflow: clip;
   color: var(--reg-ink);
   background:
-    linear-gradient(180deg, #e4eeea 0%, var(--reg-paper) 18rem, var(--bg) 100%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-soft) 55%, var(--bg)) 0%,
+      var(--reg-paper) 18rem,
+      var(--bg) 100%
+    );
 }
 
 .register__atmosphere {
@@ -66,7 +71,7 @@
   position: absolute;
   top: 4.5rem;
   right: -2%;
-  color: color-mix(in srgb, var(--brand) 9%, transparent);
+  color: color-mix(in srgb, var(--brand) 9%, var(--bg));
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: clamp(5rem, 18vw, 14rem);
   font-weight: 640;

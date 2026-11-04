@@ -51,6 +51,7 @@ export const updateMeSchema = z.object({
     name: z.string().trim().min(1).max(80).optional(),
     email: email.optional(),
     phone: z.string().trim().max(30).optional(),
+    uiTheme: z.enum(['system', 'light', 'dark']).optional(),
     notificationPrefs: notificationPrefsSchema.optional(),
     privacyConsent: privacyConsentUpdateSchema.optional(),
   }).refine((body) => Object.keys(body).length > 0, 'No changes'),

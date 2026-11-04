@@ -129,7 +129,7 @@
 }
 
 .biz-form input::placeholder {
-  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  color: color-mix(in srgb, var(--muted) 78%, var(--bg));
 }
 
 .biz-form input:hover {
@@ -1425,13 +1425,13 @@
   gap: 0.55rem;
   min-height: 18rem;
   padding: 1.15rem 1.1rem 1.25rem;
-  background: #f7f8f6;
-  color: #132824;
+  background: var(--surface);
+  color: var(--fg);
 }
 
 .biz-legal-preview__kicker {
   margin: 0;
-  color: color-mix(in srgb, var(--brand) 70%, #132824);
+  color: color-mix(in srgb, var(--brand) 70%, var(--fg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -1463,7 +1463,7 @@
 
 .biz-legal-preview__body p {
   margin: 0;
-  color: rgb(19 40 36 / 72%);
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
   font-size: 0.78rem;
   line-height: 1.45;
 }

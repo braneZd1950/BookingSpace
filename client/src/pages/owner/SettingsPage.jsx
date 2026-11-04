@@ -17,7 +17,9 @@ import { saveStudio } from '../../lib/studio.js';
 import { studioHost } from './siteTemplates.js';
 import { generateAllStudioLegal } from './studioLegal.js';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
+import UiThemePicker from '../../components/UiThemePicker.jsx';
 import { disableWebPush, enableWebPush, getPushStatus, pushSupported } from '../../lib/push.js';
+import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import CancelWindowSelect from './CancelWindowSelect.jsx';
 import TimeSelect from './TimeSelect.jsx';
 import {
@@ -190,6 +192,8 @@ export default function SettingsPage() {
     again: '',
   });
   const [prefs, setPrefs] = useState(loadPrefs);
+  const [uiTheme, setUiTheme] = useState('system');
+  const [savingTheme, setSavingTheme] = useState(false);
   const [pushState, setPushState] = useState({
     supported: pushSupported(),
     permission: 'default',
@@ -302,6 +306,7 @@ export default function SettingsPage() {
     if (user.notificationPrefs) {
       setPrefs({ ...defaultPrefs, ...user.notificationPrefs });
     }
+    setUiTheme(normalizeUiTheme(user.uiTheme));
   }, [user]);
 
   useEffect(() => {
@@ -535,6 +540,28 @@ export default function SettingsPage() {
     }
   }
 
+  async function saveUiTheme(next) {
+    const theme = normalizeUiTheme(next);
+    setUiTheme(theme);
+    /* Persist locally first so the choice survives logout even if the API call fails. */
+    syncUiTheme(theme);
+    setSavingTheme(true);
+    try {
+      await updateMe({ uiTheme: theme }).unwrap();
+      note('ok', theme === 'dark'
+        ? 'Tamna tema je spremljena za studio/član područje.'
+        : theme === 'light'
+          ? 'Svijetla tema je spremljena za studio/član područje.'
+          : 'Tema prati uređaj u studio/član području. Javne stranice ostaju svijetle.');
+    } catch (failure) {
+      note('error', failure?.status === 'FETCH_ERROR'
+        ? 'Poslužitelj nije dostupan — tema je spremljena samo na ovom uređaju.'
+        : 'Tema nije spremljena na račun — ostaje lokalno na ovom uređaju.');
+    } finally {
+      setSavingTheme(false);
+    }
+  }
+
   async function toggleDevicePush() {
     setPushBusy(true);
     try {
@@ -741,73 +768,82 @@ export default function SettingsPage() {
         ) : null}
 
         {tab === 'account' ? (
-          <form className="settings__sheet" onSubmit={saveAccount}>
-            <div className="settings__grid">
-              <label>
-                Ime i prezime
-                <input
-                  value={account.name}
-                  onChange={(event) => setAccount((current) => ({ ...current, name: event.target.value }))}
-                />
-              </label>
-              <label>
-                Telefon
-                <input
-                  value={account.phone}
-                  onChange={(event) => setAccount((current) => ({ ...current, phone: event.target.value }))}
-                />
-              </label>
-              <label className="settings__full">
-                E-pošta za prijavu
-                <input
-                  type="email"
-                  value={account.email}
-                  onChange={(event) => setAccount((current) => ({ ...current, email: event.target.value }))}
-                />
-              </label>
-              <label className="settings__full">
-                Ulica
-                <input
-                  value={form.address}
-                  onChange={(event) => changeBusiness('address', event.target.value)}
-                  placeholder="Ulica i kućni broj"
-                  autoComplete="street-address"
-                />
-              </label>
-              <label>
-                Grad
-                <input
-                  value={form.city}
-                  onChange={(event) => changeBusiness('city', event.target.value)}
-                  placeholder="npr. Zagreb"
-                  autoComplete="address-level2"
-                />
-              </label>
-              <label className="settings__full">
-                OIB
-                <input
-                  value={form.oib}
-                  onChange={(event) => changeBusiness('oib', event.target.value.replace(/\D/g, '').slice(0, 11))}
-                  inputMode="numeric"
-                  maxLength={11}
-                  placeholder="11 znamenki (opcionalno)"
-                  autoComplete="off"
-                />
-              </label>
+          <>
+            <form className="settings__sheet" onSubmit={saveAccount}>
+              <div className="settings__grid">
+                <label>
+                  Ime i prezime
+                  <input
+                    value={account.name}
+                    onChange={(event) => setAccount((current) => ({ ...current, name: event.target.value }))}
+                  />
+                </label>
+                <label>
+                  Telefon
+                  <input
+                    value={account.phone}
+                    onChange={(event) => setAccount((current) => ({ ...current, phone: event.target.value }))}
+                  />
+                </label>
+                <label className="settings__full">
+                  E-pošta za prijavu
+                  <input
+                    type="email"
+                    value={account.email}
+                    onChange={(event) => setAccount((current) => ({ ...current, email: event.target.value }))}
+                  />
+                </label>
+                <label className="settings__full">
+                  Ulica
+                  <input
+                    value={form.address}
+                    onChange={(event) => changeBusiness('address', event.target.value)}
+                    placeholder="Ulica i kućni broj"
+                    autoComplete="street-address"
+                  />
+                </label>
+                <label>
+                  Grad
+                  <input
+                    value={form.city}
+                    onChange={(event) => changeBusiness('city', event.target.value)}
+                    placeholder="npr. Zagreb"
+                    autoComplete="address-level2"
+                  />
+                </label>
+                <label className="settings__full">
+                  OIB
+                  <input
+                    value={form.oib}
+                    onChange={(event) => changeBusiness('oib', event.target.value.replace(/\D/g, '').slice(0, 11))}
+                    inputMode="numeric"
+                    maxLength={11}
+                    placeholder="11 znamenki (opcionalno)"
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
+              <p className="settings__fine">
+                OIB nije obavezan sada — trebat će ga kad uključimo plaćanje karticom i izdavanje računa.
+              </p>
+              <div className="settings__actions">
+                <button
+                  className="settings__primary"
+                  type="submit"
+                  disabled={savingAccount || savingBusiness}
+                >
+                  {savingAccount || savingBusiness ? 'Spremamo…' : 'Spremite račun'}
+                </button>
+              </div>
+            </form>
+            <div className="settings__sheet">
+              <UiThemePicker
+                value={uiTheme}
+                onChange={saveUiTheme}
+                disabled={savingTheme || savingAccount}
+              />
             </div>
-            <p className="settings__fine">
-              OIB nije obavezan sada — trebat će ga kad uključimo plaćanje karticom i izdavanje računa.
-            </p>
-            <div className="settings__actions">
-              <button
-                className="settings__primary"
-                type="submit"
-                disabled={savingAccount || savingBusiness}
-              >
-                {savingAccount || savingBusiness ? 'Spremamo…' : 'Spremite račun'}
-              </button>
-            </div>
-          </form>
+          </>
         ) : null}
 
         {tab === 'security' ? (

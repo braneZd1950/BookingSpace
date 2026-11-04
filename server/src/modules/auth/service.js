@@ -29,6 +29,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
 };
 
 export function toPublicUser(user) {
+  const theme = user.uiTheme;
   return {
     id: user._id,
     name: user.name,
@@ -36,6 +37,7 @@ export function toPublicUser(user) {
     phone: user.phone || null,
     role: user.role,
     createdAt: user.createdAt,
+    uiTheme: theme === 'light' || theme === 'dark' ? theme : 'system',
     notificationPrefs: {
       ...DEFAULT_NOTIFICATION_PREFS,
       ...(user.notificationPrefs?.toObject?.() || user.notificationPrefs || {}),
@@ -190,6 +192,7 @@ export async function updateMe(user, input) {
   }
   if (input.name) user.name = input.name;
   if (input.phone !== undefined) user.phone = input.phone || undefined;
+  if (input.uiTheme !== undefined) user.uiTheme = input.uiTheme;
   if (input.notificationPrefs) {
     user.notificationPrefs = {
       ...DEFAULT_NOTIFICATION_PREFS,

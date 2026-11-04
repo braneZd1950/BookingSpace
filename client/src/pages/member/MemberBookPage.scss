@@ -15,9 +15,9 @@
   background:
     linear-gradient(
       155deg,
-      color-mix(in srgb, var(--book-soft) 52%, #fff) 0%,
+      color-mix(in srgb, var(--book-soft) 52%, var(--surface)) 0%,
       var(--book-canvas) 18rem,
-      color-mix(in srgb, var(--book-canvas) 90%, #fff) 100%
+      color-mix(in srgb, var(--book-canvas) 90%, var(--surface)) 100%
     );
 }
 
@@ -109,7 +109,7 @@
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   margin: 0;
-  color: color-mix(in srgb, var(--book-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.18em;
@@ -164,14 +164,14 @@
 .member-book__lead {
   margin: 0;
   max-width: 36ch;
-  color: color-mix(in srgb, var(--book-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 76%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.5;
 }
 
 .member-book__plan {
   margin: 0.25rem 0 0;
-  color: color-mix(in srgb, var(--book-brand) 78%, transparent);
+  color: color-mix(in srgb, var(--book-brand) 78%, var(--bg));
   font-size: 0.78rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -180,7 +180,7 @@
 
 .member-book__kicker {
   margin: 0 0 0.3rem;
-  color: color-mix(in srgb, var(--book-brand) 72%, transparent);
+  color: color-mix(in srgb, var(--book-brand) 72%, var(--bg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -200,7 +200,7 @@
   grid-template-columns: 2rem 1fr;
   gap: 0.7rem;
   align-items: start;
-  color: color-mix(in srgb, var(--book-ink) 72%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 72%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.45;
 }
@@ -231,7 +231,7 @@
 .member-book__section-head p,
 .member-book__gate > p {
   margin: 0.28rem 0 0;
-  color: color-mix(in srgb, var(--book-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 74%, var(--bg));
   font-size: 0.92rem;
   line-height: 1.45;
 }
@@ -296,7 +296,7 @@
 .member-book__policy p {
   margin: 0;
   max-width: 42rem;
-  color: color-mix(in srgb, var(--book-ink) 64%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 64%, var(--bg));
   font-size: 0.94rem;
   line-height: 1.5;
 }
@@ -365,7 +365,7 @@
 }
 
 .member-book__day-name {
-  color: color-mix(in srgb, var(--book-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 64%, var(--bg));
 }
 
 .member-book__days button strong {
@@ -378,7 +378,7 @@
 }
 
 .member-book__day-meta {
-  color: color-mix(in srgb, var(--book-brand) 70%, transparent);
+  color: color-mix(in srgb, var(--book-brand) 70%, var(--bg));
 }
 
 .member-book__days button.is-closed {
@@ -387,7 +387,7 @@
 }
 
 .member-book__days button.is-closed .member-book__day-meta {
-  color: color-mix(in srgb, var(--book-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 45%, var(--bg));
 }
 
 .member-book__days button.is-on {
@@ -407,7 +407,7 @@
 
 .member-book__trainers-label {
   margin: 0;
-  color: color-mix(in srgb, var(--book-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 70%, var(--bg));
   font-size: 0.84rem;
   font-weight: 750;
 }
@@ -426,7 +426,7 @@
   border-bottom: 1.5px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--book-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 76%, var(--bg));
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -503,7 +503,7 @@
 .member-book__slots button:disabled {
   background: transparent;
   border-color: color-mix(in srgb, var(--book-edge) 70%, transparent);
-  color: color-mix(in srgb, var(--book-ink) 42%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 42%, var(--bg));
   cursor: not-allowed;
   opacity: 0.75;
 }
@@ -524,7 +524,7 @@
 
 .member-book__confirm p {
   margin: 0;
-  color: color-mix(in srgb, var(--book-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 70%, var(--bg));
   font-size: 0.92rem;
   font-weight: 550;
 }
@@ -613,7 +613,7 @@
 }
 
 .member-book__list span {
-  color: color-mix(in srgb, var(--book-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 70%, var(--bg));
   font-size: 0.88rem;
   font-weight: 550;
 }
@@ -626,7 +626,7 @@
 }
 
 .member-book__locked {
-  color: color-mix(in srgb, var(--book-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 45%, var(--bg));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -636,7 +636,7 @@
 .member-book__hint,
 .member-book__contact {
   margin: 0;
-  color: color-mix(in srgb, var(--book-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--book-ink) 74%, var(--bg));
   line-height: 1.45;
 }
 
@@ -745,6 +745,84 @@
 
   .member-book__cta {
     width: 100%;
+  }
+}
+
+:root[data-theme='dark'] .member-book {
+  --book-ink: var(--fg);
+  --book-canvas: var(--bg);
+  --book-soft: color-mix(in srgb, var(--book-brand) 26%, var(--surface));
+  color: var(--fg);
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--book-soft) 52%, var(--surface)) 0%,
+      var(--bg) 18rem,
+      var(--bg) 100%
+    );
+}
+
+:root[data-theme='dark'] .member-book :is(h1, h2, h3, strong) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .member-book .member-book__lead,
+:root[data-theme='dark'] .member-book .member-book__plan,
+:root[data-theme='dark'] .member-book .member-book__rail-status,
+:root[data-theme='dark'] .member-book .member-book__policy p,
+:root[data-theme='dark'] .member-book .member-book__section-head p,
+:root[data-theme='dark'] .member-book .member-book__day-name,
+:root[data-theme='dark'] .member-book .member-book__day-meta,
+:root[data-theme='dark'] .member-book .member-book__trainers-label,
+:root[data-theme='dark'] .member-book .member-book__hint,
+:root[data-theme='dark'] .member-book .member-book__confirm p,
+:root[data-theme='dark'] .member-book .member-book__trust span:not(.member-book__trust-num) {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+:root[data-theme='dark'] .member-book .member-book__days button.is-on,
+:root[data-theme='dark'] .member-book .member-book__days button.is-on strong,
+:root[data-theme='dark'] .member-book .member-book__slots button.is-on,
+:root[data-theme='dark'] .member-book .member-book__slots button.is-on strong,
+:root[data-theme='dark'] .member-book .member-book__trainer-list button.is-on,
+:root[data-theme='dark'] .member-book .member-book__trainer-list button.is-on strong,
+:root[data-theme='dark'] .member-book .member-book__cta {
+  color: #fff;
+}
+
+:root[data-theme='dark'] .member-book .member-book__days button.is-on .member-book__day-name,
+:root[data-theme='dark'] .member-book .member-book__days button.is-on .member-book__day-meta {
+  color: color-mix(in srgb, #fff 82%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .member-book {
+    --book-ink: var(--fg);
+    --book-canvas: var(--bg);
+    --book-soft: color-mix(in srgb, var(--book-brand) 26%, var(--surface));
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .member-book :is(h1, h2, h3, strong) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__lead,
+  :root:not([data-theme='light']) .member-book .member-book__plan,
+  :root:not([data-theme='light']) .member-book .member-book__rail-status,
+  :root:not([data-theme='light']) .member-book .member-book__policy p,
+  :root:not([data-theme='light']) .member-book .member-book__section-head p,
+  :root:not([data-theme='light']) .member-book .member-book__day-name,
+  :root:not([data-theme='light']) .member-book .member-book__day-meta,
+  :root:not([data-theme='light']) .member-book .member-book__hint,
+  :root:not([data-theme='light']) .member-book .member-book__confirm p {
+    color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__days button.is-on,
+  :root:not([data-theme='light']) .member-book .member-book__days button.is-on strong,
+  :root:not([data-theme='light']) .member-book .member-book__cta {
+    color: #fff;
   }
 }
 

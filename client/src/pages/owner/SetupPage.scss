@@ -194,6 +194,52 @@
   outline-offset: 2px;
 }
 
+:root[data-theme='dark'] .time__face {
+  background: color-mix(in srgb, var(--site-brand, var(--brand)) 22%, var(--surface));
+  border-color: color-mix(in srgb, var(--site-brand, var(--brand)) 35%, var(--line));
+  color: #f4fbfb;
+}
+
+:root[data-theme='dark'] .time.is-open .time__face,
+:root[data-theme='dark'] .time__face:hover {
+  border-color: color-mix(in srgb, var(--site-brand, var(--brand)) 70%, #fff);
+  color: #fff;
+}
+
+:root[data-theme='dark'] .time__col > span {
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
+}
+
+:root[data-theme='dark'] .time__list button {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .time__list button.is-on {
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .time__face {
+    background: color-mix(in srgb, var(--site-brand, var(--brand)) 22%, var(--surface));
+    border-color: color-mix(in srgb, var(--site-brand, var(--brand)) 35%, var(--line));
+    color: #f4fbfb;
+  }
+
+  :root:not([data-theme='light']) .time.is-open .time__face,
+  :root:not([data-theme='light']) .time__face:hover {
+    border-color: color-mix(in srgb, var(--site-brand, var(--brand)) 70%, #fff);
+    color: #fff;
+  }
+
+  :root:not([data-theme='light']) .time__list button {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .time__list button.is-on {
+    color: #fff;
+  }
+}
+
 .time__panel {
   position: absolute;
   top: calc(100% + 0.4rem);

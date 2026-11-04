@@ -1,15 +1,20 @@
 .download-app {
-  --da-line: #d5dfda;
-  --da-ink: #14241f;
+  --da-line: var(--line);
+  --da-ink: var(--fg);
   position: relative;
   isolation: isolate;
   min-height: min(88vh, 44rem);
   padding: clamp(3.5rem, 10vh, 6rem) 1.4rem 4.5rem;
-  color: var(--fg);
+  color: var(--da-ink);
   background:
     radial-gradient(ellipse 70% 50% at 8% -6%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 58%),
     radial-gradient(ellipse 48% 38% at 96% 8%, color-mix(in srgb, var(--brand) 10%, transparent), transparent 52%),
-    linear-gradient(180deg, #e8f0ec 0%, #eef3f0 42%, var(--bg) 100%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-soft) 55%, var(--bg)) 0%,
+      color-mix(in srgb, var(--brand-soft) 28%, var(--bg)) 42%,
+      var(--bg) 100%
+    );
   overflow: hidden;
 }
 

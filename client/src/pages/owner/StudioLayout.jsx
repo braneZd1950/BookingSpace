@@ -8,6 +8,7 @@ import { useGetMeQuery } from '../../api/authApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useMyTenantsQuery } from '../../api/tenantApi.js';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
+import useResolvedDarkMode from '../../hooks/useResolvedDarkMode.js';
 import { findPalette } from '../../styles/studioPalette.js';
 import { clearSession } from '../../lib/clearSession.js';
 import { resolvePostLoginPath } from '../../lib/resolvePostLoginPath.js';
@@ -20,6 +21,7 @@ import {
   PAYMENTS_UI_ENABLED,
 } from '../../lib/studioFeatures.js';
 import { filterStudioNavLinks, STUDIO_NAV_ALL } from '../../lib/studioNavConfig.js';
+import { paletteSurfaceVars } from '../../lib/uiTheme.js';
 import { studioFromTenant } from './studioSync.js';
 import './StudioLayout.scss';
 
@@ -147,6 +149,7 @@ export default function StudioLayout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+  const darkMode = useResolvedDarkMode();
   const [studio, setStudio] = useState(() => loadStudio());
   const token = localStorage.getItem(TOKEN_KEY);
   const { data: meData, isLoading: meLoading } = useGetMeQuery(undefined, { skip: !token });
@@ -261,20 +264,12 @@ export default function StudioLayout() {
   }
 
   const palette = findPalette(studio.palette);
+  const surfaceVars = paletteSurfaceVars(palette.theme, { dark: darkMode });
 
   return (
     <div
       className="studio-shell"
-      style={{
-        '--site-brand': palette.theme.primaryColor,
-        '--site-on': palette.theme.onPrimary,
-        '--site-soft': palette.theme.secondaryColor,
-        '--site-ink': palette.theme.ink,
-        '--site-radius': palette.theme.borderRadius,
-        background: palette.theme.canvas,
-        color: palette.theme.ink,
-        fontFamily: palette.theme.fontFamily,
-      }}
+      style={surfaceVars}
     >
       <header className="studio-topbar">
         <Link className="studio-nav__brand" to="/stranica" title={studio.name}>

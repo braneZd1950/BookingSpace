@@ -22,7 +22,7 @@
   padding: 0.8rem 0.9rem;
   border: 1px solid color-mix(in srgb, var(--site-brand, var(--brand, #0e6b73)) 18%, var(--line, #dde3e0));
   border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--site-soft, #e8f0ec) 55%, #fff);
+  background: color-mix(in srgb, var(--site-soft, var(--brand-soft, #e8f0ec)) 55%, var(--surface));
 }
 
 .privacy-consent__status.is-on {
@@ -30,14 +30,25 @@
 }
 
 .privacy-consent__status strong {
+  color: var(--fg);
   font-size: 0.95rem;
   font-weight: 800;
 }
 
 .privacy-consent__status span {
-  color: var(--muted, #5c6b66);
+  color: color-mix(in srgb, var(--fg) 62%, var(--bg));
   font-size: 0.84rem;
   font-weight: 600;
+}
+
+:root[data-theme='dark'] .privacy-consent__status span {
+  color: color-mix(in srgb, var(--fg) 82%, var(--bg));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .privacy-consent__status span {
+    color: color-mix(in srgb, var(--fg) 82%, var(--bg));
+  }
 }
 
 .privacy-consent__actions {
@@ -63,9 +74,9 @@
 }
 
 .privacy-consent__withdraw {
-  border: 1px solid color-mix(in srgb, #b42318 35%, var(--line, #dde3e0));
-  background: #fff;
-  color: #b42318;
+  border: 1px solid color-mix(in srgb, var(--full, #b42318) 35%, var(--line, #dde3e0));
+  background: var(--surface);
+  color: var(--full-ink, #b42318);
 }
 
 .privacy-consent__actions a {

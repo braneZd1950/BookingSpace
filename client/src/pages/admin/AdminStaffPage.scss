@@ -111,7 +111,7 @@
 .admin-staff__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--as-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -161,7 +161,7 @@
 }
 
 .admin-staff__metrics span {
-  color: color-mix(in srgb, var(--as-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -211,7 +211,7 @@
 
 .admin-staff__block-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--as-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -234,7 +234,7 @@
 .admin-staff__form label {
   display: grid;
   gap: 0.35rem;
-  color: color-mix(in srgb, var(--as-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 70%, var(--bg));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -367,7 +367,7 @@
 
 .admin-staff__sub {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--as-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 70%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.4;
   word-break: break-word;
@@ -387,7 +387,7 @@
 }
 
 .admin-staff__joined span {
-  color: color-mix(in srgb, var(--as-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -423,7 +423,7 @@
 
 .admin-staff__empty {
   margin: 0.8rem 0 0;
-  color: color-mix(in srgb, var(--as-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--as-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 

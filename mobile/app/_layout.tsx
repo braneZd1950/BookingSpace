@@ -11,9 +11,26 @@ import { AppErrorBoundary } from '../src/components/AppErrorBoundary';
 import { MaintenanceScreen } from '../src/components/StatusScreen';
 import { env } from '../src/config/env';
 import { AuthProvider } from '../src/features/auth/AuthContext';
+import { ThemeProvider, useTheme } from '../src/features/theme/ThemeContext';
 import { appFonts } from '../src/theme/fonts';
 import { paperTheme } from '../src/theme/paperTheme';
 import { tokens } from '../src/theme/tokens';
+
+function ThemedApp() {
+  const { scheme, colors } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [fontsReady] = useFonts(appFonts);
@@ -44,13 +61,9 @@ export default function RootLayout() {
         <PaperProvider theme={paperTheme}>
           <AppErrorBoundary>
             <AuthProvider>
-              <StatusBar style="dark" />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: tokens.bg },
-                }}
-              />
+              <ThemeProvider>
+                <ThemedApp />
+              </ThemeProvider>
             </AuthProvider>
           </AppErrorBoundary>
         </PaperProvider>

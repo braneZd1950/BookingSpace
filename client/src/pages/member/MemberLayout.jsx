@@ -9,9 +9,11 @@ import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
+import useResolvedDarkMode from '../../hooks/useResolvedDarkMode.js';
 import { clearSession } from '../../lib/clearSession.js';
 import { ONLINE_ENABLED } from '../../lib/studioFeatures.js';
 import { buildMemberNavLinks, memberBasePath } from '../../lib/memberNavConfig.js';
+import { paletteSurfaceVars } from '../../lib/uiTheme.js';
 import { paletteFromTenant } from './publicSite.js';
 import './MemberLayout.scss';
 
@@ -89,6 +91,7 @@ export default function MemberLayout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+  const darkMode = useResolvedDarkMode();
   const [session, setSession] = useState(readSession);
   const token = localStorage.getItem(TOKEN_KEY);
   const loggedIn = Boolean(token);
@@ -172,7 +175,7 @@ export default function MemberLayout() {
 
   const base = memberBasePath(slug);
   const palette = paletteFromTenant(tenant);
-  const theme = palette.theme;
+  const surfaceVars = paletteSurfaceVars(palette.theme, { dark: darkMode });
   const path = location.pathname.replace(/\/$/, '') || base;
   /* Home + policy pages already ship the full PlatformFooter. */
   const showLegalStrip = path !== base
@@ -195,15 +198,7 @@ export default function MemberLayout() {
   return (
     <div
       className="member-shell"
-      style={{
-        '--brand': theme.primaryColor,
-        '--on-brand': theme.onPrimary,
-        '--brand-soft': theme.secondaryColor,
-        '--brand-strong': theme.primaryColor,
-        background: theme.canvas,
-        color: theme.ink,
-        fontFamily: theme.fontFamily,
-      }}
+      style={surfaceVars}
     >
       <header className="member-nav">
         <Link className="member-nav__brand" to={base} title={tenant.name}>

@@ -111,7 +111,7 @@
 .platform-billing__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--pb-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -193,7 +193,7 @@
 }
 
 .platform-billing__metrics span {
-  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -243,7 +243,7 @@
 
 .platform-billing__block-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -279,7 +279,7 @@
   border: 1px solid var(--pb-edge);
   border-radius: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--pb-ink) 70%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 70%, var(--bg));
   font: inherit;
   font-size: 0.88rem;
   font-weight: 700;
@@ -374,7 +374,7 @@
 
 .platform-billing__sub {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 70%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.4;
   word-break: break-word;
@@ -398,7 +398,7 @@
 }
 
 .platform-billing__until span {
-  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -428,7 +428,7 @@
 
 .platform-billing__meta dt {
   margin: 0;
-  color: color-mix(in srgb, var(--pb-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -455,7 +455,7 @@
   border: 1px solid var(--pb-edge);
   border-radius: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--pb-ink) 75%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 75%, var(--bg));
   font: inherit;
   font-size: 0.86rem;
   font-weight: 700;
@@ -474,14 +474,14 @@
 
 .platform-billing__note {
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--pb-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 68%, var(--bg));
   font-size: 0.85rem;
   line-height: 1.4;
 }
 
 .platform-billing__empty {
   margin: 0.8rem 0 0;
-  color: color-mix(in srgb, var(--pb-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pb-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 

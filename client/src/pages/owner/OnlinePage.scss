@@ -15,9 +15,8 @@
   background:
     linear-gradient(
       160deg,
-      color-mix(in srgb, var(--online-soft) 48%, #fff) 0%,
-      color-mix(in srgb, var(--bg, #f5f8f8) 92%, #fff) 22rem,
-      #fff 100%
+      color-mix(in srgb, var(--online-soft) 48%, var(--surface)) 0%,
+      color-mix(in srgb, var(--bg) 92%, var(--surface)) 22rem, var(--bg) 100%
     );
 }
 
@@ -113,7 +112,7 @@
 .online-admin__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--online-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -152,7 +151,7 @@
   padding: 0.55rem 0.95rem;
   border: 1px solid color-mix(in srgb, var(--online-accent) 45%, transparent);
   border-radius: 0.2rem;
-  background: color-mix(in srgb, var(--online-accent) 14%, #fff);
+  background: color-mix(in srgb, var(--online-accent) 14%, var(--surface));
   color: color-mix(in srgb, var(--online-ink) 78%, var(--online-accent));
   font-size: 0.78rem;
   font-weight: 800;
@@ -168,27 +167,27 @@
 }
 
 .online-admin__ghost:hover {
-  background: color-mix(in srgb, var(--online-soft) 55%, #fff);
+  background: color-mix(in srgb, var(--online-soft) 55%, var(--surface));
 }
 
 .online-admin__notice {
   margin: 1.15rem 0 0;
   padding: 0.85rem 1rem;
   border-radius: 0.2rem;
-  background: color-mix(in srgb, var(--online-brand) 10%, #fff);
+  background: color-mix(in srgb, var(--online-brand) 10%, var(--surface));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--online-brand) 14%, transparent);
   font-weight: 650;
 }
 
 .online-admin__error {
   margin: 0.85rem 0 0;
-  color: #9b1c1c;
+  color: var(--full-ink);
   font-weight: 700;
 }
 
 .online-admin__hint {
   margin: 1.15rem 0 0;
-  color: color-mix(in srgb, var(--online-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 70%, var(--bg));
   font-weight: 600;
 }
 
@@ -204,8 +203,7 @@
   background:
     linear-gradient(
       165deg,
-      color-mix(in srgb, #fff 92%, var(--online-soft)),
-      #fff 55%
+      color-mix(in srgb, var(--surface) 92%, var(--online-soft)), var(--surface) 55%
     );
   box-shadow: 0 18px 40px color-mix(in srgb, var(--online-ink) 4%, transparent);
   animation: online-admin-channel-in 0.55s ease both;
@@ -230,7 +228,7 @@
 
 .online-admin__kicker {
   margin-bottom: 0.2rem;
-  color: color-mix(in srgb, var(--online-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 64%, var(--bg));
 }
 
 .online-admin__panel-head h2 {
@@ -244,7 +242,7 @@
 .online-admin__panel-head p:last-child {
   margin: 0.4rem 0 0;
   max-width: 36rem;
-  color: color-mix(in srgb, var(--online-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 70%, var(--bg));
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.5;
@@ -269,7 +267,7 @@
 }
 
 .online-admin__meta span {
-  color: color-mix(in srgb, var(--online-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -303,7 +301,7 @@
 }
 
 .online-admin__roadmap span {
-  color: color-mix(in srgb, var(--online-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 68%, var(--bg));
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.45;
@@ -357,7 +355,7 @@
 .online-admin__title-row em {
   padding: 0.2rem 0.5rem;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--online-soft) 70%, #fff);
+  background: color-mix(in srgb, var(--online-soft) 70%, var(--surface));
   color: var(--online-brand);
   font-size: 0.7rem;
   font-style: normal;
@@ -368,7 +366,7 @@
 
 .online-admin__list p {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--online-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 70%, var(--bg));
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -387,22 +385,22 @@
 .online-admin__actions button {
   padding: 0.55rem 0.85rem;
   border: 1px solid var(--online-edge);
-  background: color-mix(in srgb, #fff 80%, var(--online-soft));
+  background: color-mix(in srgb, var(--surface) 80%, var(--online-soft));
   color: var(--online-brand);
 }
 
 .online-admin__actions button:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--online-soft) 55%, #fff);
+  background: color-mix(in srgb, var(--online-soft) 55%, var(--surface));
 }
 
 .online-admin__actions button.is-danger {
-  border-color: color-mix(in srgb, #a82e2e 28%, transparent);
+  border-color: color-mix(in srgb, var(--full) 28%, transparent);
   background: transparent;
-  color: #9b1c1c;
+  color: var(--full-ink);
 }
 
 .online-admin__actions button.is-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, #a82e2e 8%, transparent);
+  background: color-mix(in srgb, var(--full) 8%, transparent);
 }
 
 .online-admin__modal {
@@ -424,7 +422,7 @@
   overflow: auto;
   padding: 1.25rem 1.3rem 1.35rem;
   border-radius: 0.2rem;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 24px 48px color-mix(in srgb, #000 28%, transparent);
   animation: online-admin-channel-in 0.22s ease both;
 }
@@ -446,7 +444,7 @@
 
 .online-admin__form-head p {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--online-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 70%, var(--bg));
   font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.45;
@@ -457,7 +455,7 @@
   height: 2.2rem;
   border: 0;
   border-radius: 0.2rem;
-  background: color-mix(in srgb, var(--online-soft) 70%, #fff);
+  background: color-mix(in srgb, var(--online-soft) 70%, var(--surface));
   color: var(--online-brand);
   font: inherit;
   font-size: 1.35rem;
@@ -485,9 +483,9 @@
 .online-admin__grid textarea {
   width: 100%;
   padding: 0.78rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--online-brand) 16%, #d5dde2);
+  border: 1px solid color-mix(in srgb, var(--online-brand) 16%, var(--line));
   border-radius: 0.2rem;
-  background: color-mix(in srgb, #fff 88%, var(--online-soft));
+  background: color-mix(in srgb, var(--surface) 88%, var(--online-soft));
   color: var(--online-ink);
   font: inherit;
 }
@@ -504,7 +502,7 @@
 }
 
 .online-admin__file-hint {
-  color: color-mix(in srgb, var(--online-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--online-ink) 68%, var(--bg));
   font-size: 0.82rem;
   font-weight: 600;
 }

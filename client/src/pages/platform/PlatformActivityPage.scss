@@ -111,7 +111,7 @@
 .platform-activity__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--pa-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -193,7 +193,7 @@
 }
 
 .platform-activity__metrics span {
-  color: color-mix(in srgb, var(--pa-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -243,7 +243,7 @@
 
 .platform-activity__block-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--pa-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -262,7 +262,7 @@
   border: 1px solid var(--pa-edge);
   border-radius: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--pa-ink) 70%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 70%, var(--bg));
   font: inherit;
   font-size: 0.88rem;
   font-weight: 700;
@@ -339,12 +339,12 @@
 .platform-activity__pill.is-muted {
   border-color: var(--pa-edge);
   background: color-mix(in srgb, var(--pa-soft) 40%, #fff);
-  color: color-mix(in srgb, var(--pa-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 76%, var(--bg));
 }
 
 .platform-activity__sub {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--pa-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 70%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.4;
   word-break: break-word;
@@ -355,7 +355,7 @@
   padding: 0.55rem 0.65rem;
   background: color-mix(in srgb, var(--pa-soft) 35%, #fff);
   border-left: 2px solid color-mix(in srgb, var(--pa-brand) 28%, transparent);
-  color: color-mix(in srgb, var(--pa-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 76%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.4;
   word-break: break-word;
@@ -369,7 +369,7 @@
 }
 
 .platform-activity__when span {
-  color: color-mix(in srgb, var(--pa-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -385,7 +385,7 @@
 
 .platform-activity__empty {
   margin: 0.8rem 0 0;
-  color: color-mix(in srgb, var(--pa-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 

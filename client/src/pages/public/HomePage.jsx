@@ -33,6 +33,13 @@ const calendars = [
   },
 ];
 
+const clocks = [
+  { time: '10:00', label: 'Maja', hour: 10, minute: 0 },
+  { time: '17:30', label: 'Ivan', hour: 17, minute: 30 },
+  { time: '11:00', label: 'Rođendan', hour: 11, minute: 0 },
+  { time: '09:15', label: 'Ana', hour: 9, minute: 15 },
+];
+
 const benefits = [
   {
     title: 'Manje poruka',
@@ -141,6 +148,34 @@ export default function HomePage() {
               <p>{sheet.note}</p>
             </article>
           ))}
+          {clocks.map((clock, index) => {
+            const hourAngle = ((clock.hour % 12) + clock.minute / 60) * 30;
+            const minuteAngle = clock.minute * 6;
+            return (
+              <article key={clock.time + clock.label} className={`home__clock home__clock--${index + 1}`}>
+                <div className="home__clock-face">
+                  <span className="home__clock-tick home__clock-tick--12" />
+                  <span className="home__clock-tick home__clock-tick--3" />
+                  <span className="home__clock-tick home__clock-tick--6" />
+                  <span className="home__clock-tick home__clock-tick--9" />
+                  <span
+                    className="home__clock-hand home__clock-hand--hour"
+                    style={{ '--hand': `${hourAngle}deg` }}
+                  />
+                  <span
+                    className="home__clock-hand home__clock-hand--minute"
+                    style={{ '--hand': `${minuteAngle}deg` }}
+                  />
+                  <span className="home__clock-center" />
+                </div>
+                <p>
+                  <strong>{clock.time}</strong>
+                  {' · '}
+                  {clock.label}
+                </p>
+              </article>
+            );
+          })}
         </div>
         <div className="home__hero-copy">
           <p className="home__brand" id="home-brand">anyminutes</p>

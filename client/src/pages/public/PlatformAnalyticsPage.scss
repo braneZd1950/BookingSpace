@@ -111,7 +111,7 @@
 .platform-overview__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--po-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -170,7 +170,7 @@
 }
 
 .platform-overview__metrics span {
-  color: color-mix(in srgb, var(--po-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 64%, var(--bg));
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -214,7 +214,7 @@
 
 .platform-overview__block-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--po-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -235,7 +235,7 @@
 }
 
 .platform-overview__actions span {
-  color: color-mix(in srgb, var(--po-ink) 50%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 50%, var(--bg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -282,7 +282,7 @@
 }
 
 .platform-overview__day-label span {
-  color: color-mix(in srgb, var(--po-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 45%, var(--bg));
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
 }
@@ -317,7 +317,7 @@
 }
 
 .platform-overview__day-views span {
-  color: color-mix(in srgb, var(--po-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 64%, var(--bg));
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -341,7 +341,7 @@
 
 .platform-overview__day-meta dt {
   margin: 0;
-  color: color-mix(in srgb, var(--po-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -393,7 +393,7 @@
 
 .platform-overview__empty {
   margin: 0.4rem 0 0;
-  color: color-mix(in srgb, var(--po-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--po-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 

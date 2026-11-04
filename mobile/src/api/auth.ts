@@ -21,6 +21,8 @@ export type PrivacyConsent = {
   isCurrent?: boolean;
 };
 
+export type UiTheme = 'system' | 'light' | 'dark';
+
 export type AuthUser = {
   id: string;
   email: string;
@@ -28,6 +30,7 @@ export type AuthUser = {
   phone?: string;
   role?: string;
   platformAdmin?: boolean;
+  uiTheme?: UiTheme;
   notificationPrefs?: NotificationPrefs;
   privacyConsent?: PrivacyConsent;
 };

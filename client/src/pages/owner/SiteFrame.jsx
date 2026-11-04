@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import PlatformFooter from '../../components/PlatformFooter.jsx';
+import useResolvedDarkMode from '../../hooks/useResolvedDarkMode.js';
 import { mediaUrl } from '../../lib/studio.js';
+import { paletteSurfaceVars } from '../../lib/uiTheme.js';
 import { hourRows } from './studioTime.js';
 import './SiteFrame.scss';
 
@@ -198,16 +200,9 @@ export default function SiteFrame({
   withBar = true,
 }) {
   const theme = palette.theme;
+  const darkMode = useResolvedDarkMode();
   const frame = ['banner', 'bar', 'sidebar'].includes(layout) ? layout : 'banner';
-  const style = {
-    background: theme.canvas,
-    color: theme.ink,
-    fontFamily: theme.fontFamily,
-    '--site-brand': theme.primaryColor,
-    '--site-on': theme.onPrimary,
-    '--site-soft': theme.secondaryColor,
-    '--site-radius': theme.borderRadius,
-  };
+  const style = paletteSurfaceVars(theme, { dark: darkMode });
   const logo = logoSrc ? <img className="site__logo" src={logoSrc} alt="" /> : null;
   const canBook = sections.schedule || sections.services;
   const book = canBook ? <BookControl bookTo={bookTo} /> : null;
@@ -219,12 +214,18 @@ export default function SiteFrame({
   if (!withBar) {
     return (
       <article className="site site--live" style={style}>
+        <div className="site__atmosphere" aria-hidden="true">
+          <span className="site__orb site__orb--a" />
+          <span className="site__orb site__orb--b" />
+          <span className="site__grain" />
+        </div>
         <header
           className="site__hero site__hero--photo"
           style={{ backgroundImage: heroBackground }}
         >
           <div className="site__hero-copy">
             {logo}
+            <p className="site__kicker">Studio</p>
             <h2>{name}</h2>
             {description ? <p>{description}</p> : null}
             {book}

@@ -51,7 +51,7 @@
 }
 
 .archive-export__hint {
-  color: color-mix(in srgb, var(--fg, #112b2e) 48%, transparent);
+  color: color-mix(in srgb, var(--fg, #112b2e) 64%, var(--bg));
 }
 
 .archive-export__error {

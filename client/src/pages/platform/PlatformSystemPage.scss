@@ -111,7 +111,7 @@
 .platform-system__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--ps-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--ps-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -152,7 +152,7 @@
   border: 1px solid var(--ps-edge);
   border-radius: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--ps-ink) 75%, transparent);
+  color: color-mix(in srgb, var(--ps-ink) 75%, var(--bg));
   font: inherit;
   font-size: 0.88rem;
   font-weight: 700;
@@ -236,7 +236,7 @@
 
 .platform-system__metrics span,
 .platform-system__inventory span {
-  color: color-mix(in srgb, var(--ps-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--ps-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -315,7 +315,7 @@
 
 .platform-system__block-head p:last-child {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--ps-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--ps-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -353,7 +353,7 @@
   padding: 0.55rem 0.65rem;
   background: color-mix(in srgb, var(--ps-soft) 35%, #fff);
   border-left: 2px solid color-mix(in srgb, var(--ps-brand) 28%, transparent);
-  color: color-mix(in srgb, var(--ps-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--ps-ink) 76%, var(--bg));
   font-size: 0.92rem;
   line-height: 1.45;
   word-break: break-word;

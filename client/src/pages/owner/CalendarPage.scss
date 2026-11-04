@@ -15,9 +15,8 @@
   background:
     linear-gradient(
       160deg,
-      color-mix(in srgb, var(--cal-soft) 48%, #fff) 0%,
-      color-mix(in srgb, var(--bg, #f5f8f8) 92%, #fff) 22rem,
-      #fff 100%
+      color-mix(in srgb, var(--cal-soft) 48%, var(--surface)) 0%,
+      color-mix(in srgb, var(--bg) 92%, var(--surface)) 22rem, var(--bg) 100%
     );
 }
 
@@ -112,7 +111,7 @@
 .cal__lede {
   max-width: 36rem;
   margin: 0.65rem 0 0;
-  color: color-mix(in srgb, var(--cal-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 74%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.55;
 }
@@ -132,7 +131,7 @@
   padding: 0.55rem 0.85rem;
   border: 1px solid var(--cal-edge);
   border-radius: 0.2rem;
-  background: color-mix(in srgb, #fff 85%, var(--cal-soft));
+  background: color-mix(in srgb, var(--surface) 85%, var(--cal-soft));
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -151,7 +150,7 @@
   padding: 0.25rem;
   border: 1px solid var(--cal-edge);
   border-radius: 0.2rem;
-  background: color-mix(in srgb, #fff 88%, var(--cal-soft));
+  background: color-mix(in srgb, var(--surface) 88%, var(--cal-soft));
 }
 
 .cal__month-nav strong {
@@ -170,7 +169,7 @@
   height: 2.2rem;
   border: 0;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--cal-soft) 65%, #fff);
+  background: color-mix(in srgb, var(--cal-soft) 65%, var(--surface));
   color: var(--cal-brand);
   font: inherit;
   font-size: 1.25rem;
@@ -187,7 +186,7 @@
 
 .cal__hint {
   margin: 1.15rem 0 0;
-  color: color-mix(in srgb, var(--cal-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 70%, var(--bg));
   font-weight: 600;
   line-height: 1.5;
 }
@@ -209,8 +208,7 @@
   background:
     linear-gradient(
       165deg,
-      color-mix(in srgb, #fff 92%, var(--cal-soft)),
-      #fff 55%
+      color-mix(in srgb, var(--surface) 92%, var(--cal-soft)), var(--surface) 55%
     );
   box-shadow: 0 18px 40px color-mix(in srgb, var(--cal-ink) 4%, transparent);
   animation: cal-channel-in 0.55s ease both;
@@ -239,7 +237,7 @@
 
 .cal__kicker {
   margin-bottom: 0.2rem;
-  color: color-mix(in srgb, var(--cal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 64%, var(--bg));
 }
 
 .cal__panel-head h2 {
@@ -253,7 +251,7 @@
 .cal__panel-head p:last-child {
   margin: 0.35rem 0 0;
   max-width: 36rem;
-  color: color-mix(in srgb, var(--cal-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 70%, var(--bg));
   font-size: 0.94rem;
   font-weight: 600;
   line-height: 1.45;
@@ -278,7 +276,7 @@
 }
 
 .cal__meta span {
-  color: color-mix(in srgb, var(--cal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 64%, var(--bg));
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -321,30 +319,30 @@
 }
 
 .cal__legend-item em {
-  color: color-mix(in srgb, var(--cal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 64%, var(--bg));
   font-size: 0.74rem;
   font-style: normal;
   font-weight: 600;
 }
 
 .cal__legend-item.is-free .cal__legend-swatch {
-  background: #edf3f0;
+  background: color-mix(in srgb, var(--ok-soft) 70%, var(--surface));
 }
 
 .cal__legend-item.is-low .cal__legend-swatch {
-  background: #b7dcc8;
+  background: var(--ok-soft);
 }
 
 .cal__legend-item.is-mid .cal__legend-swatch {
-  background: #f0d18a;
+  background: var(--low-soft);
 }
 
 .cal__legend-item.is-high .cal__legend-swatch {
-  background: #efb38a;
+  background: color-mix(in srgb, var(--full-soft) 55%, var(--low-soft));
 }
 
 .cal__legend-item.is-max .cal__legend-swatch {
-  background: #e18d8d;
+  background: var(--full-soft);
 }
 
 .cal__grid {
@@ -357,7 +355,7 @@
 
 .cal__weekday {
   padding: 0.75rem 0 0.45rem;
-  color: color-mix(in srgb, var(--cal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -376,7 +374,7 @@
   padding: 0.65rem 0.7rem 0.55rem;
   border: 1px solid transparent;
   border-radius: 0.15rem;
-  background: #fff;
+  background: var(--surface);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -397,70 +395,70 @@
 }
 
 .cal__cell.is-load-closed {
-  background: #e8ebef;
-  color: #66707a;
+  background: color-mix(in srgb, var(--muted) 14%, var(--surface));
+  color: var(--muted);
   opacity: 0.88;
 }
 
 .cal__cell.is-load-free {
-  background: #edf3f0;
+  background: color-mix(in srgb, var(--ok-soft) 70%, var(--surface));
 }
 
 .cal__cell.is-load-low {
-  background: #cfe8d9;
+  background: var(--ok-soft);
 }
 
 .cal__cell.is-load-mid {
-  background: #f6dfa0;
+  background: var(--low-soft);
 }
 
 .cal__cell.is-load-high {
-  background: #f2c09a;
+  background: color-mix(in srgb, var(--full-soft) 55%, var(--low-soft));
 }
 
 .cal__cell.is-load-max {
-  background: #e99a9a;
+  background: var(--full-soft);
 }
 
 .cal__cell.is-load-low .cal__day,
 .cal__cell.is-load-low .cal__hint-label {
-  color: #1f5c3d;
+  color: var(--ok-ink);
 }
 
 .cal__cell.is-load-mid .cal__day,
 .cal__cell.is-load-mid .cal__hint-label {
-  color: #7a4f08;
+  color: var(--low-ink);
 }
 
 .cal__cell.is-load-high .cal__day,
 .cal__cell.is-load-high .cal__hint-label {
-  color: #8a3d12;
+  color: color-mix(in srgb, var(--full-ink) 55%, var(--low-ink));
 }
 
 .cal__cell.is-load-max .cal__day,
 .cal__cell.is-load-max .cal__hint-label {
-  color: #8a1f1f;
+  color: var(--full-ink);
   font-weight: 800;
 }
 
 .cal__cell.is-load-low .cal__count {
-  background: #1f5c3d;
-  color: #fff;
+  background: var(--ok);
+  color: var(--on-brand, #fff);
 }
 
 .cal__cell.is-load-mid .cal__count {
-  background: #8a5a12;
-  color: #fff;
+  background: var(--low);
+  color: var(--on-brand, #fff);
 }
 
 .cal__cell.is-load-high .cal__count {
-  background: #a84a1f;
-  color: #fff;
+  background: color-mix(in srgb, var(--full) 55%, var(--low));
+  color: var(--on-brand, #fff);
 }
 
 .cal__cell.is-load-max .cal__count {
-  background: #a82e2e;
-  color: #fff;
+  background: var(--full);
+  color: var(--on-brand, #fff);
 }
 
 .cal__cell.is-today {
@@ -482,7 +480,7 @@
 }
 
 .cal__hint-label {
-  color: color-mix(in srgb, var(--cal-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 68%, var(--bg));
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -496,7 +494,7 @@
   min-width: 1.35rem;
   padding: 0.12rem 0.35rem;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--cal-brand) 14%, #fff);
+  background: color-mix(in srgb, var(--cal-brand) 14%, var(--surface));
   color: var(--cal-brand);
   font-size: 0.72rem;
   font-weight: 800;
@@ -520,7 +518,7 @@
   max-height: min(40rem, calc(100vh - 2.4rem));
   overflow: auto;
   border-radius: 0.2rem;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 24px 48px color-mix(in srgb, #000 28%, transparent);
   animation: cal-modal-in 0.18s ease;
 }
@@ -556,7 +554,7 @@
 
 .cal-modal__head p {
   margin: 0.3rem 0 0;
-  color: color-mix(in srgb, var(--cal-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 70%, var(--bg));
   font-size: 0.92rem;
   font-weight: 600;
 }
@@ -568,7 +566,7 @@
   height: 2.2rem;
   border: 0;
   border-radius: 0.2rem;
-  background: color-mix(in srgb, var(--cal-soft) 70%, #fff);
+  background: color-mix(in srgb, var(--cal-soft) 70%, var(--surface));
   color: inherit;
   font: inherit;
   font-size: 1.4rem;
@@ -584,7 +582,7 @@
 .cal-modal__empty {
   margin: 0;
   padding: 1.2rem 1.25rem;
-  color: color-mix(in srgb, var(--cal-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 70%, var(--bg));
   line-height: 1.45;
 }
 
@@ -602,11 +600,11 @@
   padding: 0.85rem 0.9rem 0.95rem;
   border: 1px solid var(--cal-edge);
   border-radius: 0.15rem;
-  background: color-mix(in srgb, var(--cal-soft) 35%, #fff);
+  background: color-mix(in srgb, var(--cal-soft) 35%, var(--surface));
 }
 
 .cal-modal__list > li.is-group-full {
-  background: color-mix(in srgb, var(--cal-brand) 10%, #fff);
+  background: color-mix(in srgb, var(--cal-brand) 10%, var(--surface));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cal-brand) 22%, transparent);
 }
 
@@ -635,7 +633,7 @@
 }
 
 .cal-modal__cap {
-  color: color-mix(in srgb, var(--cal-ink) 52%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 68%, var(--bg));
   font-size: 0.82rem;
   font-weight: 750;
 }
@@ -660,7 +658,7 @@
   justify-content: space-between;
   padding: 0.45rem 0.55rem;
   border-radius: 0.15rem;
-  background: color-mix(in srgb, #fff 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
 }
 
 .cal-modal__people strong {
@@ -669,7 +667,7 @@
 }
 
 .cal-modal__people span {
-  color: color-mix(in srgb, var(--cal-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--cal-ink) 64%, var(--bg));
   font-size: 0.78rem;
   font-weight: 650;
 }

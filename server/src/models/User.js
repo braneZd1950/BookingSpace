@@ -61,6 +61,12 @@ const userSchema = new Schema(
       memberPush: { type: Boolean, default: true },
       reminderPush: { type: Boolean, default: false },
     },
+    /** App chrome: follow OS, or force light / dark. */
+    uiTheme: {
+      type: String,
+      enum: ['system', 'light', 'dark'],
+      default: 'system',
+    },
     /** Privola za obradu podataka potrebnu za račun, rezervacije i članstvo. */
     privacyConsent: {
       accepted: { type: Boolean, default: false },

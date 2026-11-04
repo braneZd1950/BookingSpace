@@ -15,9 +15,9 @@
   background:
     linear-gradient(
       160deg,
-      color-mix(in srgb, var(--policy-soft) 55%, #fff) 0%,
+      color-mix(in srgb, var(--policy-soft) 55%, var(--surface)) 0%,
       var(--policy-canvas) 18rem,
-      color-mix(in srgb, var(--policy-canvas) 88%, #fff) 100%
+      color-mix(in srgb, var(--policy-canvas) 88%, var(--surface)) 100%
     );
 }
 
@@ -84,7 +84,7 @@
 
 .studio-policy__rail-label {
   margin: 0 0 1rem;
-  color: color-mix(in srgb, var(--policy-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 64%, var(--bg));
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.18em;
@@ -104,7 +104,7 @@
   padding: 0.55rem 0.35rem 0.55rem 0;
   border: 0;
   border-bottom: 1px solid transparent;
-  color: color-mix(in srgb, var(--policy-ink) 58%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 74%, var(--bg));
   font-size: 0.92rem;
   font-weight: 650;
   text-decoration: none;
@@ -168,7 +168,7 @@
 
 .studio-policy__kicker {
   margin: 0.35rem 0 0;
-  color: color-mix(in srgb, var(--policy-brand) 72%, transparent);
+  color: color-mix(in srgb, var(--policy-brand) 72%, var(--bg));
   font-size: 0.74rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -189,7 +189,7 @@
 .studio-policy__lead {
   margin: 0.15rem 0 0;
   max-width: 32ch;
-  color: color-mix(in srgb, var(--policy-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 76%, var(--bg));
   font-size: 1.02rem;
   line-height: 1.5;
 }
@@ -201,7 +201,7 @@
 
 .studio-policy__source {
   margin: 0;
-  color: color-mix(in srgb, var(--policy-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 64%, var(--bg));
   font-size: 0.78rem;
   font-weight: 650;
   letter-spacing: 0.04em;
@@ -244,7 +244,7 @@
 
 .studio-policy__body p {
   margin: 0;
-  color: color-mix(in srgb, var(--policy-ink) 78%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 78%, var(--bg));
   font-size: 0.98rem;
   line-height: 1.62;
 }
@@ -254,6 +254,13 @@
   padding: 1.2rem 0 0;
   border-top: 1px solid var(--policy-edge);
   animation: studio-policy-rise 0.85s 0.12s ease both;
+}
+
+.studio-policy__theme-note {
+  margin: 0.75rem 0 0;
+  color: var(--ok-ink, #14663f);
+  font-size: 0.9rem;
+  font-weight: 650;
 }
 
 .studio-policy__consent .privacy-consent {
@@ -270,7 +277,7 @@
 
 .studio-policy__consent .privacy-consent > p {
   max-width: 36rem;
-  color: color-mix(in srgb, var(--policy-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 76%, var(--bg));
   font-weight: 500;
 }
 
@@ -295,7 +302,7 @@
 }
 
 .studio-policy__consent .privacy-consent__status span {
-  color: color-mix(in srgb, var(--policy-ink) 55%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 70%, var(--bg));
   font-weight: 500;
 }
 
@@ -326,7 +333,7 @@
   gap: 0.55rem 0.75rem;
   align-items: center;
   margin: 0;
-  color: color-mix(in srgb, var(--policy-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 45%, var(--bg));
   font-size: 0.9rem;
 }
 
@@ -346,7 +353,7 @@
 
 .studio-policy__owner-note {
   margin: 0;
-  color: color-mix(in srgb, var(--policy-ink) 62%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 76%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.45;
 }
@@ -389,7 +396,7 @@
   margin: 0;
   padding: 0.65rem 0 0.65rem 0.85rem;
   border-left: 0.2rem solid var(--policy-accent);
-  color: color-mix(in srgb, var(--policy-ink) 72%, transparent);
+  color: color-mix(in srgb, var(--policy-ink) 72%, var(--bg));
   font-size: 0.92rem;
   font-weight: 650;
 }
@@ -441,13 +448,14 @@
   width: min(28rem, 100%);
   padding: 1.25rem 1.3rem 1.35rem;
   border-radius: 0.35rem;
-  background: #fff;
-  color: #132824;
+  background: var(--surface);
+  color: var(--fg);
   box-shadow: 0 24px 48px color-mix(in srgb, #000 28%, transparent);
 }
 
 .studio-policy__modal-panel h2 {
   margin: 0;
+  color: var(--fg);
   font-family: Fraunces, 'Source Serif 4', Georgia, serif;
   font-size: 1.25rem;
   font-weight: 650;
@@ -456,7 +464,7 @@
 
 .studio-policy__modal-panel p {
   margin: 0;
-  color: rgb(19 40 36 / 68%);
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -541,6 +549,43 @@
     gap: 0.2rem;
     padding: 0.35rem 0.15rem 0.55rem;
     text-align: left;
+  }
+}
+
+:root[data-theme='dark'] .studio-policy {
+  --policy-ink: var(--fg);
+  --policy-canvas: var(--bg);
+  --policy-soft: color-mix(in srgb, var(--policy-brand) 26%, var(--surface));
+  color: var(--fg);
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--policy-soft) 55%, var(--surface)) 0%,
+      var(--bg) 18rem,
+      var(--bg) 100%
+    );
+}
+
+:root[data-theme='dark'] .studio-policy :is(h1, h2, h3) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-policy p,
+:root[data-theme='dark'] .studio-policy .studio-policy__lead,
+:root[data-theme='dark'] .studio-policy li {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .studio-policy {
+    --policy-ink: var(--fg);
+    --policy-canvas: var(--bg);
+    --policy-soft: color-mix(in srgb, var(--policy-brand) 26%, var(--surface));
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-policy :is(h1, h2, h3) {
+    color: var(--fg);
   }
 }
 

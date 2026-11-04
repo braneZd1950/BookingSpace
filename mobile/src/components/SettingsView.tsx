@@ -22,6 +22,8 @@ import { updateSite, updateTenant } from '../api/tenants';
 import { usePrivacyConsent } from '../features/consent/usePrivacyConsent';
 import { useAuth } from '../features/auth/AuthContext';
 import { useStudio } from '../features/studio/StudioContext';
+import { useTheme } from '../features/theme/ThemeContext';
+import type { UiTheme } from '../lib/uiTheme';
 import type { DayHours, StudioHours } from '../features/studio/studioMap';
 import { generateAllStudioLegal } from '../lib/studioLegal';
 import { getItem, setItem } from '../lib/storage';
@@ -152,9 +154,11 @@ export function SettingsView() {
     busy: consentBusy,
   } = usePrivacyConsent();
   const { studio, ready: studioReady, refresh } = useStudio();
-  const brand = studio?.theme.primaryColor || tokens.brand;
-  const soft = studio?.theme.secondaryColor || tokens.brandSoft;
-  const ink = studio?.theme.ink || tokens.fg;
+  const { uiTheme, setUiTheme, colors } = useTheme();
+  const [savingTheme, setSavingTheme] = useState(false);
+  const brand = studio?.theme.primaryColor || colors.brand;
+  const soft = studio?.theme.secondaryColor || colors.brandSoft;
+  const ink = studio?.theme.ink || colors.fg;
   const styles = useMemo(() => makeSettingsStyles(brand, soft, ink), [brand, soft, ink]);
 
   const tenantId = String(studio?.id || '');
@@ -212,6 +216,25 @@ export function SettingsView() {
   const note = useCallback((type: 'ok' | 'err', text: string) => {
     setFlash({ type, text });
   }, []);
+
+  async function saveUiTheme(next: UiTheme) {
+    setSavingTheme(true);
+    try {
+      await setUiTheme(next);
+      note(
+        'ok',
+        next === 'dark'
+          ? 'Tamna tema je spremljena na račun.'
+          : next === 'light'
+            ? 'Svijetla tema je spremljena na račun.'
+            : 'Tema prati postavke uređaja.',
+      );
+    } catch {
+      note('err', 'Tema nije spremljena.');
+    } finally {
+      setSavingTheme(false);
+    }
+  }
 
   useEffect(() => {
     if (!studio) return;
@@ -791,6 +814,34 @@ export function SettingsView() {
                   {savingAccount ? 'Spremamo…' : 'Spremite račun'}
                 </Text>
               </Pressable>
+            </View>
+
+            <Text style={[styles.sheetTitle, { marginTop: 18 }]}>Tema sučelja</Text>
+            <Text style={styles.sheetLead}>
+              Odaberite svijetlu ili tamnu temu — vrijedi za vaš račun.
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+              {([
+                { value: 'system' as const, label: 'Sustav' },
+                { value: 'light' as const, label: 'Svijetla' },
+                { value: 'dark' as const, label: 'Tamna' },
+              ]).map((option) => {
+                const on = uiTheme === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    disabled={savingTheme}
+                    onPress={() => void saveUiTheme(option.value)}
+                    style={[
+                      styles.tab,
+                      on && styles.tabOn,
+                      { minWidth: 96, alignItems: 'center' },
+                    ]}
+                  >
+                    <Text style={[styles.tabLabel, on && styles.tabLabelOn]}>{option.label}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         ) : null}
