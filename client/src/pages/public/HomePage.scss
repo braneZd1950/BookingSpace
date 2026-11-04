@@ -4,6 +4,8 @@
   --home-deep: #14241f;
   --home-panel: #f3f6f4;
   --home-line: #d5dfda;
+  max-width: 100%;
+  overflow-x: hidden;
   color: var(--fg);
   background:
     linear-gradient(180deg, #eef3f0 0%, var(--bg) 28rem);
@@ -15,8 +17,10 @@
   align-content: end;
   gap: 2.2rem;
   min-height: min(72vh, 36rem);
+  max-width: 100%;
   padding: clamp(4.5rem, 9vh, 6rem) 0 0;
   overflow: hidden;
+  isolation: isolate;
   color: var(--home-ink);
   background:
     radial-gradient(ellipse 70% 55% at 12% -8%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 55%),
@@ -618,19 +622,54 @@
 }
 
 @media (max-width: 48rem) {
+  .home__cal--2,
   .home__cal--3,
   .home__cal--4 {
     display: none;
   }
 
-  .home__cal--1,
-  .home__cal--2 {
-    opacity: 0.45;
+  .home__cal--1 {
+    left: auto;
+    right: 1.25rem;
+    width: 6.6rem;
+    opacity: 0.34;
+  }
+
+  .home__calendars {
+    inset: 0;
+    clip-path: inset(0);
+  }
+
+  .home__hero-copy,
+  .home__block,
+  .home__block--wide,
+  .home__split,
+  .home__close {
+    max-width: 100%;
+  }
+
+  .home__hero-copy {
+    width: min(26.5rem, calc(100% - 2rem));
+    margin-inline: 1rem;
+  }
+
+  .home__actions {
+    width: 100%;
+  }
+
+  .home__cta {
+    max-width: 100%;
   }
 
   .home__split {
     grid-template-columns: 1fr;
     gap: 2.4rem;
+  }
+}
+
+@media (max-width: 22rem) {
+  .home__calendars {
+    display: none;
   }
 }
 

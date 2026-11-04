@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-/** Exact icons from `client/.../StudioLayout.jsx` (18×18 stroke). */
+/** Exact icons from `client/.../StudioLayout.jsx` (16×16 on mobile header). */
 type IconProps = { color: string };
 
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
+    <Svg width={16} height={16} viewBox="0 0 24 24">
       {children}
     </Svg>
   );

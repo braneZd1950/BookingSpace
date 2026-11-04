@@ -1,8 +1,11 @@
 import type { ComponentType } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { usePathname, useRouter, type Href } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../features/auth/AuthContext';
+import {
+  buildMemberNavLinks,
+  memberBaseHref,
+} from '../features/nav/memberNavConfig';
 import { tokens } from '../theme/tokens';
 import { memberNavStyles as s } from '../ui/memberNavStyles';
 import {
@@ -22,56 +25,31 @@ type Props = {
   soft?: string;
 };
 
-type LinkItem = {
-  href: string;
-  match: (path: string) => boolean;
-  label: string;
-  Icon: NavIcon;
+const ICONS: Record<string, NavIcon> = {
+  home: IconHome,
+  slots: IconSlots,
+  discover: IconDiscover,
+  privacy: IconPrivacy,
 };
 
-function memberLinks(slug: string): LinkItem[] {
-  const base = `/(member)/${slug}`;
-  return [
-    {
-      href: base,
-      match: (p) =>
-        (p === base || p === `${base}/` || p.endsWith(`/${slug}`))
-        && !/(termini|otkrij|privatnost)/.test(p),
-      label: 'Početna',
-      Icon: IconHome,
-    },
-    {
-      href: `${base}/termini`,
-      match: (p) => /termini/.test(p),
-      label: 'Termini',
-      Icon: IconSlots,
-    },
-    {
-      href: `${base}/otkrij`,
-      match: (p) => /otkrij/.test(p),
-      label: 'Otkrij',
-      Icon: IconDiscover,
-    },
-    {
-      href: `${base}/privatnost`,
-      match: (p) => /privatnost/.test(p),
-      label: 'Privatnost',
-      Icon: IconPrivacy,
-    },
-  ];
-}
-
-/** Top brand strip — studio name only. */
-export function MemberTopBar({
+/**
+ * Single top bar — same layout as owner StudioNav / web member header:
+ * studio name left, icons + logout right.
+ */
+export function MemberNav({
   slug,
   studioName,
   brand = tokens.brand,
-}: Pick<Props, 'slug' | 'studioName' | 'brand'>) {
+  soft = tokens.brandSoft,
+}: Props) {
   const router = useRouter();
-  const base = `/(member)/${slug}`;
+  const pathname = usePathname();
+  const { logout } = useAuth();
+  const base = memberBaseHref(slug);
+  const links = buildMemberNavLinks(slug);
 
   return (
-    <View style={[s.top, { backgroundColor: brand }]} accessibilityRole="header">
+    <View style={[s.bar, { backgroundColor: brand }]} accessibilityRole="header">
       <Pressable
         style={s.brand}
         onPress={() => router.push(base as Href)}
@@ -82,75 +60,44 @@ export function MemberTopBar({
           {studioName}
         </Text>
       </Pressable>
-    </View>
-  );
-}
 
-/**
- * Bottom tab bar — same destinations as web `nav[aria-label=Član]`:
- * Početna · Termini · Otkrij · Privatnost · Odjava
- */
-export function MemberBottomNav({
-  slug,
-  brand = tokens.brand,
-  soft = tokens.brandSoft,
-}: Omit<Props, 'studioName'>) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { logout } = useAuth();
-  const insets = useSafeAreaInsets();
-  const links = memberLinks(slug);
-
-  return (
-    <View
-      style={[
-        s.bottom,
-        {
-          borderTopColor: `${brand}29`,
-          paddingBottom: Math.max(insets.bottom, 8),
-        },
-      ]}
-      accessibilityRole="navigation"
-      accessibilityLabel="Član"
-    >
-      <View style={s.tabs}>
+      <View style={s.items} accessibilityRole="navigation" accessibilityLabel="Član">
         {links.map((link) => {
           const active = link.match(pathname);
-          const color = active ? brand : `${tokens.fg}99`;
-          const Icon = link.Icon;
+          const color = active ? brand : tokens.onBrand;
+          const Icon = ICONS[link.key];
           return (
             <Pressable
-              key={link.href}
+              key={link.key}
               onPress={() => router.push(link.href as Href)}
-              style={[s.tab, active ? { backgroundColor: soft } : null]}
+              style={[s.item, active ? { backgroundColor: soft } : null]}
               accessibilityRole="button"
               accessibilityLabel={link.label}
               accessibilityState={{ selected: active }}
             >
-              <Icon color={color} />
-              <Text style={[s.tabLabel, { color }]}>{link.label}</Text>
+              {Icon ? <Icon color={color} /> : null}
             </Pressable>
           );
         })}
         <Pressable
           onPress={() => void logout()}
-          style={[s.power, { borderColor: `${brand}55` }]}
+          style={s.power}
           accessibilityRole="button"
           accessibilityLabel="Odjava"
         >
-          <IconPower color={brand} />
+          <IconPower color={tokens.onBrand} />
         </Pressable>
       </View>
     </View>
   );
 }
 
-/** @deprecated Prefer MemberTopBar + MemberBottomNav in layout. */
-export function MemberNav(props: Props) {
-  return (
-    <>
-      <MemberTopBar {...props} />
-      <MemberBottomNav {...props} />
-    </>
-  );
+/** @deprecated Use MemberNav */
+export function MemberTopBar(props: Props) {
+  return <MemberNav {...props} />;
+}
+
+/** @deprecated Icons live in MemberNav header now. */
+export function MemberBottomNav(_props: Omit<Props, 'studioName'>) {
+  return null;
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getPublicTenant, type Tenant } from '../../../src/api/tenants';
-import { MemberBottomNav, MemberTopBar } from '../../../src/components/MemberNav';
+import { MemberNav } from '../../../src/components/MemberNav';
 import { studioFromTenant } from '../../../src/features/studio/studioMap';
 import { tokens } from '../../../src/theme/tokens';
 import { memberNavStyles } from '../../../src/ui/memberNavStyles';
@@ -63,19 +63,15 @@ export default function MemberStudioLayout() {
 
   return (
     <SafeAreaView style={memberNavStyles.shell} edges={['top', 'left', 'right']}>
-      <MemberTopBar
+      <MemberNav
         slug={String(slug)}
         studioName={studio.name}
         brand={brand}
+        soft={soft}
       />
       <View style={{ flex: 1 }}>
         <Slot />
       </View>
-      <MemberBottomNav
-        slug={String(slug)}
-        brand={brand}
-        soft={soft}
-      />
     </SafeAreaView>
   );
 }

@@ -19,6 +19,7 @@ import {
   ONLINE_ENABLED,
   PAYMENTS_UI_ENABLED,
 } from '../../lib/studioFeatures.js';
+import { filterStudioNavLinks, STUDIO_NAV_ALL } from '../../lib/studioNavConfig.js';
 import { studioFromTenant } from './studioSync.js';
 import './StudioLayout.scss';
 
@@ -117,18 +118,18 @@ const IconPower = () => strokeIcon(
   </>,
 );
 
-const allLinks = [
-  { to: '/stranica', label: 'Početna', end: true, Icon: IconHome },
-  { to: '/stranica/termini', label: 'Termini', Icon: IconSlots },
-  { to: '/stranica/galerija', label: 'Galerija', Icon: IconGallery, flag: 'gallery' },
-  { to: '/stranica/online', label: 'Online', Icon: IconPlay, flag: 'online' },
-  { to: '/stranica/placanja', label: 'Blagajna', Icon: IconTill, flag: 'payments' },
-  { to: '/stranica/kalendar', label: 'Kalendar', Icon: IconCalendar },
-  { to: '/stranica/clanovi', label: 'Članovi', Icon: IconPeople },
-  { to: '/stranica/analitika', label: 'Analitika', Icon: IconChart },
-  { to: '/stranica/plan', label: 'Plan', Icon: IconPlan, flag: 'plan' },
-  { to: '/stranica/postavke', label: 'Postavke', Icon: IconGear },
-];
+const ICONS = {
+  home: IconHome,
+  slots: IconSlots,
+  gallery: IconGallery,
+  online: IconPlay,
+  payments: IconTill,
+  calendar: IconCalendar,
+  members: IconPeople,
+  analytics: IconChart,
+  plan: IconPlan,
+  settings: IconGear,
+};
 
 const featureOn = {
   gallery: GALLERY_ENABLED,
@@ -137,7 +138,10 @@ const featureOn = {
   plan: LAUNCH_PLAN_ENABLED,
 };
 
-const links = allLinks.filter((item) => !item.flag || featureOn[item.flag]);
+const links = filterStudioNavLinks(STUDIO_NAV_ALL, featureOn).map((item) => ({
+  ...item,
+  Icon: ICONS[item.key],
+}));
 
 export default function StudioLayout() {
   const navigate = useNavigate();
@@ -272,11 +276,11 @@ export default function StudioLayout() {
         fontFamily: palette.theme.fontFamily,
       }}
     >
-      <header className="studio-nav">
+      <header className="studio-topbar">
         <Link className="studio-nav__brand" to="/stranica" title={studio.name}>
           <strong>{studio.name}</strong>
         </Link>
-        <nav aria-label="Studio">
+        <nav className="studio-nav__tabs" aria-label="Studio">
           {links.map(({ to, label, end, Icon }) => (
             <NavLink
               key={to}

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { usePathname, useRouter, type Href } from 'expo-router';
 import { env } from '../config/env';
 import { useAuth } from '../features/auth/AuthContext';
+import { STUDIO_NAV_LINKS } from '../features/nav/studioNavConfig';
 import { useStudio } from '../features/studio/StudioContext';
 import { tokens } from '../theme/tokens';
 import { navStyles as s } from '../ui/navStyles';
@@ -18,56 +19,16 @@ import {
 
 type NavIcon = ComponentType<{ color: string }>;
 
-type NavItem = {
-  href: Href;
-  match: (path: string) => boolean;
-  label: string;
-  Icon: NavIcon;
+const ICONS: Record<string, NavIcon> = {
+  home: IconHome,
+  slots: IconSlots,
+  calendar: IconCalendar,
+  members: IconPeople,
+  analytics: IconChart,
+  settings: IconGear,
 };
 
-/** Same pilot set as web StudioLayout (prep flags off). */
-const LINKS: NavItem[] = [
-  {
-    href: '/(app)',
-    match: (p) =>
-      (p === '/' || p === '' || /\/\(app\)\/?$/.test(p) || /\/index$/.test(p))
-      && !/(termini|studio|kalendar|clanovi|member|analitika|postavke)/.test(p),
-    label: 'Početna',
-    Icon: IconHome,
-  },
-  {
-    href: '/(app)/termini',
-    match: (p) => /termini|studio/.test(p),
-    label: 'Termini',
-    Icon: IconSlots,
-  },
-  {
-    href: '/(app)/kalendar',
-    match: (p) => /kalendar/.test(p),
-    label: 'Kalendar',
-    Icon: IconCalendar,
-  },
-  {
-    href: '/(app)/clanovi',
-    match: (p) => /clanovi|member/.test(p),
-    label: 'Članovi',
-    Icon: IconPeople,
-  },
-  {
-    href: '/(app)/analitika',
-    match: (p) => /analitika/.test(p),
-    label: 'Analitika',
-    Icon: IconChart,
-  },
-  {
-    href: '/(app)/postavke',
-    match: (p) => /postavke/.test(p),
-    label: 'Postavke',
-    Icon: IconGear,
-  },
-];
-
-/** Top bar = web `.studio-nav` with identical SVG icons. */
+/** Top bar = web `.studio-topbar` — brand left, icon tabs right. */
 export function StudioNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -92,20 +53,20 @@ export function StudioNav() {
       </Pressable>
 
       <View style={s.items} accessibilityRole="navigation" accessibilityLabel="Studio">
-        {LINKS.map((link) => {
+        {STUDIO_NAV_LINKS.map((link) => {
           const active = link.match(pathname);
           const color = active ? brand : tokens.onBrand;
-          const Icon = link.Icon;
+          const Icon = ICONS[link.key];
           return (
             <Pressable
-              key={String(link.href)}
-              onPress={() => router.push(link.href)}
+              key={link.key}
+              onPress={() => router.push(link.href as Href)}
               style={[s.item, active ? { backgroundColor: soft } : null]}
               accessibilityRole="button"
               accessibilityLabel={link.label}
               accessibilityState={{ selected: active }}
             >
-              <Icon color={color} />
+              {Icon ? <Icon color={color} /> : null}
             </Pressable>
           );
         })}

@@ -2,28 +2,31 @@ import { StyleSheet } from 'react-native';
 import { font } from '../theme/fonts';
 import { tokens } from '../theme/tokens';
 
-/** Mirror of `client/.../StudioLayout.scss` `.studio-nav*` */
+/** Mirror of `client/.../StudioLayout.scss` `.studio-topbar` / `.studio-nav*` */
 export const navStyles = StyleSheet.create({
   shell: {
     flex: 1,
     backgroundColor: tokens.bg,
   },
 
-  /** .studio-nav */
+  /** .studio-topbar */
   bar: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    gap: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
     backgroundColor: tokens.brand,
   },
 
   /** .studio-nav__brand */
   brand: {
+    flexGrow: 1,
     flexShrink: 1,
-    maxWidth: 160,
+    minWidth: 0,
+    maxWidth: '42%',
   },
   brandText: {
     fontFamily: font.bodyBold,
@@ -31,19 +34,22 @@ export const navStyles = StyleSheet.create({
     color: tokens.onBrand,
   },
 
-  /** .studio-nav nav */
+  /** .studio-nav__tabs */
   items: {
+    flexGrow: 1,
+    flexShrink: 1,
     flexDirection: 'row',
     flexWrap: 'nowrap',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 3,
+    gap: 2,
+    minWidth: 0,
   },
 
-  /** .studio-nav__item — 2.2rem circle */
+  /** .studio-nav__item — mobile ~2rem */
   item: {
-    width: 35,
-    height: 35,
+    width: 32,
+    height: 32,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
@@ -55,9 +61,9 @@ export const navStyles = StyleSheet.create({
 
   /** .studio-nav__power */
   power: {
-    marginLeft: 6,
-    width: 35,
-    height: 35,
+    marginLeft: 3,
+    width: 32,
+    height: 32,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',

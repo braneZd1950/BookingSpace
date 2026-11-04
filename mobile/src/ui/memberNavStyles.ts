@@ -2,63 +2,62 @@ import { StyleSheet } from 'react-native';
 import { font } from '../theme/fonts';
 import { tokens } from '../theme/tokens';
 
-/** Member chrome: slim top brand + bottom icon tab bar. */
+/**
+ * Member chrome — same header pattern as owner StudioNav / web `.member-nav`:
+ * brand left, icon tabs right (no bottom bar).
+ */
 export const memberNavStyles = StyleSheet.create({
   shell: {
     flex: 1,
     backgroundColor: tokens.bg,
   },
-  top: {
+  bar: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    gap: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
   },
   brand: {
+    flexGrow: 1,
     flexShrink: 1,
-    maxWidth: '78%',
+    minWidth: 0,
+    maxWidth: '42%',
   },
   brandText: {
     fontFamily: font.bodyBold,
     fontSize: 16,
     color: tokens.onBrand,
   },
-  bottom: {
-    borderTopWidth: 1,
-    paddingTop: 8,
-    paddingHorizontal: 8,
-    paddingBottom: 8,
-    backgroundColor: '#fff',
-  },
-  tabs: {
+  items: {
+    flexGrow: 1,
+    flexShrink: 1,
     flexDirection: 'row',
+    flexWrap: 'nowrap',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'flex-end',
     gap: 2,
+    minWidth: 0,
   },
-  tab: {
-    flex: 1,
-    minHeight: 48,
+  item: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 3.2,
-    paddingVertical: 8,
-    gap: 3,
-  },
-  tabLabel: {
-    fontFamily: font.bodyBold,
-    fontSize: 10,
-    letterSpacing: 0.2,
+    backgroundColor: 'transparent',
   },
   power: {
-    width: 44,
-    height: 44,
+    marginLeft: 3,
+    width: 32,
+    height: 32,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: `${tokens.brand}47`,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    borderColor: 'rgba(255,255,255,0.38)',
+    backgroundColor: 'rgba(0,0,0,0.14)',
   },
 });
