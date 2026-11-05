@@ -1,9 +1,13 @@
 import './UiThemePicker.scss';
 
 const OPTIONS = [
-  { value: 'system', label: 'Sustav', hint: 'Prati uređaj' },
   { value: 'light', label: 'Svijetla', hint: 'Uvijek svijetlo' },
   { value: 'dark', label: 'Tamna', hint: 'Uvijek tamno' },
+  {
+    value: 'system',
+    label: 'Prema sustavu',
+    hint: 'Prati postavku vašeg telefona ili računala',
+  },
 ];
 
 export default function UiThemePicker({
@@ -15,8 +19,7 @@ export default function UiThemePicker({
     <fieldset className="ui-theme-picker" disabled={disabled}>
       <legend className="ui-theme-picker__legend">Tema sučelja</legend>
       <p className="ui-theme-picker__lead">
-        Odaberite svijetlu ili tamnu temu — vrijedi za sve stranice studija i člana nakon prijave
-        (početna, termini, privatnost…). Javni marketing (landing, prijava) ostaje uvijek svijetao.
+        Odaberite kako želite da aplikacija izgleda.
       </p>
       <div className="ui-theme-picker__options" role="radiogroup" aria-label="Tema sučelja">
         {OPTIONS.map((option) => {

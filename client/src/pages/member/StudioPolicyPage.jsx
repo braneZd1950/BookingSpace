@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
-import { useGetMeQuery, useUpdateMeMutation } from '../../api/authApi.js';
 import { useUpdateSiteMutation } from '../../api/tenantApi.js';
 import PlatformFooter from '../../components/PlatformFooter.jsx';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
-import UiThemePicker from '../../components/UiThemePicker.jsx';
-import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import { generateAllStudioLegal, legalBody, paragraphsFromLegal } from '../owner/studioLegal.js';
 import './StudioPolicyPage.scss';
 
@@ -72,37 +69,11 @@ export default function StudioPolicyPage({ kind = 'privacy' }) {
     && session?.role === 'BUSINESS_OWNER'
     && REAL_ID.test(String(tenant.id || ''));
   const [updateSite, { isLoading: saving }] = useUpdateSiteMutation();
-  const [updateMe, { isLoading: savingTheme }] = useUpdateMeMutation();
-  const { data: meData } = useGetMeQuery(undefined, { skip: !loggedIn });
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => legalBody(tenant, kind));
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [notice, setNotice] = useState('');
-  const [uiTheme, setUiTheme] = useState('system');
-  const [themeNote, setThemeNote] = useState('');
   const [localLegal, setLocalLegal] = useState(() => legalBundle(tenant));
-
-  useEffect(() => {
-    if (!meData?.user) return;
-    setUiTheme(normalizeUiTheme(meData.user.uiTheme));
-  }, [meData?.user]);
-
-  async function saveUiTheme(next) {
-    const value = normalizeUiTheme(next);
-    setUiTheme(value);
-    syncUiTheme(value);
-    setThemeNote('');
-    try {
-      await updateMe({ uiTheme: value }).unwrap();
-      setThemeNote(value === 'dark'
-        ? 'Tamna tema je spremljena i ostaje nakon odjave.'
-        : value === 'light'
-          ? 'Svijetla tema je spremljena i ostaje nakon odjave.'
-          : 'Tema prati postavke uređaja i ostaje zapamćena.');
-    } catch {
-      setThemeNote('Tema nije spremljena na račun — ostaje lokalno na ovom uređaju.');
-    }
-  }
 
   useEffect(() => {
     setLocalLegal(legalBundle(tenant));
@@ -289,19 +260,15 @@ export default function StudioPolicyPage({ kind = 'privacy' }) {
           )}
 
           {kind === 'privacy' && loggedIn && !editing ? (
-            <>
-              <section className="studio-policy__consent" aria-label="Tema sučelja">
-                <UiThemePicker
-                  value={uiTheme}
-                  onChange={saveUiTheme}
-                  disabled={savingTheme}
-                />
-                {themeNote ? <p className="studio-policy__theme-note">{themeNote}</p> : null}
-              </section>
-              <section className="studio-policy__consent" aria-label="Vaša privola">
-                <PrivacyConsentPanel />
-              </section>
-            </>
+            <section className="studio-policy__consent" aria-label="Vaša privola">
+              <PrivacyConsentPanel />
+              <p className="studio-policy__theme-note">
+                Temu sučelja mijenjate u
+                {' '}
+                <Link to={`${base}/postavke`}>postavkama</Link>
+                .
+              </p>
+            </section>
           ) : null}
 
           <p className="studio-policy__back">

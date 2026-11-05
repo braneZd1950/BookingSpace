@@ -38,7 +38,7 @@ test('buildMemberNavLinks includes Otkrij when logged in', () => {
   });
   assert.deepEqual(
     links.map((item) => item.label),
-    ['Početna', 'Termini', 'Otkrij', 'Privatnost'],
+    ['Početna', 'Termini', 'Otkrij', 'Privatnost', 'Postavke'],
   );
   assert.deepEqual(
     links.map((item) => item.to),
@@ -47,6 +47,7 @@ test('buildMemberNavLinks includes Otkrij when logged in', () => {
       '/s/demo-fitness/termini',
       '/s/demo-fitness/otkrij',
       '/s/demo-fitness/privatnost',
+      '/s/demo-fitness/postavke',
     ],
   );
 });
@@ -72,7 +73,7 @@ test('matchMemberNavPath distinguishes home from nested member routes', () => {
 test('MEMBER_NAV_CORE labels stay stable for mobile parity', () => {
   assert.deepEqual(
     MEMBER_NAV_CORE.map((item) => item.label),
-    ['Početna', 'Termini', 'Otkrij', 'Privatnost'],
+    ['Početna', 'Termini', 'Otkrij', 'Privatnost', 'Postavke'],
   );
 });
 
@@ -85,6 +86,8 @@ test('MemberLayout uses config and icon+label chrome for small screens', () => {
   assert.match(jsx, /className="member-nav__tabs"/);
   assert.match(jsx, /member-nav__label/);
   assert.match(jsx, /aria-label="Član"/);
+  assert.match(jsx, /IconSettings/);
+  assert.match(jsx, /settings:\s*IconSettings/);
 
   assert.match(scss, /\.member-nav\s*\{[^}]*justify-content:\s*space-between/s);
   assert.match(scss, /@media \(max-width: 52rem\)/);

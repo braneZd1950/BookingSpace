@@ -3,7 +3,7 @@
  * Keep in sync with `client/src/lib/memberNavConfig.js`.
  */
 
-export type MemberNavKey = 'home' | 'slots' | 'discover' | 'privacy';
+export type MemberNavKey = 'home' | 'slots' | 'discover' | 'privacy' | 'settings';
 
 export type MemberNavLinkDef = {
   key: MemberNavKey;
@@ -17,6 +17,7 @@ export const MEMBER_NAV_LABELS = [
   'Termini',
   'Otkrij',
   'Privatnost',
+  'Postavke',
 ] as const;
 
 export function memberBaseHref(slug: string): string {
@@ -32,7 +33,7 @@ export function buildMemberNavLinks(slug: string): MemberNavLinkDef[] {
       label: 'Početna',
       match: (p) =>
         (p === base || p === `${base}/` || p.endsWith(`/${slug}`))
-        && !/(termini|otkrij|privatnost)/.test(p),
+        && !/(termini|otkrij|privatnost|postavke)/.test(p),
     },
     {
       key: 'slots',
@@ -51,6 +52,12 @@ export function buildMemberNavLinks(slug: string): MemberNavLinkDef[] {
       href: `${base}/privatnost`,
       label: 'Privatnost',
       match: (p) => /privatnost/.test(p),
+    },
+    {
+      key: 'settings',
+      href: `${base}/postavke`,
+      label: 'Postavke',
+      match: (p) => /postavke/.test(p),
     },
   ];
 }

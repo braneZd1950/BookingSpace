@@ -41,13 +41,38 @@
   font-weight: 600;
 }
 
+:root[data-theme='dark'] .privacy-consent > p {
+  color: color-mix(in srgb, var(--fg) 88%, #fff);
+}
+
 :root[data-theme='dark'] .privacy-consent__status span {
-  color: color-mix(in srgb, var(--fg) 82%, var(--bg));
+  color: color-mix(in srgb, var(--fg) 88%, #fff);
+}
+
+:root[data-theme='dark'] .privacy-consent__withdraw {
+  background: color-mix(in srgb, var(--surface) 88%, #000);
+  border-color: color-mix(in srgb, #f87171 45%, transparent);
+  color: color-mix(in srgb, #fecaca 88%, #fff);
+}
+
+:root[data-theme='dark'] .privacy-consent__actions a {
+  color: color-mix(in srgb, var(--brand-strong, var(--site-brand, var(--brand))) 55%, #fff);
 }
 
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .privacy-consent > p,
   :root:not([data-theme='light']) .privacy-consent__status span {
-    color: color-mix(in srgb, var(--fg) 82%, var(--bg));
+    color: color-mix(in srgb, var(--fg) 88%, #fff);
+  }
+
+  :root:not([data-theme='light']) .privacy-consent__withdraw {
+    background: color-mix(in srgb, var(--surface) 88%, #000);
+    border-color: color-mix(in srgb, #f87171 45%, transparent);
+    color: color-mix(in srgb, #fecaca 88%, #fff);
+  }
+
+  :root:not([data-theme='light']) .privacy-consent__actions a {
+    color: color-mix(in srgb, var(--brand-strong, var(--site-brand, var(--brand))) 55%, #fff);
   }
 }
 

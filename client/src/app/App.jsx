@@ -17,6 +17,7 @@ import MemberDiscoverPage from '../pages/member/MemberDiscoverPage.jsx';
 import MemberHomePage from '../pages/member/MemberHomePage.jsx';
 import MemberLayout from '../pages/member/MemberLayout.jsx';
 import MemberOnlinePage from '../pages/member/MemberOnlinePage.jsx';
+import MemberSettingsPage from '../pages/member/MemberSettingsPage.jsx';
 import StudioPolicyPage from '../pages/member/StudioPolicyPage.jsx';
 import UsageTracker from '../components/UsageTracker.jsx';
 import StudioAnalyticsPage from '../pages/owner/StudioAnalyticsPage.jsx';
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="privatnost" element={<StudioPolicyPage kind="privacy" />} />
           <Route path="uvjeti" element={<StudioPolicyPage kind="terms" />} />
           <Route path="kolacici" element={<StudioPolicyPage kind="cookies" />} />
+          <Route path="postavke" element={<MemberSettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="/stranica" element={<StudioLayout />}>

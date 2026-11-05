@@ -41,11 +41,14 @@
   color: var(--fg);
 }
 
-:root[data-theme='dark'] .member-shell :is(.member-book, .member-online, .studio-policy, .member-home, .member-privacy, .member-discover) {
+:root[data-theme='dark'] .member-shell :is(.member-book, .member-online, .studio-policy, .member-home, .member-privacy, .member-settings, .member-discover) {
   --book-ink: var(--fg);
   --online-ink: var(--fg);
   --policy-ink: var(--fg);
   --discover-ink: var(--fg);
+  --settings-ink: var(--fg);
+  --settings-canvas: var(--bg);
+  --settings-soft: color-mix(in srgb, var(--settings-brand, var(--brand)) 26%, var(--surface));
   color: var(--fg);
 }
 
@@ -78,11 +81,14 @@
     color: var(--fg);
   }
 
-  :root:not([data-theme='light']) .member-shell :is(.member-book, .member-online, .studio-policy, .member-home, .member-privacy, .member-discover) {
+  :root:not([data-theme='light']) .member-shell :is(.member-book, .member-online, .studio-policy, .member-home, .member-privacy, .member-settings, .member-discover) {
     --book-ink: var(--fg);
     --online-ink: var(--fg);
     --policy-ink: var(--fg);
     --discover-ink: var(--fg);
+    --settings-ink: var(--fg);
+    --settings-canvas: var(--bg);
+    --settings-soft: color-mix(in srgb, var(--settings-brand, var(--brand)) 26%, var(--surface));
     color: var(--fg);
   }
 
@@ -261,6 +267,7 @@
   }
 
   .member-nav__item {
+    position: relative;
     width: 2rem;
     height: 2rem;
     padding: 0;
@@ -270,6 +277,7 @@
     display: block;
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
   }
 
   .member-nav__label {

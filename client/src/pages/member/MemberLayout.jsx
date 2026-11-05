@@ -58,6 +58,19 @@ const IconPrivacy = () => strokeIcon(
   </>,
 );
 
+const IconSettings = () => strokeIcon(
+  <>
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      d="M12 3.5v2.2M12 18.3v2.2M4.8 7.2l1.9 1.1M17.3 15.7l1.9 1.1M4.8 16.8l1.9-1.1M17.3 8.3l1.9-1.1"
+    />
+  </>,
+);
+
 const IconLogin = () => strokeIcon(
   <>
     <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M10 12h9.5M16.5 8.5 20 12l-3.5 3.5" />
@@ -189,6 +202,7 @@ export default function MemberLayout() {
     online: IconPlay,
     discover: IconDiscover,
     privacy: IconPrivacy,
+    settings: IconSettings,
   };
   const navLinks = buildMemberNavLinks(slug, {
     loggedIn,

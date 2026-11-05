@@ -10,6 +10,7 @@ import { tokens } from '../theme/tokens';
 import { memberNavStyles as s } from '../ui/memberNavStyles';
 import {
   IconDiscover,
+  IconGear,
   IconHome,
   IconPower,
   IconPrivacy,
@@ -30,6 +31,7 @@ const ICONS: Record<string, NavIcon> = {
   slots: IconSlots,
   discover: IconDiscover,
   privacy: IconPrivacy,
+  settings: IconGear,
 };
 
 /**

@@ -818,13 +818,13 @@ export function SettingsView() {
 
             <Text style={[styles.sheetTitle, { marginTop: 18 }]}>Tema sučelja</Text>
             <Text style={styles.sheetLead}>
-              Odaberite svijetlu ili tamnu temu — vrijedi za vaš račun.
+              Odaberite kako želite da aplikacija izgleda.
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
               {([
-                { value: 'system' as const, label: 'Sustav' },
                 { value: 'light' as const, label: 'Svijetla' },
                 { value: 'dark' as const, label: 'Tamna' },
+                { value: 'system' as const, label: 'Prema sustavu' },
               ]).map((option) => {
                 const on = uiTheme === option.value;
                 return (

@@ -8,6 +8,7 @@ export const MEMBER_NAV_CORE = [
   { key: 'slots', label: 'Termini', segment: 'termini' },
   { key: 'discover', label: 'Otkrij', segment: 'otkrij', requiresAuth: true },
   { key: 'privacy', label: 'Privatnost', segment: 'privatnost' },
+  { key: 'settings', label: 'Postavke', segment: 'postavke', requiresAuth: true },
 ];
 
 export const MEMBER_NAV_OPTIONAL = [

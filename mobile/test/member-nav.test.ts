@@ -20,6 +20,7 @@ test('memberBaseHref and labels match web member shell', () => {
     'Termini',
     'Otkrij',
     'Privatnost',
+    'Postavke',
   ]);
 });
 
@@ -32,6 +33,7 @@ test('buildMemberNavLinks builds slug-scoped hrefs', () => {
       '/(member)/demo-fitness/termini',
       '/(member)/demo-fitness/otkrij',
       '/(member)/demo-fitness/privatnost',
+      '/(member)/demo-fitness/postavke',
     ],
   );
   assert.deepEqual(
@@ -46,14 +48,16 @@ test('activeMemberNavKey resolves exclusive member routes', () => {
   assert.equal(activeMemberNavKey(`/(member)/${slug}/termini`, slug), 'slots');
   assert.equal(activeMemberNavKey(`/(member)/${slug}/otkrij`, slug), 'discover');
   assert.equal(activeMemberNavKey(`/(member)/${slug}/privatnost`, slug), 'privacy');
+  assert.equal(activeMemberNavKey(`/(member)/${slug}/postavke`, slug), 'settings');
 });
 
-test('home matcher ignores termini/otkrij/privatnost', () => {
+test('home matcher ignores termini/otkrij/privatnost/postavke', () => {
   const home = buildMemberNavLinks('yoga').find((item) => item.key === 'home');
   assert.ok(home);
   assert.equal(home.match('/(member)/yoga'), true);
   assert.equal(home.match('/(member)/yoga/termini'), false);
   assert.equal(home.match('/(member)/yoga/otkrij'), false);
+  assert.equal(home.match('/(member)/yoga/postavke'), false);
 });
 
 test('MemberNav is a single top header with icons (no bottom tab bar)', () => {
