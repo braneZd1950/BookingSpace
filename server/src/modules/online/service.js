@@ -1,6 +1,4 @@
-import { randomBytes } from 'crypto';
 import fs from 'fs';
-import fsPromises from 'fs/promises';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import env from '../../config/env.js';
@@ -8,6 +6,11 @@ import Membership from '../../models/Membership.js';
 import OnlineWorkout from '../../models/OnlineWorkout.js';
 import Tenant from '../../models/Tenant.js';
 import User from '../../models/User.js';
+import {
+  cloudinaryReady,
+  storeLocalUpload,
+  uploadBufferToCloudinary,
+} from '../../utils/cloudinaryUpload.js';
 import { HttpError } from '../../utils/httpError.js';
 import { assertVideoBuffer } from '../../utils/mediaMagic.js';
 import { signMediaAccessToken, verifyMediaAccessToken } from '../../utils/mediaToken.js';
@@ -23,11 +26,6 @@ const VIDEO_TYPES = new Set([
 ]);
 /** Free Cloudinary-friendly ceiling for MVP uploads. */
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
-
-function cloudinaryReady() {
-  const { cloudName, apiKey, apiSecret } = env.cloudinary;
-  return Boolean(cloudName && apiKey && apiSecret);
-}
 
 function videoExtension(mimetype) {
   if (mimetype === 'video/webm') return 'webm';
@@ -55,15 +53,6 @@ function toManage(workout, actor) {
   };
 }
 
-async function storeLocalVideo(file, tenantId) {
-  const safeId = String(tenantId).replace(/[^a-f\d]/gi, '');
-  const filename = `${randomBytes(12).toString('hex')}.${videoExtension(file.mimetype)}`;
-  const dir = path.resolve(process.cwd(), 'uploads', safeId, 'video');
-  await fsPromises.mkdir(dir, { recursive: true });
-  await fsPromises.writeFile(path.join(dir, filename), file.buffer);
-  return `/uploads/${safeId}/video/${filename}`;
-}
-
 function isLocalUploadPath(url) {
   return String(url || '').startsWith('/uploads/') && String(url).includes('/video/');
 }
@@ -78,24 +67,6 @@ function memberFacingVideoUrl(workout, actor) {
     workoutId: workout._id,
   });
   return `/api/tenants/${workout.tenantId}/online/${workout._id}/media?m=${encodeURIComponent(token)}`;
-}
-
-function uploadToCloudinary(file, tenantId) {
-  const { cloudName, apiKey, apiSecret } = env.cloudinary;
-  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: `bookingspace/${tenantId}/online`,
-        resource_type: 'video',
-      },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      },
-    );
-    stream.end(file.buffer);
-  });
 }
 
 function remainingSessions(membership) {
@@ -168,7 +139,10 @@ export async function uploadVideo(actor, tenantId, file) {
 
   if (cloudinaryReady()) {
     try {
-      const uploaded = await uploadToCloudinary(file, tenantId);
+      const uploaded = await uploadBufferToCloudinary(file.buffer, {
+        folder: `bookingspace/${tenantId}/online`,
+        resourceType: 'video',
+      });
       const durationMinutes = uploaded.duration
         ? Math.max(1, Math.round(uploaded.duration / 60))
         : null;
@@ -184,7 +158,11 @@ export async function uploadVideo(actor, tenantId, file) {
     }
   }
 
-  const url = await storeLocalVideo(file, tenantId);
+  const url = await storeLocalUpload(file, {
+    tenantId,
+    subdir: 'video',
+    extension: videoExtension(file.mimetype),
+  });
   return {
     url,
     publicId: url,

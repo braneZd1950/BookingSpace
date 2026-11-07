@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
-import multer from 'multer';
 import { requireAuth } from '../../middleware/auth.js';
+import { createRateLimiter } from '../../middleware/rateLimit.js';
+import { createMemoryUploader } from '../../middleware/upload.js';
 import { validate } from '../../middleware/validate.js';
-import { HttpError } from '../../utils/httpError.js';
 import { requireTenantRole } from '../access.js';
 import {
   create,
@@ -25,25 +24,12 @@ import {
   uploadImageSchema,
 } from './schema.js';
 
-const imageUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
-});
-
-const imageUploadLimiter = rateLimit({
+const imageUpload = createMemoryUploader({ fileSize: 5 * 1024 * 1024 });
+const imageUploadLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   limit: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { keyGeneratorIpFallback: false },
-  keyGenerator(req) {
-    return String(req.user?._id || req.user?.id || req.ip);
-  },
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many image uploads. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many image uploads. Try again later.',
+  keyByUser: true,
 });
 
 const router = Router();

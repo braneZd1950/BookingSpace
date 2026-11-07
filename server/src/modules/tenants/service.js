@@ -1,14 +1,14 @@
-import { randomBytes } from 'crypto';
-import fs from 'fs/promises';
-import path from 'path';
-import { v2 as cloudinary } from 'cloudinary';
-import env from '../../config/env.js';
 import Service from '../../models/Service.js';
 import Tenant from '../../models/Tenant.js';
 import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { defaultTrialBilling } from '../../utils/billing.js';
+import {
+  cloudinaryReady,
+  storeLocalUpload,
+  uploadBufferToCloudinary,
+} from '../../utils/cloudinaryUpload.js';
 import { HttpError } from '../../utils/httpError.js';
 import { assertImageBuffer } from '../../utils/mediaMagic.js';
 import { generateAllStudioLegal } from '../../utils/studioLegal.js';
@@ -382,20 +382,6 @@ function imageExtension(mime) {
   return 'jpg';
 }
 
-function cloudinaryReady() {
-  const { cloudName, apiKey, apiSecret } = env.cloudinary;
-  return Boolean(cloudName && apiKey && apiSecret);
-}
-
-async function storeLocalImage(file, tenantId) {
-  const safeId = String(tenantId).replace(/[^a-f\d]/gi, '');
-  const filename = `${randomBytes(12).toString('hex')}.${imageExtension(file.mimetype)}`;
-  const dir = path.resolve(process.cwd(), 'uploads', safeId);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, filename), file.buffer);
-  return `/uploads/${safeId}/${filename}`;
-}
-
 export async function uploadImage(user, tenantId, file, purpose) {
   await requireMember(user, tenantId, ['BUSINESS_OWNER']);
   if (!file) throw new HttpError(400, 'Image file is required', { code: 'FILE_REQUIRED' });
@@ -413,26 +399,18 @@ export async function uploadImage(user, tenantId, file, purpose) {
   let url = '';
   let publicId = '';
   if (cloudinaryReady()) {
-    const { cloudName, apiKey, apiSecret } = env.cloudinary;
-    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
-    const uploaded = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: `bookingspace/${tenantId}`,
-          resource_type: 'image',
-          timeout: 60_000,
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        },
-      );
-      stream.end(file.buffer);
+    const uploaded = await uploadBufferToCloudinary(file.buffer, {
+      folder: `bookingspace/${tenantId}`,
+      resourceType: 'image',
+      timeoutMs: 60_000,
     });
     url = uploaded.secure_url;
     publicId = uploaded.public_id;
   } else {
-    url = await storeLocalImage(file, tenantId);
+    url = await storeLocalUpload(file, {
+      tenantId,
+      extension: imageExtension(file.mimetype),
+    });
     publicId = url;
   }
 

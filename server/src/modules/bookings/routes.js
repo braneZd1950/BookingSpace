@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../../middleware/auth.js';
+import { createRateLimiter } from '../../middleware/rateLimit.js';
 import { validate } from '../../middleware/validate.js';
-import { HttpError } from '../../utils/httpError.js';
 import { requireTenantRole } from '../access.js';
 import { cancel, complete, create, listForTenant, mine, noShow } from './controller.js';
 import {
@@ -12,20 +11,11 @@ import {
   tenantBookingsSchema,
 } from './schema.js';
 
-const createBookingLimiter = rateLimit({
+const createBookingLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   limit: 60,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { keyGeneratorIpFallback: false },
-  keyGenerator(req) {
-    return String(req.user?._id || req.ip);
-  },
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many booking attempts. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many booking attempts. Try again later.',
+  keyByUser: true,
 });
 
 const router = Router();

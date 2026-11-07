@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
-import multer from 'multer';
 import { optionalAuth, requireAuth } from '../../middleware/auth.js';
+import { createRateLimiter } from '../../middleware/rateLimit.js';
+import { createMemoryUploader } from '../../middleware/upload.js';
 import { validate } from '../../middleware/validate.js';
-import { HttpError } from '../../utils/httpError.js';
 import { requireTenantRole } from '../access.js';
 import { catalog, create, list, media, remove, update, upload } from './controller.js';
 import {
@@ -17,30 +16,16 @@ import {
 /** Cap upload body early; service also asserts magic bytes + size (100 MiB). */
 const MAX_VIDEO_UPLOAD_BYTES = 100 * 1024 * 1024;
 
-const videoUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: MAX_VIDEO_UPLOAD_BYTES,
-    files: 1,
-    fields: 8,
-    fieldSize: 64 * 1024,
-  },
+const videoUpload = createMemoryUploader({
+  fileSize: MAX_VIDEO_UPLOAD_BYTES,
+  fields: 8,
+  fieldSize: 64 * 1024,
 });
-
-const videoUploadLimiter = rateLimit({
+const videoUploadLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { keyGeneratorIpFallback: false },
-  keyGenerator(req) {
-    return String(req.user?._id || req.user?.id || req.ip);
-  },
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many video uploads. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many video uploads. Try again later.',
+  keyByUser: true,
 });
 
 const onlineRoutes = Router({ mergeParams: true });

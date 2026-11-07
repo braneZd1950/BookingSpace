@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../../middleware/auth.js';
+import { createRateLimiter } from '../../middleware/rateLimit.js';
 import { validate } from '../../middleware/validate.js';
-import { HttpError } from '../../utils/httpError.js';
 import {
   forgotPassword,
   googleAuth,
@@ -24,28 +23,15 @@ import {
   updateMeSchema,
 } from './schema.js';
 
-const authLimiter = rateLimit({
+const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   limit: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many attempts. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many attempts. Try again later.',
 });
-
-const forgotLimiter = rateLimit({
+const forgotLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   limit: 8,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many attempts. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many attempts. Try again later.',
 });
 
 const router = Router();

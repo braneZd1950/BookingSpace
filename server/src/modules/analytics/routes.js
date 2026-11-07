@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../../middleware/auth.js';
+import { createRateLimiter } from '../../middleware/rateLimit.js';
 import { validate } from '../../middleware/validate.js';
-import { HttpError } from '../../utils/httpError.js';
 import {
   platformActivityHandler,
   platformBillingHandler,
@@ -30,16 +29,10 @@ import {
   updateBillingSchema,
 } from './schema.js';
 
-const trackLimiter = rateLimit({
+const trackLimiter = createRateLimiter({
   windowMs: 60 * 1000,
   limit: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler(req, res, next) {
-    next(new HttpError(429, 'Too many attempts. Try again later.', {
-      code: 'TOO_MANY_REQUESTS',
-    }));
-  },
+  message: 'Too many attempts. Try again later.',
 });
 
 const router = Router();
