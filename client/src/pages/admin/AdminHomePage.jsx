@@ -4,6 +4,7 @@ import {
   useGetPlatformAnalyticsQuery,
   useGetPlatformUsersQuery,
 } from '../../api/analyticsApi.js';
+import { formatCount } from '../../lib/formatters.js';
 import './AdminPages.scss';
 
 const links = [
@@ -26,11 +27,6 @@ const links = [
     text: 'Svi računi na platformi — članovi i vlasnici.',
   },
 ];
-
-function formatCount(value) {
-  if (value == null || Number.isNaN(Number(value))) return '—';
-  return new Intl.NumberFormat('hr-HR').format(Number(value));
-}
 
 export default function AdminHomePage() {
   const { me } = useOutletContext();

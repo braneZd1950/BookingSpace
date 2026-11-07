@@ -8,6 +8,7 @@ import {
 import { useLazyListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
 import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
+import PasswordField from '../../components/PasswordField.jsx';
 import { business, member } from '../../mock/data.js';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { IS_DEV } from '../../lib/runtimeEnv.js';
@@ -55,28 +56,6 @@ function remember(session, token) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-function EyeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-      <path
-        fill="currentColor"
-        d="M12 5c-5 0-9.3 3.1-11 7.5C2.7 16.9 7 20 12 20s9.3-3.1 11-7.5C21.3 8.1 17 5 12 5zm0 12.5A5 5 0 1 1 12 7.5a5 5 0 0 1 0 10zm0-2.2a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6z"
-      />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-      <path
-        fill="currentColor"
-        d="M3.3 2.2 2.2 3.3l3.1 3.1C3.5 7.6 1.9 9.4 1 12.5 2.7 16.9 7 20 12 20c2 0 3.9-.5 5.5-1.3l3.2 3.2 1.1-1.1L3.3 2.2zM12 18.5c-4.1 0-7.6-2.5-9.1-6 1-2.2 2.6-3.8 4.5-4.7l1.7 1.7A5 5 0 0 0 12 17a4.9 4.9 0 0 0 2.5-.7l1.5 1.5c-1.2.5-2.6.7-4 .7zm9.9-6C20.4 8.6 17.5 6.3 14 5.5l1.7 1.7c1.6.8 3 2.1 3.9 3.8-.5 1.2-1.3 2.3-2.3 3.1l1.2 1.2c1.4-1.1 2.5-2.6 3.4-4.3zM9.2 8.1l1.6 1.6A2.8 2.8 0 0 1 14.3 13l1.5 1.5a5 5 0 0 0-6.6-6.4z"
-      />
-    </svg>
-  );
-}
-
 function LoginShell({ done = false, children }) {
   return (
     <main className={`login${done ? ' login--done' : ''}`}>
@@ -101,7 +80,6 @@ export default function LoginPage() {
   const [problems, setProblems] = useState({});
   const [formError, setFormError] = useState('');
   const [session, setSession] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
   const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
@@ -307,29 +285,18 @@ export default function LoginPage() {
           {problems.email ? <span className="login__error">{problems.email}</span> : null}
         </label>
 
-        <label className="login__field">
-          Lozinka
-          <span className="login__password-wrap">
-            <input
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              value={values.password}
-              onChange={(event) => update('password', event.target.value)}
-              aria-invalid={Boolean(problems.password)}
-            />
-            <button
-              type="button"
-              className="login__eye"
-              onClick={() => setShowPassword((current) => !current)}
-              title={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
-              aria-label={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
-            >
-              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-            </button>
-          </span>
-          {problems.password ? <span className="login__error">{problems.password}</span> : null}
-        </label>
+        <PasswordField
+          label="Lozinka"
+          className="login__field"
+          wrapClassName="login__password-wrap"
+          buttonClassName="login__eye"
+          name="password"
+          autoComplete="current-password"
+          value={values.password}
+          onChange={(event) => update('password', event.target.value)}
+          invalid={Boolean(problems.password)}
+        />
+        {problems.password ? <span className="login__error">{problems.password}</span> : null}
 
         {formError ? <p className="login__form-error">{formError}</p> : null}
 
@@ -365,7 +332,7 @@ export default function LoginPage() {
           {' '}
           <code>{business.owner.email}</code>
           <br />
-          Lozinka je ista kao u
+          Lozinka je ispisana u konzoli nakon
           {' '}
           <code>npm --prefix server run seed:demo</code>
           .

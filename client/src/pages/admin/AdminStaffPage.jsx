@@ -7,6 +7,7 @@ import {
 } from '../../api/platformStaffApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatDate, formatCount } from '../../lib/formatters.js';
 import './AdminStaffPage.scss';
 
 const empty = { name: '', email: '', phone: '', password: '' };
@@ -15,21 +16,6 @@ function roleLabel(role) {
   if (role === 'ADMIN') return 'Super admin';
   if (role === 'PLATFORM_STAFF') return 'Djelatnik';
   return role;
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
 }
 
 export default function AdminStaffPage() {

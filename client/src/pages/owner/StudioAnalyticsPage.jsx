@@ -3,6 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetStudioAnalyticsQuery } from '../../api/analyticsApi.js';
 import { useListTenantBookingsQuery } from '../../api/bookingApi.js';
 import { useListMembershipsQuery } from '../../api/membershipApi.js';
+import { formatDate } from '../../lib/formatters.js';
 import './StudioAnalyticsPage.scss';
 
 const LABELS = {
@@ -25,16 +26,6 @@ function formatMonthHr(yearMonth) {
     year: 'numeric',
   }).format(new Date(year, month - 1, 1));
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-  }).format(date);
 }
 
 function daysLeft(until) {

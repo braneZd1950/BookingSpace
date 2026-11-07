@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformStudiosQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
+import FilterTabBar from '../../components/FilterTabBar.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
 import { formatDate, formatCount } from '../../lib/formatters.js';
 import './platform-shell.scss';
@@ -189,25 +190,18 @@ export default function PlatformStudiosPage() {
                 placeholder="Traži naziv, slug ili kontakt…"
               />
             </label>
-            <div className="platform-studios__filters" role="tablist" aria-label="Filter studija">
-              {[
+            <FilterTabBar
+              className="platform-studios__filters"
+              aria-label="Filter studija"
+              value={filter}
+              onChange={setFilter}
+              options={[
                 ['all', `Svi (${summary.total})`],
                 ['active', `Aktivni (${summary.active})`],
                 ['inactive', `Neaktivni (${summary.inactive})`],
                 ['members', `Sa članovima (${summary.withMembers})`],
-              ].map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === id}
-                  className={filter === id ? 'is-on' : undefined}
-                  onClick={() => setFilter(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              ]}
+            />
           </div>
 
           {visible.length === 0 ? (

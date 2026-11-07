@@ -88,7 +88,7 @@ describe('full lifecycle API', () => {
   test('health + auth register/login/me/logout + validation edges', { timeout: 60000 }, async () => {
     const stamp = Date.now();
     const email = `life-owner-${stamp}@example.com`;
-    const password = 'Lifecycle-123!';
+    const password = 'SecurePass1!';
 
     const health = await request('/api/health');
     assert.equal(health.status, 200);
@@ -173,8 +173,8 @@ describe('full lifecycle API', () => {
   test('forgot/reset password + change password + client reset link shape', { timeout: 60000 }, async () => {
     const stamp = Date.now();
     const email = `life-reset-${stamp}@example.com`;
-    const password = 'ResetStart-123!';
-    const nextPassword = 'ResetNext-456!';
+    const password = 'SecurePass2!';
+    const nextPassword = 'SecurePass3!';
     const changedPassword = 'ResetChanged-789!';
 
     const reg = await request('/api/auth/register', {
@@ -284,7 +284,7 @@ describe('full lifecycle API', () => {
 
   test('register → studio → membership → book → cancel → complete/no-show + lists', { timeout: 120000 }, async () => {
     const stamp = Date.now();
-    const password = 'FullFlow-123!';
+    const password = 'SecurePass4!';
     const ownerEmail = `full-owner-${stamp}@example.com`;
     const memberEmail = `full-member-${stamp}@example.com`;
     const guestEmail = `full-guest-${stamp}@example.com`;

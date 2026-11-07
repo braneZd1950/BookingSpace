@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformActivityQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
+import FilterTabBar from '../../components/FilterTabBar.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
 import { formatWhen, formatCount } from '../../lib/formatters.js';
 import './platform-shell.scss';
@@ -192,20 +193,13 @@ export default function PlatformActivityPage() {
           </header>
 
           <div className="platform-activity__toolbar">
-            <div className="platform-activity__filters" role="tablist" aria-label="Filter aktivnosti">
-              {FILTERS.map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === id}
-                  className={filter === id ? 'is-on' : undefined}
-                  onClick={() => setFilter(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <FilterTabBar
+              className="platform-activity__filters"
+              aria-label="Filter aktivnosti"
+              value={filter}
+              onChange={setFilter}
+              options={FILTERS}
+            />
           </div>
 
           {events.length === 0 ? (

@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformAnalyticsQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatCount } from '../../lib/formatters.js';
 import './PlatformAnalyticsPage.scss';
 
 const LABELS = {
@@ -17,10 +18,6 @@ const LABELS = {
   booking_no_show: 'Nedolasci',
   password_reset_requested: 'Oporavak lozinke',
 };
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 function formatDay(value) {
   const date = new Date(`${value}T12:00:00`);

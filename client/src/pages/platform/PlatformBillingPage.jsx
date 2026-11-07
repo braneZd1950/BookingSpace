@@ -8,6 +8,7 @@ import {
   useUpdatePlatformBillingMutation,
 } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
+import FilterTabBar from '../../components/FilterTabBar.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
 import { formatDate, formatCount } from '../../lib/formatters.js';
 import './platform-shell.scss';
@@ -230,27 +231,20 @@ export default function PlatformBillingPage() {
                 placeholder="Traži studio ili kontakt…"
               />
             </label>
-            <div className="platform-billing__filters" role="tablist" aria-label="Filter plaćanja">
-              {[
+            <FilterTabBar
+              className="platform-billing__filters"
+              aria-label="Filter plaćanja"
+              value={filter}
+              onChange={setFilter}
+              options={[
                 ['all', `Svi (${summary.total})`],
                 ['paid', `Plaćeno (${summary.paid})`],
                 ['trial', `Probni (${summary.trial})`],
                 ['expiring', `Pred istek (${summary.expiring})`],
                 ['unpaid', `Neplaćeno (${summary.unpaid})`],
                 ['expired', `Isteklo (${summary.expired})`],
-              ].map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === id}
-                  className={filter === id ? 'is-on' : undefined}
-                  onClick={() => setFilter(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              ]}
+            />
           </div>
 
           {flash ? (

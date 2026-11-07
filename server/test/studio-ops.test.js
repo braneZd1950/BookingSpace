@@ -82,7 +82,7 @@ after(async () => {
 
 test('studio ops: login, invite member, trainer, booking with staff, suspend', { timeout: 90000 }, async () => {
   const stamp = Date.now();
-  const password = 'StudioOps-123!';
+  const password = 'SecurePass1!';
   const ownerEmail = `ops-owner-${stamp}@example.com`;
   const memberEmail = `ops-member-${stamp}@example.com`;
   const trainerEmail = `ops-trainer-${stamp}@example.com`;

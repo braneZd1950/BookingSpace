@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformUsersQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
+import FilterTabBar from '../../components/FilterTabBar.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
 import { formatDate, formatCount } from '../../lib/formatters.js';
 import './platform-shell.scss';
@@ -209,26 +210,19 @@ export default function PlatformUsersPage() {
                 placeholder="Traži ime ili e-poštu…"
               />
             </label>
-            <div className="platform-users__filters" role="tablist" aria-label="Filter korisnika">
-              {[
+            <FilterTabBar
+              className="platform-users__filters"
+              aria-label="Filter korisnika"
+              value={filter}
+              onChange={setFilter}
+              options={[
                 ['all', `Svi (${summary.total})`],
                 ['owners', `Vlasnici (${summary.owners})`],
                 ['customers', `Članovi (${summary.customers})`],
                 ['admins', `Admini (${summary.admins})`],
                 ['new', `Novi (${summary.newInPeriod})`],
-              ].map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === id}
-                  className={filter === id ? 'is-on' : undefined}
-                  onClick={() => setFilter(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              ]}
+            />
           </div>
 
           {visible.length === 0 ? (

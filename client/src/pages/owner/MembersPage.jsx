@@ -13,6 +13,8 @@ import {
   useListStaffQuery,
   useSuspendStaffMutation,
 } from '../../api/staffApi.js';
+import FilterTabBar from '../../components/FilterTabBar.jsx';
+import { formatDate } from '../../lib/formatters.js';
 import './MembersPage.scss';
 import { isEmail } from '../../lib/isEmail.js';
 
@@ -71,17 +73,6 @@ function sessionsProgress(item) {
     ratio,
     unlimited: false,
   };
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
 }
 
 function daysLeft(until) {
@@ -650,24 +641,17 @@ export default function MembersPage() {
                 placeholder="Traži ime, e-poštu ili plan…"
               />
             </label>
-            <div className="members__filters" role="tablist" aria-label="Filter članova">
-              {[
+            <FilterTabBar
+              className="members__filters"
+              aria-label="Filter članova"
+              value={filter}
+              onChange={setFilter}
+              options={[
                 ['active', `Aktivni (${active.length})`],
                 ['archive', `Arhiva (${others.length})`],
                 ['all', `Svi (${memberships.length})`],
-              ].map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === id}
-                  className={filter === id ? 'is-on' : undefined}
-                  onClick={() => setFilter(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              ]}
+            />
           </div>
 
           {actionError ? <p className="members__error">{actionError}</p> : null}

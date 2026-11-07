@@ -6,6 +6,7 @@ import {
   useGetMeQuery,
   useUpdateMeMutation,
 } from '../../api/authApi.js';
+import PasswordField from '../../components/PasswordField.jsx';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
 import UiThemePicker from '../../components/UiThemePicker.jsx';
 import { clearSession } from '../../lib/clearSession.js';
@@ -51,34 +52,6 @@ const SECTIONS = [
   { id: 'lozinka', index: '04', label: 'Lozinka' },
   { id: 'privola', index: '05', label: 'Privola' },
 ];
-
-function PasswordField({ label, value, onChange, autoComplete }) {
-  const [visible, setVisible] = useState(false);
-  const tip = visible ? 'Sakrij lozinku' : 'Prikaži lozinku';
-
-  return (
-    <label className="member-settings__field member-settings__field--password">
-      <span>{label}</span>
-      <span className="member-settings__password-wrap">
-        <input
-          type={visible ? 'text' : 'password'}
-          autoComplete={autoComplete}
-          value={value}
-          onChange={onChange}
-        />
-        <button
-          type="button"
-          className="member-settings__eye"
-          onClick={() => setVisible((current) => !current)}
-          title={tip}
-          aria-label={tip}
-        >
-          {visible ? 'Sakrij' : 'Prikaži'}
-        </button>
-      </span>
-    </label>
-  );
-}
 
 export default function MemberSettingsPage() {
   const dispatch = useDispatch();
@@ -394,6 +367,10 @@ export default function MemberSettingsPage() {
             <div className="member-settings__grid">
               <PasswordField
                 label="Trenutna lozinka"
+                className="member-settings__field member-settings__field--password"
+                wrapClassName="member-settings__password-wrap"
+                buttonClassName="member-settings__eye"
+                textToggle
                 autoComplete="current-password"
                 value={password.currentPassword}
                 onChange={(event) => setPassword((current) => ({
@@ -403,6 +380,10 @@ export default function MemberSettingsPage() {
               />
               <PasswordField
                 label="Nova lozinka"
+                className="member-settings__field member-settings__field--password"
+                wrapClassName="member-settings__password-wrap"
+                buttonClassName="member-settings__eye"
+                textToggle
                 autoComplete="new-password"
                 value={password.newPassword}
                 onChange={(event) => setPassword((current) => ({
@@ -412,6 +393,10 @@ export default function MemberSettingsPage() {
               />
               <PasswordField
                 label="Ponovite novu"
+                className="member-settings__field member-settings__field--password"
+                wrapClassName="member-settings__password-wrap"
+                buttonClassName="member-settings__eye"
+                textToggle
                 autoComplete="new-password"
                 value={password.again}
                 onChange={(event) => setPassword((current) => ({
