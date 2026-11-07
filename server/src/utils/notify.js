@@ -2,22 +2,11 @@ import Tenant from '../models/Tenant.js';
 import TenantUser from '../models/TenantUser.js';
 import User from '../models/User.js';
 import StaffNotification from '../models/StaffNotification.js';
+import { mergeNotificationPrefs } from './notificationPrefs.js';
 import { sendPushToUser } from './webPush.js';
 
-const DEFAULT_PREFS = {
-  bookingEmail: true,
-  cancelEmail: true,
-  memberEmail: true,
-  weeklyDigest: false,
-  marketing: false,
-  bookingPush: true,
-  cancelPush: true,
-  memberPush: true,
-  reminderPush: false,
-};
-
 export function notificationPrefsOf(user) {
-  return { ...DEFAULT_PREFS, ...(user?.notificationPrefs?.toObject?.() || user?.notificationPrefs || {}) };
+  return mergeNotificationPrefs(user?.notificationPrefs);
 }
 
 async function resolveStaffRecipients(tenantId, excludeUserId) {

@@ -18,6 +18,23 @@ const blockedPeriod = z.object({
   path: ['endDate'],
 });
 
+const visibleSectionsSchema = z.object({
+  hero: z.boolean().optional(),
+  about: z.boolean().optional(),
+  services: z.boolean().optional(),
+  schedule: z.boolean().optional(),
+  gallery: z.boolean().optional(),
+  contact: z.boolean().optional(),
+  location: z.boolean().optional(),
+  openingHours: z.boolean().optional(),
+});
+
+const legalDocsSchema = z.object({
+  privacy: z.string().trim().max(20000).optional(),
+  terms: z.string().trim().max(20000).optional(),
+  cookies: z.string().trim().max(20000).optional(),
+});
+
 export const createTenantSchema = z.object({
   body: z.object({
     name: z.string().trim().min(1).max(80),
@@ -33,21 +50,8 @@ export const createTenantSchema = z.object({
     template: z.enum(TEMPLATES).optional(),
     layout: z.enum(['banner', 'bar', 'sidebar']).optional(),
     paletteId: z.string().trim().max(40).optional(),
-    visibleSections: z.object({
-      hero: z.boolean().optional(),
-      about: z.boolean().optional(),
-      services: z.boolean().optional(),
-      schedule: z.boolean().optional(),
-      gallery: z.boolean().optional(),
-      contact: z.boolean().optional(),
-      location: z.boolean().optional(),
-      openingHours: z.boolean().optional(),
-    }).optional(),
-    legal: z.object({
-      privacy: z.string().trim().max(20000).optional(),
-      terms: z.string().trim().max(20000).optional(),
-      cookies: z.string().trim().max(20000).optional(),
-    }).optional(),
+    visibleSections: visibleSectionsSchema.optional(),
+    legal: legalDocsSchema.optional(),
   }),
 });
 
@@ -104,16 +108,7 @@ export const updateSiteSchema = z.object({
       borderRadius: z.string().trim().max(20).optional(),
       buttonStyle: z.string().trim().max(30).optional(),
     }).optional(),
-    visibleSections: z.object({
-      hero: z.boolean().optional(),
-      about: z.boolean().optional(),
-      services: z.boolean().optional(),
-      schedule: z.boolean().optional(),
-      gallery: z.boolean().optional(),
-      contact: z.boolean().optional(),
-      location: z.boolean().optional(),
-      openingHours: z.boolean().optional(),
-    }).optional(),
+    visibleSections: visibleSectionsSchema.optional(),
     socialLinks: z.object({
       instagram: z.string().trim().max(200).optional(),
       facebook: z.string().trim().max(200).optional(),
@@ -124,11 +119,7 @@ export const updateSiteSchema = z.object({
       title: z.string().trim().max(120).optional(),
       description: z.string().trim().max(300).optional(),
     }).optional(),
-    legal: z.object({
-      privacy: z.string().trim().max(20000).optional(),
-      terms: z.string().trim().max(20000).optional(),
-      cookies: z.string().trim().max(20000).optional(),
-    }).optional(),
+    legal: legalDocsSchema.optional(),
   }).refine((body) => Object.keys(body).length > 0, 'No changes'),
 });
 

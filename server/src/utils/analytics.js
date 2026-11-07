@@ -8,6 +8,25 @@ import User from '../models/User.js';
 import env from '../config/env.js';
 import { smtpConfigured, verifyMail } from './mail.js';
 
+const USAGE_COUNT_KEYS = [
+  'page_view',
+  'login_success',
+  'register_success',
+  'tenant_created',
+  'member_created',
+  'booking_created',
+  'booking_cancelled',
+  'booking_completed',
+  'booking_no_show',
+  'password_reset_requested',
+];
+
+function countsFromMap(counts = {}) {
+  return Object.fromEntries(
+    USAGE_COUNT_KEYS.map((key) => [key, counts[key] || 0]),
+  );
+}
+
 function adminEmailBootstrapEnabled() {
   if (env.adminEmailBootstrap === true) return true;
   if (env.adminEmailBootstrap === false) return false;
@@ -121,18 +140,7 @@ export async function summarizeUsage({ tenantId = null, days = 30 } = {}) {
     days,
     since: since.toISOString(),
     totalEvents: total,
-    counts: {
-      page_view: counts.page_view || 0,
-      login_success: counts.login_success || 0,
-      register_success: counts.register_success || 0,
-      tenant_created: counts.tenant_created || 0,
-      member_created: counts.member_created || 0,
-      booking_created: counts.booking_created || 0,
-      booking_cancelled: counts.booking_cancelled || 0,
-      booking_completed: counts.booking_completed || 0,
-      booking_no_show: counts.booking_no_show || 0,
-      password_reset_requested: counts.password_reset_requested || 0,
-    },
+    counts: countsFromMap(counts),
     series: [...daysMap.values()],
     topPaths: topPaths.map((row) => ({ path: row._id, count: row.count })),
   };
@@ -332,16 +340,7 @@ export async function listPlatformActivity({
     summary: {
       total: byType.reduce((sum, row) => sum + row.count, 0),
       actions: actionTotal,
-      page_view: counts.page_view || 0,
-      login_success: counts.login_success || 0,
-      register_success: counts.register_success || 0,
-      tenant_created: counts.tenant_created || 0,
-      member_created: counts.member_created || 0,
-      booking_created: counts.booking_created || 0,
-      booking_cancelled: counts.booking_cancelled || 0,
-      booking_completed: counts.booking_completed || 0,
-      booking_no_show: counts.booking_no_show || 0,
-      password_reset_requested: counts.password_reset_requested || 0,
+      ...countsFromMap(counts),
     },
     events: events.map((item) => ({
       id: String(item._id),

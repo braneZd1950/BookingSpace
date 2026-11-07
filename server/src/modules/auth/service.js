@@ -5,6 +5,7 @@ import env from '../../config/env.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
 import { sendPasswordResetEmail } from '../../utils/mail.js';
+import { mergeNotificationPrefs } from '../../utils/notificationPrefs.js';
 import { signAccessToken } from '../../utils/token.js';
 import { setConsentForUser, toPrivacyConsent } from '../consent/service.js';
 
@@ -16,18 +17,6 @@ function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-const DEFAULT_NOTIFICATION_PREFS = {
-  bookingEmail: true,
-  cancelEmail: true,
-  memberEmail: true,
-  weeklyDigest: false,
-  marketing: false,
-  bookingPush: true,
-  cancelPush: true,
-  memberPush: true,
-  reminderPush: false,
-};
-
 export function toPublicUser(user) {
   const theme = user.uiTheme;
   return {
@@ -38,10 +27,7 @@ export function toPublicUser(user) {
     role: user.role,
     createdAt: user.createdAt,
     uiTheme: theme === 'light' || theme === 'dark' ? theme : 'system',
-    notificationPrefs: {
-      ...DEFAULT_NOTIFICATION_PREFS,
-      ...(user.notificationPrefs?.toObject?.() || user.notificationPrefs || {}),
-    },
+    notificationPrefs: mergeNotificationPrefs(user.notificationPrefs),
     privacyConsent: toPrivacyConsent(user.privacyConsent),
   };
 }
@@ -210,8 +196,7 @@ export async function updateMe(user, input) {
   if (input.uiTheme !== undefined) user.uiTheme = input.uiTheme;
   if (input.notificationPrefs) {
     user.notificationPrefs = {
-      ...DEFAULT_NOTIFICATION_PREFS,
-      ...(user.notificationPrefs?.toObject?.() || user.notificationPrefs || {}),
+      ...mergeNotificationPrefs(user.notificationPrefs),
       ...input.notificationPrefs,
     };
   }
