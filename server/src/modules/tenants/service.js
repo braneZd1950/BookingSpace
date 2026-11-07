@@ -415,10 +415,20 @@ export async function uploadImage(user, tenantId, file, purpose) {
   if (cloudinaryReady()) {
     const { cloudName, apiKey, apiSecret } = env.cloudinary;
     cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
-    const uploaded = await cloudinary.uploader.upload(
-      `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-      { folder: `bookingspace/${tenantId}`, resource_type: 'image' },
-    );
+    const uploaded = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: `bookingspace/${tenantId}`,
+          resource_type: 'image',
+          timeout: 60_000,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      stream.end(file.buffer);
+    });
     url = uploaded.secure_url;
     publicId = uploaded.public_id;
   } else {

@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
+import { HttpError } from '../../utils/httpError.js';
 import { requireTenantRole } from '../access.js';
 import {
   create,
@@ -28,6 +30,22 @@ const imageUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
 });
 
+const imageUploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { keyGeneratorIpFallback: false },
+  keyGenerator(req) {
+    return String(req.user?._id || req.user?.id || req.ip);
+  },
+  handler(req, res, next) {
+    next(new HttpError(429, 'Too many image uploads. Try again later.', {
+      code: 'TOO_MANY_REQUESTS',
+    }));
+  },
+});
+
 const router = Router();
 
 router.post('/', requireAuth, validate(createTenantSchema), create);
@@ -39,9 +57,10 @@ router.patch('/:tenantId/site', requireAuth, validate(updateSiteSchema), require
 router.post(
   '/:tenantId/images',
   requireAuth,
+  requireTenantRole('BUSINESS_OWNER'),
+  imageUploadLimiter,
   imageUpload.single('file'),
   validate(uploadImageSchema),
-  requireTenantRole('BUSINESS_OWNER'),
   upload,
 );
 router.delete(

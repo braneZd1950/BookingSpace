@@ -18,6 +18,22 @@ const adminLinks = [
   ['/analitika/sustav', 'Sustav', false],
 ];
 
+function BrandMark() {
+  return (
+    <span className="site-header__brand-inner">
+      <img
+        className="site-header__logo"
+        src="/icons/icon.svg"
+        alt=""
+        width="32"
+        height="32"
+        decoding="async"
+      />
+      <span className="site-header__brand-text">anyminutes</span>
+    </span>
+  );
+}
+
 function NavIcon({ children }) {
   return (
     <svg
@@ -208,8 +224,8 @@ export default function SiteHeader() {
     const isSuper = Boolean(meData?.platformSuperAdmin);
     return (
       <header className="site-header site-header--admin">
-        <Link className="site-header__brand" to="/admin">
-          anyminutes
+        <Link className="site-header__brand" to="/admin" aria-label="anyminutes">
+          <BrandMark />
         </Link>
         <nav className="site-header__nav" aria-label="Platforma">
           {adminLinks.map(([to, label, end]) => (
@@ -238,8 +254,8 @@ export default function SiteHeader() {
     const role = meData?.user?.role;
     return (
       <header className="site-header">
-        <Link className="site-header__brand" to="/">
-          anyminutes
+        <Link className="site-header__brand" to="/" aria-label="anyminutes">
+          <BrandMark />
         </Link>
         <nav className="site-header__nav" aria-label="Račun">
           <NavItem to="/otkrij" label="Otkrij" icon={<IconCompass />} />
@@ -266,8 +282,8 @@ export default function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link className="site-header__brand" to="/">
-        anyminutes
+      <Link className="site-header__brand" to="/" aria-label="anyminutes">
+        <BrandMark />
       </Link>
       <nav className="site-header__nav" aria-label="Navigacija">
         <NavItem to="/otkrij" label="Otkrij" icon={<IconCompass />} />

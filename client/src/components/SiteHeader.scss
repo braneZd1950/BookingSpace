@@ -13,6 +13,9 @@
 
 .site-header__brand {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   padding-bottom: 0.45rem;
   color: var(--on-brand);
   font-family: 'Source Serif 4', Georgia, serif;
@@ -21,6 +24,25 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   text-decoration: none;
+}
+
+.site-header__brand-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.site-header__logo {
+  display: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.45rem;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.site-header__brand-text {
+  display: inline;
 }
 
 .site-header__brand::after {
@@ -116,18 +138,30 @@
   }
 
   .site-header__brand {
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    padding-bottom: 0.35rem;
+    padding-bottom: 0.2rem;
     flex: 0 0 auto;
+  }
+
+  .site-header__logo {
+    display: block;
+  }
+
+  .site-header__brand-text {
+    display: none;
+  }
+
+  .site-header__brand::after {
+    left: 50%;
+    width: 1.1rem;
+    transform: translateX(-50%);
   }
 
   .site-header__nav {
     flex-wrap: nowrap;
-    gap: 0.1rem;
+    gap: 0;
     justify-content: flex-end;
-    max-width: calc(100% - 5.5rem);
-    /* Do not use overflow-x:auto — it clips custom tips under icons */
+    max-width: calc(100% - 3rem);
+    /* Keep tips visible; shrink icons so 7–8 slots fit ~320px phones */
     overflow: visible;
   }
 
@@ -136,12 +170,13 @@
     position: relative;
     justify-content: center;
     flex: 0 0 auto;
-    width: 2.3rem;
-    height: 2.3rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     border-radius: 0.45rem;
     gap: 0;
   }
+
 
   .site-header__icon {
     display: block;
