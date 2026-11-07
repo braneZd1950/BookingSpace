@@ -2,23 +2,9 @@ import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformSystemQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatWhen, formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformSystemPage.scss';
-
-function formatWhen(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 export default function PlatformSystemPage() {
   const { me } = useOutletContext() || {};
@@ -29,9 +15,9 @@ export default function PlatformSystemPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-system">
-        <div className="platform-system__stage">
-          <p className="platform-system__lede">Provjeravamo zdravlje platforme…</p>
+      <main className="platform-shell platform-system">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Provjeravamo zdravlje platforme…</p>
         </div>
       </main>
     );
@@ -39,13 +25,13 @@ export default function PlatformSystemPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-system">
-        <div className="platform-system__stage">
-          <header className="platform-system__head">
+      <main className="platform-shell platform-system">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-system__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Sustav</h1>
-              <p className="platform-system__lede">Status trenutno nije dostupan.</p>
+              <p className="platform-shell__lede">Status trenutno nije dostupan.</p>
             </div>
           </header>
         </div>
@@ -106,26 +92,26 @@ export default function PlatformSystemPage() {
   ];
 
   return (
-    <main className="platform-system">
-      <div className="platform-system__atmosphere" aria-hidden="true">
-        <span className="platform-system__wash" />
-        <span className="platform-system__grain" />
+    <main className="platform-shell platform-system">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-system__stage">
-        <header className="platform-system__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-system__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Sustav</h1>
-            <p className="platform-system__lede">
+            <p className="platform-shell__lede">
               Zdravlje platforme · provjera
               {' '}
               {formatWhen(data.checkedAt)}
               . Bez tajnih ključeva.
             </p>
           </div>
-          <div className="platform-system__head-actions">
-            <p className={`platform-system__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               {isFetching ? 'osvježavanje' : 'uživo'}
             </p>
             <button
@@ -214,7 +200,7 @@ export default function PlatformSystemPage() {
           <header className="platform-system__block-head">
             <span className="platform-system__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-system__kicker">Infrastruktura</p>
+              <p className="platform-shell__kicker">Infrastruktura</p>
               <h2 id="services-title">Servisi</h2>
               <p>Konfiguracija bez tajnih vrijednosti.</p>
             </div>
@@ -244,7 +230,7 @@ export default function PlatformSystemPage() {
           <header className="platform-system__block-head">
             <span className="platform-system__index" aria-hidden="true">02</span>
             <div>
-              <p className="platform-system__kicker">Podaci</p>
+              <p className="platform-shell__kicker">Podaci</p>
               <h2 id="inventory-title">Inventar</h2>
               <p>Trenutni brojevi na platformi.</p>
             </div>

@@ -3,6 +3,8 @@ import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformUsersQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatDate, formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformUsersPage.scss';
 
 const roleLabel = {
@@ -12,21 +14,6 @@ const roleLabel = {
   ADMIN: 'Super admin',
   PLATFORM_STAFF: 'Djelatnik platforme',
 };
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 function pillClass(role) {
   if (role === 'ADMIN' || role === 'PLATFORM_STAFF') return 'is-admin';
@@ -79,9 +66,9 @@ export default function PlatformUsersPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-users">
-        <div className="platform-users__stage">
-          <p className="platform-users__lede">Učitavamo račune…</p>
+      <main className="platform-shell platform-users">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Učitavamo račune…</p>
         </div>
       </main>
     );
@@ -89,13 +76,13 @@ export default function PlatformUsersPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-users">
-        <div className="platform-users__stage">
-          <header className="platform-users__head">
+      <main className="platform-shell platform-users">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-users__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Korisnici</h1>
-              <p className="platform-users__lede">Podaci trenutno nisu dostupni.</p>
+              <p className="platform-shell__lede">Podaci trenutno nisu dostupni.</p>
             </div>
           </header>
         </div>
@@ -104,18 +91,18 @@ export default function PlatformUsersPage() {
   }
 
   return (
-    <main className="platform-users">
-      <div className="platform-users__atmosphere" aria-hidden="true">
-        <span className="platform-users__wash" />
-        <span className="platform-users__grain" />
+    <main className="platform-shell platform-users">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-users__stage">
-        <header className="platform-users__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-users__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Korisnici</h1>
-            <p className="platform-users__lede">
+            <p className="platform-shell__lede">
               Svi računi na platformi · prijave u zadnjih
               {' '}
               {data.days}
@@ -123,8 +110,8 @@ export default function PlatformUsersPage() {
               dana. Bez lozinki i bez detalja članarina.
             </p>
           </div>
-          <div className="platform-users__head-actions">
-            <p className={`platform-users__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               uživo
             </p>
             <ArchiveExportButton
@@ -197,7 +184,7 @@ export default function PlatformUsersPage() {
           <header className="platform-users__block-head">
             <span className="platform-users__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-users__kicker">Računi</p>
+              <p className="platform-shell__kicker">Računi</p>
               <h2 id="users-list-title">Popis korisnika</h2>
               <p>
                 Prikazano

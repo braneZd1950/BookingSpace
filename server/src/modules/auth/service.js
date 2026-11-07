@@ -11,7 +11,8 @@ import { setConsentForUser, toPrivacyConsent } from '../consent/service.js';
 
 const BCRYPT_ROUNDS = 12;
 const RESET_TTL_MS = 60 * 60 * 1000;
-const dummyHash = bcrypt.hashSync('timing-only-secret', BCRYPT_ROUNDS);
+/** Random hash for timing-safe bcrypt.compare when the user row is missing. */
+const dummyHash = bcrypt.hashSync(randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
 
 function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');

@@ -3,6 +3,8 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformStudiosQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatDate, formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformStudiosPage.scss';
 
 const nicheLabel = {
@@ -14,21 +16,6 @@ const nicheLabel = {
   playroom: 'Igraonice i događaji',
   generic: 'Nešto drugo',
 };
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 export default function PlatformStudiosPage() {
   const { me } = useOutletContext() || {};
@@ -63,9 +50,9 @@ export default function PlatformStudiosPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-studios">
-        <div className="platform-studios__stage">
-          <p className="platform-studios__lede">Učitavamo partnere…</p>
+      <main className="platform-shell platform-studios">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Učitavamo partnere…</p>
         </div>
       </main>
     );
@@ -73,13 +60,13 @@ export default function PlatformStudiosPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-studios">
-        <div className="platform-studios__stage">
-          <header className="platform-studios__head">
+      <main className="platform-shell platform-studios">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-studios__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Studiji</h1>
-              <p className="platform-studios__lede">Podaci trenutno nisu dostupni.</p>
+              <p className="platform-shell__lede">Podaci trenutno nisu dostupni.</p>
             </div>
           </header>
         </div>
@@ -88,18 +75,18 @@ export default function PlatformStudiosPage() {
   }
 
   return (
-    <main className="platform-studios">
-      <div className="platform-studios__atmosphere" aria-hidden="true">
-        <span className="platform-studios__wash" />
-        <span className="platform-studios__grain" />
+    <main className="platform-shell platform-studios">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-studios__stage">
-        <header className="platform-studios__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-studios__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Studiji</h1>
-            <p className="platform-studios__lede">
+            <p className="platform-shell__lede">
               Svi partneri na platformi · aktivnost zadnjih
               {' '}
               {data.days}
@@ -107,8 +94,8 @@ export default function PlatformStudiosPage() {
               dana. Bez podataka članova.
             </p>
           </div>
-          <div className="platform-studios__head-actions">
-            <p className={`platform-studios__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               uživo
             </p>
             <ArchiveExportButton
@@ -177,7 +164,7 @@ export default function PlatformStudiosPage() {
           <header className="platform-studios__block-head">
             <span className="platform-studios__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-studios__kicker">Partneri</p>
+              <p className="platform-shell__kicker">Partneri</p>
               <h2 id="studios-list-title">Popis studija</h2>
               <p>
                 Prikazano

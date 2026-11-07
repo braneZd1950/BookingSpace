@@ -2,6 +2,8 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformReportsQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformReportsPage.scss';
 
 const ROWS = [
@@ -15,10 +17,6 @@ const ROWS = [
   ['booking_completed', 'Završeni termini'],
   ['booking_no_show', 'Nedolasci'],
 ];
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 function deltaText(deltaPct) {
   if (deltaPct == null) return '—';
@@ -40,9 +38,9 @@ export default function PlatformReportsPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-reports">
-        <div className="platform-reports__stage">
-          <p className="platform-reports__lede">Učitavamo usporedbu razdoblja…</p>
+      <main className="platform-shell platform-reports">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Učitavamo usporedbu razdoblja…</p>
         </div>
       </main>
     );
@@ -50,13 +48,13 @@ export default function PlatformReportsPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-reports">
-        <div className="platform-reports__stage">
-          <header className="platform-reports__head">
+      <main className="platform-shell platform-reports">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-reports__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Izvještaji</h1>
-              <p className="platform-reports__lede">Podaci trenutno nisu dostupni.</p>
+              <p className="platform-shell__lede">Podaci trenutno nisu dostupni.</p>
             </div>
           </header>
         </div>
@@ -70,18 +68,18 @@ export default function PlatformReportsPage() {
   const maxBookings = Math.max(1, ...topStudios.map((item) => Number(item.bookings) || 0));
 
   return (
-    <main className="platform-reports">
-      <div className="platform-reports__atmosphere" aria-hidden="true">
-        <span className="platform-reports__wash" />
-        <span className="platform-reports__grain" />
+    <main className="platform-shell platform-reports">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-reports__stage">
-        <header className="platform-reports__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-reports__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Izvještaji</h1>
-            <p className="platform-reports__lede">
+            <p className="platform-shell__lede">
               Usporedba zadnjih
               {' '}
               {data.days}
@@ -89,8 +87,8 @@ export default function PlatformReportsPage() {
               dana s prethodnim jednakim razdobljem. Agregati bez osobnih podataka.
             </p>
           </div>
-          <div className="platform-reports__head-actions">
-            <p className={`platform-reports__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               uživo
             </p>
             <ArchiveExportButton
@@ -168,7 +166,7 @@ export default function PlatformReportsPage() {
           <header className="platform-reports__block-head">
             <span className="platform-reports__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-reports__kicker">Usporedba</p>
+              <p className="platform-shell__kicker">Usporedba</p>
               <h2 id="compare-title">Trenutno vs prethodno</h2>
               <p>Isti broj dana, razdoblje odmah prije trenutnog.</p>
             </div>
@@ -209,7 +207,7 @@ export default function PlatformReportsPage() {
           <header className="platform-reports__block-head">
             <span className="platform-reports__index" aria-hidden="true">02</span>
             <div>
-              <p className="platform-reports__kicker">Rang</p>
+              <p className="platform-shell__kicker">Rang</p>
               <h2 id="top-studios-title">Najaktivniji studiji</h2>
               <p>Po broju rezervacija u trenutnom razdoblju.</p>
             </div>

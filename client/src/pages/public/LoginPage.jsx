@@ -22,7 +22,6 @@ const showDemoKeys = IS_DEV;
 const trials = [
   {
     email: member.email,
-    password: member.password,
     session: {
       name: member.name,
       email: member.email,
@@ -32,7 +31,6 @@ const trials = [
   },
   {
     email: business.owner.email,
-    password: business.owner.password,
     session: {
       name: business.owner.name,
       email: business.owner.email,
@@ -239,28 +237,6 @@ export default function LoginPage() {
       return;
     } catch (error) {
       if (error?.status === 'FETCH_ERROR') {
-        // Mock trial login only in local Vite dev — never for real-user testing builds.
-        if (import.meta.env.DEV && trial) {
-          if (trial.password !== values.password) {
-            setFormError('E-pošta ili lozinka nije točna.');
-            return;
-          }
-          if (trial.session.role === 'BUSINESS_OWNER' && !loadStudio()) {
-            saveStudio({
-              id: business.id,
-              name: business.name,
-              slug: business.slug,
-              phone: business.phone,
-              email: business.email,
-              address: business.address,
-              timezone: business.timezone,
-              description: '',
-            });
-          }
-          remember(trial.session);
-          await openGuide(trial.session);
-          return;
-        }
         setFormError('Poslužitelj nije dostupan. Pokušajte ponovno za trenutak.');
         return;
       }
@@ -380,7 +356,7 @@ export default function LoginPage() {
 
       {showDemoKeys ? (
         <p className="login__keys">
-          <strong>Probni ključevi</strong>
+          <strong>Probni računi (seed:demo)</strong>
           Član:
           {' '}
           <code>{member.email}</code>
@@ -389,9 +365,10 @@ export default function LoginPage() {
           {' '}
           <code>{business.owner.email}</code>
           <br />
-          Lozinka:
+          Lozinka je ista kao u
           {' '}
-          <code>{member.password}</code>
+          <code>npm --prefix server run seed:demo</code>
+          .
         </p>
       ) : null}
     </LoginShell>

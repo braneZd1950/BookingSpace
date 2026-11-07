@@ -3,6 +3,8 @@ import { useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetPlatformActivityQuery } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatWhen, formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformActivityPage.scss';
 
 const TYPE_LABELS = {
@@ -30,22 +32,6 @@ const FILTERS = [
   ['register_success', 'Registracije'],
   ['page_view', 'Posjeti'],
 ];
-
-function formatWhen(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 function pillClass(type) {
   if (type === 'booking_cancelled' || type === 'booking_no_show') return 'is-warn';
@@ -76,9 +62,9 @@ export default function PlatformActivityPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-activity">
-        <div className="platform-activity__stage">
-          <p className="platform-activity__lede">Učitavamo događaje…</p>
+      <main className="platform-shell platform-activity">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Učitavamo događaje…</p>
         </div>
       </main>
     );
@@ -86,13 +72,13 @@ export default function PlatformActivityPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-activity">
-        <div className="platform-activity__stage">
-          <header className="platform-activity__head">
+      <main className="platform-shell platform-activity">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-activity__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Aktivnost</h1>
-              <p className="platform-activity__lede">Podaci trenutno nisu dostupni.</p>
+              <p className="platform-shell__lede">Podaci trenutno nisu dostupni.</p>
             </div>
           </header>
         </div>
@@ -101,18 +87,18 @@ export default function PlatformActivityPage() {
   }
 
   return (
-    <main className="platform-activity">
-      <div className="platform-activity__atmosphere" aria-hidden="true">
-        <span className="platform-activity__wash" />
-        <span className="platform-activity__grain" />
+    <main className="platform-shell platform-activity">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-activity__stage">
-        <header className="platform-activity__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-activity__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Aktivnost</h1>
-            <p className="platform-activity__lede">
+            <p className="platform-shell__lede">
               Nedavni događaji · zadnjih
               {' '}
               {data.days}
@@ -120,8 +106,8 @@ export default function PlatformActivityPage() {
               dana · osvježava se uživo.
             </p>
           </div>
-          <div className="platform-activity__head-actions">
-            <p className={`platform-activity__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               uživo
             </p>
             <ArchiveExportButton
@@ -193,7 +179,7 @@ export default function PlatformActivityPage() {
           <header className="platform-activity__block-head">
             <span className="platform-activity__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-activity__kicker">Feed</p>
+              <p className="platform-shell__kicker">Feed</p>
               <h2 id="activity-feed-title">Nedavni događaji</h2>
               <p>
                 Zadnjih

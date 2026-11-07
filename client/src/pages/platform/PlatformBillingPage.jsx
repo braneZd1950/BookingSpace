@@ -9,31 +9,14 @@ import {
 } from '../../api/analyticsApi.js';
 import ArchiveExportButton from '../../components/ArchiveExportButton.jsx';
 import { archiveAuthor } from '../../lib/archivePdf.js';
+import { formatDate, formatCount } from '../../lib/formatters.js';
+import './platform-shell.scss';
 import './PlatformBillingPage.scss';
 
 const planLabel = {
   pilot: 'Pilot',
   standard: 'Standard',
 };
-
-function formatDate(value) {
-  if (!value) return '—';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [y, m, d] = value.split('-');
-    return `${Number(d)}.${Number(m)}.${y}.`;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('hr-HR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatCount(value) {
-  return new Intl.NumberFormat('hr-HR').format(Number(value) || 0);
-}
 
 function daysLabel(daysLeft) {
   if (daysLeft == null) return '—';
@@ -104,9 +87,9 @@ export default function PlatformBillingPage() {
 
   if (isLoading) {
     return (
-      <main className="platform-billing">
-        <div className="platform-billing__stage">
-          <p className="platform-billing__lede">Učitavamo pretplate…</p>
+      <main className="platform-shell platform-billing">
+        <div className="platform-shell__stage">
+          <p className="platform-shell__lede">Učitavamo pretplate…</p>
         </div>
       </main>
     );
@@ -114,13 +97,13 @@ export default function PlatformBillingPage() {
 
   if (isError || !data) {
     return (
-      <main className="platform-billing">
-        <div className="platform-billing__stage">
-          <header className="platform-billing__head">
+      <main className="platform-shell platform-billing">
+        <div className="platform-shell__stage">
+          <header className="platform-shell__head">
             <div>
-              <p className="platform-billing__eyebrow">Platforma</p>
+              <p className="platform-shell__eyebrow">Platforma</p>
               <h1>Plaćanja</h1>
-              <p className="platform-billing__lede">Podaci trenutno nisu dostupni.</p>
+              <p className="platform-shell__lede">Podaci trenutno nisu dostupni.</p>
             </div>
           </header>
         </div>
@@ -129,26 +112,26 @@ export default function PlatformBillingPage() {
   }
 
   return (
-    <main className="platform-billing">
-      <div className="platform-billing__atmosphere" aria-hidden="true">
-        <span className="platform-billing__wash" />
-        <span className="platform-billing__grain" />
+    <main className="platform-shell platform-billing">
+      <div className="platform-shell__atmosphere" aria-hidden="true">
+        <span className="platform-shell__wash" />
+        <span className="platform-shell__grain" />
       </div>
 
-      <div className="platform-billing__stage">
-        <header className="platform-billing__head">
+      <div className="platform-shell__stage">
+        <header className="platform-shell__head">
           <div>
-            <p className="platform-billing__eyebrow">Platforma</p>
+            <p className="platform-shell__eyebrow">Platforma</p>
             <h1>Plaćanja</h1>
-            <p className="platform-billing__lede">
+            <p className="platform-shell__lede">
               Pretplate partnera · stanje na
               {' '}
               {formatDate(data.today)}
               . Upozorenja i pripremni e-računi idu na e-poštu studija.
             </p>
           </div>
-          <div className="platform-billing__head-actions">
-            <p className={`platform-billing__live${isFetching ? ' is-busy' : ''}`}>
+          <div className="platform-shell__head-actions">
+            <p className={`platform-shell__live${isFetching ? ' is-busy' : ''}`}>
               uživo
             </p>
             <ArchiveExportButton
@@ -222,7 +205,7 @@ export default function PlatformBillingPage() {
           <header className="platform-billing__block-head">
             <span className="platform-billing__index" aria-hidden="true">01</span>
             <div>
-              <p className="platform-billing__kicker">Pretplate</p>
+              <p className="platform-shell__kicker">Pretplate</p>
               <h2 id="billing-list-title">Popis partnera</h2>
               <p>
                 Prikazano
