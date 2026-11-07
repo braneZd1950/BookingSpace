@@ -15,8 +15,14 @@ export function signAccessToken(user) {
 
 export function verifyAccessToken(token) {
   try {
-    return jwt.verify(token, env.jwtSecret);
-  } catch {
+    const payload = jwt.verify(token, env.jwtSecret);
+    // Media playback JWTs share JWT_SECRET but must never act as a session.
+    if (payload?.typ === 'media') {
+      throw new HttpError(401, 'Unauthorized');
+    }
+    return payload;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw new HttpError(401, 'Unauthorized');
   }
 }

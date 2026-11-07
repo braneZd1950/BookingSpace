@@ -1,5 +1,6 @@
 import PushSubscription from '../../models/PushSubscription.js';
 import env from '../../config/env.js';
+import { HttpError } from '../../utils/httpError.js';
 import { webPushConfigured } from '../../utils/webPush.js';
 
 export function getPushPublicConfig() {
@@ -10,8 +11,14 @@ export function getPushPublicConfig() {
 }
 
 export async function upsertSubscription(user, input, userAgent = '') {
+  const endpoint = String(input.endpoint);
+  const existing = await PushSubscription.findOne({ endpoint: { $eq: endpoint } });
+  if (existing && String(existing.userId) !== String(user._id)) {
+    throw new HttpError(409, 'Push endpoint already registered', { code: 'PUSH_ENDPOINT_TAKEN' });
+  }
+
   const doc = await PushSubscription.findOneAndUpdate(
-    { endpoint: input.endpoint },
+    { endpoint: { $eq: endpoint }, userId: { $eq: user._id } },
     {
       $set: {
         userId: user._id,
@@ -19,6 +26,7 @@ export async function upsertSubscription(user, input, userAgent = '') {
         userAgent: String(userAgent || '').slice(0, 400),
         client: input.client || 'web',
       },
+      $setOnInsert: { endpoint },
     },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );

@@ -29,6 +29,7 @@ function demoLegal(studio) {
 }
 
 const BCRYPT_ROUNDS = 12;
+// NOSONAR - demo seed credential for local/dev only
 const PASSWORD = 'lozinka1234';
 
 const DEMO = {

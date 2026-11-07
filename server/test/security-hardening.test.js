@@ -119,3 +119,27 @@ test('signAccessToken embeds token version', async () => {
   assert.equal(payload.v, 3);
   await User.deleteOne({ _id: user._id });
 });
+
+test('media playback JWT is rejected as a session Bearer token', async () => {
+  const { signMediaAccessToken } = await import('../src/utils/mediaToken.js');
+  const { verifyAccessToken } = await import('../src/utils/token.js');
+
+  const user = await User.create({
+    name: 'Media',
+    email: `media-${Date.now()}@example.com`,
+    passwordHash: 'x',
+    role: 'CUSTOMER',
+    tokenVersion: 0,
+  });
+  const media = signMediaAccessToken({
+    userId: user._id,
+    tenantId: user._id,
+    workoutId: user._id,
+  });
+  assert.throws(() => verifyAccessToken(media), (err) => err?.status === 401);
+
+  const me = await request('/api/auth/me', { token: media });
+  assert.equal(me.status, 401);
+
+  await User.deleteOne({ _id: user._id });
+});

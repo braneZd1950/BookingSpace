@@ -1,6 +1,5 @@
 /**
  * Owner studio nav destinations (pilot set).
- * Keep in sync with `mobile/src/features/nav/studioNavConfig.ts`.
  */
 
 export const STUDIO_NAV_ALL = [

@@ -27,7 +27,10 @@ async function optionalUser(req) {
   if (!match) return null;
   try {
     const payload = verifyAccessToken(match[1]);
-    return User.findById(payload.sub);
+    const user = await User.findById(payload.sub);
+    if (!user) return null;
+    if (Number(payload.v || 0) !== Number(user.tokenVersion || 0)) return null;
+    return user;
   } catch {
     return null;
   }

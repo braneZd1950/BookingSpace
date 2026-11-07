@@ -20,14 +20,24 @@ const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function slugify(name) {
-  const slug = name
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
-  return slug;
+  const normalized = name.normalize('NFD');
+  let out = '';
+  let dash = false;
+  for (const char of normalized) {
+    const code = char.codePointAt(0);
+    // Skip combining marks (Mn).
+    if (code >= 0x0300 && code <= 0x036F) continue;
+    const lower = char.toLowerCase();
+    if ((lower >= 'a' && lower <= 'z') || (lower >= '0' && lower <= '9')) {
+      out += lower;
+      dash = false;
+    } else if (out && !dash) {
+      out += '-';
+      dash = true;
+    }
+  }
+  if (out.endsWith('-')) out = out.slice(0, -1);
+  return out.slice(0, 60);
 }
 
 async function uniqueSlug(base) {

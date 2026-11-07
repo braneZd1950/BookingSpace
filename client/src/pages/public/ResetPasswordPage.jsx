@@ -116,7 +116,6 @@ export default function ResetPasswordPage() {
               name="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              autoFocus
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);

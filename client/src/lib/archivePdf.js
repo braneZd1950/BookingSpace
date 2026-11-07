@@ -56,11 +56,12 @@ export function archiveAuthor(me) {
 function authorFields(generatedBy) {
   if (!generatedBy) return { name: FORMAL_OFFICER, email: '' };
   if (typeof generatedBy === 'string') {
-    const match = generatedBy.match(/^(.*?)\s*<([^>]+)>\s*$/);
-    if (match) {
+    const open = generatedBy.lastIndexOf('<');
+    const close = generatedBy.lastIndexOf('>');
+    if (open > 0 && close > open) {
       return {
-        name: formalDisplayName(match[1]),
-        email: match[2].trim().toLowerCase(),
+        name: formalDisplayName(generatedBy.slice(0, open).trim()),
+        email: generatedBy.slice(open + 1, close).trim().toLowerCase(),
       };
     }
     if (generatedBy.includes('@')) {

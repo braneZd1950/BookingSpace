@@ -6,7 +6,9 @@ const baseMinutes = ['00', '15', '30', '45'];
 export default function TimeSelect({ label, value, open, onOpen, onClose, onChange }) {
   const root = useRef(null);
   const [hour = '09', minute = '00'] = (value || '09:00').split(':');
-  const minutes = baseMinutes.includes(minute) ? baseMinutes : [...baseMinutes, minute].sort();
+  const minutes = baseMinutes.includes(minute)
+    ? baseMinutes
+    : [...baseMinutes, minute].sort((a, b) => Number(a) - Number(b));
 
   useEffect(() => {
     if (!open) return undefined;

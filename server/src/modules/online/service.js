@@ -11,6 +11,7 @@ import User from '../../models/User.js';
 import { HttpError } from '../../utils/httpError.js';
 import { assertVideoBuffer } from '../../utils/mediaMagic.js';
 import { signMediaAccessToken, verifyMediaAccessToken } from '../../utils/mediaToken.js';
+import { zonedNow } from '../../utils/time.js';
 import { MANAGE_ROLES, requireMember } from '../access.js';
 
 const VIDEO_TYPES = new Set([
@@ -103,13 +104,19 @@ function remainingSessions(membership) {
   return Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0));
 }
 
-async function activeMembershipFor(userId, tenantId) {
+async function activeMembershipFor(userId, tenantId, onDate) {
   if (!userId) return null;
-  return Membership.findOne({
+  const today = onDate || new Date().toISOString().slice(0, 10);
+  const rows = await Membership.find({
     tenantId,
     userId,
     status: 'ACTIVE',
-  }).sort({ createdAt: -1 });
+    validFrom: { $lte: today },
+    validUntil: { $gte: today },
+  }).sort({ validUntil: 1, createdAt: -1 });
+  // Prefer a pack that still has sessions; fall back to the soonest-expiring valid pack.
+  const withCredit = rows.find((row) => remainingSessions(row) > 0);
+  return withCredit || rows[0] || null;
 }
 
 function accessFor(membership) {
@@ -240,10 +247,11 @@ export async function removeWorkout(actor, tenantId, workoutId) {
 }
 
 export async function listForMember(actor, tenantId) {
-  const tenant = await Tenant.findById(tenantId).select('_id');
+  const tenant = await Tenant.findById(tenantId).select('_id timezone');
   if (!tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
-  const membership = actor ? await activeMembershipFor(actor._id, tenantId) : null;
+  const today = zonedNow(tenant.timezone || 'Europe/Zagreb').date;
+  const membership = actor ? await activeMembershipFor(actor._id, tenantId, today) : null;
   const access = accessFor(membership);
   const rows = await OnlineWorkout.find({ tenantId, active: true }).sort({ createdAt: -1 });
   return {
@@ -263,7 +271,9 @@ async function actorCanStreamWorkout(actor, tenantId, workout) {
   } catch {
     // fall through to membership check
   }
-  const membership = await activeMembershipFor(actor._id, tenantId);
+  const tenant = await Tenant.findById(tenantId).select('timezone');
+  const today = zonedNow(tenant?.timezone || 'Europe/Zagreb').date;
+  const membership = await activeMembershipFor(actor._id, tenantId, today);
   const access = accessFor(membership);
   return Boolean(access.free && workout.active);
 }

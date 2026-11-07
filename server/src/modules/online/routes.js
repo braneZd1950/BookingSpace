@@ -12,9 +12,17 @@ import {
   updateOnlineSchema,
 } from './schema.js';
 
+/** Cap upload body early; service also asserts magic bytes + size (100 MiB). */
+const MAX_VIDEO_UPLOAD_BYTES = 100 * 1024 * 1024;
+
 const videoUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024, files: 1 },
+  limits: {
+    fileSize: MAX_VIDEO_UPLOAD_BYTES,
+    files: 1,
+    fields: 8,
+    fieldSize: 64 * 1024,
+  },
 });
 
 const onlineRoutes = Router({ mergeParams: true });

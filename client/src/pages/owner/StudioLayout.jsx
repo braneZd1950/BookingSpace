@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
-import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
 import { useGetMeQuery } from '../../api/authApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
@@ -325,7 +324,6 @@ export default function StudioLayout() {
         />
       ) : null}
       <ConsentBanner />
-      <InstallAppBanner />
     </div>
   );
 }

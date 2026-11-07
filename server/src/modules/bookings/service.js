@@ -49,6 +49,8 @@ async function assertCapacityAfterCreate({
   endTime,
   capacity,
   capacityModel,
+  durationMinutes,
+  intervalMinutes,
   bookingId,
   session,
 }) {
@@ -62,8 +64,13 @@ async function assertCapacityAfterCreate({
     session,
   );
 
+  const useOverlap = capacityModel === 'CONCURRENT'
+    || (Number(intervalMinutes) > 0
+      && Number(durationMinutes) > 0
+      && Number(intervalMinutes) < Number(durationMinutes));
+
   const occupying = confirmed.filter((booking) => {
-    if (capacityModel === 'CONCURRENT') {
+    if (useOverlap) {
       return overlaps(startTime, endTime, booking.startTime, booking.endTime);
     }
     return booking.startTime === startTime;
@@ -73,6 +80,53 @@ async function assertCapacityAfterCreate({
   if (keep.has(String(bookingId))) return;
 
   throw new HttpError(409, 'Slot is not available', { code: 'SLOT_UNAVAILABLE' });
+}
+
+/**
+ * Reject a second CONFIRMED booking for the same trainer that overlaps in time.
+ * Same service + same startTime is a group-class seat (capacity handles it).
+ */
+async function assertStaffFreeAfterCreate({
+  tenantId,
+  serviceId,
+  staffId,
+  date,
+  startTime,
+  endTime,
+  bookingId,
+  session,
+}) {
+  if (!staffId) return;
+  const confirmed = await bind(
+    Booking.find({
+      tenantId,
+      staffId,
+      date,
+      status: 'CONFIRMED',
+    }).select('_id serviceId startTime endTime').sort({ _id: 1 }),
+    session,
+  );
+  const clash = confirmed.find((row) => {
+    if (String(row._id) === String(bookingId)) return false;
+    if (!overlaps(startTime, endTime, row.startTime, row.endTime)) return false;
+    const sameGroupSeat = String(row.serviceId) === String(serviceId)
+      && row.startTime === startTime;
+    return !sameGroupSeat;
+  });
+  if (clash) {
+    throw new HttpError(409, 'Trainer is not available', { code: 'STAFF_UNAVAILABLE' });
+  }
+}
+
+async function rollbackCreatedBooking(booking, sessionsDebited, membershipId, session) {
+  await Booking.deleteOne({ _id: booking._id }, sessionOptions(session));
+  if (sessionsDebited && membershipId) {
+    await Membership.updateOne(
+      { _id: membershipId, sessionsUsed: { $gt: 0 } },
+      { $inc: { sessionsUsed: -1 } },
+      sessionOptions(session),
+    );
+  }
 }
 
 function bind(query, session) {
@@ -265,23 +319,73 @@ export async function createBooking(actor, input) {
         endTime: slot.endTime,
         capacity: service.capacity,
         capacityModel,
+        durationMinutes: service.durationMinutes,
+        intervalMinutes: service.slotIntervalMinutes,
+        bookingId: created._id,
+        session,
+      });
+      await assertStaffFreeAfterCreate({
+        tenantId: tenant._id,
+        serviceId: service._id,
+        staffId: staffId || undefined,
+        date: input.date,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
         bookingId: created._id,
         session,
       });
     } catch (error) {
-      await Booking.deleteOne({ _id: created._id }, sessionOptions(session));
-      if (sessionsDebited && membershipId) {
-        await Membership.updateOne(
-          { _id: membershipId, sessionsUsed: { $gt: 0 } },
-          { $inc: { sessionsUsed: -1 } },
-          sessionOptions(session),
-        );
-      }
+      await rollbackCreatedBooking(created, sessionsDebited, membershipId, session);
       throw error;
     }
 
     return created;
   });
+
+  // Replica-set transactions use snapshot isolation: concurrent inserts are
+  // invisible to each other, so the in-tx capacity check can miss overbook.
+  // Re-check after commit (visible counts) and roll back the loser.
+  try {
+    await assertCapacityAfterCreate({
+      tenantId: tenant._id,
+      serviceId: service._id,
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      capacity: service.capacity,
+      capacityModel: tenant.bookingSettings?.capacityModel || 'PER_SLOT',
+      durationMinutes: service.durationMinutes,
+      intervalMinutes: service.slotIntervalMinutes,
+      bookingId: booking._id,
+      session: null,
+    });
+    await assertStaffFreeAfterCreate({
+      tenantId: tenant._id,
+      serviceId: service._id,
+      staffId: booking.staffId,
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      bookingId: booking._id,
+      session: null,
+    });
+  } catch (error) {
+    const removed = await Booking.findOneAndDelete({
+      _id: booking._id,
+      status: 'CONFIRMED',
+    });
+    if (removed?.membershipId) {
+      await Membership.updateOne(
+        {
+          _id: removed.membershipId,
+          sessionsIncluded: { $ne: null },
+          sessionsUsed: { $gt: 0 },
+        },
+        { $inc: { sessionsUsed: -1 } },
+      );
+    }
+    throw error;
+  }
 
   trackUsage({
     type: 'booking_created',
@@ -392,7 +496,8 @@ export async function cancelBooking(actor, bookingId) {
     await staffAccess(actor, existing.tenantId);
     staff = true;
   }
-  assertPrivacyConsent(actor);
+  // Consent is required to create bookings, not to free a seat the member already holds.
+  if (!owns) assertPrivacyConsent(actor);
   const now = zonedNow(tenant.timezone || 'Europe/Zagreb');
   const inWindow = withinCancellationWindow(
     now,
@@ -411,7 +516,9 @@ export async function cancelBooking(actor, bookingId) {
     current.cancelledAt = new Date();
     await current.save(sessionOptions(session));
 
-    if (inWindow && current.membershipId) {
+    // Staff/studio cancel should restore the credit; member late-cancel does not.
+    const shouldRefund = inWindow || staff;
+    if (shouldRefund && current.membershipId) {
       await Membership.updateOne(
         {
           _id: current.membershipId,
@@ -485,14 +592,18 @@ export async function cancelBooking(actor, bookingId) {
 }
 
 async function mark(actor, bookingId, status, stamp, usageType) {
-  const booking = await loadManageable(actor, bookingId);
-  await staffAccess(actor, booking.tenantId);
-  if (booking.status !== 'CONFIRMED') {
+  const existing = await loadManageable(actor, bookingId);
+  await staffAccess(actor, existing.tenantId);
+  const $set = { status };
+  if (stamp) $set[stamp] = new Date();
+  const booking = await Booking.findOneAndUpdate(
+    { _id: bookingId, status: 'CONFIRMED' },
+    { $set },
+    { new: true },
+  );
+  if (!booking) {
     throw new HttpError(409, 'Booking cannot be updated', { code: 'INVALID_STATE' });
   }
-  booking.status = status;
-  if (stamp) booking[stamp] = new Date();
-  await booking.save();
   if (usageType) {
     trackUsage({
       type: usageType,

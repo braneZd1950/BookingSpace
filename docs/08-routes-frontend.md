@@ -1,6 +1,6 @@
 # Frontend routes
 
-> Source of truth: `client/src/app/App.jsx` (web) and `mobile/app/` (Expo Router). Snapshot: [16-current-status.md](16-current-status.md).
+> Source of truth: `client/src/app/App.jsx`. Snapshot: [16-current-status.md](16-current-status.md).
 
 ## Public platform (web)
 
@@ -9,7 +9,6 @@
 | `/` | B2B home (anyminutes) |
 | `/login` | Login |
 | `/register` | Business signup |
-| `/preuzmi` | Direct Android app download (APK from site) |
 | `/zaboravljena-lozinka` | Forgot password |
 | `/nova-lozinka` | Reset password |
 | `/postavljanje` | Studio setup wizard (template, layout, colors) |
@@ -18,8 +17,7 @@
 | `*` | 404 |
 
 Maintenance for the whole app: `VITE_MAINTENANCE=true`.  
-Crash / unexpected UI error: React `ErrorBoundary` → `ErrorPage` (also `/greska`).  
-Native: `EXPO_PUBLIC_MAINTENANCE=true`, Expo Router `+not-found`, `AppErrorBoundary`.
+Crash / unexpected UI error: React `ErrorBoundary` → `ErrorPage` (also `/greska`).
 
 ## Platform admin (web only) — `/analitika`
 
@@ -34,8 +32,6 @@ Gated by `PlatformGate` (`platformAdmin` from `/auth/me`).
 | `/analitika/placanja` | Partner SaaS billing |
 | `/analitika/izvjestaji` | Reports |
 | `/analitika/sustav` | System |
-
-Mobile shell **omits** these routes.
 
 ## Owner studio — `/stranica`
 
@@ -58,11 +54,6 @@ Held (flags in `client/src/lib/studioFeatures.js`): galerija, online, placanja, 
 | `/s/:slug/termini` | Termini | Member book / cancel |
 | `/s/:slug/online` | Online | Catalog (flagged) |
 | `/s/:slug/privatnost` | — | Privacy / consent |
-
-## Native Expo (`mobile/`)
-
-File-based Expo Router (not React Router). Owner shell `/(app)`, member `/(member)/[slug]`, auth `/(auth)/login`.  
-Full route map and build notes: [18-native-mobile.md](18-native-mobile.md).
 
 ## Later / deferred
 

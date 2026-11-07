@@ -11,7 +11,6 @@
 - Redux Toolkit + RTK Query
 - SCSS
 - PWA (manifest + service worker) on web (`client/`)
-- Native mobile via Expo (`mobile/`)
 
 ### Backend
 
@@ -29,7 +28,7 @@
 ### Infrastructure
 
 - Render or equivalent hosting
-- GitHub Actions CI (server tests + client/mobile builds)
+- GitHub Actions CI (server tests + client build + Playwright e2e)
 - Stripe later (env placeholders only)
 
 ## Architecture style
@@ -49,7 +48,6 @@ Never trust a client-supplied `tenantId` for authorization.
 Historical / infra names may still say BookingSpace; product UI brand is **anyminutes**.
 
 - Platform marketing / web origin (local `:5173`)
-- Native Expo app (`mobile/`)
 - API (local default `:4001`)
 - Future: `*.bookingspace.hr` or product domain equivalents
 
@@ -77,4 +75,4 @@ Booking:
 
 ## Mobile
 
-`mobile/` is the Expo (React Native) app. It talks to the same Express API as `client/`. Unit tests live in `mobile/test/` and run in GitHub Actions.
+Native Expo app was removed; product is web-only until a reliable Android/iOS client is ready. Phones use the responsive web SPA.

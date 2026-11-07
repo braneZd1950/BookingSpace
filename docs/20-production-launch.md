@@ -16,7 +16,6 @@ Related: [17-render-deploy.md](17-render-deploy.md) · [19-security-maintenance.
 | Data | local / Atlas **dev** DB + optional `seed:demo` | Atlas **prod** DB — **never** `seed:demo` |
 | API | `http://localhost:4001` | HTTPS public URL |
 | Web | Vite `:5173` | Built SPA (`client/dist`) served by Express or Static Site |
-| Native | `EXPO_PUBLIC_API_URL=http://LAN:4001/api` | HTTPS API URL via EAS secrets |
 
 ---
 
@@ -102,19 +101,7 @@ npm run smoke
 
 ---
 
-## 6. Native (Expo)
-
-Local phone testing keeps LAN IP. Store / production builds:
-
-1. Set EAS secret `EXPO_PUBLIC_API_URL=https://VAS-SERVIS.onrender.com/api`
-2. `eas build --profile production`
-3. Never ship `127.0.0.1` / LAN in a store binary
-
-Details: [18-native-mobile.md](18-native-mobile.md)
-
----
-
-## 7. Hard no’s in production
+## 6. Hard no’s in production
 
 - `npm --prefix server run seed:demo`
 - `ADMIN_EMAIL_BOOTSTRAP=true`

@@ -385,7 +385,6 @@ export default function OnlinePage() {
                   value={form.title}
                   onChange={(event) => change('title', event.target.value)}
                   placeholder="npr. Core 20 min"
-                  autoFocus
                 />
               </label>
               <label>

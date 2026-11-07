@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const subscribePushSchema = {
+export const subscribePushSchema = z.object({
   body: z.object({
     endpoint: z.string().url().max(2048),
     keys: z.object({
@@ -9,10 +9,10 @@ export const subscribePushSchema = {
     }),
     client: z.enum(['web', 'mobile']).optional(),
   }),
-};
+});
 
-export const unsubscribePushSchema = {
+export const unsubscribePushSchema = z.object({
   body: z.object({
     endpoint: z.string().url().max(2048),
   }),
-};
+});

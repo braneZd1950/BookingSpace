@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import * as Sentry from '@sentry/react';
 import { ErrorPage } from '../pages/public/StatusPage.jsx';
 
 /**
@@ -15,6 +16,9 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info?.componentStack } },
+    });
     if (import.meta.env.DEV) {
       console.error('[ErrorBoundary]', error, info?.componentStack);
     }

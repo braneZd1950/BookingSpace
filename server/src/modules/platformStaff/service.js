@@ -57,7 +57,8 @@ export async function createPlatformStaff(actor, input) {
     throw new HttpError(400, 'Password too short', { code: 'WEAK_PASSWORD' });
   }
 
-  const existing = await User.findOne({ email }).select('+passwordHash name email phone role');
+  const existing = await User.findOne({ email: { $eq: String(email) } })
+    .select('+passwordHash name email phone role');
   if (existing) {
     if (existing.role === 'ADMIN') {
       throw new HttpError(409, 'Cannot change super admin via API', { code: 'IS_SUPER_ADMIN' });
@@ -77,7 +78,11 @@ export async function createPlatformStaff(actor, input) {
     if (phone !== undefined) existing.phone = phone;
     if (password) {
       existing.passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+      existing.passwordResetTokenHash = undefined;
+      existing.passwordResetExpires = undefined;
     }
+    // Invalidate any pre-promotion customer JWT (role lives in DB, not in the token).
+    existing.tokenVersion = Number(existing.tokenVersion || 0) + 1;
     await existing.save();
     return {
       staff: toStaff(existing),
@@ -147,6 +152,9 @@ export async function updatePlatformStaff(actor, staffId, input) {
       throw new HttpError(400, 'Password too short', { code: 'WEAK_PASSWORD' });
     }
     user.passwordHash = await bcrypt.hash(input.password.trim(), BCRYPT_ROUNDS);
+    user.passwordResetTokenHash = undefined;
+    user.passwordResetExpires = undefined;
+    user.tokenVersion = Number(user.tokenVersion || 0) + 1;
   }
   await user.save();
   return { staff: toStaff(user) };
@@ -169,6 +177,7 @@ export async function removePlatformStaff(actor, staffId) {
   }
 
   user.role = 'CUSTOMER';
+  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
   await user.save();
   return { ok: true, staff: toStaff(user) };
 }

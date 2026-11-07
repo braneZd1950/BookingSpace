@@ -87,11 +87,19 @@ function policyMark(minutes) {
 function themeStyle(palette) {
   const theme = palette?.theme;
   if (!theme) return undefined;
+  // Match paletteSurfaceVars: in dark mode ink/canvas follow global tokens so
+  // inline studio light-ink does not beat dark CSS rules.
+  const dark = typeof document !== 'undefined'
+    && (document.documentElement.getAttribute('data-theme') === 'dark'
+      || (document.documentElement.getAttribute('data-theme') !== 'light'
+        && window.matchMedia('(prefers-color-scheme: dark)').matches));
   return {
     '--book-brand': theme.primaryColor,
-    '--book-soft': theme.secondaryColor,
-    '--book-ink': theme.ink,
-    '--book-canvas': theme.canvas,
+    '--book-soft': dark
+      ? `color-mix(in srgb, ${theme.primaryColor} 26%, var(--surface))`
+      : theme.secondaryColor,
+    '--book-ink': dark ? 'var(--fg)' : theme.ink,
+    '--book-canvas': dark ? 'var(--bg)' : theme.canvas,
   };
 }
 
@@ -151,7 +159,7 @@ export default function MemberBookPage() {
   }, [cancelWindow]);
 
   const canFetchSlots = loggedIn && isMember && Boolean(serviceId) && consentOk;
-  const { data: availability, isFetching: loadingSlots } = useGetAvailabilityQuery(
+  const { currentData: availability, isFetching: loadingSlots } = useGetAvailabilityQuery(
     { tenantId, serviceId, date },
     { skip: !canFetchSlots },
   );
@@ -166,6 +174,7 @@ export default function MemberBookPage() {
     return new Date(y, m - 1, d);
   }, [date]);
   const open = dayOpen(workingHours, selectedDate);
+  // currentData avoids showing yesterday's slots while today's request is in flight
   const slots = availability?.slots || [];
   const bookableSlots = slots.filter((item) => item.status === 'AVAILABLE');
   const selectedSlot = bookableSlots.find((item) => item.startTime === slotTime) || null;

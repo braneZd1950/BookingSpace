@@ -40,8 +40,10 @@ export function usePrivacyConsent() {
       return undefined;
     }
 
-    // Local accept before login must be pushed to the account — do not wipe it.
-    if (hasValidLocalConsent() && !remote?.isCurrent && !syncingRef.current) {
+    // Push local accept only when the account has never recorded this version
+    // (guest accept → first login). Do not overwrite a withdraw or stale remote.
+    const neverRecorded = !remote || (!remote.accepted && !remote.withdrawnAt);
+    if (hasValidLocalConsent() && neverRecorded && !syncingRef.current) {
       syncingRef.current = true;
       recordConsent({
         action: 'accept',

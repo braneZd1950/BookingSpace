@@ -31,6 +31,7 @@ import {
 } from './studioTime.js';
 import './SetupPage.scss';
 import './SettingsPage.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 const TOKEN_KEY = 'bookingspace.token';
@@ -356,7 +357,7 @@ export default function SettingsPage() {
       note('error', 'Upišite naziv poslovanja.');
       return;
     }
-    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    if (form.email.trim() && !isEmail(form.email.trim())) {
       note('error', 'Upišite ispravnu e-poštu poslovanja.');
       return;
     }
@@ -437,7 +438,7 @@ export default function SettingsPage() {
       note('error', 'Upišite ime.');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.email.trim())) {
+    if (!isEmail(account.email.trim())) {
       note('error', 'Upišite ispravnu e-poštu računa.');
       return;
     }
@@ -1098,7 +1099,7 @@ export default function SettingsPage() {
                       <strong>{title}</strong>
                       <span>{noteText}</span>
                     </div>
-                    <label className="settings__switch">
+                    <label className="settings__switch" aria-label={title}>
                       <input
                         type="checkbox"
                         checked={Boolean(prefs[key])}
@@ -1107,7 +1108,7 @@ export default function SettingsPage() {
                           [key]: event.target.checked,
                         }))}
                       />
-                      <span />
+                      <span aria-hidden="true" />
                     </label>
                   </li>
                 ))}
@@ -1178,7 +1179,7 @@ export default function SettingsPage() {
                       <strong>{title}</strong>
                       <span>{noteText}</span>
                     </div>
-                    <label className="settings__switch">
+                    <label className="settings__switch" aria-label={title}>
                       <input
                         type="checkbox"
                         checked={Boolean(prefs[key])}
@@ -1187,7 +1188,7 @@ export default function SettingsPage() {
                           [key]: event.target.checked,
                         }))}
                       />
-                      <span />
+                      <span aria-hidden="true" />
                     </label>
                   </li>
                 ))}

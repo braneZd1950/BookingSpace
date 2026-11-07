@@ -78,7 +78,7 @@ export async function registerUser(input) {
 }
 
 export async function loginUser(input) {
-  const user = await User.findOne({ email: input.email }).select('+passwordHash');
+  const user = await User.findOne({ email: { $eq: String(input.email) } }).select('+passwordHash');
 
   if (user && !user.passwordHash) {
     throw new HttpError(401, 'Ovaj račun koristi Google prijavu.', {
@@ -143,8 +143,20 @@ export async function loginWithGoogle(input) {
   let created = false;
 
   if (!user) {
-    user = await User.findOne({ email });
+    // Do not attach Google to an existing password account — prevents
+    // register-then-wait takeover of someone else's Google email.
+    user = await User.findOne({ email: { $eq: email } }).select('+passwordHash');
+    if (user?.passwordHash) {
+      throw new HttpError(409, 'Račun s ovom e-poštom već postoji. Prijavite se lozinkom.', {
+        code: 'EMAIL_TAKEN',
+      });
+    }
     if (user) {
+      if (user.googleId && user.googleId !== googleId) {
+        throw new HttpError(409, 'Račun je već povezan s drugim Google profilom.', {
+          code: 'GOOGLE_MISMATCH',
+        });
+      }
       user.googleId = googleId;
       if (!user.name) user.name = name;
       await user.save();
@@ -186,9 +198,12 @@ export async function loginWithGoogle(input) {
 
 export async function updateMe(user, input) {
   if (input.email && input.email !== user.email) {
-    const taken = await User.exists({ email: input.email, _id: { $ne: user._id } });
+    const taken = await User.exists({
+      email: { $eq: String(input.email) },
+      _id: { $ne: user._id },
+    });
     if (taken) throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
-    user.email = input.email;
+    user.email = String(input.email);
   }
   if (input.name) user.name = input.name;
   if (input.phone !== undefined) user.phone = input.phone || undefined;
@@ -241,7 +256,7 @@ export async function requestPasswordReset(input) {
     message: 'Ako račun postoji, poslali smo link za oporavak lozinke.',
   };
 
-  const user = await User.findOne({ email: input.email })
+  const user = await User.findOne({ email: { $eq: String(input.email) } })
     .select('+passwordResetTokenHash +passwordResetExpires');
   if (!user) return ok;
 
@@ -274,20 +289,23 @@ export async function requestPasswordReset(input) {
 
 export async function resetPasswordWithToken(input) {
   const tokenHash = hashResetToken(input.token);
-  const user = await User.findOne({
-    passwordResetTokenHash: tokenHash,
-    passwordResetExpires: { $gt: new Date() },
-  }).select('+passwordHash +passwordResetTokenHash +passwordResetExpires');
+  const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+  const updated = await User.findOneAndUpdate(
+    {
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpires: { $gt: new Date() },
+    },
+    {
+      $set: { passwordHash },
+      $inc: { tokenVersion: 1 },
+      $unset: { passwordResetTokenHash: 1, passwordResetExpires: 1 },
+    },
+    { new: true },
+  );
 
-  if (!user) {
+  if (!updated) {
     throw new HttpError(400, 'Reset link is invalid or expired', { code: 'RESET_INVALID' });
   }
-
-  user.passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-  user.passwordResetTokenHash = undefined;
-  user.passwordResetExpires = undefined;
-  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
-  await user.save();
 
   return { ok: true };
 }

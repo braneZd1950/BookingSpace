@@ -29,13 +29,18 @@ export function resolvePostLoginPath(user, ctx = {}) {
     return ctx.guideDone === false ? '/postavljanje' : '/stranica';
   }
 
+  const tenants = ctx.tenants || [];
+  const staffLink = tenants.find((row) => row.role === 'STAFF' || row.role === 'BUSINESS_OWNER');
+  if (user.role === 'STAFF' || staffLink?.role === 'STAFF') {
+    return '/stranica';
+  }
+
   const memberships = ctx.memberships || [];
   const active = memberships.find(
     (item) => item.status === 'ACTIVE' && item.tenant?.slug,
   );
   if (active?.tenant?.slug) return `/s/${active.tenant.slug}`;
 
-  const tenants = ctx.tenants || [];
   const customer = tenants.find((row) => row.role === 'CUSTOMER') || tenants[0];
   if (customer?.tenant?.slug) return `/s/${customer.tenant.slug}`;
 

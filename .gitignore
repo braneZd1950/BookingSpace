@@ -1,7 +1,10 @@
 node_modules/
 dist/
-.expo/
 uploads/
+client/test-results/
+client/playwright-report/
+client/blob-report/
+client/playwright/.cache/
 .env
 .env.development
 .env.production
@@ -10,8 +13,6 @@ uploads/
 server/.env
 server/.env.development
 server/.env.local
-mobile/.env
-mobile/.env.production
 
 # Prep pages kept local until pilot flags turn on
 client/src/pages/owner/GalleryPage.jsx

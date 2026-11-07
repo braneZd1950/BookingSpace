@@ -28,19 +28,28 @@ export function generateSlots({ open, close, durationMinutes, intervalMinutes })
   return slots;
 }
 
-export function countBooked(slot, bookings, capacityModel) {
+/**
+ * PER_SLOT normally counts exact start times (group classes).
+ * When the grid interval is shorter than duration, slots overlap — count by
+ * overlap so capacity-1 cannot double-book 09:00–10:00 and 09:30–10:30.
+ */
+export function countBooked(slot, bookings, capacityModel, { durationMinutes, intervalMinutes } = {}) {
+  const useOverlap = capacityModel === 'CONCURRENT'
+    || (Number(intervalMinutes) > 0
+      && Number(durationMinutes) > 0
+      && Number(intervalMinutes) < Number(durationMinutes));
   return bookings.filter((booking) => {
     if (booking.status !== 'CONFIRMED') return false;
-    if (capacityModel === 'CONCURRENT') {
+    if (useOverlap) {
       return overlaps(slot.startTime, slot.endTime, booking.startTime, booking.endTime);
     }
     return booking.startTime === slot.startTime;
   }).length;
 }
 
-export function decorateSlots(slots, bookings, capacity, capacityModel, now, date) {
+export function decorateSlots(slots, bookings, capacity, capacityModel, now, date, timing = {}) {
   return slots.map((slot) => {
-    const booked = countBooked(slot, bookings, capacityModel);
+    const booked = countBooked(slot, bookings, capacityModel, timing);
     const past = date < now.date || (date === now.date && slot.startTime <= now.time);
     const full = booked >= capacity;
     let status = 'AVAILABLE';
@@ -87,5 +96,8 @@ export function buildDaySlots({
     return true;
   });
 
-  return decorateSlots(slots, bookings, capacity, capacityModel, now, date);
+  return decorateSlots(slots, bookings, capacity, capacityModel, now, date, {
+    durationMinutes,
+    intervalMinutes,
+  });
 }

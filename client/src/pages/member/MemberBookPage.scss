@@ -821,8 +821,17 @@
 
   :root:not([data-theme='light']) .member-book .member-book__days button.is-on,
   :root:not([data-theme='light']) .member-book .member-book__days button.is-on strong,
+  :root:not([data-theme='light']) .member-book .member-book__slots button.is-on,
+  :root:not([data-theme='light']) .member-book .member-book__slots button.is-on strong,
+  :root:not([data-theme='light']) .member-book .member-book__trainer-list button.is-on,
+  :root:not([data-theme='light']) .member-book .member-book__trainer-list button.is-on strong,
   :root:not([data-theme='light']) .member-book .member-book__cta {
     color: #fff;
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__days button.is-on .member-book__day-name,
+  :root:not([data-theme='light']) .member-book .member-book__days button.is-on .member-book__day-meta {
+    color: color-mix(in srgb, #fff 82%, transparent);
   }
 }
 

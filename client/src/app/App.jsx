@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { Route, Routes } from 'react-router-dom';
 import '../api/consentApi.js';
 import '../api/pushApi.js';
@@ -25,7 +26,6 @@ import {
   LAUNCH_PLAN_ENABLED,
   ONLINE_ENABLED,
 } from '../lib/studioFeatures.js';
-import DownloadAppPage from '../pages/public/DownloadAppPage.jsx';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage.jsx';
 import HomePage from '../pages/public/HomePage.jsx';
 import LoginPage from '../pages/public/LoginPage.jsx';
@@ -58,16 +58,18 @@ import {
   TermsPage,
 } from '../pages/public/sitePages.jsx';
 
+const SentryRoutes = Sentry.withSentryReactRouterV7Routing(Routes);
+
 const maintenanceOn = import.meta.env.VITE_MAINTENANCE === 'true';
 
 export default function App() {
   if (maintenanceOn) {
     return (
-      <Routes>
+      <SentryRoutes>
         <Route element={<PublicLayout />}>
           <Route path="*" element={<MaintenancePage />} />
         </Route>
-      </Routes>
+      </SentryRoutes>
     );
   }
 
@@ -75,7 +77,7 @@ export default function App() {
     <>
       <ThemeSync />
       <UsageTracker />
-      <Routes>
+      <SentryRoutes>
         <Route path="/s/:slug" element={<MemberLayout />}>
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
@@ -105,7 +107,6 @@ export default function App() {
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/preuzmi" element={<DownloadAppPage />} />
           <Route path="/admin" element={<AdminGate />}>
             <Route index element={<AdminHomePage />} />
             <Route path="djelatnici" element={<AdminStaffPage />} />
@@ -128,9 +129,24 @@ export default function App() {
           <Route path="/povratna-informacija" element={<FeedbackPage />} />
           <Route path="/odrzavanje" element={<MaintenancePage />} />
           <Route path="/greska" element={<ErrorPage />} />
+          {import.meta.env.DEV ? (
+            <Route
+              path="/debug-sentry"
+              element={(
+                <button
+                  type="button"
+                  onClick={() => {
+                    throw new Error('Sentry debug error (anyminutes-web)');
+                  }}
+                >
+                  Trigger Sentry error
+                </button>
+              )}
+            />
+          ) : null}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-      </Routes>
+      </SentryRoutes>
     </>
   );
 }

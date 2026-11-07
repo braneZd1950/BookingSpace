@@ -5,7 +5,6 @@ import { useGetMeQuery } from '../../api/authApi.js';
 import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
-import InstallAppBanner from '../../components/InstallAppBanner.jsx';
 import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
@@ -263,7 +262,6 @@ export default function MemberLayout() {
         />
       ) : null}
       <ConsentBanner />
-      <InstallAppBanner />
     </div>
   );
 }

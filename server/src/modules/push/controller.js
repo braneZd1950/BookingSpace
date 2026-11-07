@@ -10,12 +10,14 @@ export function publicConfig(req, res) {
 }
 
 export async function subscribe(req, res) {
-  const sub = await upsertSubscription(req.user, req.body, req.get('user-agent'));
+  const body = req.input?.body || req.body;
+  const sub = await upsertSubscription(req.user, body, req.get('user-agent'));
   res.status(201).json({ subscription: sub });
 }
 
 export async function unsubscribe(req, res) {
-  const result = await removeSubscription(req.user, req.body.endpoint);
+  const body = req.input?.body || req.body;
+  const result = await removeSubscription(req.user, body.endpoint);
   res.json(result);
 }
 

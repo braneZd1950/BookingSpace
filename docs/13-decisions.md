@@ -76,11 +76,11 @@ UI, PWA, and legal contact use **anyminutes**. Repo / npm package / some env dom
 
 Reason: brand can ship in the product without a disruptive monorepo rename.
 
-## Decision 13 — Mobile as Expo native app
+## Decision 13 — Mobile deferred (web-only)
 
-`mobile/` is an Expo + TypeScript client. The former Vite PWA shell (`client-mobile/`) was removed; phones use Expo Go / store builds, browsers use `client/`.
+Native Expo (`mobile/`) and public APK download CTAs were removed. Phones use the responsive web SPA until a production-ready Android/iOS app exists.
 
-Reason: true native UX and store distribution without maintaining a second web shell.
+Reason: avoid shipping/maintaining an incomplete native client and sideload download funnel.
 
 ## Decision 14 — Online workouts behind a feature flag
 

@@ -35,9 +35,9 @@ export async function recordPayment(actor, tenantId, input) {
 
   if (input.membershipId) {
     const membership = await Membership.findOne({
-      _id: input.membershipId,
-      tenantId,
-      userId: input.userId,
+      _id: { $eq: String(input.membershipId) },
+      tenantId: { $eq: tenantId },
+      userId: { $eq: String(input.userId) },
     }).select('_id');
     if (!membership) throw new HttpError(404, 'Membership not found', { code: 'NOT_FOUND' });
   }

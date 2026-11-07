@@ -13,6 +13,7 @@ import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { IS_DEV } from '../../lib/runtimeEnv.js';
 import { studioFromTenant } from '../owner/studioSync.js';
 import './LoginPage.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
@@ -43,7 +44,7 @@ const trials = [
 
 function localProblems(values) {
   const problems = {};
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+  if (!isEmail(values.email.trim())) {
     problems.email = 'Upišite ispravnu e-poštu.';
   }
   if (!values.password) problems.password = 'Upišite lozinku.';
@@ -323,7 +324,6 @@ export default function LoginPage() {
             name="email"
             type="email"
             autoComplete="email"
-            autoFocus
             value={values.email}
             onChange={(event) => update('email', event.target.value)}
             aria-invalid={Boolean(problems.email)}

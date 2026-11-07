@@ -20,7 +20,7 @@ Do not start these before proving core booking usage.
 - attendance check-in  
 - membership reminders  
 - real subdomain / custom domain product  
-- **Native booking screens** in `mobile/` (scaffold exists — see [18-native-mobile.md](18-native-mobile.md))  
+- Native Android / iOS apps (deferred; web-only for now)  
 
 ## Later product expansion
 

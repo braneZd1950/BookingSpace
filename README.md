@@ -39,24 +39,20 @@ Phases 1–3 are **implemented in product**. Remaining learning focus is Phase 5
 | Layer | Choice |
 | --- | --- |
 | Frontend | React, Vite, React Router, Redux Toolkit, RTK Query, SCSS |
-| Native mobile | `mobile/` — Expo + TypeScript + Paper + NativeWind ([docs/18](docs/18-native-mobile.md)) |
 | Backend | Node.js, Express, REST, JWT, Mongoose |
 | Database | MongoDB Atlas, shared DB + `tenantId` |
-| CI | GitHub Actions — server tests, web build, Expo unit tests + typecheck |
+| CI | GitHub Actions — server tests, web build, Playwright e2e |
 
 ## Run locally
 
 ```bash
 npm run dev            # web :5173 + API
-npm run dev:mobile     # Expo native (mobile/) + API
-npm run start:native   # Expo only
-npm test               # server + client + mobile tests
+npm test               # server + client tests
 ```
 
 | Service | URL / tool |
 | --- | --- |
 | Web | `http://localhost:5173` |
-| Native | Expo Go / emulator (`mobile/`) |
 | API | `http://localhost:4001/api` |
 
 Copy `.env.example` to `.env` in the repo root. That one file is used locally by the API and by Vite.
@@ -83,7 +79,7 @@ Localhost workflow stays the same (`npm run dev`). For real traffic:
 | Document | What it covers |
 | --- | --- |
 | [Current status](docs/16-current-status.md) | What is shipped vs deferred |
-| [Production launch](docs/20-production-launch.md) | Go-live checklist (web + API + native) |
+| [Production launch](docs/20-production-launch.md) | Go-live checklist (web + API) |
 | [Lean phases](docs/lean/README.md) | Learning phases + remaining work |
 | [Backend status](docs/lean/backend-status.md) | Server change policy + gap log |
 | [API spec](docs/07-api-spec.md) | REST map |
@@ -91,7 +87,6 @@ Localhost workflow stays the same (`npm run dev`). For real traffic:
 | [Cursor instructions](docs/11-cursor-instructions.md) | How to implement in this repo |
 | [Roadmap](docs/12-roadmap.md) | After current gaps |
 | [Render deploy](docs/17-render-deploy.md) | Jedan URL (SPA+API) ili odvojeni FE/API na Renderu |
-| [Native mobile](docs/18-native-mobile.md) | Expo TypeScript app (`mobile/`) — Paper + NativeWind |
 
 ### Reference
 

@@ -13,6 +13,7 @@ export const business = {
     id: 'user-ana-kovac',
     name: 'Ana Kovač',
     email: 'ana.kovac@demo.hr',
+    // NOSONAR - demo seed credential for local/dev only (see seed:demo)
     password: 'lozinka1234',
     role: 'BUSINESS_OWNER',
   },
@@ -23,6 +24,7 @@ export const member = {
   personType: 'fizička',
   name: 'Ivan Horvat',
   email: 'ivan.horvat@demo.hr',
+  // NOSONAR - demo seed credential for local/dev only (see seed:demo)
   password: 'lozinka1234',
   phone: '+385 91 222 0002',
   role: 'CUSTOMER',

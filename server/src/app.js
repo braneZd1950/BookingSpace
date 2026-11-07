@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
@@ -16,6 +17,9 @@ const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 if (env.nodeEnv === 'production') {
   app.set('trust proxy', 1);
 }
+
+// Prevent Express from parsing ?foo[$ne]= into objects (NoSQL operator injection via query).
+app.set('query parser', 'simple');
 
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -87,6 +91,13 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
+// Intentional crash for Sentry first-error verification (non-production only).
+if (env.nodeEnv !== 'production') {
+  app.get('/api/debug-sentry', () => {
+    throw new Error('Sentry debug error (anyminutes-api)');
+  });
+}
+
 app.use('/api', api);
 
 const clientDist = resolveClientDist();
@@ -110,6 +121,12 @@ if (clientDist) {
 
 app.use(notFound);
 
+Sentry.setupExpressErrorHandler(app, {
+  shouldHandleError(error) {
+    const status = Number(error?.status || error?.statusCode || 500);
+    return status >= 500;
+  },
+});
 app.use(errorHandler);
 
 function resolveClientDist() {

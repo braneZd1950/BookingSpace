@@ -13,6 +13,9 @@ const blockedPeriod = z.object({
   startDate: calendarDate,
   endDate: calendarDate,
   reason: z.string().trim().max(200).optional(),
+}).refine((row) => row.endDate >= row.startDate, {
+  message: 'endDate must be on or after startDate',
+  path: ['endDate'],
 });
 
 export const createTenantSchema = z.object({

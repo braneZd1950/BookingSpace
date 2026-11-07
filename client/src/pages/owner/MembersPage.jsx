@@ -14,6 +14,7 @@ import {
   useSuspendStaffMutation,
 } from '../../api/staffApi.js';
 import './MembersPage.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 const SESSION_PRESETS = [6, 12, 18];
@@ -247,7 +248,7 @@ export default function MembersPage() {
       setFormError('Upišite ime člana.');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    if (!isEmail(form.email.trim())) {
       setFormError('Upišite ispravnu e-poštu.');
       return;
     }
@@ -306,7 +307,7 @@ export default function MembersPage() {
       setStaffFormError('Upišite ime trenera.');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffForm.email.trim())) {
+    if (!isEmail(staffForm.email.trim())) {
       setStaffFormError('Upišite ispravnu e-poštu.');
       return;
     }
@@ -569,7 +570,6 @@ export default function MembersPage() {
                       onChange={(event) => change('name', event.target.value)}
                       autoComplete="name"
                       placeholder="npr. Ana Kovač"
-                      autoFocus
                     />
                   </label>
                   <label>
@@ -863,7 +863,6 @@ export default function MembersPage() {
                       onChange={(event) => changeStaff('name', event.target.value)}
                       autoComplete="name"
                       placeholder="npr. Marko Horvat"
-                      autoFocus
                     />
                   </label>
                   <label>

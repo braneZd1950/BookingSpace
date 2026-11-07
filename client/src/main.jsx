@@ -1,5 +1,7 @@
+import './instrument.js';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './app/store.js';
@@ -13,7 +15,15 @@ import './styles/global.scss';
 applyPublicLightTheme();
 registerPushServiceWorker().catch(() => {});
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root'), {
+  onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
+    if (import.meta.env.DEV) {
+      console.error('[Uncaught]', error, errorInfo?.componentStack);
+    }
+  }),
+  onCaughtError: Sentry.reactErrorHandler(),
+  onRecoverableError: Sentry.reactErrorHandler(),
+}).render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   useChangePasswordMutation,
   useGetMeQuery,
@@ -7,8 +8,11 @@ import {
 } from '../../api/authApi.js';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
 import UiThemePicker from '../../components/UiThemePicker.jsx';
+import { clearSession } from '../../lib/clearSession.js';
 import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import './MemberSettingsPage.scss';
+
+const TOKEN_KEY = 'bookingspace.token';
 
 const DEFAULT_PREFS = {
   bookingEmail: true,
@@ -77,6 +81,7 @@ function PasswordField({ label, value, onChange, autoComplete }) {
 }
 
 export default function MemberSettingsPage() {
+  const dispatch = useDispatch();
   const { tenant, loggedIn, palette } = useOutletContext();
   const base = `/s/${tenant.slug}`;
   const theme = palette?.theme;
@@ -194,10 +199,19 @@ export default function MemberSettingsPage() {
       return;
     }
     try {
-      await changePassword({
+      const result = await changePassword({
         currentPassword: password.currentPassword,
         newPassword: password.newPassword,
       }).unwrap();
+      // Server bumps tokenVersion — keep the fresh JWT or the session dies.
+      if (result?.token) {
+        localStorage.setItem(TOKEN_KEY, result.token);
+      } else {
+        await clearSession({ dispatch });
+        setNote('password', 'Lozinka je promijenjena — prijavite se ponovo.');
+        setPassword({ currentPassword: '', newPassword: '', again: '' });
+        return;
+      }
       setPassword({ currentPassword: '', newPassword: '', again: '' });
       setNote('password', 'Lozinka je promijenjena.');
     } catch (err) {
@@ -341,7 +355,7 @@ export default function MemberSettingsPage() {
             <ul className="member-settings__toggles">
               {NOTIFY_OPTIONS.map((option) => (
                 <li key={option.key}>
-                  <label className="member-settings__toggle">
+                  <label className="member-settings__toggle" aria-label={option.label}>
                     <input
                       type="checkbox"
                       checked={Boolean(prefs[option.key])}

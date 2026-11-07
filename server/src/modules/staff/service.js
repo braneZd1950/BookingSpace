@@ -91,7 +91,10 @@ export async function createStaff(actor, tenantId, input) {
   const title = input.title?.trim() || 'Trener';
 
   const result = await withTransaction(async (session) => {
-    let user = await bind(User.findOne({ email }).select('+passwordHash name email phone role'), session);
+    let user = await bind(
+      User.findOne({ email: { $eq: String(email) } }).select('+passwordHash name email phone role'),
+      session,
+    );
     let accountCreated = false;
     let temporaryPassword = null;
 
@@ -126,10 +129,7 @@ export async function createStaff(actor, tenantId, input) {
         }
         throw new HttpError(409, 'Email belongs to a member', { code: 'EMAIL_IS_MEMBER' });
       }
-      if (user.role === 'CUSTOMER') {
-        user.role = 'STAFF';
-        await user.save(sessionOptions(session));
-      }
+      // Keep global User.role as CUSTOMER — studio staff rights live on TenantUser.
     }
 
     const link = await createDoc(TenantUser, {

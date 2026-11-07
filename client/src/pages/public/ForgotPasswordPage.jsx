@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForgotPasswordMutation } from '../../api/authApi.js';
 import './RegisterPage.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 function localProblems(email) {
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+  if (!isEmail(email.trim())) {
     return 'Upišite ispravnu e-poštu.';
   }
   return '';
@@ -66,7 +67,6 @@ export default function ForgotPasswordPage() {
             name="email"
             type="email"
             autoComplete="email"
-            autoFocus
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);

@@ -37,14 +37,16 @@ function renderLine(line, index) {
     return <h2 key={`h-${index}`}>{line}</h2>;
   }
 
-  const section = line.match(/^(\d+)\.\s*(.*)$/);
-  if (section) {
+  const dot = line.indexOf('.');
+  const maybeNum = dot > 0 ? line.slice(0, dot) : '';
+  const sectionTitle = dot > 0 ? line.slice(dot + 1).trimStart() : '';
+  if (/^\d+$/.test(maybeNum) && sectionTitle) {
     return (
       <h3 key={`s-${index}`}>
         <span className="studio-policy__sec-index" aria-hidden="true">
-          {section[1].padStart(2, '0')}
+          {maybeNum.padStart(2, '0')}
         </span>
-        <span>{section[2]}</span>
+        <span>{sectionTitle}</span>
       </h3>
     );
   }

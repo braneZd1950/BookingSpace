@@ -17,6 +17,7 @@ import {
 import { generateAllStudioLegal, paragraphsFromLegal } from '../owner/studioLegal.js';
 import { previewSlug } from './businessSlug.js';
 import './BusinessSignupForm.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 const LEGAL_TABS = [
   {
@@ -371,7 +372,7 @@ function PasswordField({
 
 function basicsProblems(values) {
   const problems = {};
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+  if (!isEmail(values.email.trim())) {
     problems.email = 'Upišite ispravnu e-poštu.';
   }
   if (!values.businessName.trim()) {
@@ -664,7 +665,6 @@ export default function BusinessSignupForm({ className = '' }) {
               name="email"
               type="email"
               autoComplete="email"
-              autoFocus
               value={values.email}
               onChange={(event) => update('email', event.target.value)}
               aria-invalid={Boolean(problems.email)}

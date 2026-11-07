@@ -44,11 +44,11 @@ async function shutdown(signal) {
 }
 
 process.on('SIGINT', () => {
-  shutdown('SIGINT');
+  void shutdown('SIGINT');
 });
 
 process.on('SIGTERM', () => {
-  shutdown('SIGTERM');
+  void shutdown('SIGTERM');
 });
 
 start().catch((error) => {

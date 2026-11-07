@@ -18,13 +18,12 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | Site setup wizard `/postavljanje` | Done | Templates, layout, palette, preview; real DNS deferred |
 | Staff / trainers | Done | Invite, list, suspend; required on book when trainers exist |
 | Web Push + PWA (web) | Done | VAPID on `client/` |
-| Native mobile (`mobile/`) | In progress | Expo + TS + Paper + NativeWind; auth + studio/member shells — [18-native-mobile.md](18-native-mobile.md) |
 | Privacy consent | Done | Banner + `POST /consent` + gate before booking |
 | Platform admin `/analitika` | Done (web) | Studios, users, activity, SaaS billing, reports, system |
 | Admin arhivski izvoz | Done (web) | PDF + Excel + CSV; digitalni pečat integriteta (HMAC) preko `/analytics/platform/exports/seal` |
 | SaaS billing fields + warn/invoice email | Done | Trial / paid / unpaid on tenant |
 | Online workouts | Built, **flagged off** | `ONLINE_ENABLED = false` in `client/src/onlineFeature.js` |
-| Server tests + GitHub CI | Done | API tests; client build; Expo unit tests + typecheck |
+| Server tests + GitHub CI | Done | API tests; client build; Playwright e2e |
 
 ## Explicitly not done
 
@@ -36,22 +35,20 @@ This file is the snapshot of what is **actually shipped in code**. Lean phase do
 | Online / gallery / launch plan UI | Held — `GALLERY_ENABLED` / `ONLINE_ENABLED` / `PAYMENTS_UI_ENABLED` / `LAUNCH_PLAN_ENABLED` = false |
 | Stripe / online checkout | Not used |
 | Socket.io realtime | Dependency present; unused in `server/src` |
+| Native mobile app | Removed for now — product is web-only until a reliable Android/iOS app ships |
 
 ## Apps & ports
 
 | App | Path | Local |
 | --- | --- | --- |
 | Web | `client/` | `http://localhost:5173` |
-| Native (Expo) | `mobile/` | `npm run start:native` / Expo Go |
 | API | `server/` | `http://localhost:4001` (default; override with `PORT`) |
 
 ## How to run / verify
 
 ```bash
 npm run dev          # web + API
-npm run dev:mobile   # Expo + API
-npm test             # server + client + mobile tests
-npm run test:mobile  # Expo unit tests only
+npm test             # server + client tests
 npm run test:ci      # CI-style suite
 npm run build:client
 ```

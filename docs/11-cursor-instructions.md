@@ -10,7 +10,7 @@
 ## Before coding
 
 1. Confirm which area owns the task (lean phase or status-doc gap).  
-2. Inspect existing `client/` / `mobile/` / `server/` code.
+2. Inspect existing `client/` / `server/` code.
 3. Propose the smallest implementation.  
 4. Implement; add or extend a server test for booking/membership/staff/billing changes.  
 5. Smoke-check in the browser.  
@@ -22,24 +22,17 @@
 - RTK Query for HTTP (no Axios).  
 - Do not put authorization rules only in React — backend is source of truth.  
 - Avoid premature abstractions.  
-- Mobile shares `client/src` via `@client` — change shared code carefully.
-
 ## Repo layout
 
 ```text
-client/src/          # web SPA + shared pages/APIs
-mobile/              # Expo native app (Expo Router + TypeScript)
-mobile/              # native Expo app (TS + Paper + NativeWind) — see docs/18
+client/src/          # web SPA
 server/src/          # Express modules, models, utils
-server/test/         # mvp-flow, studio-ops, platform-billing
+server/test/         # API tests
 docs/
   lean/              # phase learning docs
-  01–18              # specs + current status + native
 scripts/             # dev, smoke
 .github/workflows/   # CI
 ```
-
-Native work lives only under `mobile/`. Do not import web Vite/SCSS pages into Expo.
 
 ## Do not
 

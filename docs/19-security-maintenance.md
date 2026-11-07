@@ -1,4 +1,4 @@
-# Security maintenance (web + mobile)
+# Security maintenance (web)
 
 Operational checklist for keeping anyminutes secure without heavy process.
 Binding product rules stay in [10-security-rules.md](10-security-rules.md).
@@ -9,7 +9,6 @@ Binding product rules stay in [10-security-rules.md](10-security-rules.md).
 | --- | --- |
 | API (`server/`) | Tenant isolation, authz, uploads, rate limits |
 | Web (`client/`) | XSS → stolen JWT, admin UI gates (server still decides) |
-| Native (`mobile/`) | Token storage, deep links, API base URL |
 
 Server is the source of truth. UI role checks are convenience only.
 
@@ -38,7 +37,7 @@ Copy from [`.env.example`](../.env.example). Minimum:
 | `EXPORT_SEAL_SECRET` | Set separately from `JWT_SECRET` |
 | `CLIENT_ORIGIN` / `CLIENT_ORIGINS` | Exact HTTPS origins only |
 | `CLOUDINARY_*` | Strongly preferred for images/video in prod |
-| SMTP / VAPID | Real credentials; no secrets in `VITE_*` / `EXPO_PUBLIC_*` |
+| SMTP / VAPID | Real credentials; no secrets in `VITE_*` |
 
 Promote a super admin:
 
@@ -53,8 +52,6 @@ Never run `npm --prefix server run seed:demo` against production data.
 | Client | Token storage | Notes |
 | --- | --- | --- |
 | Web | `localStorage` (`bookingspace.token`) | XSS can steal tokens — keep dependencies patched; avoid `dangerouslySetInnerHTML` with user HTML |
-| Expo native | SecureStore | Prefer over web for members/owners on device |
-| Expo web | localStorage fallback | Same XSS class as web |
 
 Logout must call `POST /api/auth/logout` (revokes JWT). After password change, clients should store the new `token` from the response when present.
 
@@ -82,13 +79,6 @@ These are expected to be reachable without a login:
 - Online catalog metadata (video URL only when unlocked)
 
 If you add a new public route, document it here and add a rate limit when it is write-heavy or expensive.
-
-## Mobile maintenance
-
-- Keep `EXPO_PUBLIC_API_URL` pointing at HTTPS in production builds.
-- Deep links into `/(member)/[slug]` are UX-only; booking/consent APIs still enforce membership.
-- Do not put secrets in `app.json` / `eas.json` / `EXPO_PUBLIC_*`.
-- After security-sensitive API changes, run `npm run test:mobile` and `npm run typecheck:native`.
 
 ## Release gate
 
@@ -118,5 +108,4 @@ npm --prefix mobile audit
 - [10-security-rules.md](10-security-rules.md) — product security rules
 - [20-production-launch.md](20-production-launch.md) — go-live checklist
 - [17-render-deploy.md](17-render-deploy.md) — production env on Render
-- [18-native-mobile.md](18-native-mobile.md) — Expo app notes
 - [07-api-spec.md](07-api-spec.md) — REST map

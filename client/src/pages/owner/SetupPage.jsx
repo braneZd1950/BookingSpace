@@ -20,6 +20,7 @@ import {
 import TimeSelect from './TimeSelect.jsx';
 import { fallbackHours, hourRows, studioHours } from './studioTime.js';
 import './SetupPage.scss';
+import { isEmail } from '../../lib/isEmail.js';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 
@@ -64,7 +65,7 @@ function draftFrom(studio) {
 function problemsFor(draft) {
   const problems = {};
   if (!draft.description.trim()) problems.description = 'Napišite što studio radi.';
-  if (draft.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim())) {
+  if (draft.email.trim() && !isEmail(draft.email.trim())) {
     problems.email = 'Upišite ispravnu e-poštu.';
   }
   const hoursWrong = hourRows.some(([key]) => {

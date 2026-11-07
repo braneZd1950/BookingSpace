@@ -6,8 +6,15 @@ const ANON_KEY = 'bookingspace.consentAnon';
 export const CONSENT_EVENT = 'privacy-consent-changed';
 
 function randomKey() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return `anon-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return `anon-${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+  }
+  throw new Error('Secure random generator unavailable');
 }
 
 export function getAnonymousKey() {

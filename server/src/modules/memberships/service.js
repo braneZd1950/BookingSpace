@@ -120,7 +120,10 @@ async function resolveCustomer(tenantId, input, session) {
     return { user, accountCreated: false, temporaryPassword: null };
   }
 
-  const existing = await bind(User.findOne({ email: input.customer.email }).select('_id name email phone'), session);
+  const existing = await bind(
+    User.findOne({ email: { $eq: String(input.customer.email) } }).select('_id name email phone'),
+    session,
+  );
   if (existing) {
     return { user: existing, accountCreated: false, temporaryPassword: null };
   }

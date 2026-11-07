@@ -1,6 +1,5 @@
 /**
  * Member shell nav destinations.
- * Keep in sync with `mobile/src/features/nav/memberNavConfig.ts`.
  */
 
 export const MEMBER_NAV_CORE = [
@@ -15,13 +14,20 @@ export const MEMBER_NAV_OPTIONAL = [
   { key: 'online', label: 'Online', segment: 'online', flag: 'online' },
 ];
 
+function trimSlashes(value) {
+  let text = String(value || '');
+  while (text.startsWith('/')) text = text.slice(1);
+  while (text.endsWith('/')) text = text.slice(0, -1);
+  return text;
+}
+
 export function memberBasePath(slug) {
-  return `/s/${String(slug || '').replace(/^\/+|\/+$/g, '')}`;
+  return `/s/${trimSlashes(slug)}`;
 }
 
 export function memberNavHref(slug, segment = '') {
   const base = memberBasePath(slug);
-  const part = String(segment || '').replace(/^\/+|\/+$/g, '');
+  const part = trimSlashes(segment);
   return part ? `${base}/${part}` : base;
 }
 

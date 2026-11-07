@@ -191,9 +191,6 @@ export default function HomePage() {
             <a className="home__cta home__cta--ghost" href="#kako">
               Pogledajte kako radi
             </a>
-            <Link className="home__cta home__cta--app" to="/preuzmi">
-              Preuzmite aplikaciju
-            </Link>
           </div>
           <p className="home__trust">
             Postavljanje traje svega nekoliko minuta. Bez komplikacija.
@@ -397,9 +394,6 @@ export default function HomePage() {
           </Link>
           <Link className="home__cta home__cta--line" to="/login">
             Prijava
-          </Link>
-          <Link className="home__cta home__cta--app" to="/preuzmi">
-            Preuzmite aplikaciju
           </Link>
         </div>
         <p className="home__trust home__trust--close">
