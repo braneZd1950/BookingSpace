@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --import ./src/instrument.js src/server.js",
     "test": "node --test test/*.test.js",
-    "test:ci": "node --test --test-reporter=spec test/*.test.js",
+    "test:ci": "node scripts/prefetch-mongo-memory.mjs && node --test --test-concurrency=1 --test-reporter=spec test/*.test.js",
+    "prefetch:mongo": "node scripts/prefetch-mongo-memory.mjs",
     "test:limits": "node --test --test-timeout=180000 test/limits/*.test.js",
     "test:mobile-load": "node --test --test-timeout=300000 test/limits/mobile-load.test.js",
     "e2e:api": "node scripts/e2e-api.mjs",
