@@ -1,6 +1,15 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  archiveCell,
+  archiveFileBase,
+  createArchiveDocumentId,
+  sealFieldRows,
+  stampNow,
+} from './archiveCommon.js';
 import { APP_MODE, IS_LIVE, publicAsset } from './runtimeEnv.js';
+
+export { createArchiveDocumentId };
 
 /** Finalni vizualni jezik — isti u lokalnom testu i na Renderu. */
 const C = {
@@ -81,46 +90,8 @@ function authorLine(generatedBy) {
   return name || email || FORMAL_OFFICER;
 }
 
-function stampNow() {
-  const now = new Date();
-  const date = new Intl.DateTimeFormat('hr-HR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(now);
-  const file = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    String(now.getDate()).padStart(2, '0'),
-    '-',
-    String(now.getHours()).padStart(2, '0'),
-    String(now.getMinutes()).padStart(2, '0'),
-  ].join('');
-  return { date, file, iso: now.toISOString() };
-}
-
-export function createArchiveDocumentId() {
-  const stamp = stampNow();
-  return `AM-${stamp.file}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-}
-
-function slugify(value) {
-  let text = String(value || 'arhiv')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .slice(0, 48);
-  while (text.startsWith('-')) text = text.slice(1);
-  while (text.endsWith('-')) text = text.slice(0, -1);
-  return text || 'arhiv';
-}
-
 function cell(value) {
-  if (value == null || value === '') return '—';
-  return String(value);
+  return archiveCell(value, '—');
 }
 
 function pageSize(doc) {
@@ -523,12 +494,11 @@ function drawDigitalSeal(doc, seal, startY, index) {
   y += intro.length * 4.1 + 4;
 
   const rows = [
-    ['Seal ID', seal.sealId || '—'],
-    ['Algoritam', seal.algorithm || 'HMAC-SHA256'],
-    ['Content hash (SHA-256)', seal.contentHash || '—'],
-    ['Potpis platforme', seal.signature || '—'],
-    ['Potpisano', seal.signedAt || '—'],
-    ['Potpisnik', seal.signer?.email || '—'],
+    ...sealFieldRows(seal, '—').map(([label, value]) => (
+      label === 'Content hash' ? ['Content hash (SHA-256)', value]
+        : label === 'Potpis' ? ['Potpis platforme', value]
+          : [label, value]
+    )),
   ];
 
   autoTable(doc, {
@@ -591,10 +561,7 @@ function drawFooters(doc, documentId, generatedAt) {
 export async function downloadArchivePdf(options) {
   const stamp = stampNow();
   const documentId = options.documentId || createArchiveDocumentId();
-  const fileStem = slugify(options.fileStem || options.title);
-  const fileName = IS_LIVE
-    ? `anyminutes-${fileStem}-${stamp.file}.pdf`
-    : `anyminutes-${fileStem}-${stamp.file}-provjera.pdf`;
+  const fileName = `${archiveFileBase(options, stamp.file)}.pdf`;
 
   const doc = new jsPDF({
     orientation: 'portrait',

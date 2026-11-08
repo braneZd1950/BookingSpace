@@ -1,54 +1,13 @@
 import ExcelJS from 'exceljs';
-import { IS_LIVE } from './runtimeEnv.js';
-
-function stampFile() {
-  const now = new Date();
-  return [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    String(now.getDate()).padStart(2, '0'),
-    '-',
-    String(now.getHours()).padStart(2, '0'),
-    String(now.getMinutes()).padStart(2, '0'),
-  ].join('');
-}
-
-function slugify(value) {
-  let text = String(value || 'arhiv')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .slice(0, 48);
-  while (text.startsWith('-')) text = text.slice(1);
-  while (text.endsWith('-')) text = text.slice(0, -1);
-  return text || 'arhiv';
-}
-
-function cell(value) {
-  if (value == null || value === '') return '';
-  return String(value);
-}
-
-function fileBase(options) {
-  const stem = slugify(options.fileStem || options.title);
-  const stamp = stampFile();
-  return IS_LIVE ? `anyminutes-${stem}-${stamp}` : `anyminutes-${stem}-${stamp}-provjera`;
-}
-
-function triggerDownload(blob, fileName) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
-}
+import {
+  archiveCell,
+  archiveFileBase,
+  sealFieldRows,
+  triggerArchiveDownload,
+} from './archiveCommon.js';
 
 function csvEscape(value) {
-  const text = cell(value);
+  const text = archiveCell(value);
   if (/[",\n\r;]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
   return text;
 }
@@ -68,7 +27,7 @@ function buildSheets(options) {
     sheets.push({
       name: String(section.title || `Podaci ${index + 1}`).slice(0, 28),
       columns: section.columns || [],
-      rows: (section.rows || []).map((row) => row.map(cell)),
+      rows: (section.rows || []).map((row) => row.map((value) => archiveCell(value))),
     });
   });
 
@@ -76,15 +35,7 @@ function buildSheets(options) {
     sheets.push({
       name: 'Digitalni pecat',
       columns: ['Polje', 'Vrijednost'],
-      rows: [
-        ['Seal ID', options.seal.sealId],
-        ['Algoritam', options.seal.algorithm],
-        ['Content hash', options.seal.contentHash],
-        ['Potpis', options.seal.signature],
-        ['Potpisano', options.seal.signedAt],
-        ['Potpisnik', options.seal.signer?.email || ''],
-        ['Napomena', options.seal.note || ''],
-      ],
+      rows: sealFieldRows(options.seal),
     });
   }
 
@@ -113,8 +64,8 @@ export function downloadArchiveCsv(options) {
   const blob = new Blob([`\uFEFF${chunks.join('\n')}`], {
     type: 'text/csv;charset=utf-8',
   });
-  const fileName = `${fileBase(options)}.csv`;
-  triggerDownload(blob, fileName);
+  const fileName = `${archiveFileBase(options)}.csv`;
+  triggerArchiveDownload(blob, fileName);
   return { fileName };
 }
 
@@ -137,8 +88,8 @@ export async function downloadArchiveExcel(options) {
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const fileName = `${fileBase(options)}.xlsx`;
-  triggerDownload(
+  const fileName = `${archiveFileBase(options)}.xlsx`;
+  triggerArchiveDownload(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
