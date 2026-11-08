@@ -1,4 +1,3 @@
-import env from '../config/env.js';
 import { HttpError } from '../utils/httpError.js';
 
 const STATUS_CODES = {
@@ -133,17 +132,19 @@ export function normalizeError(error) {
 function logServerError(error, normalized, req) {
   if (normalized.status < 500) return;
 
-  // Never attach stack traces to structured logs (Sonar S5757).
+  // Server-controlled fields only — never log req.path / error.message (jssecurity:S5145).
+  const method = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
+    .includes(String(req.method || '').toUpperCase())
+    ? String(req.method).toUpperCase()
+    : 'OTHER';
   console.error(JSON.stringify({
     code: normalized.code,
-    name: error?.name || 'Error',
-    method: req.method,
-    path: req.path,
-    ...(env.nodeEnv !== 'production' ? { message: String(error?.message || '').slice(0, 200) } : {}),
+    name: String(error?.name || 'Error').replace(/[^\w.]/g, '').slice(0, 64),
+    method,
   }));
 }
 
-export function errorHandler(error, req, res, next) {
+export function errorHandler(error, req, res, _next) {
   if (res.headersSent) {
     // Avoid Express default handler attaching stack to an open response.
     res.end();
