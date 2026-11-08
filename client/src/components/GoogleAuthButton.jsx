@@ -69,7 +69,7 @@ export default function GoogleAuthButton({
     if (!CLIENT_ID) return undefined;
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
         await loadGisScript();
         if (cancelled || !window.google?.accounts?.id) return;
@@ -91,7 +91,7 @@ export default function GoogleAuthButton({
         });
 
         if (hiddenRef.current) {
-          hiddenRef.current.innerHTML = '';
+          hiddenRef.current.replaceChildren();
           window.google.accounts.id.renderButton(hiddenRef.current, {
             type: 'standard',
             theme: 'outline',

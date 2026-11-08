@@ -17,6 +17,11 @@ import { saveStudio } from '../../lib/studio.js';
 import { studioHost } from './siteTemplates.js';
 import { generateAllStudioLegal } from './studioLegal.js';
 import PasswordField from '../../components/PasswordField.jsx';
+import {
+  AddressCityFields,
+  NotifyChannelHeader,
+  PrefToggleList,
+} from './SettingsFormParts.jsx';
 import PrivacyConsentPanel from '../../components/PrivacyConsentPanel.jsx';
 import UiThemePicker from '../../components/UiThemePicker.jsx';
 import { disableWebPush, enableWebPush, getPushStatus, pushSupported } from '../../lib/push.js';
@@ -60,6 +65,14 @@ function studioLegalSource(studio, form = {}) {
     email: form.email || studio.email || '',
     phone: form.phone || studio.phone || '',
     address: form.address || studio.address || '',
+  };
+}
+
+function trimmedLegalDocs(docs) {
+  return {
+    privacy: docs.privacy.trim(),
+    terms: docs.terms.trim(),
+    cookies: docs.cookies.trim(),
   };
 }
 
@@ -195,11 +208,7 @@ export default function SettingsPage() {
       note('err', 'Studio još nije spreman na poslužitelju.');
       return;
     }
-    const nextLegal = {
-      privacy: legal.privacy.trim(),
-      terms: legal.terms.trim(),
-      cookies: legal.cookies.trim(),
-    };
+    const nextLegal = trimmedLegalDocs(legal);
     if (!nextLegal.privacy || !nextLegal.terms || !nextLegal.cookies) {
       note('err', 'Sva tri dokumenta moraju imati tekst prije spremanja.');
       return;
@@ -208,11 +217,7 @@ export default function SettingsPage() {
   }
 
   async function confirmSaveLegal() {
-    const nextLegal = {
-      privacy: legal.privacy.trim(),
-      terms: legal.terms.trim(),
-      cookies: legal.cookies.trim(),
-    };
+    const nextLegal = trimmedLegalDocs(legal);
     try {
       const result = await updateSite({
         id: studio.id,
@@ -262,9 +267,14 @@ export default function SettingsPage() {
 
   useEffect(() => {
     let alive = true;
-    getPushStatus().then((status) => {
-      if (alive) setPushState(status);
-    }).catch(() => { });
+    void (async () => {
+      try {
+        const status = await getPushStatus();
+        if (alive) setPushState(status);
+      } catch {
+        /* ignore unsupported / denied push probes */
+      }
+    })();
     return () => { alive = false; };
   }, [tab]);
 
@@ -618,24 +628,12 @@ export default function SettingsPage() {
                   onChange={(event) => changeBusiness('email', event.target.value)}
                 />
               </label>
-              <label className="settings__full">
-                Ulica
-                <input
-                  value={form.address}
-                  onChange={(event) => changeBusiness('address', event.target.value)}
-                  placeholder="Ulica i kućni broj"
-                  autoComplete="street-address"
-                />
-              </label>
-              <label>
-                Grad
-                <input
-                  value={form.city}
-                  onChange={(event) => changeBusiness('city', event.target.value)}
-                  placeholder="npr. Zagreb"
-                  autoComplete="address-level2"
-                />
-              </label>
+              <AddressCityFields
+                address={form.address}
+                city={form.city}
+                onAddress={(event) => changeBusiness('address', event.target.value)}
+                onCity={(event) => changeBusiness('city', event.target.value)}
+              />
             </div>
 
             <div className="settings__hours-block">
@@ -739,24 +737,12 @@ export default function SettingsPage() {
                     onChange={(event) => setAccount((current) => ({ ...current, email: event.target.value }))}
                   />
                 </label>
-                <label className="settings__full">
-                  Ulica
-                  <input
-                    value={form.address}
-                    onChange={(event) => changeBusiness('address', event.target.value)}
-                    placeholder="Ulica i kućni broj"
-                    autoComplete="street-address"
-                  />
-                </label>
-                <label>
-                  Grad
-                  <input
-                    value={form.city}
-                    onChange={(event) => changeBusiness('city', event.target.value)}
-                    placeholder="npr. Zagreb"
-                    autoComplete="address-level2"
-                  />
-                </label>
+                <AddressCityFields
+                  address={form.address}
+                  city={form.city}
+                  onAddress={(event) => changeBusiness('address', event.target.value)}
+                  onCity={(event) => changeBusiness('city', event.target.value)}
+                />
                 <label className="settings__full">
                   OIB
                   <input
@@ -1025,64 +1011,35 @@ export default function SettingsPage() {
         {tab === 'notifications' ? (
           <form className="settings__sheet settings__sheet--notify" onSubmit={savePrefs}>
             <article className="settings__notify-channel">
-              <header className="settings__notify-head">
-                <span className="settings__notify-index" aria-hidden="true">01</span>
-                <div>
-                  <p className="settings__notify-kicker">Kanal</p>
-                  <h2>E-pošta</h2>
-                  <p className="settings__lead">
-                    Obavijesti na adresu vlasnika — rezervacije, otkazi i članovi.
-                  </p>
-                </div>
-                <p className="settings__notify-meta">
-                  <strong>{emailPrefsOn}</strong>
-                  <span>uključeno</span>
-                </p>
-              </header>
-              <ul className="settings__toggles">
-                {[
+              <NotifyChannelHeader
+                index="01"
+                title="E-pošta"
+                lead="Obavijesti na adresu vlasnika — rezervacije, otkazi i članovi."
+                count={emailPrefsOn}
+              />
+              <PrefToggleList
+                prefs={prefs}
+                onToggle={(key, checked) => setPrefs((current) => ({
+                  ...current,
+                  [key]: checked,
+                }))}
+                options={[
                   ['bookingEmail', 'Nova rezervacija', 'E-pošta kad netko rezervira termin'],
                   ['cancelEmail', 'Otkaz termina', 'E-pošta kad član ili trener otkaže rezervaciju'],
                   ['memberEmail', 'Novi član', 'Obavijest kad dodate ili obnovite člana'],
                   ['weeklyDigest', 'Tjedni sažetak', 'Jednom tjedno pregled popunjenosti'],
                   ['marketing', 'Novosti proizvoda', 'Rijetke obavijesti o anyminutesu'],
-                ].map(([key, title, noteText]) => (
-                  <li key={key}>
-                    <div>
-                      <strong>{title}</strong>
-                      <span>{noteText}</span>
-                    </div>
-                    <label className="settings__switch" aria-label={title}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(prefs[key])}
-                        onChange={(event) => setPrefs((current) => ({
-                          ...current,
-                          [key]: event.target.checked,
-                        }))}
-                      />
-                      <span aria-hidden="true" />
-                    </label>
-                  </li>
-                ))}
-              </ul>
+                ]}
+              />
             </article>
 
             <article className="settings__notify-channel settings__notify-channel--push">
-              <header className="settings__notify-head">
-                <span className="settings__notify-index" aria-hidden="true">02</span>
-                <div>
-                  <p className="settings__notify-kicker">Kanal</p>
-                  <h2>Push na uređaj</h2>
-                  <p className="settings__lead">
-                    Web Push u pregledniku — i na mobitelu kad instalirate anyminutes kao app.
-                  </p>
-                </div>
-                <p className="settings__notify-meta">
-                  <strong>{pushPrefsOn}</strong>
-                  <span>uključeno</span>
-                </p>
-              </header>
+              <NotifyChannelHeader
+                index="02"
+                title="Push na uređaj"
+                lead="Web Push u pregledniku — i na mobitelu kad instalirate anyminutes kao app."
+                count={pushPrefsOn}
+              />
 
               <div
                 className={`settings__notify-device${pushState.subscribed ? ' is-live' : ''}${!pushState.supported ? ' is-blocked' : ''}`}
@@ -1120,32 +1077,19 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              <ul className="settings__toggles">
-                {[
+              <PrefToggleList
+                prefs={prefs}
+                onToggle={(key, checked) => setPrefs((current) => ({
+                  ...current,
+                  [key]: checked,
+                }))}
+                options={[
                   ['bookingPush', 'Nova rezervacija', 'Push kad član rezervira termin'],
                   ['cancelPush', 'Otkaz termina', 'Push kad netko otkaže rezervaciju'],
                   ['memberPush', 'Promjena članarine', 'Push kad dodate ili obnovite člana'],
                   ['reminderPush', 'Podsjetnik prije termina', 'Push prije početka treninga (uskoro)'],
-                ].map(([key, title, noteText]) => (
-                  <li key={key}>
-                    <div>
-                      <strong>{title}</strong>
-                      <span>{noteText}</span>
-                    </div>
-                    <label className="settings__switch" aria-label={title}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(prefs[key])}
-                        onChange={(event) => setPrefs((current) => ({
-                          ...current,
-                          [key]: event.target.checked,
-                        }))}
-                      />
-                      <span aria-hidden="true" />
-                    </label>
-                  </li>
-                ))}
-              </ul>
+                ]}
+              />
             </article>
 
             <footer className="settings__notify-foot">

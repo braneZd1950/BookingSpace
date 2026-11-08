@@ -45,7 +45,7 @@ export function usePrivacyConsent() {
     const neverRecorded = !remote || (!remote.accepted && !remote.withdrawnAt);
     if (hasValidLocalConsent() && neverRecorded && !syncingRef.current) {
       syncingRef.current = true;
-      recordConsent({
+      void recordConsent({
         action: 'accept',
         version: CONSENT_VERSION,
         source: 'banner',

@@ -107,13 +107,15 @@ export function createArchiveDocumentId() {
 }
 
 function slugify(value) {
-  return String(value || 'arhiv')
+  let text = String(value || 'arhiv')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 48) || 'arhiv';
+    .slice(0, 48);
+  while (text.startsWith('-')) text = text.slice(1);
+  while (text.endsWith('-')) text = text.slice(0, -1);
+  return text || 'arhiv';
 }
 
 function cell(value) {

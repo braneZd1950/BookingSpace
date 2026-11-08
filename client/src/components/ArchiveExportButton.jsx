@@ -57,7 +57,7 @@ export default function ArchiveExportButton({
       }
       const payload = await withSeal(raw);
       if (format === 'pdf') await downloadArchivePdf(payload);
-      else if (format === 'xlsx') downloadArchiveExcel(payload);
+      else if (format === 'xlsx') await downloadArchiveExcel(payload);
       else downloadArchiveCsv(payload);
     } catch (err) {
       console.error(err);

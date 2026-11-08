@@ -13,7 +13,7 @@ import './styles/global.scss';
 
 /* Public chrome by default; ThemeSync switches to the account theme after login. */
 applyPublicLightTheme();
-registerPushServiceWorker().catch(() => {});
+void registerPushServiceWorker().catch(() => {});
 
 createRoot(document.getElementById('root'), {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {

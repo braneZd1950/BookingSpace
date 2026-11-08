@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { IS_LIVE } from './runtimeEnv.js';
 
 function stampFile() {
@@ -14,13 +14,15 @@ function stampFile() {
 }
 
 function slugify(value) {
-  return String(value || 'arhiv')
+  let text = String(value || 'arhiv')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 48) || 'arhiv';
+    .slice(0, 48);
+  while (text.startsWith('-')) text = text.slice(1);
+  while (text.endsWith('-')) text = text.slice(0, -1);
+  return text || 'arhiv';
 }
 
 function cell(value) {
@@ -117,27 +119,31 @@ export function downloadArchiveCsv(options) {
 }
 
 /** Excel (.xlsx) workbook — one sheet per section. */
-export function downloadArchiveExcel(options) {
-  const workbook = XLSX.utils.book_new();
+export async function downloadArchiveExcel(options) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'anyminutes';
   const sheets = buildSheets(options);
 
   if (!sheets.length) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([['Nema podataka']]),
-      'Prazno',
-    );
+    const ws = workbook.addWorksheet('Prazno');
+    ws.addRow(['Nema podataka']);
   } else {
     sheets.forEach((sheet) => {
-      const aoa = [sheet.columns, ...sheet.rows];
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
       const safeName = sheet.name.replace(/[\\/?*[\]]/g, ' ').slice(0, 31) || 'Podaci';
-      XLSX.utils.book_append_sheet(workbook, ws, safeName);
+      const ws = workbook.addWorksheet(safeName);
+      ws.addRow(sheet.columns);
+      sheet.rows.forEach((row) => ws.addRow(row));
     });
   }
 
+  const buffer = await workbook.xlsx.writeBuffer();
   const fileName = `${fileBase(options)}.xlsx`;
-  XLSX.writeFile(workbook, fileName);
+  triggerDownload(
+    new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }),
+    fileName,
+  );
   return { fileName };
 }
 

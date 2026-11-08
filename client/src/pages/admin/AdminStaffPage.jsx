@@ -82,7 +82,7 @@ export default function AdminStaffPage() {
       } else {
         setMessage({ type: 'ok', text: 'Djelatnik je dodan / ažuriran.' });
       }
-      refetch();
+      void refetch();
     } catch (error) {
       const code = error?.data?.code;
       const map = {
@@ -105,7 +105,7 @@ export default function AdminStaffPage() {
     try {
       await removeStaff(item.id).unwrap();
       setMessage({ type: 'ok', text: `${item.name} više nije djelatnik platforme.` });
-      refetch();
+      void refetch();
     } catch (error) {
       const code = error?.data?.code;
       setMessage({

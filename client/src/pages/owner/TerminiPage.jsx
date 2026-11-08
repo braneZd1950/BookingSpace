@@ -155,7 +155,7 @@ export default function TerminiPage() {
       }
     }
 
-    prepare();
+    void prepare();
     return () => {
       cancelled = true;
     };
@@ -173,7 +173,7 @@ export default function TerminiPage() {
       }
     }
 
-    ensureService();
+    void ensureService();
     return () => {
       cancelled = true;
     };
