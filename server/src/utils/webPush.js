@@ -1,6 +1,7 @@
 import webpush from 'web-push';
 import env from '../config/env.js';
 import PushSubscription from '../models/PushSubscription.js';
+import { assertSafePushEndpoint } from './pushEndpoint.js';
 
 let configured = false;
 
@@ -39,9 +40,10 @@ export async function sendPushToUser(userId, payload) {
 
   await Promise.all(subs.map(async (sub) => {
     try {
+      const endpoint = assertSafePushEndpoint(sub.endpoint);
       await webpush.sendNotification(
         {
-          endpoint: sub.endpoint,
+          endpoint,
           keys: sub.keys,
         },
         body,
@@ -49,10 +51,10 @@ export async function sendPushToUser(userId, payload) {
       sent += 1;
     } catch (error) {
       const status = error?.statusCode || error?.status;
-      if (status === 404 || status === 410) {
+      if (status === 404 || status === 410 || error?.code === 'INVALID_PUSH_ENDPOINT') {
         stale.push(sub._id);
       } else {
-        console.error('[web-push] send failed:', sub.endpoint?.slice(0, 48), error?.message || error);
+        console.error('[web-push] send failed:', String(sub.endpoint || '').slice(0, 48), error?.message || error);
       }
     }
   }));

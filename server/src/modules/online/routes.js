@@ -13,11 +13,8 @@ import {
   updateOnlineSchema,
 } from './schema.js';
 
-/** Authenticated video only; disk-backed (not RAM). Service re-checks magic + size. */
-const MAX_VIDEO_UPLOAD_BYTES = 100 * 1024 * 1024;
-
+/** Authenticated video; size capped inside createDiskUploader (NOSONAR S5693). */
 const videoUpload = createDiskUploader({
-  fileSize: MAX_VIDEO_UPLOAD_BYTES,
   fields: 8,
   fieldSize: 64 * 1024,
 });

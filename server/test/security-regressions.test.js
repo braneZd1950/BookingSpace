@@ -107,7 +107,7 @@ test('push subscribe validates body and rejects bad payload', async () => {
     method: 'POST',
     token: reg.body.token,
     body: {
-      endpoint: `https://push.example/${Date.now()}`,
+      endpoint: `https://fcm.googleapis.com/fcm/send/${Date.now()}`,
       keys: { p256dh: 'p256dh-key-value', auth: 'auth-key-value' },
       client: 'web',
     },
@@ -141,7 +141,7 @@ test('push endpoint cannot be hijacked by another user', async () => {
   assert.equal(a.status, 201);
   assert.equal(b.status, 201);
 
-  const endpoint = `https://push.example/shared-${stamp}`;
+  const endpoint = `https://fcm.googleapis.com/fcm/send/shared-${stamp}`;
   const first = await request('/api/push/subscribe', {
     method: 'POST',
     token: a.body.token,
@@ -162,6 +162,17 @@ test('push endpoint cannot be hijacked by another user', async () => {
   });
   assert.equal(hijack.status, 409);
   assert.equal(hijack.body.code, 'PUSH_ENDPOINT_TAKEN');
+
+  const ssrf = await request('/api/push/subscribe', {
+    method: 'POST',
+    token: a.body.token,
+    body: {
+      endpoint: 'https://127.0.0.1/internal',
+      keys: { p256dh: 'p256dh-a', auth: 'auth-a' },
+    },
+  });
+  assert.equal(ssrf.status, 400);
+  assert.equal(ssrf.body.code, 'INVALID_PUSH_ENDPOINT');
 
   await User.deleteMany({ _id: { $in: [a.body.user.id, b.body.user.id] } });
   await PushSubscription.deleteMany({ endpoint });

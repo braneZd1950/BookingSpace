@@ -133,24 +133,20 @@ export function normalizeError(error) {
 function logServerError(error, normalized, req) {
   if (normalized.status < 500) return;
 
-  const entry = {
+  // Never attach stack traces to structured logs (Sonar S5757).
+  console.error(JSON.stringify({
     code: normalized.code,
     name: error?.name || 'Error',
     method: req.method,
     path: req.path,
-  };
-
-  if (env.nodeEnv !== 'production') {
-    entry.message = error?.message;
-    entry.stack = error?.stack;
-  }
-
-  console.error(JSON.stringify(entry));
+    ...(env.nodeEnv !== 'production' ? { message: String(error?.message || '').slice(0, 200) } : {}),
+  }));
 }
 
 export function errorHandler(error, req, res, next) {
   if (res.headersSent) {
-    next(error);
+    // Avoid Express default handler attaching stack to an open response.
+    res.end();
     return;
   }
 

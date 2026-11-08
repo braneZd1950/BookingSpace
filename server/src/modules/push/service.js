@@ -1,7 +1,10 @@
 import PushSubscription from '../../models/PushSubscription.js';
 import env from '../../config/env.js';
 import { HttpError } from '../../utils/httpError.js';
+import { assertSafePushEndpoint } from '../../utils/pushEndpoint.js';
 import { webPushConfigured } from '../../utils/webPush.js';
+
+export { assertSafePushEndpoint } from '../../utils/pushEndpoint.js';
 
 export function getPushPublicConfig() {
   return {
@@ -11,7 +14,7 @@ export function getPushPublicConfig() {
 }
 
 export async function upsertSubscription(user, input, userAgent = '') {
-  const endpoint = String(input.endpoint);
+  const endpoint = assertSafePushEndpoint(input.endpoint);
   const existing = await PushSubscription.findOne({ endpoint: { $eq: endpoint } });
   if (existing && String(existing.userId) !== String(user._id)) {
     throw new HttpError(409, 'Push endpoint already registered', { code: 'PUSH_ENDPOINT_TAKEN' });
@@ -33,16 +36,17 @@ export async function upsertSubscription(user, input, userAgent = '') {
   return { id: String(doc._id), endpoint: doc.endpoint, client: doc.client };
 }
 
-export async function removeSubscription(user, endpoint) {
+export async function removeSubscription(user, endpointInput) {
+  const endpoint = assertSafePushEndpoint(endpointInput);
   const result = await PushSubscription.deleteOne({
-    userId: user._id,
-    endpoint,
+    userId: { $eq: user._id },
+    endpoint: { $eq: endpoint },
   });
   return { removed: result.deletedCount > 0 };
 }
 
 export async function listMySubscriptions(user) {
-  const rows = await PushSubscription.find({ userId: user._id })
+  const rows = await PushSubscription.find({ userId: { $eq: user._id } })
     .select('endpoint client createdAt updatedAt')
     .sort({ updatedAt: -1 })
     .lean();

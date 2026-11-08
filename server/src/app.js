@@ -31,7 +31,8 @@ app.use(helmet({
         'https://accounts.google.com',
         'https://apis.google.com',
       ],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      // No 'unsafe-inline' — Vite emits hashed CSS files; Google Fonts via link.
+      styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       imgSrc: [
         "'self'",
