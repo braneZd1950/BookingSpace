@@ -256,7 +256,7 @@ export default function StudioPolicyPage({ kind = 'privacy' }) {
                   : 'Ugrađeni predložak GDPR / RH — vlasnik ga može urediti i spremiti'}
               </p>
               <div className="studio-policy__body">
-                {lines.map(renderLine)}
+                {lines.map((line, index) => renderLine(line, index))}
               </div>
             </article>
           )}

@@ -397,7 +397,7 @@ export async function createBooking(actor, input) {
 
   const customer = await User.findById(booking.userId).select('name email');
   const memberName = customer?.name || customer?.email || 'Član';
-  notifyTenantStaff({
+  void notifyTenantStaff({
     tenantId: tenant._id,
     excludeUserId: actor._id,
     emailPrefKey: 'bookingEmail',
@@ -543,7 +543,7 @@ export async function cancelBooking(actor, bookingId) {
   const customer = await User.findById(existing.userId).select('name email');
   const memberName = customer?.name || customer?.email || 'Član';
   const cancelledByMember = owns;
-  notifyTenantStaff({
+  void notifyTenantStaff({
     tenantId: existing.tenantId,
     // Always alert trainers when a member cancels; if staff cancels, skip the actor.
     excludeUserId: cancelledByMember ? undefined : actor._id,
