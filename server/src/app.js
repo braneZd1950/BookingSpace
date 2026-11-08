@@ -22,7 +22,37 @@ if (env.nodeEnv === 'production') {
 app.set('query parser', 'simple');
 
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        'https://accounts.google.com',
+        'https://apis.google.com',
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'blob:',
+        'https://res.cloudinary.com',
+        'https://*.googleusercontent.com',
+      ],
+      connectSrc: [
+        "'self'",
+        'https://*.sentry.io',
+        'https://accounts.google.com',
+      ],
+      frameSrc: ["'self'", 'https://accounts.google.com'],
+      mediaSrc: ["'self'", 'blob:', 'https://res.cloudinary.com'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      ...(env.nodeEnv === 'production' ? { upgradeInsecureRequests: [] } : {}),
+    },
+  },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));

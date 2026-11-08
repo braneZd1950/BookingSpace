@@ -185,7 +185,8 @@ export function toTenantForRole(tenant, role) {
   if (role === 'BUSINESS_OWNER' || role === 'STAFF' || role === 'ADMIN') {
     return full;
   }
-  const { oib: _oib, bookingSettings, ...safe } = full;
+  const { bookingSettings, ...safe } = full;
+  delete safe.oib;
   return {
     ...safe,
     bookingSettings: {
@@ -308,8 +309,8 @@ export async function getPublicTenant(slug) {
 
   const services = await Service.find({ tenantId: tenant._id, active: true }).sort({ name: 1 });
   const trainers = await listPublicTrainers(tenant._id);
-  const profile = toTenant(tenant);
-  const { oib: _oib, ...publicProfile } = profile;
+  const publicProfile = toTenant(tenant);
+  delete publicProfile.oib;
   return {
     ...publicProfile,
     bookingSettings: { workingHours: tenant.bookingSettings?.workingHours || [] },

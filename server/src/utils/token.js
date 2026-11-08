@@ -1,28 +1,23 @@
-import jwt from 'jsonwebtoken';
-import env from '../config/env.js';
+import { signJwt, verifyJwt } from './jwt.js';
 import { HttpError } from './httpError.js';
+import env from '../config/env.js';
 
 export function signAccessToken(user) {
-  return jwt.sign(
+  return signJwt(
     {
       sub: String(user._id),
       v: Number(user.tokenVersion || 0),
     },
-    env.jwtSecret,
     { expiresIn: env.jwtExpiresIn },
   );
 }
 
 export function verifyAccessToken(token) {
-  try {
-    const payload = jwt.verify(token, env.jwtSecret);
+  return verifyJwt(token, (payload) => {
     // Media playback JWTs share JWT_SECRET but must never act as a session.
     if (payload?.typ === 'media') {
       throw new HttpError(401, 'Unauthorized');
     }
     return payload;
-  } catch (error) {
-    if (error instanceof HttpError) throw error;
-    throw new HttpError(401, 'Unauthorized');
-  }
+  });
 }

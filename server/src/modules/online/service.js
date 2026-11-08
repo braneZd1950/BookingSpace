@@ -123,23 +123,33 @@ export async function listManaged(actor, tenantId) {
   return rows.map((row) => toManage(row, actor));
 }
 
+async function readUploadBuffer(file) {
+  if (file.buffer) return file.buffer;
+  if (file.path) return fs.promises.readFile(file.path);
+  throw new HttpError(400, 'Video file is required', { code: 'FILE_REQUIRED' });
+}
+
 export async function uploadVideo(actor, tenantId, file) {
   await requireMember(actor, tenantId, MANAGE_ROLES);
   if (!file) throw new HttpError(400, 'Video file is required', { code: 'FILE_REQUIRED' });
   if (!VIDEO_TYPES.has(file.mimetype)) {
     throw new HttpError(400, 'Unsupported video type', { code: 'UNSUPPORTED_MEDIA' });
   }
-  assertVideoBuffer(file.buffer, file.mimetype);
   if (file.size > MAX_VIDEO_BYTES) {
     throw new HttpError(413, 'Video is too large (max 100 MB)', { code: 'PAYLOAD_TOO_LARGE' });
   }
 
+  const buffer = await readUploadBuffer(file);
+  assertVideoBuffer(buffer, file.mimetype);
+
   const tenant = await Tenant.findById(tenantId).select('_id');
   if (!tenant) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
 
+  const uploadFile = { ...file, buffer };
+
   if (cloudinaryReady()) {
     try {
-      const uploaded = await uploadBufferToCloudinary(file.buffer, {
+      const uploaded = await uploadBufferToCloudinary(buffer, {
         folder: `bookingspace/${tenantId}/online`,
         resourceType: 'video',
       });
@@ -158,7 +168,7 @@ export async function uploadVideo(actor, tenantId, file) {
     }
   }
 
-  const url = await storeLocalUpload(file, {
+  const url = await storeLocalUpload(uploadFile, {
     tenantId,
     subdir: 'video',
     extension: videoExtension(file.mimetype),

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 import { createRateLimiter } from '../../middleware/rateLimit.js';
-import { createMemoryUploader } from '../../middleware/upload.js';
+import { createDiskUploader } from '../../middleware/upload.js';
 import { validate } from '../../middleware/validate.js';
 import { requireTenantRole } from '../access.js';
 import { catalog, create, list, media, remove, update, upload } from './controller.js';
@@ -13,10 +13,10 @@ import {
   updateOnlineSchema,
 } from './schema.js';
 
-/** Cap upload body early; service also asserts magic bytes + size (100 MiB). */
+/** Authenticated video only; disk-backed (not RAM). Service re-checks magic + size. */
 const MAX_VIDEO_UPLOAD_BYTES = 100 * 1024 * 1024;
 
-const videoUpload = createMemoryUploader({
+const videoUpload = createDiskUploader({
   fileSize: MAX_VIDEO_UPLOAD_BYTES,
   fields: 8,
   fieldSize: 64 * 1024,

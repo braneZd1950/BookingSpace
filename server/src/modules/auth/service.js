@@ -92,11 +92,7 @@ export async function loginUser(input) {
   };
 }
 
-/**
- * Verify Google ID token and login / create account.
- * @param {{ idToken: string, intent?: 'login' | 'register' }} input
- */
-export async function loginWithGoogle(input) {
+async function verifyGoogleIdToken(idToken) {
   const { OAuth2Client } = await import('google-auth-library');
   const audiences = env.googleClientIds || [];
   if (!audiences.length) {
@@ -106,67 +102,76 @@ export async function loginWithGoogle(input) {
   }
 
   const client = new OAuth2Client();
-  let payload;
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: input.idToken,
-      audience: audiences,
-    });
-    payload = ticket.getPayload();
+    const ticket = await client.verifyIdToken({ idToken, audience: audiences });
+    return ticket.getPayload();
   } catch {
     throw new HttpError(401, 'Google prijava nije uspjela.', { code: 'GOOGLE_INVALID' });
   }
+}
 
+function googleProfileFromPayload(payload) {
   const googleId = payload?.sub;
   const email = String(payload?.email || '').trim().toLowerCase();
   const emailVerified = Boolean(payload?.email_verified);
   const name = String(payload?.name || email.split('@')[0] || 'Korisnik').trim();
-
   if (!googleId || !email || !emailVerified) {
     throw new HttpError(401, 'Google račun nije potvrđen.', { code: 'GOOGLE_INVALID' });
   }
+  return { googleId, email, name };
+}
 
-  let user = await User.findOne({ googleId });
+async function linkGoogleToExistingEmail({ googleId, email, name }) {
+  // Do not attach Google to an existing password account — prevents
+  // register-then-wait takeover of someone else's Google email.
+  const user = await User.findOne({ email: { $eq: email } }).select('+passwordHash');
+  if (!user) return null;
+  if (user.passwordHash) {
+    throw new HttpError(409, 'Račun s ovom e-poštom već postoji. Prijavite se lozinkom.', {
+      code: 'EMAIL_TAKEN',
+    });
+  }
+  if (user.googleId && user.googleId !== googleId) {
+    throw new HttpError(409, 'Račun je već povezan s drugim Google profilom.', {
+      code: 'GOOGLE_MISMATCH',
+    });
+  }
+  user.googleId = googleId;
+  if (!user.name) user.name = name;
+  await user.save();
+  return user;
+}
+
+async function createGoogleUser({ googleId, email, name, intent }) {
+  const role = intent === 'register' ? 'BUSINESS_OWNER' : 'CUSTOMER';
+  try {
+    return await User.create({ name, email, googleId, role });
+  } catch (error) {
+    if (error?.code === 11000) {
+      throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
+    }
+    throw error;
+  }
+}
+
+/**
+ * Verify Google ID token and login / create account.
+ * @param {{ idToken: string, intent?: 'login' | 'register' }} input
+ */
+export async function loginWithGoogle(input) {
+  const profile = googleProfileFromPayload(await verifyGoogleIdToken(input.idToken));
+  let user = await User.findOne({ googleId: profile.googleId });
   let created = false;
 
   if (!user) {
-    // Do not attach Google to an existing password account — prevents
-    // register-then-wait takeover of someone else's Google email.
-    user = await User.findOne({ email: { $eq: email } }).select('+passwordHash');
-    if (user?.passwordHash) {
-      throw new HttpError(409, 'Račun s ovom e-poštom već postoji. Prijavite se lozinkom.', {
-        code: 'EMAIL_TAKEN',
-      });
-    }
-    if (user) {
-      if (user.googleId && user.googleId !== googleId) {
-        throw new HttpError(409, 'Račun je već povezan s drugim Google profilom.', {
-          code: 'GOOGLE_MISMATCH',
-        });
-      }
-      user.googleId = googleId;
-      if (!user.name) user.name = name;
-      await user.save();
-    }
+    user = await linkGoogleToExistingEmail(profile);
   }
-
   if (!user) {
-    const intent = input.intent === 'register' ? 'register' : 'login';
-    const role = intent === 'register' ? 'BUSINESS_OWNER' : 'CUSTOMER';
-    try {
-      user = await User.create({
-        name,
-        email,
-        googleId,
-        role,
-      });
-      created = true;
-    } catch (error) {
-      if (error?.code === 11000) {
-        throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
-      }
-      throw error;
-    }
+    user = await createGoogleUser({
+      ...profile,
+      intent: input.intent === 'register' ? 'register' : 'login',
+    });
+    created = true;
   }
 
   trackUsage({
@@ -237,40 +242,39 @@ export async function revokeAccessTokens(user) {
 
 /** Always returns the same message so emails are not enumerable. */
 export async function requestPasswordReset(input) {
-  const ok = {
+  const user = await User.findOne({ email: { $eq: String(input.email) } })
+    .select('+passwordResetTokenHash +passwordResetExpires');
+
+  if (user) {
+    const token = randomBytes(32).toString('hex');
+    user.passwordResetTokenHash = hashResetToken(token);
+    user.passwordResetExpires = new Date(Date.now() + RESET_TTL_MS);
+    await user.save();
+
+    const origin = env.clientOrigin.replace(/\/$/, '');
+    const resetUrl = `${origin}/nova-lozinka?token=${encodeURIComponent(token)}`;
+
+    try {
+      await sendPasswordResetEmail({
+        to: user.email,
+        memberName: user.name,
+        resetUrl,
+      });
+      trackUsage({
+        type: 'password_reset_requested',
+        userId: user._id,
+        role: user.role,
+        path: '/zaboravljena-lozinka',
+      });
+    } catch (error) {
+      console.error('[mail] Oporavak lozinke nije poslan:', error?.message || error);
+    }
+  }
+
+  return {
     ok: true,
     message: 'Ako račun postoji, poslali smo link za oporavak lozinke.',
   };
-
-  const user = await User.findOne({ email: { $eq: String(input.email) } })
-    .select('+passwordResetTokenHash +passwordResetExpires');
-  if (!user) return ok;
-
-  const token = randomBytes(32).toString('hex');
-  user.passwordResetTokenHash = hashResetToken(token);
-  user.passwordResetExpires = new Date(Date.now() + RESET_TTL_MS);
-  await user.save();
-
-  const origin = env.clientOrigin.replace(/\/$/, '');
-  const resetUrl = `${origin}/nova-lozinka?token=${encodeURIComponent(token)}`;
-
-  try {
-    await sendPasswordResetEmail({
-      to: user.email,
-      memberName: user.name,
-      resetUrl,
-    });
-    trackUsage({
-      type: 'password_reset_requested',
-      userId: user._id,
-      role: user.role,
-      path: '/zaboravljena-lozinka',
-    });
-  } catch (error) {
-    console.error('[mail] Oporavak lozinke nije poslan:', error?.message || error);
-  }
-
-  return ok;
 }
 
 export async function resetPasswordWithToken(input) {

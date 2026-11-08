@@ -1,3 +1,4 @@
+import { cleanupUploadFile } from '../../middleware/upload.js';
 import {
   createWorkout,
   listForMember,
@@ -14,8 +15,12 @@ export async function list(req, res) {
 }
 
 export async function upload(req, res) {
-  const video = await uploadVideo(req.user, req.input.params.tenantId, req.file);
-  res.status(201).json({ video });
+  try {
+    const video = await uploadVideo(req.user, req.input.params.tenantId, req.file);
+    res.status(201).json({ video });
+  } finally {
+    await cleanupUploadFile(req.file);
+  }
 }
 
 export async function create(req, res) {

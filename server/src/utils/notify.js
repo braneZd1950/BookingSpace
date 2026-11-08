@@ -40,7 +40,7 @@ async function resolveStaffRecipients(tenantId, excludeUserId) {
         _id: tenant.ownerId || null,
         name: tenant.name,
         email: tenant.email,
-        notificationPrefs: DEFAULT_PREFS,
+        notificationPrefs: mergeNotificationPrefs(null),
       });
     }
   }
