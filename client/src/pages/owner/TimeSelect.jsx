@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useDismissibleOpen } from '../../hooks/useDismissibleOpen.js';
 
 const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
 const baseMinutes = ['00', '15', '30', '45'];
@@ -10,25 +11,18 @@ export default function TimeSelect({ label, value, open, onOpen, onClose, onChan
     ? baseMinutes
     : [...baseMinutes, minute].sort((a, b) => Number(a) - Number(b));
 
+  useDismissibleOpen(root, open, onClose, {
+    selectedSelector: '.is-on',
+  });
+
   useEffect(() => {
     if (!open) return undefined;
-    function away(event) {
-      if (!root.current?.contains(event.target)) onClose();
-    }
-    function onKey(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', onKey);
     root.current?.querySelectorAll('.is-on').forEach((node) => {
       const list = node.parentElement;
       list.scrollTop = node.offsetTop - list.clientHeight / 2 + node.clientHeight / 2;
     });
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open, onClose]);
+    return undefined;
+  }, [open, hour, minute]);
 
   function pickHour(next) {
     onChange(`${next}:${minute}`);

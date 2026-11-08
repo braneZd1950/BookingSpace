@@ -3,6 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom';
 import { PLATFORM_POLL, useGetStudioAnalyticsQuery } from '../../api/analyticsApi.js';
 import { useListTenantBookingsQuery } from '../../api/bookingApi.js';
 import { useListMembershipsQuery } from '../../api/membershipApi.js';
+import { daysLeft, monthRange } from '../../lib/dateRange.js';
 import { formatDate } from '../../lib/formatters.js';
 import './StudioAnalyticsPage.scss';
 
@@ -26,24 +27,6 @@ function formatMonthHr(yearMonth) {
     year: 'numeric',
   }).format(new Date(year, month - 1, 1));
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function daysLeft(until) {
-  if (!until) return null;
-  const end = new Date(`${until}T23:59:59`);
-  if (Number.isNaN(end.getTime())) return null;
-  return Math.ceil((end.getTime() - Date.now()) / 86400000);
-}
-
-function monthRange(from = new Date()) {
-  const year = from.getFullYear();
-  const month = from.getMonth();
-  const pad = (value) => String(value).padStart(2, '0');
-  const last = new Date(year, month + 1, 0).getDate();
-  return {
-    dateFrom: `${year}-${pad(month + 1)}-01`,
-    dateTo: `${year}-${pad(month + 1)}-${pad(last)}`,
-  };
 }
 
 function seriesByMonth(series) {

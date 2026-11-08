@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
+import { useDismissibleOpen } from '../../hooks/useDismissibleOpen.js';
 import { formatCancellationWindow } from './studioTime.js';
 import './CancelWindowSelect.scss';
 
@@ -123,26 +124,10 @@ export default function CancelWindowSelect({
     return () => node.removeEventListener('wheel', onWheel);
   }, [options, onChange]);
 
-  useEffect(() => {
-    if (!open) return undefined;
-    function away(event) {
-      if (!root.current?.contains(event.target)) onClose();
-    }
-    function onKey(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', onKey);
-    const selected = root.current?.querySelector('[aria-selected="true"]');
-    const list = root.current?.querySelector('.cancel-window__list');
-    if (selected && list) {
-      list.scrollTop = selected.offsetTop - list.clientHeight / 2 + selected.clientHeight / 2;
-    }
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open, onClose]);
+  useDismissibleOpen(root, open, onClose, {
+    selectedSelector: '[aria-selected="true"]',
+    listSelector: '.cancel-window__list',
+  });
 
   function commitFromPointer(clientX) {
     const line = trackLine.current;

@@ -8,7 +8,15 @@ const clientDir = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   envDir: path.resolve(clientDir, '..'),
+  resolve: {
+    alias: {
+      '@shared': path.resolve(clientDir, '../shared'),
+    },
+  },
   server: {
+    fs: {
+      allow: [path.resolve(clientDir, '..')],
+    },
     host: true,
     port: 5173,
     proxy: {

@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useDismissibleOpen } from '../../hooks/useDismissibleOpen.js';
 import './MenuSelect.scss';
 
 export default function MenuSelect({
@@ -12,27 +13,10 @@ export default function MenuSelect({
 }) {
   const root = useRef(null);
   const chosen = options.find((item) => item.value === value) || options[0];
-
-  useEffect(() => {
-    if (!open) return undefined;
-    function away(event) {
-      if (!root.current?.contains(event.target)) onClose();
-    }
-    function onKey(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', onKey);
-    const selected = root.current?.querySelector('.is-on');
-    const list = root.current?.querySelector('.menu-select__list');
-    if (selected && list) {
-      list.scrollTop = selected.offsetTop - list.clientHeight / 2 + selected.clientHeight / 2;
-    }
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open, onClose]);
+  useDismissibleOpen(root, open, onClose, {
+    selectedSelector: '.is-on',
+    listSelector: '.menu-select__list',
+  });
 
   return (
     <div className={open ? 'menu-select is-open' : 'menu-select'} ref={root}>

@@ -14,9 +14,10 @@ import {
   useSuspendStaffMutation,
 } from '../../api/staffApi.js';
 import FilterTabBar from '../../components/FilterTabBar.jsx';
+import { daysLeft, monthRange } from '../../lib/dateRange.js';
 import { formatDate } from '../../lib/formatters.js';
-import './MembersPage.scss';
 import { isEmail } from '../../lib/isEmail.js';
+import './MembersPage.scss';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 const SESSION_PRESETS = [6, 12, 18];
@@ -75,14 +76,6 @@ function sessionsProgress(item) {
   };
 }
 
-function daysLeft(until) {
-  if (!until) return null;
-  const end = new Date(`${until}T23:59:59`);
-  if (Number.isNaN(end.getTime())) return null;
-  const diff = Math.ceil((end.getTime() - Date.now()) / 86400000);
-  return diff;
-}
-
 function daysLeftInMonth(from = new Date()) {
   const end = new Date(from.getFullYear(), from.getMonth() + 1, 0);
   return Math.max(1, end.getDate() - from.getDate() + 1);
@@ -91,17 +84,6 @@ function daysLeftInMonth(from = new Date()) {
 function monthLabelHr(from = new Date()) {
   const label = new Intl.DateTimeFormat('hr-HR', { month: 'long' }).format(from);
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function monthRange(from = new Date()) {
-  const year = from.getFullYear();
-  const month = from.getMonth();
-  const pad = (value) => String(value).padStart(2, '0');
-  const last = new Date(year, month + 1, 0).getDate();
-  return {
-    dateFrom: `${year}-${pad(month + 1)}-01`,
-    dateTo: `${year}-${pad(month + 1)}-${pad(last)}`,
-  };
 }
 
 export default function MembersPage() {

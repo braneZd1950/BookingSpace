@@ -11,7 +11,13 @@ import { useCreateServiceMutation, useListServicesQuery } from '../../api/servic
 import { useListStaffQuery } from '../../api/staffApi.js';
 import { useUpdateTenantMutation } from '../../api/tenantApi.js';
 import { ConsentGate } from '../../components/ConsentBanner.jsx';
+import { useDefaultStaffId } from '../../hooks/useDefaultStaffId.js';
 import { usePrivacyConsent } from '../../hooks/usePrivacyConsent.js';
+import {
+  messageForCancelBookingError,
+  messageForCreateBookingError,
+} from '../../lib/bookingErrors.js';
+import { dateKeyToLocalDate } from '../../lib/dateRange.js';
 import MemberSelect from './MemberSelect.jsx';
 import {
   dayHours,
@@ -102,26 +108,14 @@ export default function TerminiPage() {
     [memberData],
   );
 
-  useEffect(() => {
-    if (trainers.length === 0) {
-      setStaffId('');
-      return;
-    }
-    setStaffId((current) => {
-      if (current && trainers.some((item) => String(item.id) === current)) return current;
-      return String(trainers[0].id);
-    });
-  }, [trainers]);
+  useDefaultStaffId(trainers, setStaffId);
   const slots = availability?.slots || [];
   const openSlots = slots.filter((item) => item.status === 'AVAILABLE');
   const dayBookings = (bookingData?.bookings || [])
     .filter((item) => item.status === 'CONFIRMED')
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const selectedDate = useMemo(() => {
-    const [y, m, d] = date.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  }, [date]);
+  const selectedDate = useMemo(() => dateKeyToLocalDate(date), [date]);
   const dayOpen = dayHours(selectedDate, hours).works;
 
   const nameByUser = useMemo(() => {
@@ -220,32 +214,7 @@ export default function TerminiPage() {
       setOk('Rezervacija je spremljena u bazu.');
       setSlotTime('');
     } catch (failure) {
-      const code = failure?.data?.code;
-      if (failure?.status === 'FETCH_ERROR') {
-        setError('Poslužitelj nije dostupan.');
-        return;
-      }
-      if (code === 'SLOT_UNAVAILABLE') {
-        setError('Taj sat više nije slobodan.');
-        return;
-      }
-      if (code === 'MEMBERSHIP_REQUIRED' || code === 'NO_SESSIONS') {
-        setError('Član nema aktivnu članarinu ili preostale termine.');
-        return;
-      }
-      if (code === 'BOOKING_CONFLICT') {
-        setError('Član već ima rezervaciju u tom terminu.');
-        return;
-      }
-      if (code === 'STAFF_REQUIRED' || code === 'STAFF_UNAVAILABLE') {
-        setError('Odaberite dostupnog trenera.');
-        return;
-      }
-      if (code === 'CONSENT_REQUIRED') {
-        setError('Potrebna je privola za rezervacije. Prihvatite je u banneru ili u Postavke → Privatnost.');
-        return;
-      }
-      setError('Rezervacija nije spremljena.');
+      setError(messageForCreateBookingError(failure, 'owner'));
     }
   }
 
@@ -261,14 +230,7 @@ export default function TerminiPage() {
       await cancelBooking(bookingId).unwrap();
       setOk('Rezervacija je otkazana.');
     } catch (failure) {
-      const code = failure?.data?.code;
-      if (code === 'CONSENT_REQUIRED') {
-        setError('Potrebna je privola za otkaz. Prihvatite je u banneru ili u Postavke → Privatnost.');
-      } else {
-        setError(failure?.status === 'FETCH_ERROR'
-          ? 'Poslužitelj nije dostupan.'
-          : 'Otkaz nije uspio.');
-      }
+      setError(messageForCancelBookingError(failure, { audience: 'owner' }));
     } finally {
       setBusyId('');
     }

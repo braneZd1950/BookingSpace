@@ -1,4 +1,5 @@
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
+import { useDismissibleOpen } from '../../hooks/useDismissibleOpen.js';
 import './MemberSelect.scss';
 
 function initials(name) {
@@ -27,27 +28,10 @@ export default function MemberSelect({
     () => options.find((item) => item.value === value) || null,
     [options, value],
   );
-
-  useEffect(() => {
-    if (!open) return undefined;
-    function away(event) {
-      if (!root.current?.contains(event.target)) onClose();
-    }
-    function onKey(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', onKey);
-    const selected = root.current?.querySelector('[aria-selected="true"]');
-    const list = root.current?.querySelector('.member-select__list');
-    if (selected && list) {
-      list.scrollTop = selected.offsetTop - list.clientHeight / 2 + selected.clientHeight / 2;
-    }
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open, onClose]);
+  useDismissibleOpen(root, open, onClose, {
+    selectedSelector: '[aria-selected="true"]',
+    listSelector: '.member-select__list',
+  });
 
   return (
     <div className={open ? 'member-select is-open' : 'member-select'} ref={root}>

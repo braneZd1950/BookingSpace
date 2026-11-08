@@ -63,7 +63,7 @@ Localhost workflow stays the same (`npm run dev`). For real traffic:
 
 | Step | Command / doc |
 | --- | --- |
-| Checklist | **[docs/20-production-launch.md](docs/20-production-launch.md)** |
+| Korak po korak | **[docs/20-production-launch.md](docs/20-production-launch.md)** |
 | Env template | `.env.production.example` → Render Environment |
 | Validate secrets | `node scripts/check-production-env.js --file .env.production --force` |
 | Build | `npm run build:prod` (same as Render `build:render`) |
@@ -79,7 +79,7 @@ Localhost workflow stays the same (`npm run dev`). For real traffic:
 | Document | What it covers |
 | --- | --- |
 | [Current status](docs/16-current-status.md) | What is shipped vs deferred |
-| [Production launch](docs/20-production-launch.md) | Go-live checklist (web + API) |
+| [Production launch](docs/20-production-launch.md) | Go-live korak po korak (Atlas → SMTP → Render → smoke) |
 | [Lean phases](docs/lean/README.md) | Learning phases + remaining work |
 | [Backend status](docs/lean/backend-status.md) | Server change policy + gap log |
 | [API spec](docs/07-api-spec.md) | REST map |
