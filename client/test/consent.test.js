@@ -7,6 +7,7 @@ import {
   hasValidConsent,
   hasValidLocalConsent,
   readLocalConsent,
+  retainLocalConsentAfterLogout,
   withdrawLocally,
   writeLocalConsent,
 } from '../src/lib/consent.js';
@@ -71,4 +72,18 @@ test('consentFromUser normalizes payload', () => {
   assert.equal(shaped.isCurrent, true);
   assert.equal(shaped.source, 'settings');
   assert.equal(consentFromUser({}), null);
+});
+
+test('logout keeps local accept but blocks account sync', () => {
+  store.clear();
+  installStorage();
+
+  acceptLocally('banner');
+  assert.equal(hasValidLocalConsent(), true);
+  assert.equal(readLocalConsent()?.allowAccountSync, true);
+
+  retainLocalConsentAfterLogout();
+  assert.equal(hasValidLocalConsent(), true);
+  assert.equal(readLocalConsent()?.allowAccountSync, false);
+  assert.equal(hasValidConsent(null), true);
 });

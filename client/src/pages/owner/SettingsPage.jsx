@@ -712,8 +712,8 @@ export default function SettingsPage() {
         ) : null}
 
         {tab === 'account' ? (
-          <>
-            <form className="settings__sheet" onSubmit={saveAccount}>
+          <div className="settings__stack">
+            <form id="settings-account" className="settings__sheet" onSubmit={saveAccount}>
               <div className="settings__grid">
                 <label>
                   Ime i prezime
@@ -758,15 +758,6 @@ export default function SettingsPage() {
               <p className="settings__fine">
                 OIB nije obavezan sada — trebat će ga kad uključimo plaćanje karticom i izdavanje računa.
               </p>
-              <div className="settings__actions">
-                <button
-                  className="settings__primary"
-                  type="submit"
-                  disabled={savingAccount || savingBusiness}
-                >
-                  {savingAccount || savingBusiness ? 'Spremamo…' : 'Spremite račun'}
-                </button>
-              </div>
             </form>
             <div className="settings__sheet">
               <UiThemePicker
@@ -775,7 +766,17 @@ export default function SettingsPage() {
                 disabled={savingTheme || savingAccount}
               />
             </div>
-          </>
+            <div className="settings__actions">
+              <button
+                className="settings__primary"
+                type="submit"
+                form="settings-account"
+                disabled={savingAccount || savingBusiness}
+              >
+                {savingAccount || savingBusiness ? 'Spremamo…' : 'Spremite račun'}
+              </button>
+            </div>
+          </div>
         ) : null}
 
         {tab === 'security' ? (

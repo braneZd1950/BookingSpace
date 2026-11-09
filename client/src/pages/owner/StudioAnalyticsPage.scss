@@ -1,5 +1,6 @@
 .studio-panel.analytics {
   --analytics-brand: var(--site-brand, var(--brand, #0e6b73));
+  --analytics-brand-text: var(--brand-strong, var(--analytics-brand));
   --analytics-soft: var(--site-soft, var(--brand-soft, #dceff0));
   --analytics-ink: var(--site-ink, var(--fg, #112b2e));
   --analytics-edge: color-mix(in srgb, var(--analytics-brand) 16%, transparent);
@@ -81,7 +82,7 @@
 .studio-panel.analytics .analytics__eyebrow,
 .studio-panel.analytics .analytics__kicker {
   margin: 0;
-  color: var(--analytics-brand);
+  color: var(--analytics-brand-text);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -267,7 +268,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--analytics-brand);
+  color: var(--analytics-brand-text);
 }
 
 .studio-panel.analytics .analytics__meta span {
@@ -427,7 +428,7 @@
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  color: var(--analytics-brand);
+  color: var(--analytics-brand-text);
 }
 
 .studio-panel.analytics .analytics__members em.is-warn {
@@ -443,7 +444,7 @@
 
 .studio-panel.analytics .analytics__empty a,
 .studio-panel.analytics .analytics__fine a {
-  color: var(--analytics-brand);
+  color: var(--analytics-brand-text);
   font-weight: 750;
   text-decoration: none;
 }
@@ -459,6 +460,78 @@
   font-size: 0.88rem;
   font-weight: 600;
   line-height: 1.45;
+}
+
+:root[data-theme='dark'] .studio-panel.analytics {
+  --analytics-ink: var(--fg);
+  --analytics-soft: color-mix(in srgb, var(--analytics-brand) 26%, var(--surface));
+  --analytics-brand-text: var(--brand-strong, color-mix(in srgb, var(--analytics-brand) 42%, #fff));
+  --analytics-edge: color-mix(in srgb, var(--analytics-brand) 28%, transparent);
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.analytics :is(h1, h2, h3, strong) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.analytics .analytics__lede,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__lead,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__period span,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__stats span,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__kicker,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__panel-head p:last-child,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__meta span,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__member-stats span,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__members span,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__empty,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__fine,
+:root[data-theme='dark'] .studio-panel.analytics th {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+:root[data-theme='dark'] .studio-panel.analytics .analytics__eyebrow,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__meta strong,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__members em:not(.is-warn),
+:root[data-theme='dark'] .studio-panel.analytics .analytics__empty a,
+:root[data-theme='dark'] .studio-panel.analytics .analytics__fine a {
+  color: var(--analytics-brand-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .studio-panel.analytics {
+    --analytics-ink: var(--fg);
+    --analytics-soft: color-mix(in srgb, var(--analytics-brand) 26%, var(--surface));
+    --analytics-brand-text: var(--brand-strong, color-mix(in srgb, var(--analytics-brand) 42%, #fff));
+    --analytics-edge: color-mix(in srgb, var(--analytics-brand) 28%, transparent);
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.analytics :is(h1, h2, h3, strong) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__lede,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__lead,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__period span,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__stats span,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__kicker,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__panel-head p:last-child,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__meta span,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__member-stats span,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__members span,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__empty,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__fine,
+  :root:not([data-theme='light']) .studio-panel.analytics th {
+    color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  }
+
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__eyebrow,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__meta strong,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__members em:not(.is-warn),
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__empty a,
+  :root:not([data-theme='light']) .studio-panel.analytics .analytics__fine a {
+    color: var(--analytics-brand-text);
+  }
 }
 
 @keyframes analytics-studio-wash {

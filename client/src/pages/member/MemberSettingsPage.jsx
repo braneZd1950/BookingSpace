@@ -298,11 +298,6 @@ export default function MemberSettingsPage() {
             {notes.account ? (
               <p className="member-settings__note" role="status">{notes.account}</p>
             ) : null}
-            <div className="member-settings__actions">
-              <button type="submit" className="member-settings__primary" disabled={savingProfile}>
-                {savingProfile ? 'Spremamo…' : 'Spremi račun'}
-              </button>
-            </div>
           </form>
 
           <section id="tema" className="member-settings__sheet" aria-label="Tema sučelja">
@@ -315,6 +310,17 @@ export default function MemberSettingsPage() {
               <p className="member-settings__note" role="status">{notes.theme}</p>
             ) : null}
           </section>
+
+          <div className="member-settings__actions">
+            <button
+              type="submit"
+              form="racun"
+              className="member-settings__primary"
+              disabled={savingProfile}
+            >
+              {savingProfile ? 'Spremamo…' : 'Spremi račun'}
+            </button>
+          </div>
 
           <form
             id="obavijesti"

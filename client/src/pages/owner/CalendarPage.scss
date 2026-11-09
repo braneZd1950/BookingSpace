@@ -1,5 +1,7 @@
 .studio-panel.cal {
   --cal-brand: var(--site-brand, var(--brand, #0e6b73));
+  /* Text accents: brand in light; lightened via --brand-strong in dark (see uiTheme). */
+  --cal-brand-text: var(--brand-strong, var(--cal-brand));
   --cal-soft: var(--site-soft, var(--brand-soft, #dceff0));
   --cal-ink: var(--site-ink, var(--fg, #112b2e));
   --cal-edge: color-mix(in srgb, var(--cal-brand) 16%, transparent);
@@ -80,7 +82,7 @@
 .cal__eyebrow,
 .cal__kicker {
   margin: 0;
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -170,7 +172,7 @@
   border: 0;
   border-radius: 0.15rem;
   background: color-mix(in srgb, var(--cal-soft) 65%, var(--surface));
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
   font: inherit;
   font-size: 1.25rem;
   font-weight: 700;
@@ -272,7 +274,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
 }
 
 .cal__meta span {
@@ -495,7 +497,7 @@
   padding: 0.12rem 0.35rem;
   border-radius: 0.15rem;
   background: color-mix(in srgb, var(--cal-brand) 14%, var(--surface));
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
   font-size: 0.72rem;
   font-weight: 800;
   text-align: center;
@@ -621,14 +623,14 @@
   flex-wrap: wrap;
   gap: 0.15rem;
   align-items: baseline;
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
   font-size: 1rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .cal-modal__slot time span {
-  opacity: 0.55;
+  opacity: 0.72;
   font-weight: 650;
 }
 
@@ -639,7 +641,7 @@
 }
 
 .cal-modal__list > li.is-group-full .cal-modal__cap {
-  color: var(--cal-brand);
+  color: var(--cal-brand-text);
 }
 
 .cal-modal__people {
@@ -715,6 +717,80 @@
   to {
     transform: scaleX(1);
     opacity: 1;
+  }
+}
+
+:root[data-theme='dark'] .studio-panel.cal {
+  --cal-ink: var(--fg);
+  --cal-soft: color-mix(in srgb, var(--cal-brand) 26%, var(--surface));
+  --cal-brand-text: var(--brand-strong, color-mix(in srgb, var(--cal-brand) 42%, #fff));
+  --cal-edge: color-mix(in srgb, var(--cal-brand) 28%, transparent);
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.cal :is(h1, h2, h3, strong) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.cal .cal__lede,
+:root[data-theme='dark'] .studio-panel.cal .cal__hint,
+:root[data-theme='dark'] .studio-panel.cal .cal__meta span,
+:root[data-theme='dark'] .studio-panel.cal .cal__hint-label,
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__head p,
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__empty,
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__cap,
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__people span {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__slot time,
+:root[data-theme='dark'] .studio-panel.cal .cal__eyebrow,
+:root[data-theme='dark'] .studio-panel.cal .cal__kicker,
+:root[data-theme='dark'] .studio-panel.cal .cal__meta strong,
+:root[data-theme='dark'] .studio-panel.cal .cal__count,
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__list > li.is-group-full .cal-modal__cap {
+  color: var(--cal-brand-text);
+}
+
+:root[data-theme='dark'] .studio-panel.cal .cal-modal__slot time span {
+  opacity: 0.82;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .studio-panel.cal {
+    --cal-ink: var(--fg);
+    --cal-soft: color-mix(in srgb, var(--cal-brand) 26%, var(--surface));
+    --cal-brand-text: var(--brand-strong, color-mix(in srgb, var(--cal-brand) 42%, #fff));
+    --cal-edge: color-mix(in srgb, var(--cal-brand) 28%, transparent);
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.cal :is(h1, h2, h3, strong) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.cal .cal__lede,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__hint,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__meta span,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__hint-label,
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__head p,
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__empty,
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__cap,
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__people span {
+    color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  }
+
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__slot time,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__eyebrow,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__kicker,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__meta strong,
+  :root:not([data-theme='light']) .studio-panel.cal .cal__count,
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__list > li.is-group-full .cal-modal__cap {
+    color: var(--cal-brand-text);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.cal .cal-modal__slot time span {
+    opacity: 0.82;
   }
 }
 

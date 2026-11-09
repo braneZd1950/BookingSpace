@@ -76,13 +76,30 @@ export function hasValidConsent(user) {
   return hasValidLocalConsent();
 }
 
-export function acceptLocally(source = 'banner') {
+/**
+ * @param {string} [source]
+ * @param {{ allowAccountSync?: boolean }} [options]
+ *   allowAccountSync: guest accept may be copied to the next login once.
+ *   Cleared on logout so another account on this device is not auto-accepted.
+ */
+export function acceptLocally(source = 'banner', { allowAccountSync = true } = {}) {
   writeLocalConsent({
     accepted: true,
     version: CONSENT_VERSION,
     acceptedAt: new Date().toISOString(),
     withdrawnAt: null,
     source,
+    allowAccountSync: Boolean(allowAccountSync),
+  });
+}
+
+/** Keep device accept after logout, but do not push it onto the next account. */
+export function retainLocalConsentAfterLogout() {
+  const prev = readLocalConsent();
+  if (!prev?.accepted || prev.version !== CONSENT_VERSION) return;
+  writeLocalConsent({
+    ...prev,
+    allowAccountSync: false,
   });
 }
 
@@ -94,5 +111,6 @@ export function withdrawLocally(source = 'settings') {
     acceptedAt: prev?.acceptedAt || null,
     withdrawnAt: new Date().toISOString(),
     source,
+    allowAccountSync: false,
   });
 }

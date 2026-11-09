@@ -1,4 +1,6 @@
 .member-select {
+  --ms-brand: var(--site-brand, var(--brand));
+  --ms-brand-text: var(--brand-strong, var(--ms-brand));
   position: relative;
   display: grid;
   gap: 0.4rem;
@@ -101,9 +103,9 @@
   width: 0.55rem;
   height: 0.55rem;
   margin-right: 0.2rem;
-  border-right: 2px solid var(--site-brand, var(--brand));
-  border-bottom: 2px solid var(--site-brand, var(--brand));
-  opacity: 0.75;
+  border-right: 2px solid var(--ms-brand-text);
+  border-bottom: 2px solid var(--ms-brand-text);
+  opacity: 0.85;
   transform: rotate(45deg);
   transition: transform 0.15s ease;
 }
@@ -177,7 +179,7 @@
   padding: 0.28rem 0.55rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--site-brand, var(--brand)) 12%, var(--surface));
-  color: var(--site-brand, var(--brand));
+  color: var(--ms-brand-text);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -187,4 +189,34 @@
 .member-select__list button.is-on .member-select__badge {
   background: rgb(255 255 255 / 18%);
   color: var(--site-on, #fff);
+}
+
+:root[data-theme='dark'] .member-select {
+  --ms-brand-text: var(--brand-strong, color-mix(in srgb, var(--ms-brand) 42%, #fff));
+}
+
+:root[data-theme='dark'] .member-select__chev {
+  opacity: 0.95;
+}
+
+:root[data-theme='dark'] .member-select__panel {
+  box-shadow:
+    0 18px 40px color-mix(in srgb, var(--ms-brand) 22%, transparent),
+    0 1px 0 rgb(255 255 255 / 8%) inset;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .member-select {
+    --ms-brand-text: var(--brand-strong, color-mix(in srgb, var(--ms-brand) 42%, #fff));
+  }
+
+  :root:not([data-theme='light']) .member-select__chev {
+    opacity: 0.95;
+  }
+
+  :root:not([data-theme='light']) .member-select__panel {
+    box-shadow:
+      0 18px 40px color-mix(in srgb, var(--ms-brand) 22%, transparent),
+      0 1px 0 rgb(255 255 255 / 8%) inset;
+  }
 }

@@ -1,5 +1,6 @@
 .studio-panel.termini {
   --termini-brand: var(--site-brand, var(--brand, #0e6b73));
+  --termini-brand-text: var(--brand-strong, var(--termini-brand));
   --termini-soft: var(--site-soft, var(--brand-soft, #dceff0));
   --termini-ink: var(--site-ink, var(--fg, #112b2e));
   --termini-edge: color-mix(in srgb, var(--termini-brand) 16%, transparent);
@@ -125,7 +126,7 @@
   border: 1px solid color-mix(in srgb, var(--termini-brand) 28%, transparent);
   border-radius: 0.2rem;
   background: color-mix(in srgb, var(--surface) 80%, transparent);
-  color: var(--termini-brand);
+  color: var(--termini-brand-text);
   font-weight: 750;
   text-decoration: none;
   transition: background 0.15s ease, transform 0.15s ease;
@@ -389,7 +390,7 @@
   border: 1px solid var(--termini-edge);
   border-radius: 0.15rem;
   background: color-mix(in srgb, var(--termini-soft) 45%, var(--surface));
-  color: var(--termini-brand);
+  color: var(--termini-brand-text);
   font: inherit;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
@@ -508,7 +509,7 @@
 }
 
 .termini__empty a {
-  color: var(--termini-brand);
+  color: var(--termini-brand-text);
   font-weight: 750;
   text-decoration: none;
 }
@@ -537,6 +538,8 @@
 
 :root[data-theme='dark'] .studio-panel.termini {
   --termini-ink: var(--fg);
+  --termini-brand-text: var(--brand-strong, color-mix(in srgb, var(--termini-brand) 42%, #fff));
+  --termini-edge: color-mix(in srgb, var(--termini-brand) 28%, transparent);
   color: var(--fg);
 }
 
@@ -554,18 +557,35 @@
   color: color-mix(in srgb, var(--fg) 88%, var(--bg));
 }
 
+:root[data-theme='dark'] .studio-panel.termini .termini__empty a,
+:root[data-theme='dark'] .studio-panel.termini .termini__link,
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button:not(.is-on),
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button:not(.is-on) strong,
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button:not(.is-on) span {
+  color: var(--termini-brand-text);
+}
+
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button:not(.is-on) span {
+  opacity: 0.88;
+}
+
 :root[data-theme='dark'] .studio-panel.termini .termini__days button.is-on,
-:root[data-theme='dark'] .studio-panel.termini .termini__days button.is-on strong {
+:root[data-theme='dark'] .studio-panel.termini .termini__days button.is-on strong,
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button.is-on,
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button.is-on strong {
   color: var(--site-on, #fff);
 }
 
-:root[data-theme='dark'] .studio-panel.termini .termini__days button.is-on span {
+:root[data-theme='dark'] .studio-panel.termini .termini__days button.is-on span,
+:root[data-theme='dark'] .studio-panel.termini .termini__slots button.is-on span {
   color: color-mix(in srgb, var(--site-on, #fff) 78%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .studio-panel.termini {
     --termini-ink: var(--fg);
+    --termini-brand-text: var(--brand-strong, color-mix(in srgb, var(--termini-brand) 42%, #fff));
+    --termini-edge: color-mix(in srgb, var(--termini-brand) 28%, transparent);
     color: var(--fg);
   }
 
@@ -583,12 +603,27 @@
     color: color-mix(in srgb, var(--fg) 88%, var(--bg));
   }
 
+  :root:not([data-theme='light']) .studio-panel.termini .termini__empty a,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__link,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button:not(.is-on),
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button:not(.is-on) strong,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button:not(.is-on) span {
+    color: var(--termini-brand-text);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button:not(.is-on) span {
+    opacity: 0.88;
+  }
+
   :root:not([data-theme='light']) .studio-panel.termini .termini__days button.is-on,
-  :root:not([data-theme='light']) .studio-panel.termini .termini__days button.is-on strong {
+  :root:not([data-theme='light']) .studio-panel.termini .termini__days button.is-on strong,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button.is-on,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button.is-on strong {
     color: var(--site-on, #fff);
   }
 
-  :root:not([data-theme='light']) .studio-panel.termini .termini__days button.is-on span {
+  :root:not([data-theme='light']) .studio-panel.termini .termini__days button.is-on span,
+  :root:not([data-theme='light']) .studio-panel.termini .termini__slots button.is-on span {
     color: color-mix(in srgb, var(--site-on, #fff) 78%, transparent);
   }
 }

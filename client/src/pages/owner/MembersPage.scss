@@ -1,5 +1,6 @@
 .studio-panel.members {
   --members-brand: var(--site-brand, var(--brand, #0e6b73));
+  --members-brand-text: var(--brand-strong, var(--members-brand));
   --members-soft: var(--site-soft, var(--brand-soft, #dceff0));
   --members-ink: var(--site-ink, var(--fg, #112b2e));
   --members-edge: color-mix(in srgb, var(--members-brand) 16%, transparent);
@@ -80,7 +81,7 @@
 .members__eyebrow,
 .members__kicker {
   margin: 0;
-  color: var(--members-brand);
+  color: var(--members-brand-text);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -199,7 +200,7 @@
   padding: 0.8rem 1.1rem;
   border: 1px solid color-mix(in srgb, var(--members-brand) 28%, transparent);
   background: transparent;
-  color: var(--members-brand);
+  color: var(--members-brand-text);
 }
 
 .members__ghost:hover {
@@ -342,7 +343,7 @@
   border: 0;
   border-radius: 0.2rem;
   background: color-mix(in srgb, var(--members-soft) 70%, var(--surface));
-  color: var(--members-brand);
+  color: var(--members-brand-text);
   font: inherit;
   font-size: 1.35rem;
   line-height: 1;
@@ -404,7 +405,7 @@
   border: 1px solid var(--members-edge);
   border-radius: 0.15rem;
   background: color-mix(in srgb, var(--members-soft) 45%, var(--surface));
-  color: var(--members-brand);
+  color: var(--members-brand-text);
   font: inherit;
   font-weight: 750;
   cursor: pointer;
@@ -556,7 +557,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--members-brand);
+  color: var(--members-brand-text);
 }
 
 .members__count span {
@@ -624,7 +625,7 @@
   height: 2.7rem;
   border-radius: 0.2rem;
   background: color-mix(in srgb, var(--members-brand) 12%, var(--surface));
-  color: var(--members-brand);
+  color: var(--members-brand-text);
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -757,7 +758,7 @@
   padding: 0.55rem 0.9rem;
   border: 1px solid var(--members-edge);
   background: color-mix(in srgb, var(--surface) 80%, var(--members-soft));
-  color: var(--members-brand);
+  color: var(--members-brand-text);
 }
 
 .members__actions button:hover:not(:disabled) {
@@ -851,6 +852,98 @@
   to {
     transform: scaleX(1);
     opacity: 1;
+  }
+}
+
+:root[data-theme='dark'] .studio-panel.members {
+  --members-ink: var(--fg);
+  --members-soft: color-mix(in srgb, var(--members-brand) 26%, var(--surface));
+  --members-brand-text: var(--brand-strong, color-mix(in srgb, var(--members-brand) 42%, #fff));
+  --members-edge: color-mix(in srgb, var(--members-brand) 28%, transparent);
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.members :is(h1, h2, h3, strong) {
+  color: var(--fg);
+}
+
+:root[data-theme='dark'] .studio-panel.members .members__lede,
+:root[data-theme='dark'] .studio-panel.members .members__panel-head p:last-child,
+:root[data-theme='dark'] .studio-panel.members .members__kicker,
+:root[data-theme='dark'] .studio-panel.members .members__count span,
+:root[data-theme='dark'] .studio-panel.members .members__meta,
+:root[data-theme='dark'] .studio-panel.members .members__dates,
+:root[data-theme='dark'] .studio-panel.members .members__expiry:not(.is-soon),
+:root[data-theme='dark'] .studio-panel.members .members__sessions-top span,
+:root[data-theme='dark'] .studio-panel.members .members__team-note,
+:root[data-theme='dark'] .studio-panel.members .members__sessions-hint,
+:root[data-theme='dark'] .studio-panel.members .members__form-head p {
+  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+}
+
+:root[data-theme='dark'] .studio-panel.members .members__eyebrow,
+:root[data-theme='dark'] .studio-panel.members .members__count strong,
+:root[data-theme='dark'] .studio-panel.members .members__avatar,
+:root[data-theme='dark'] .studio-panel.members .members__ghost,
+:root[data-theme='dark'] .studio-panel.members .members__modal-close,
+:root[data-theme='dark'] .studio-panel.members .members__presets button:not(.is-on),
+:root[data-theme='dark'] .studio-panel.members .members__actions button:not(.is-danger) {
+  color: var(--members-brand-text);
+}
+
+:root[data-theme='dark'] .studio-panel.members .members__presets button.is-on,
+:root[data-theme='dark'] .studio-panel.members .members__primary {
+  color: var(--site-on, #fff);
+}
+
+:root[data-theme='dark'] .studio-panel.members .members__avatar {
+  background: color-mix(in srgb, var(--members-brand) 28%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .studio-panel.members {
+    --members-ink: var(--fg);
+    --members-soft: color-mix(in srgb, var(--members-brand) 26%, var(--surface));
+    --members-brand-text: var(--brand-strong, color-mix(in srgb, var(--members-brand) 42%, #fff));
+    --members-edge: color-mix(in srgb, var(--members-brand) 28%, transparent);
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.members :is(h1, h2, h3, strong) {
+    color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.members .members__lede,
+  :root:not([data-theme='light']) .studio-panel.members .members__panel-head p:last-child,
+  :root:not([data-theme='light']) .studio-panel.members .members__kicker,
+  :root:not([data-theme='light']) .studio-panel.members .members__count span,
+  :root:not([data-theme='light']) .studio-panel.members .members__meta,
+  :root:not([data-theme='light']) .studio-panel.members .members__dates,
+  :root:not([data-theme='light']) .studio-panel.members .members__expiry:not(.is-soon),
+  :root:not([data-theme='light']) .studio-panel.members .members__sessions-top span,
+  :root:not([data-theme='light']) .studio-panel.members .members__team-note,
+  :root:not([data-theme='light']) .studio-panel.members .members__sessions-hint,
+  :root:not([data-theme='light']) .studio-panel.members .members__form-head p {
+    color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  }
+
+  :root:not([data-theme='light']) .studio-panel.members .members__eyebrow,
+  :root:not([data-theme='light']) .studio-panel.members .members__count strong,
+  :root:not([data-theme='light']) .studio-panel.members .members__avatar,
+  :root:not([data-theme='light']) .studio-panel.members .members__ghost,
+  :root:not([data-theme='light']) .studio-panel.members .members__modal-close,
+  :root:not([data-theme='light']) .studio-panel.members .members__presets button:not(.is-on),
+  :root:not([data-theme='light']) .studio-panel.members .members__actions button:not(.is-danger) {
+    color: var(--members-brand-text);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.members .members__presets button.is-on,
+  :root:not([data-theme='light']) .studio-panel.members .members__primary {
+    color: var(--site-on, #fff);
+  }
+
+  :root:not([data-theme='light']) .studio-panel.members .members__avatar {
+    background: color-mix(in srgb, var(--members-brand) 28%, var(--surface));
   }
 }
 

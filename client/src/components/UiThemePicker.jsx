@@ -19,7 +19,7 @@ export default function UiThemePicker({
     <fieldset className="ui-theme-picker" disabled={disabled}>
       <legend className="ui-theme-picker__legend">Tema sučelja</legend>
       <p className="ui-theme-picker__lead">
-        Odaberite kako želite da aplikacija izgleda.
+        Odaberite kako želite da aplikacija izgleda. Odabir se sprema odmah.
       </p>
       <div className="ui-theme-picker__options" role="radiogroup" aria-label="Tema sučelja">
         {OPTIONS.map((option) => {

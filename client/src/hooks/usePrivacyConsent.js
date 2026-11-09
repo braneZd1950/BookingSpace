@@ -9,6 +9,7 @@ import {
   getAnonymousKey,
   hasValidConsent,
   hasValidLocalConsent,
+  readLocalConsent,
   withdrawLocally,
 } from '../lib/consent.js';
 
@@ -36,14 +37,15 @@ export function usePrivacyConsent() {
     const remote = consentFromUser(user);
 
     if (remote?.isCurrent && !hasValidLocalConsent()) {
-      acceptLocally(remote.source || 'settings');
+      acceptLocally(remote.source || 'settings', { allowAccountSync: false });
       return undefined;
     }
 
-    // Push local accept only when the account has never recorded this version
-    // (guest accept → first login). Do not overwrite a withdraw or stale remote.
+    // Push guest accept → first login only when explicitly allowed (not after logout).
+    // Do not overwrite a withdraw or stale remote.
     const neverRecorded = !remote || (!remote.accepted && !remote.withdrawnAt);
-    if (hasValidLocalConsent() && neverRecorded && !syncingRef.current) {
+    const maySyncToAccount = readLocalConsent()?.allowAccountSync === true;
+    if (hasValidLocalConsent() && neverRecorded && maySyncToAccount && !syncingRef.current) {
       syncingRef.current = true;
       void recordConsent({
         action: 'accept',
@@ -53,7 +55,10 @@ export function usePrivacyConsent() {
         anonymousKey: getAnonymousKey(),
       })
         .unwrap()
-        .then(() => refetch())
+        .then(() => {
+          acceptLocally('banner', { allowAccountSync: false });
+          return refetch();
+        })
         .catch(() => {})
         .finally(() => {
           syncingRef.current = false;
