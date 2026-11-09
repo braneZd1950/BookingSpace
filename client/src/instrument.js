@@ -15,6 +15,7 @@ if (dsn) {
     environment: import.meta.env.MODE,
     sendDefaultPii: true,
     integrations: [
+      // React Router v7 tracing (better than plain browserTracing for this app)
       Sentry.reactRouterV7BrowserTracingIntegration({
         useEffect,
         useLocation,
@@ -24,7 +25,13 @@ if (dsn) {
       }),
       Sentry.replayIntegration(),
     ],
+    // 100% in local/dev so wizard verify is reliable; lower in production builds
     tracesSampleRate: import.meta.env.PROD ? 0.2 : 1.0,
+    tracePropagationTargets: [
+      'localhost',
+      /^https?:\/\/127\.0\.0\.1(?::\d+)?\/api/,
+      /^https?:\/\/[^/]+\/api/,
+    ],
     enableLogs: true,
     replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
     replaysOnErrorSampleRate: 1.0,

@@ -129,21 +129,6 @@ export default function App() {
           <Route path="/povratna-informacija" element={<FeedbackPage />} />
           <Route path="/odrzavanje" element={<MaintenancePage />} />
           <Route path="/greska" element={<ErrorPage />} />
-          {import.meta.env.DEV ? (
-            <Route
-              path="/debug-sentry"
-              element={(
-                <button
-                  type="button"
-                  onClick={() => {
-                    throw new Error('Sentry debug error (anyminutes-web)');
-                  }}
-                >
-                  Trigger Sentry error
-                </button>
-              )}
-            />
-          ) : null}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </SentryRoutes>

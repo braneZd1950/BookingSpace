@@ -87,6 +87,7 @@ Localhost workflow stays the same (`npm run dev`). For real traffic:
 | [Cursor instructions](docs/11-cursor-instructions.md) | How to implement in this repo |
 | [Roadmap](docs/12-roadmap.md) | After current gaps |
 | [Render deploy](docs/17-render-deploy.md) | Jedan URL (SPA+API) ili odvojeni FE/API na Renderu |
+| [Render env checklist](docs/22-render-env-checklist.md) | Što staviti u Render Environment |
 
 ### Reference
 

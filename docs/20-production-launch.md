@@ -2,7 +2,7 @@
 
 Redoslijed za **prvu produkciju** (pilot studija). Lokalni rad ostaje `.env` + `npm run dev`.
 
-Detalji Rendera: [17-render-deploy.md](17-render-deploy.md) · Sigurnost: [19-security-maintenance.md](19-security-maintenance.md) · Status proizvoda: [16-current-status.md](16-current-status.md)
+Detalji Rendera: [17-render-deploy.md](17-render-deploy.md) · **Env checklist:** [22-render-env-checklist.md](22-render-env-checklist.md) · Sigurnost: [19-security-maintenance.md](19-security-maintenance.md) · Status proizvoda: [16-current-status.md](16-current-status.md)
 
 ---
 
