@@ -1,74 +1,66 @@
-# Product Vision
+# Vizija proizvoda
 
-> **Status:** [16-current-status.md](16-current-status.md) · lean phases: [lean/README.md](lean/README.md).  
-> Product brand in the UI: **anyminutes** (repo may still say BookingSpace).
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md)
+
+Brand u aplikaciji: **anyminutes**.
+
+---
 
 ## Problem
 
-Small fitness studios and similar businesses often manage bookings, customer lists, monthly memberships, remaining sessions, cancellations, group capacity, and schedules through a mixture of WhatsApp, phone calls, spreadsheets, and generic booking tools.
+Mali fitness studiji često vode rezervacije, članove, pakete treninga, otkaze i raspored preko WhatsAppa, telefona i Excela. To je sporo i lako se zabrlja.
 
-## Solution
+## Rješenje
 
-anyminutes combines (full vision):
+anyminutes na jednom mjestu nudi:
 
-1. Online booking and capacity management.
-2. Memberships and packages.
-3. Customer accounts.
-4. A business dashboard.
-5. A simple public studio page.
+1. rezervacije i kapacitet termina  
+2. članarine / pakete  
+3. račune članova  
+4. dashboard za studio  
+5. jednostavnu javnu stranicu studija  
 
-## Positioning
+## Jedna rečenica
 
-> anyminutes helps a studio run memberships and bookings in one place — then gives clients a simple way to book.
+> Studio vodi članarine i termine na jednom mjestu — članovi rezerviraju sami.
 
-Lean order (1–4 largely shipped): **members & hours → owner bookings → member self-book → public page → physical payments UI.**
+Redoslijed rada (1–4 već uglavnom gotovo):  
+**članovi i sati → rezervacije vlasnika → self-book člana → javna stranica → blagajna (UI).**
 
-## Initial niche
+---
 
-**Pilot first:** sports venues — Power Plate, fitness studios, Pilates, yoga, and group training (memberships + capacity slots).
+## Niša
 
-**Prepared, not built yet:** children's playrooms and wellness/salons — see [15-niches-playroom-wellness.md](15-niches-playroom-wellness.md). Those niches often book appointments or visit packs **without** gym-style memberships; do not stretch the sports MVP to cover them until the sports booking loop is proven.
+**Prvo:** sportski objekti — Power Plate, fitness, pilates, yoga, grupni treninzi.
 
-## Product principles
+**Kasnije (samo priprema):** igraonice i wellness — [15-niches-playroom-wellness.md](15-niches-playroom-wellness.md).  
+Ne širi MVP dok sportska petlja nije dokazana u stvarnom studiju.
 
-### Simple
+---
 
-A business owner should be able to manage members and bookings in minutes. A public page comes after that loop works.
+## Principi
 
-### Multi-tenant
+| Princip | Znači |
+| --- | --- |
+| Jednostavno | Vlasnik upravlja članovima i terminima u minutama |
+| Multi-tenant | Svaki studio izoliran preko `tenantId` |
+| Fleksibilno | Podržava individualne i grupne termine s kapacitetom |
+| Ponovljivo | Isti backend/frontend za više niša |
+| Sigurno | **Server** odlučuje smije li netko rezervirati — ne React |
 
-Every business is isolated by `tenantId`.
+---
 
-### Flexible
+## Korisnici
 
-The booking engine must support both appointments and capacity-based group sessions.
+| Uloga | Što radi |
+| --- | --- |
+| Vlasnik | Otvara i vodi studio |
+| Član | Jedan račun; može biti u više studija |
+| Osoblje / trener | Termini i članovi u dodijeljenom studiju |
+| Admin platforme | Pregled cijelog sustava |
 
-### Reusable
+## Odnos podataka (skica)
 
-The same backend and frontend should support multiple niches.
-
-### Secure
-
-The backend, not the frontend, decides whether a user can book.
-
-## Main user types
-
-### Business owner
-
-Creates and manages a business.
-
-### Customer
-
-Creates one anyminutes account and can belong to multiple businesses.
-
-### Staff
-
-Manages bookings and customers for an assigned tenant.
-
-### Admin
-
-Manages the platform.
-
-## Core relationship
-
-`User -> TenantMembership -> MembershipPlan -> Booking -> Service -> Tenant`
+```text
+User → TenantMembership → MembershipPlan → Booking → Service → Tenant
+```

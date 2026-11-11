@@ -1,47 +1,41 @@
-# Phase 5 — Frontend: Payments and plans
+# Faza 5 — Naplata i planovi (blagajna)
 
-**Status:** next (partial — plans/renew shipped; dedicated till UI missing)  
-**Hypothesis:** Recording cash/card in the studio keeps session counts accurate.  
-**Backend:** prefer existing membership-plan and payment endpoints; list gaps in [backend-status](backend-status.md).
+**Stanje:** sljedeće (planovi/obnova postoje; blagajna UI fali)  
+**Hipoteza:** Zapis gotovine/kartice u studiju drži broj termina točnim.  
+**Pravila:** [../05-memberships-physical-payments.md](../05-memberships-physical-payments.md) · API: [backend-status.md](backend-status.md)
 
-## Goal
+---
 
-Owner UI for membership plans, recording a physical payment, and seeing sessions used after bookings.
+## Cilj
 
-## Already shipped
+UI za planove, zapis fizičke uplate i pregled potrošnje termina.
 
-| Area | Behavior |
+## Već gotovo
+
+| Područje | Ponašanje |
 | --- | --- |
-| Plans via members | Auto-create / renew membership when adding a member |
-| Usage | Remaining sessions shown; consume/restore on book/cancel |
-| Payments API | `POST/GET /tenants/:id/payments` |
+| Planovi preko članova | Auto create / renew pri dodavanju |
+| Potrošnja | Preostali termini; book/cancel |
+| Payments API | `POST/GET …/payments` |
 
-## Still in scope (this phase)
+## Još u opsegu ove faze
 
-| Area | Behavior |
+| Područje | Ponašanje |
 | --- | --- |
-| Physical payment UI | Record cash / card / transfer explicitly → activates or extends membership |
-| Payment history | Owner can see till-style list for the studio |
+| Blagajna UI | Gotovina / kartica / transfer → aktivira ili produžuje članarinu |
+| Povijest uplata | Lista tipa „blagajna” za studio |
 
-## Out of scope
+## Izvan opsega
 
-- Stripe / online checkout
-- Automatic renewals / promo codes
-- Full accounting export
+Stripe · automatske obnove · promo kodovi · puno knjigovodstvo
 
-Historical payment rules: [`../05-memberships-physical-payments.md`](../05-memberships-physical-payments.md).
+## Mjeri / uči
 
-## Measure
+Aktivne članarine u app-u = papir / blagajna studija.  
+Ako se ne poklapaju — popravi petlju booking↔članarina prije gatewaysa.
 
-Active memberships in the app match the studio’s till / paper list.
+## Done kad
 
-## Learn
-
-If numbers do not match, fix the booking–membership loop before adding gateways.
-
-## Done when
-
-- [ ] Owner can record a physical payment in the UI (method + amount → membership)
-- [x] Remaining sessions update after member bookings
-- [ ] No Stripe work
-
+- [ ] Vlasnik zapiše fizičku uplatu u UI  
+- [x] Preostali termini se ažuriraju nakon rezervacija  
+- [ ] Bez Stripe rada  

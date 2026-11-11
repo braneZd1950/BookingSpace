@@ -1,78 +1,72 @@
-# Technical Architecture
+# Tehnička arhitektura
 
-> Delivery / status: [lean/README.md](lean/README.md), [16-current-status.md](16-current-status.md). Server change policy: [lean/backend-status.md](lean/backend-status.md).
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md) · Backend: [lean/backend-status.md](lean/backend-status.md)
 
-## Stack
+---
 
-### Frontend
+## Stack (kratko)
 
-- React + Vite
-- React Router
-- Redux Toolkit + RTK Query
-- SCSS
-- PWA (manifest + service worker) on web (`client/`)
+| Sloj | Tehnologije |
+| --- | --- |
+| Frontend | React, Vite, React Router, Redux Toolkit + RTK Query, SCSS, PWA |
+| Backend | Node.js, Express (moduli u `server/src/modules/`), REST, JWT, Mongoose |
+| E-pošta / push / mediji | Brevo SMTP, Web Push (VAPID), Cloudinary (ili lokalni `uploads/`) |
+| Baza | MongoDB Atlas — jedna baza + `tenantId` |
+| Hosting / CI | Render · GitHub Actions (testovi, build, Playwright) |
 
-### Backend
+Stripe je samo rezerviran za kasnije (env placeholderi).
 
-- Node.js + Express (modular monolith under `server/src/modules/`)
-- REST API + JWT
-- Mongoose / MongoDB
-- Brevo SMTP for transactional email
-- Web Push (VAPID)
-- Cloudinary for images (local `uploads/` fallback)
+---
 
-### Database
+## Stil arhitekture
 
-- MongoDB Atlas — shared DB + `tenantId`
+**Modularni monolit.** Bez mikroservisa u MVP-u.
 
-### Infrastructure
-
-- Render or equivalent hosting
-- GitHub Actions CI (server tests + client build + Playwright e2e)
-- Stripe later (env placeholders only)
-
-## Architecture style
-
-Modular monolith. Do not use microservices for the MVP.
+---
 
 ## Multi-tenancy
 
-One shared MongoDB database with `tenantId` on tenant-owned documents.
+- Jedna MongoDB baza.  
+- Dokumenti studija imaju `tenantId`.  
+- Javni pristup danas ide **po slug-u** (`/s/:slug`), ne po hostnameu.  
+- **Nikad** ne vjeruj `tenantId` iz frontenda za autorizaciju.
 
-Public access today is **slug-based** (`/s/:slug` + `GET /tenants/:slug/public`), not hostname resolution. A future option is `powerfit.bookingspace.hr` → slug `powerfit`.
+---
 
-Never trust a client-supplied `tenantId` for authorization.
+## Tokovi zahtjeva
 
-## Application domains (planned / branded)
+**Javna stranica**
 
-Historical / infra names may still say BookingSpace; product UI brand is **anyminutes**.
+```text
+slug → GET /tenants/:slug/public → tema/sadržaj → usluge → dostupnost
+```
 
-- Platform marketing / web origin (local `:5173`)
-- API (local default `:4001`)
-- Future: `*.bookingspace.hr` or product domain equivalents
+**Dashboard (prijavljen)**
 
-## Request flow
+```text
+JWT → korisnik → uloga u TenantUser → autorizirani studio
+```
 
-Public tenant page:
+**Rezervacija**
 
-`slug → GET /tenants/:slug/public → theme/content → services → availability`
+```text
+korisnik → studio → usluga → članarina → dostupnost → booking (+ opcionalni staffId)
+```
 
-Authenticated dashboard:
+---
 
-`JWT → user → TenantUser role → authorized tenant`
+## Sigurnost (sažetak)
 
-Booking:
+- JWT na zaštićenim rutama  
+- Tenant kontekst na serveru (`TenantUser` / uloga)  
+- Svaka promjena u studiju: provjera vlasništva i uloge  
+- Admin: uloga `ADMIN` (ili bootstrap lista samo izvan produkcije)  
+- Privola prije booking tokova koji obrađuju podatke  
 
-`user → tenant → service → membership → availability → booking` (+ optional `staffId`)
+Detalji: [10-security-rules.md](10-security-rules.md)
 
-## Security rules
+---
 
-- Validate JWT on protected endpoints.
-- Resolve tenant context server-side via `TenantUser` / role checks.
-- Check ownership and role on every tenant mutation.
-- Platform admin: `ADMIN` role or `ADMIN_EMAILS`.
-- Privacy consent recorded before booking flows that need it.
+## Mobilno
 
-## Mobile
-
-Native Expo app was removed; product is web-only until a reliable Android/iOS client is ready. Phones use the responsive web SPA.
+Native app je maknuta. Telefoni koriste responsivni web. Android/iOS kasnije, kad bude spremno.

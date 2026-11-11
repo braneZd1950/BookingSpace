@@ -1,135 +1,87 @@
-# Render — povezivanje frontenda i API-ja
+# Render — kako spojiti frontend i API
 
-## Zašto `https://bookingspaceapp.onrender.com` vraća `NOT_FOUND`
-
-Taj URL trenutno pokreće **samo Express API**.  
-`GET /` nije API ruta → `{"message":"Not found","code":"NOT_FOUND"}`.
-
-API je živ: `https://bookingspaceapp.onrender.com/api/health` → `{"ok":true}`.
-
-Imate dva načina da vidi aplikaciju.
+Indeks: [README.md](README.md) · Go-live: [20-production-launch.md](20-production-launch.md) · Env: [22-render-env-checklist.md](22-render-env-checklist.md)
 
 ---
 
-## Opcija A (preporučeno za jedan URL) — isti servis serviše FE + API
+## Problem koji često vidiš
 
-Jedan Web Service: `https://bookingspaceapp.onrender.com` prikazuje React, a `/api` ostaje backend.
+Ako otvoriš root URL i dobiješ JSON `{"code":"NOT_FOUND"}`, servis pokreće **samo API**.  
+`/api/health` može biti OK, a React još nije servirani.
 
-### Render → Web Service postavke
+**Rješenje:** Opcija A (jedan URL) ili Opcija B (odvojeni FE + API). Za pilot → **Opcija A**.
+
+---
+
+## Opcija A (preporučeno) — jedan Web Service
+
+Jedan URL: React na `/`, API na `/api`.
 
 | Polje | Vrijednost |
 | --- | --- |
-| **Root Directory** | *prazno* (root repoja, ne `server`) |
-| **Build Command** | vidi dolje |
-| **Start Command** | `npm start --prefix server` |
+| Root Directory | *prazno* (root repoa) |
+| Build Command | `npm run build:render` |
+| Start Command | `npm start --prefix server` |
 
-**Build Command** (jedna od ovih):
-
-```bash
-npm run build:render
-```
-
-ili eksplicitno:
+Alternativni build (ako treba eksplicitno):
 
 ```bash
 npm ci --prefix server && npm ci --prefix client --include=dev && npm run build --prefix client
 ```
 
-`--include=dev` je obavezno: na Renderu je `NODE_ENV=production`, pa obični `npm ci` **ne instalira** `vite` (devDependency) → `vite: not found`.
+`--include=dev` je bitan: na Renderu je `NODE_ENV=production`, pa bez toga Vite (devDependency) nedostaje.
 
 ### Environment (isti servis)
 
-Pun predložak: [`.env.production.example`](../.env.production.example) · checklist: [20-production-launch.md](20-production-launch.md).  
-Opcionalni Blueprint: [`render.yaml`](../render.yaml).
+Pun popis: [22-render-env-checklist.md](22-render-env-checklist.md) · predložak: `.env.production.example`
 
-| Key | Value |
-| --- | --- |
-| `NODE_ENV` | `production` |
-| `MONGO_URI` | Atlas URI |
-| `JWT_SECRET` | ≥ 32 znakova (ne placeholder) |
-| `EXPORT_SEAL_SECRET` | **obavezno**, drugačiji od `JWT_SECRET` |
-| `CLIENT_ORIGIN` | `https://bookingspaceapp.onrender.com` |
-| `VITE_API_URL` | `https://bookingspaceapp.onrender.com/api` |
-| `VITE_APP_MODE` | `production` |
-| `SERVE_CLIENT` | `true` |
-| `ADMIN_EMAIL_BOOTSTRAP` | `false` |
-| SMTP / Cloudinary / VAPID | preporučeno (mail + mediji + push) |
+Minimalno: `NODE_ENV`, `MONGO_URI`, `JWT_SECRET`, `EXPORT_SEAL_SECRET`, `CLIENT_ORIGIN`, `VITE_API_URL`, `VITE_APP_MODE`, `SERVE_CLIENT=true`, SMTP…
 
-API **neće startati** u produkciji ako su tajne slabe / localhost origin / bootstrap uključen (`productionGuard`).
+```text
+CLIENT_ORIGIN=https://VAS-SERVIS.onrender.com
+VITE_API_URL=https://VAS-SERVIS.onrender.com/api
+```
 
-**Važno:** `VITE_API_URL` mora biti postavljen **prije builda**. Nakon izmjene: **Clear build cache & deploy**.
+`VITE_*` se peče u buildu → nakon izmjene: **Clear build cache & deploy**.
 
-Kad je build uspio, root URL više ne vraća JSON `NOT_FOUND`, nego HTML aplikacije.
+API u produkciji neće startati sa slabim tajnama / localhost originom.
 
 ---
 
-## Opcija B — dva servisa (API + Static Site)
+## Opcija B — dva servisa
 
-### 1) API (postojeći Web Service)
+1. **API** (Web Service): Root `server`, `CLIENT_ORIGIN` = frontend URL  
+2. **Frontend** (Static Site): Root `client`, Publish `dist`, `VITE_API_URL` = API `/api`
 
-- Root Directory: `server`
-- Start: `npm start`
-- `CLIENT_ORIGIN=https://VAŠ-FRONTEND.onrender.com`
-
-### 2) Frontend (novi Static Site)
-
-- Root Directory: `client`
-- Build: `npm install && npm run build`
-- Publish: `dist`
-- `VITE_API_URL=https://bookingspaceapp.onrender.com/api`
-- Clear build cache & deploy
-
-Aplikaciju otvarate na **frontend** URL-u, ne na API URL-u.
+Korisnici otvaraju **frontend** URL, ne API URL.
 
 ---
 
 ## Brza dijagnostika
 
-| Što otvorite | Očekivano |
+| Što otvoriš | Očekivano |
 | --- | --- |
 | `/api/health` | `{"ok":true}` |
-| `/` (samo API, bez SPA) | `NOT_FOUND` JSON |
-| `/` (nakon Opcije A) | React aplikacija |
-| Network tab na FE | zahtjevi na `…/api/…`, ne `localhost:4001` |
-
-## Tipične greške
+| `/` samo API | `NOT_FOUND` JSON |
+| `/` nakon Opcije A | React app |
+| Network na FE | zahtjevi na `…/api/…`, ne `localhost` |
 
 | Simptom | Fix |
 | --- | --- |
-| Root = `NOT_FOUND` JSON | Nema `client/dist` u deployu — Opcija A build ili Opcija B Static Site |
-| FE zove `localhost:4001` | `VITE_API_URL` + clear cache redeploy |
-| CORS | `CLIENT_ORIGIN` = točan frontend origin |
-| Spori prvi request | Render free sleep — pričekajte 30–60 s |
-| PDF prazan / bez fontova | Provjeri da su `client/public/fonts/*.ttf` u repou i da build kopira u `dist/fonts/` |
+| Root = NOT_FOUND | Nema `client/dist` — Opcija A build |
+| FE zove localhost | `VITE_API_URL` + clear cache |
+| CORS | `CLIENT_ORIGIN` točan HTTPS |
+| Spori prvi request | Free tier sleep 30–60 s |
+| PDF bez fontova | `client/public/fonts/*.ttf` u `dist/fonts/` |
 
 ---
 
-## Lokalno vs produkcija (pravi korisnici)
+## Lokalno vs produkcija
 
-| | Lokalni razvoj | Render (produkcija) |
+| | Lokalno | Produkcija |
 | --- | --- | --- |
-| Podaci | `npm --prefix server run seed:demo` (Ana/Ivan demo) | Pravi studiji i članovi — **ne** seed:demo |
-| Otkrij mock | Samo u Vite DEV | Isključen u produkcijskom buildu |
-| Demo tipke na /login | Samo DEV | Sakrivene |
-| Izvoz arhive | PDF + Excel + CSV; pečat integriteta (HMAC) | Isto; chip „službena arhiva” |
-| Super admin | `promote-super-admin.js` na lokalnoj bazi | Isti script na produkcijskoj bazi **jednom** |
+| Podaci | `seed:demo` OK | **Nikad** seed:demo |
+| Demo tipke na loginu | samo DEV | skrivene |
+| Admin | promote na lokalnoj bazi | promote **jednom** na prod bazi |
 
-### Checklist prije testiranja s pravim korisnicima
-
-1. Render Environment: `NODE_ENV=production`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `VITE_API_URL` (puni HTTPS URL), SMTP / Cloudinary / VAPID po potrebi.
-2. Build: `npm run build:render` (ili Render Build Command iz Opcije A).
-3. Nakon deploya: `/api/health` → `ok`, `/` → SPA, `/fonts/DejaVuSans.ttf` → 200.
-4. Kreiraj / promoviraj admina: `node server/scripts/promote-super-admin.js admin@…` (prema produkcijskom `MONGO_URI`).
-5. Prijavi se na `/login` → `/admin` / `/analitika` — PDF gumb treba preuzeti **službeni** dokument (bez „TEST” trake).
-6. Registriraj test studio kao pravi vlasnik (ne demo seed) i prođi rezervaciju člana.
-7. **Nikad** ne pokreći `seed:demo` na produkcijskoj bazi (script to odbija ako je `NODE_ENV=production`).
-
-### Lokalni test PDF-a i demo podataka
-
-```bash
-npm run dev
-npm --prefix server run seed:demo   # samo lokalni Mongo
-# Admin → Preuzmite PDF → datoteka anyminutes-TEST-….pdf
-```
-
-Isti predložak i layout koristi produkcija; razlikuju se samo oznaka okruženja i izvor podataka (API).
+Checklist prije pravih korisnika: vidi [20-production-launch.md](20-production-launch.md).

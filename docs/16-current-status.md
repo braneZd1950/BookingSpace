@@ -1,68 +1,74 @@
-# Current status (audit 2026-10-29)
+# Status proizvoda
 
-Product UI brand: **anyminutes**. Repo package / historical docs may still say BookingSpace.
+**Ažurirano:** 2026-11-10 · Brand u UI-u: **anyminutes**  
+Indeks dokumentacije: [README.md](README.md)
 
-This file is the snapshot of what is **actually shipped in code**. Lean phase docs below record learning goals; they are no longer a “backend frozen / Phase 1 only” gate.
+Ovo je **istina o tome što je u kodu**, ne plan. Lean dokumenti opisuju učenje; nisu blokada razvoja.
 
-## What’s live
+---
 
-| Area | Status | Notes |
+## Što je uživo
+
+| Područje | Stanje | Napomena |
 | --- | --- | --- |
-| Auth (register, login, JWT, profile, password change) | Done | Forgot / reset password + email |
-| Multi-tenant studios (`tenantId`) | Done | Public by slug; no hostname resolver product yet |
-| Owner studio shell `/stranica` | Done (pilot) | Početna, Termini, Kalendar, Članovi, Analitika, Postavke |
-| Owner gallery / Online / Blagajna / Plan | Held | Flagged off in `studioFeatures.js` — not in pilot nav |
-| Owner booking loop | Done | Create / cancel; capacity; optional trainer |
-| Member self-book `/s/:slug` | Done | Book / cancel with ACTIVE membership |
-| Members + plans (add / renew / suspend) | Done | Physical payment **ledger API** exists; dedicated cash-entry UI still thin (Phase 5 gap) |
-| Site setup wizard `/postavljanje` | Done | Templates, layout, palette, preview; real DNS deferred |
-| Staff / trainers | Done | Invite, list, suspend; required on book when trainers exist |
-| Web Push + PWA (web) | Done | VAPID on `client/` |
-| Privacy consent | Done | Banner + `POST /consent` + gate before booking |
-| Platform admin `/analitika` | Done (web) | Studios, users, activity, SaaS billing, reports, system |
-| Admin arhivski izvoz | Done (web) | PDF + Excel + CSV; digitalni pečat integriteta (HMAC) preko `/analytics/platform/exports/seal` |
-| SaaS billing fields + warn/invoice email | Done | Trial / paid / unpaid on tenant |
-| Online workouts | Built, **flagged off** | `ONLINE_ENABLED = false` in `client/src/onlineFeature.js` |
-| Server tests + GitHub CI | Done | API tests; client build; Playwright e2e |
+| Auth (register, login, JWT, profil, lozinka) | Gotovo | Forgot / reset + e-pošta |
+| Multi-tenant studiji (`tenantId`) | Gotovo | Javno po slug-u; hostname proizvod kasnije |
+| Owner shell `/stranica` | Gotovo (pilot) | Početna, Termini, Kalendar, Članovi, Analitika, Postavke |
+| Owner booking | Gotovo | Kreiranje / otkaz; kapacitet; opcionalni trener |
+| Member self-book `/s/:slug` | Gotovo | Uz ACTIVE članarinu |
+| Članovi + paketi (dodaj / obnovi / suspend) | Gotovo | Ledger API postoji; blagajna UI tanka (faza 5) |
+| Site wizard `/postavljanje` | Gotovo | Predlošci, paleta, preview; pravi DNS kasnije |
+| Staff / treneri | Gotovo | Invite, lista, suspend |
+| Web Push + PWA | Gotovo | VAPID na `client/` |
+| Privola (consent) | Gotovo | Banner + `POST /consent`; ostaje nakon odjave na uređaju |
+| Platform admin `/analitika` | Gotovo | Studiji, korisnici, SaaS, izvještaji |
+| Arhivski izvoz | Gotovo | PDF / Excel / CSV + HMAC pečat |
+| SaaS billing polja + mail | Gotovo | Trial / paid / unpaid |
+| Online treninzi | U kodu, **flag off** | `ONLINE_ENABLED = false` |
+| Server testovi + GitHub CI | Gotovo | API, client build, Playwright |
 
-## Explicitly not done
+---
 
-| Item | Notes |
+## Nije u pilotu
+
+| Stavka | Napomena |
 | --- | --- |
-| Waitlist | Spec only (`waitlistEntries`) — no model/API |
-| Hostname → tenant product | Slug routes only (`/s/:slug`); `{slug}.booking.hr` is display/copy |
-| Dedicated physical-payment UI | Held for later; API `POST …/payments` exists |
-| Online / gallery / launch plan UI | Held — `GALLERY_ENABLED` / `ONLINE_ENABLED` / `PAYMENTS_UI_ENABLED` / `LAUNCH_PLAN_ENABLED` = false |
-| Stripe / online checkout | Not used |
-| Socket.io realtime | Dependency present; unused in `server/src` |
-| Native mobile app | Removed for now — product is web-only until a reliable Android/iOS app ships |
+| Waitlist | Samo spec — nema model/API |
+| Hostname → tenant | Samo `/s/:slug`; `{slug}.booking.hr` je copy |
+| Blagajna UI | Kasnije; API `POST …/payments` postoji |
+| Online / galerija / plan UI | Flagovi off u `studioFeatures.js` / `onlineFeature.js` |
+| Stripe | Nije u upotrebi |
+| Socket.io | Dependency postoji; ne koristi se |
+| Native mobilna app | Kod još nije; **docs** u [`mobile/docs`](../mobile/docs/README.md) (Expo / RN plan) |
 
-## Apps & ports
+---
 
-| App | Path | Local |
+## Aplikacije i portovi
+
+| App | Put | Lokalno |
 | --- | --- | --- |
-| Web | `client/` | `http://localhost:5173` |
-| API | `server/` | `http://localhost:4001` (default; override with `PORT`) |
-
-## How to run / verify
+| Web | `client/` | http://localhost:5173 |
+| API | `server/` | http://localhost:4001 |
 
 ```bash
 npm run dev          # web + API
-npm test             # server + client tests
-npm run test:ci      # CI-style suite
+npm test
+npm run test:ci
 npm run build:client
 ```
 
-Local secrets live in one gitignored file: repo-root `.env` (copy from `.env.example`). Vite only exposes `VITE_*`. Render uses its own Environment panel.
+Tajne: root `.env` (iz `.env.example`). Vite izlaže samo `VITE_*`.
 
-## Doc map after this audit
+---
 
-| Prefer for… | Doc |
+## Gdje dalje
+
+| Trebaš… | Dokument |
 | --- | --- |
-| What is shipped today | This file |
-| REST contract | [07-api-spec.md](07-api-spec.md) |
-| Collections | [03-database.md](03-database.md) |
-| Live FE routes | [08-routes-frontend.md](08-routes-frontend.md) |
-| Remaining product sequence | [12-roadmap.md](12-roadmap.md) |
-| Lean learning phases (historical + remaining) | [lean/README.md](lean/README.md) |
-| Backend change policy | [lean/backend-status.md](lean/backend-status.md) |
+| Indeks svega | [README.md](README.md) |
+| Ići uživo | [20-production-launch.md](20-production-launch.md) |
+| REST | [07-api-spec.md](07-api-spec.md) |
+| Kolekcije | [03-database.md](03-database.md) |
+| FE rute | [08-routes-frontend.md](08-routes-frontend.md) |
+| Što slijedi | [12-roadmap.md](12-roadmap.md) |
+| Lean faze | [lean/README.md](lean/README.md) |

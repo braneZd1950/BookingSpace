@@ -37,6 +37,45 @@ jobs:
           NODE_ENV: test
         run: npm run test:ci
 
+  mobile-tests:
+    name: Mobile unit + API load
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            mobile/package-lock.json
+            server/package-lock.json
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci --ignore-scripts
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci --ignore-scripts
+
+      - name: Prefetch MongoDB binary
+        working-directory: server
+        run: npm run prefetch:mongo
+
+      - name: Run mobile unit tests
+        working-directory: mobile
+        run: npm run test:ci
+
+      - name: Run mobile API load harness
+        working-directory: server
+        env:
+          NODE_ENV: test
+        run: npm run test:mobile-load
+
   client-build:
     name: Client production build
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { getHomePartners, SHOW_HOME_PARTNERS } from '../../lib/homePartners.js';
+import { getMobileAppUrl, isExternalAppUrl } from '../../lib/mobileAppUrl.js';
 import './HomePage.scss';
 
 const calendars = [
@@ -123,6 +124,8 @@ const faqs = [
 export default function HomePage() {
   const { partners, label, ariaLabel, live } = getHomePartners();
   const loop = [...partners, ...partners];
+  const mobileAppUrl = getMobileAppUrl();
+  const mobileAppExternal = isExternalAppUrl(mobileAppUrl);
 
   return (
     <main className="home">
@@ -382,6 +385,33 @@ export default function HomePage() {
         </Link>
       </section>
 
+      <section
+        id="aplikacija"
+        className="home__block home__anchor home__app"
+        aria-labelledby="home-app"
+      >
+        <h2 id="home-app">Termini i u džepu</h2>
+        <div className="home__prose">
+          <p>
+            Klijenti rezerviraju, otkazuju i prate članarinu u anyminutes
+            aplikaciji — isti račun kao na webu, bez poruka i dogovaranja.
+          </p>
+        </div>
+        {mobileAppUrl ? (
+          <a
+            className="home__cta home__cta--solid home__app-cta"
+            href={mobileAppUrl}
+            {...(mobileAppExternal
+              ? { target: '_blank', rel: 'noopener noreferrer' }
+              : {})}
+          >
+            Preuzmite aplikaciju
+          </a>
+        ) : (
+          <p className="home__note">Mobilna aplikacija stiže uskoro.</p>
+        )}
+      </section>
+
       <section className="home__close" aria-labelledby="home-close">
         <h2 id="home-close">Spremni za manje dogovaranja, a više posla?</h2>
         <p>
@@ -392,9 +422,21 @@ export default function HomePage() {
           <Link className="home__cta home__cta--solid" to="/register">
             Napravite svoju stranicu
           </Link>
-          <Link className="home__cta home__cta--line" to="/login">
-            Prijava
-          </Link>
+          {mobileAppUrl ? (
+            <a
+              className="home__cta home__cta--line"
+              href={mobileAppUrl}
+              {...(mobileAppExternal
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
+            >
+              Preuzmite aplikaciju
+            </a>
+          ) : (
+            <Link className="home__cta home__cta--line" to="/login">
+              Prijava
+            </Link>
+          )}
         </div>
         <p className="home__trust home__trust--close">
           Jednostavno za postaviti. Jednostavno za koristiti.

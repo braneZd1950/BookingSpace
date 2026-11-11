@@ -1,40 +1,42 @@
-# Render Environment — što staviti i gdje
+# Render Environment — checklist
 
-**Gdje:** Render → tvoj Web Service (Opcija A) → **Environment**  
-Sve ključeve stavi na **isti** servis. Ne commitaj `.env` / `.env.production`.
+Indeks: [README.md](README.md) · Go-live: [20-production-launch.md](20-production-launch.md)
+
+**Gdje:** Render → Web Service (Opcija A) → **Environment**  
+Sve na **isti** servis. Ne commitaj `.env` / `.env.production`.
 
 Nakon izmjene bilo kojeg `VITE_*`: **Manual Deploy → Clear build cache & deploy**.
 
-Predložak: [`.env.production.example`](../.env.production.example) · koraci: [20-production-launch.md](20-production-launch.md)
+Predložak: [`.env.production.example`](../.env.production.example)
 
 ---
 
 ## Obavezno
 
-| Key | Vrijednost / napomena |
+| Key | Napomena |
 | --- | --- |
 | `NODE_ENV` | `production` |
-| `PORT` | `4001` (ili Render default — OK ako app čita `PORT`) |
+| `PORT` | `4001` ili Render default |
 | `SERVE_CLIENT` | `true` |
-| `MONGO_URI` | Atlas **prod** connection string |
-| `JWT_SECRET` | ≥ 32 znakova (`npm --prefix server run generate:jwt-secret`) |
-| `EXPORT_SEAL_SECRET` | druga jaka tajna, **≠** `JWT_SECRET` |
+| `MONGO_URI` | Atlas **prod** |
+| `JWT_SECRET` | ≥ 32 znaka |
+| `EXPORT_SEAL_SECRET` | druga tajna ≠ JWT |
 | `JWT_EXPIRES_IN` | npr. `24h` |
-| `CLIENT_ORIGIN` | `https://VAS-SERVIS.onrender.com` |
-| `VITE_API_URL` | `https://VAS-SERVIS.onrender.com/api` |
+| `CLIENT_ORIGIN` | `https://VAS.onrender.com` |
+| `VITE_API_URL` | `https://VAS.onrender.com/api` |
 | `VITE_APP_MODE` | `production` |
 | `ADMIN_EMAIL_BOOTSTRAP` | `false` |
-| `ADMIN_EMAILS` | prazno u produkciji (admin = DB role) |
+| `ADMIN_EMAILS` | prazno u produkciji |
 
-### SMTP (obavezno za invite / reset / mail)
+### SMTP (obavezno za mail)
 
 | Key | Primjer |
 | --- | --- |
-| `EMAIL_FROM` | `anyminutes <noreply@vasa-domena.hr>` |
+| `EMAIL_FROM` | `anyminutes <noreply@…>` |
 | `SMTP_HOST` | `smtp-relay.brevo.com` |
 | `SMTP_PORT` | `587` |
 | `SMTP_SECURE` | `false` |
-| `SMTP_USER` / `SMTP_PASS` | iz Brevo / SMTP panela |
+| `SMTP_USER` / `SMTP_PASS` | iz panela |
 
 ---
 
@@ -42,25 +44,16 @@ Predložak: [`.env.production.example`](../.env.production.example) · koraci: [
 
 | Key | Zašto |
 | --- | --- |
-| `CLOUDINARY_*` | upload medija |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push |
-| `SENTRY_DSN` | **API** (Node project u Sentryju) |
-| `VITE_SENTRY_DSN` | **SPA** (React project u Sentryju) — peče se u buildu |
-
-Lokalno već imaš dva različita DSN-a (API vs React) — na Render stavi **iste** kao u lokalnom `.env` (ili nove prod projecte).
+| `CLOUDINARY_*` | mediji |
+| `VAPID_*` + `VAPID_SUBJECT` | Web Push |
+| `SENTRY_DSN` | API (Node project) |
+| `VITE_SENTRY_DSN` | SPA (React project) — peče se u buildu |
 
 ---
 
 ## Opcionalno
 
-| Key | Zašto |
-| --- | --- |
-| `GOOGLE_CLIENT_ID` | server verifikacija Google ID tokena |
-| `VITE_GOOGLE_CLIENT_ID` | gumb na frontendu (isti client ID) |
-| `CLIENT_ORIGINS` | dodatni HTTPS origin(i), zarezom |
-| `VITE_SHOW_HOME_PARTNERS` | `false` u produkciji osim ako želiš |
-
----
+`GOOGLE_CLIENT_ID` + `VITE_GOOGLE_CLIENT_ID`, `CLIENT_ORIGINS`, `VITE_SHOW_HOME_PARTNERS`
 
 ## Ne stavljati na Render
 
@@ -68,28 +61,24 @@ Lokalno već imaš dva različita DSN-a (API vs React) — na Render stavi **ist
 
 ---
 
-## Build / Start (Render Web Service)
+## Build / Start
 
 | Polje | Vrijednost |
 | --- | --- |
 | Root Directory | *prazno* |
-| Build Command | `npm run build:render` |
-| Start Command | `npm start --prefix server` |
-
----
+| Build | `npm run build:render` |
+| Start | `npm start --prefix server` |
 
 ## Nakon deploya
 
-1. `GET https://VAS/api/health` → `{"ok":true}`
-2. `GET https://VAS/` → SPA HTML
-3. `npm --prefix server run mail:check` (s istim SMTP)
-4. Jednom: registriraj admin mail → `node server/scripts/promote-super-admin.js admin@…`
+1. `GET …/api/health` → ok  
+2. `GET …/` → SPA  
+3. `npm --prefix server run mail:check`  
+4. `node server/scripts/promote-super-admin.js admin@…` (jednom)  
 5. Smoke:
 
 ```powershell
 $env:SMOKE_API="https://VAS.onrender.com/api"
 $env:SMOKE_WEB="https://VAS.onrender.com"
-$env:SMOKE_ADMIN_EMAIL="admin@…"
-$env:SMOKE_ADMIN_PASS="…"
 npm run smoke
 ```

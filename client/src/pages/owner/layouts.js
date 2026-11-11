@@ -2,17 +2,17 @@ export const pageLayouts = [
   {
     id: 'banner',
     name: 'Naslovnica',
-    note: 'Široki header. Ispod: termini, sati i kontakt.',
+    note: 'Široki header, ispod termini, sati i kontakt.',
   },
   {
     id: 'bar',
     name: 'Traka',
-    note: 'Uski header. Sadržaj kreće odmah ispod.',
+    note: 'Uski header, sadržaj kreće odmah ispod.',
   },
   {
     id: 'sidebar',
     name: 'Stupac',
-    note: 'Header + bočna traka za kontakt i sate.',
+    note: 'Header s bočnom trakom za kontakt i sate.',
   },
 ];
 

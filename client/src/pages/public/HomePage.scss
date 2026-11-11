@@ -555,6 +555,11 @@
   padding: 3.2rem 0 0;
 }
 
+.home__app .home__app-cta {
+  display: inline-flex;
+  margin-top: 1.25rem;
+}
+
 .home__block--wide {
   width: min(52rem, calc(100% - 2.5rem));
 }

@@ -53,7 +53,7 @@ export const siteTemplates = [
   {
     id: 'fitness',
     name: 'Treninzi i grupe',
-    note: 'Široka naslovnica, termini ispod, jak poziv na rezervaciju.',
+    note: 'Široka naslovnica, termini ispod.',
     layout: 'banner',
     palette: 'navy',
     niches: ['fitness', 'powerplate'],
@@ -62,7 +62,7 @@ export const siteTemplates = [
   {
     id: 'pilates',
     name: 'Mirniji ritam',
-    note: 'Bočni stupac za sate i kontakt — pilates, yoga, manje grupe.',
+    note: 'Bočni stupac. Za pilates, jogu i manje grupe.',
     layout: 'sidebar',
     palette: 'teal',
     niches: ['pilates', 'yoga'],
@@ -71,7 +71,7 @@ export const siteTemplates = [
   {
     id: 'services',
     name: 'Pojedinačni termini',
-    note: 'Naglasak na uslugu i trajanje — frizer, beauty, masaža, PT.',
+    note: 'Naglasak na uslugu i trajanje.',
     layout: 'sidebar',
     palette: 'wine',
     niches: ['services'],
@@ -80,7 +80,7 @@ export const siteTemplates = [
   {
     id: 'playroom',
     name: 'Igraonica i događaji',
-    note: 'Uski header — brzo do termina i kontakta.',
+    note: 'Uski header, brzo do termina.',
     layout: 'bar',
     palette: 'sky',
     niches: ['playroom'],
@@ -94,7 +94,7 @@ export const siteTemplates = [
   {
     id: 'generic',
     name: 'Univerzalni',
-    note: 'Jednostavan izgled za sve što ne spada u ostale predloške.',
+    note: 'Jednostavan izgled za sve ostalo.',
     layout: 'banner',
     palette: 'stone',
     niches: ['generic'],

@@ -1,38 +1,33 @@
-# Phase 3 — Frontend: Member books alone
+# Faza 3 — Član rezervira sam
 
-**Status:** done (implemented in product)  
-**Hypothesis:** A member will book if they see free slots and remaining sessions.  
-**Backend:** document gaps in [backend-status](backend-status.md) if UI is blocked.
+**Stanje:** gotovo  
+**Hipoteza:** Član s aktivnom članarinom sam rezervira i otkazuje.  
+**Backend:** isti booking API + privola — [backend-status.md](backend-status.md)
 
-## Goal
+---
 
-Customer account can list open slots, book, and cancel within rules — without staff typing every booking.
+## Cilj
 
-## In scope (frontend)
+`/s/:slug/termini` — self-book / otkaz uz ACTIVE membership i privolu.
 
-| Area | Behavior |
+## U opsegu (shipped)
+
+| Područje | Ponašanje |
 | --- | --- |
-| Customer login | Reuse `/login` for `CUSTOMER` role |
-| Slot list | Free times + capacity for the member’s studio |
-| Book / cancel | Member actions; show membership remaining |
-| Empty / blocked states | Clear “membership required” / “full” copy |
+| Member shell | `/s/:slug` početna + termini |
+| Book / cancel | Isti serveri kao owner |
+| Privola | Banner / gate prije bookinga |
 
-## Out of scope
+## Izvan faze
 
-- Cross-tenant marketplace discovery
-- Fancy public marketing site (Phase 4)
-- Online payments
+DNS subdomena · Online flag · Blagajna
 
-## Measure
+## Mjeri / uči
 
-Share of bookings created by the member (not owner) > 40%.
+Postotak rezervacija koje član napravi sam vs vlasnik.
 
-## Learn
+## Done
 
-If members do not book, simplify the path first — do not add a marketing page.
-
-## Done when
-
-- [x] Member can see availability and book/cancel in the UI (`/s/:slug`, `/s/:slug/termini`)
-- [x] Owner still sees the same bookings in Termini / Kalendar
-- [x] Backend gaps listed in [backend-status](backend-status.md) when needed
+- [x] Self-book s aktivnom članarinom  
+- [x] Otkaz u roku  
+- [x] Bez članarine / privole → jasna blokada  

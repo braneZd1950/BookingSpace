@@ -1,97 +1,81 @@
-# Memberships and Physical Payments
+# Članarine i fizička naplata
 
-> Members UI: done ([Phase 1](lean/phase-01-frontend.md)). Payments till UI: [Phase 5](lean/phase-05-frontend.md). API policy: [lean/backend-status.md](lean/backend-status.md).
+Indeks: [README.md](README.md) · Lean: [lean/phase-05-frontend.md](lean/phase-05-frontend.md)
 
-## Goal
+Članovi u UI-u: gotovo. Blagajna UI: još faza 5. API za uplate već postoji. Stripe **nije** u MVP-u.
 
-A customer may pay physically at the fitness center while still using anyminutes for online reservations.
+---
 
-No online payment gateway is required for the MVP. Payment ledger API exists; dedicated till UI is the remaining Phase 5 gap.
+## Cilj
 
-## Customer identity
+Član plati u studiju (gotovina / POS), a rezervira online u anyminutesu.
 
-The customer has one permanent user account, for example `U12345`. Do not create a new user every month.
+## Identiteti
 
-## Membership identity
+| Što | Primjer | Traje |
+| --- | --- | --- |
+| Korisnik | Ivan Horvat (`U12345`) | Trajno |
+| Članarina | `MEM-2026-000125` | Jedan paket / mjesec |
 
-Each purchased membership gets its own ID, for example `MEM-2026-000125`.
+Sljedeći mjesec novi `MEM-…`, isti korisnik.
 
 ```text
-User: Ivan Horvat
-User ID: U12345
-
-Membership: MEM-2026-000125
 Plan: 12 treninga
-Valid: 01.09.2026 – 30.09.2026
-Used: 5
-Remaining: 7
+Valjano: 01.09. – 30.09.
+Iskorišteno: 5 → preostalo 7
 ```
 
-Next month the membership might be `MEM-2026-000180`. The user remains `U12345`.
+---
 
-## Physical payment flow
+## Tok fizičke naplate
 
-1. The customer arrives at the center.
-2. Staff searches for the customer by name, email, or phone.
-3. If the customer does not exist, staff creates or invites the account.
-4. Staff selects a membership plan.
-5. Staff records the payment.
-6. The system creates the membership.
-7. The membership becomes `ACTIVE`.
-8. The customer can immediately book eligible services.
+1. Član dođe u studio  
+2. Osoblje ga nađe (ime / email / telefon)  
+3. Ako nema računa → kreiraj / pozovi  
+4. Odaberi plan  
+5. Zapiši uplatu  
+6. Sustav kreira članarinu → `ACTIVE`  
+7. Član odmah može rezervirati  
 
-## Payment method
+Metode: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`.
 
-MVP methods: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`.
+---
 
-Online payment is optional future functionality.
+## Pravilo pristupa
 
-## Staff dashboard
-
-### Customers
-
-Search, active membership, remaining sessions, and membership expiry.
-
-### New payment
-
-Fields: customer, plan, amount, method, date, note.
-
-### Activate membership
-
-The system automatically creates the payment and the membership.
-
-## Membership access rule
-
-A customer can book when:
+Član može rezervirati kad:
 
 ```text
-membership.status === ACTIVE
-AND today <= validUntil
-AND sessionsRemaining > 0
-AND serviceId is allowed by membership
+status === ACTIVE
+AND danas <= validUntil
+AND sessionsRemaining > 0   (ili unlimited)
+AND usluga je dozvoljena planom
 ```
 
-## Example
+---
 
-Membership: Power Plate, 12 sessions, 01.09–30.09.
+## Primjer potrošnje
 
-- Customer books 18:00. Remaining goes from 12 to 11.
-- Customer cancels before the cancellation deadline. Remaining goes from 11 to 12.
-- Customer completes the training. Remaining stays at 11.
-- Customer is `NO_SHOW`. Default remaining goes from 11 to 10.
+| Radnja | Preostalo |
+| --- | --- |
+| Rezervira 18:00 | 12 → 11 |
+| Otkaže na vrijeme | 11 → 12 |
+| Trening odrađen | ostaje 11 |
+| NO_SHOW (default) | 11 → 10 |
 
-No-show consumption should be configurable later.
+---
 
-## Membership types
+## Tipovi planova
 
-### Fixed sessions
+| Tip | Primjer |
+| --- | --- |
+| Fiksni termini | 12 treninga / 30 dana |
+| Unlimited | Neograničeno / 30 dana |
+| Po uslugama | Samo Power Plate + grupa, ne PT |
 
-12 sessions / 30 days.
+---
 
-### Unlimited
+## Što još fali u UI-u
 
-Unlimited sessions / 30 days.
-
-### Service-specific
-
-A membership can allow only selected services. Example: Power Plate and Group Training, but not Personal Training.
+API: `POST/GET …/payments`.  
+Faza 5: jasan ekran blagajne (uplata → članarina) + povijest uplata.

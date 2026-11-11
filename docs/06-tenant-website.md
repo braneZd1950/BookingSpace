@@ -1,46 +1,40 @@
-# Personalized tenant websites
+# Javna stranica studija
 
-> **Lean status:** Phase 4 mostly done — [lean/phase-04-frontend.md](lean/phase-04-frontend.md)  
-> **Shipped:** `/postavljanje` wizard, templates/layouts/palettes, SiteFrame preview, member `/s/:slug`.  
-> **Still deferred:** real DNS / custom domains. Snapshot: [16-current-status.md](16-current-status.md).
+Indeks: [README.md](README.md) · Lean: [lean/phase-04-frontend.md](lean/phase-04-frontend.md) · Status: [16-current-status.md](16-current-status.md)
 
-## Concept
+---
 
-A business gets a simple public page with booking CTA. Long-term vision includes a subdomain (`powerfit.bookingspace.hr`). **Hostname product is not live** — slug routes are.
+## Što je uživo
 
-## Phase 4 (as shipped)
+- Wizard `/postavljanje` (predložak, layout, boje, tekst, slike)  
+- Preview na početnoj vlasnika / člana  
+- Javni ulaz: `/s/:slug` → CTA na `/s/:slug/termini`  
 
-- Setup wizard: template, layout, colors, copy, images  
-- Preview on owner home + member home  
-- CTA into `/s/:slug/termini`  
+## Što još nije
 
-## Explicitly deferred
-
-| Feature | Why deferred |
+| Stavka | Zašto kasnije |
 | --- | --- |
-| Subdomain / custom domain product | DNS ops after booking value is proven |
-| Full gallery CMS as owner nav | Not required for pilot |
-| Marketplace discovery | Post-pilot |
-| Full drag-and-drop builder | Never MVP |
+| Pravi DNS / custom domena | Ops nakon dokaza bookinga |
+| Puna galerija u navigaciji | Nije potrebna za pilot |
+| Marketplace | Poslije pilota |
+| Drag-and-drop page builder | Nikad u MVP-u |
 
-## Design notes (partially live)
+Dugoročna vizija: `{slug}.domena.hr`. Danas je to samo copy — **slug rute su izvor istine**.
 
-### Sections
+---
 
-Hero, About, Services, Schedule/Booking, Gallery, Contact, Location, Opening hours — controlled via `siteSettings.visibleSections` where wired.
+## Dizajn (dijelom uživo)
 
-### Templates
+| Dio | Napomena |
+| --- | --- |
+| Sekcije | Hero, O nama, Usluge, Termini, Galerija, Kontakt… (`visibleSections`) |
+| Predlošci | Fitness, pilates, Power Plate, igraonica, generički — bez page buildera |
+| Tema | Primarna/sekundarna boja, font, radius, gumb, paleta |
+| Slike | Cloudinary ili upload API — **ne** binarni blob u MongoDB |
+| SEO / domena | Poliranje kasnije |
 
-Fitness, Pilates, Power Plate, children's playroom, generic — predefined blocks only, never a page builder. Wizard uses these today.
+---
 
-### Theme
+## Pravilo
 
-Small set: primary/secondary color, font, radius, button style (+ layout / paletteId).
-
-### Images
-
-Prefer uploaded URLs (Cloudinary or local upload API). Do not store binaries in MongoDB.
-
-### SEO / custom domains
-
-Advanced SEO polish and custom domains stay post-pilot ([roadmap](12-roadmap.md)).
+Prvo dokaži rezervacije. Lijepa domena dolazi poslije.

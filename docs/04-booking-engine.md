@@ -1,104 +1,85 @@
-# Booking Engine Specification
+# Motor rezervacija
 
-> Implemented in product (Phases 2–3). Gaps: [lean/backend-status.md](lean/backend-status.md). Status: [16-current-status.md](16-current-status.md).  
-> Trainers: optional `staffId` on booking; required when the tenant has bookable staff.
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md) · Backend: [lean/backend-status.md](lean/backend-status.md)
 
-This is the most important technical component of the long-term product.
+Ovo je najvažniji dio proizvoda. U kodu: faze 2–3. Trener (`staffId`) je opcionalan; obavezan ako studio ima trenerе.
 
-## Core parameters
+---
 
-Each service can define:
+## Parametri usluge
 
-- `durationMinutes`
-- `slotIntervalMinutes`
-- `capacity`
-- cancellation window
-- membership requirement
+| Polje | Primjer |
+| --- | --- |
+| `durationMinutes` | 30 |
+| `slotIntervalMinutes` | 15 |
+| `capacity` | 6 |
+| prozor otkaza | 15 min |
+| treba li članarinu | da |
 
-Example:
+Početci termina: 18:00, 18:15, 18:30, 18:45…
 
-```text
-Duration: 30 minutes
-Interval: 15 minutes
-Capacity: 6
-Cancellation window: 15 minutes
-```
+---
 
-Generated starts: 18:00, 18:15, 18:30, 18:45.
+## Dva modela kapaciteta
 
-## Critical capacity decision
+### A — kapacitet po slotu
 
-There are two possible business models.
+18:00 ima 6 mjesta, 18:15 ima svojih 6 — čak i ako se trajanja preklapaju.  
+Koristi samo ako studio stvarno ima dovoljno prostora/opreme.
 
-### Model A — capacity per start slot
+### B — istovremeni resurs (sigurnije)
 
-An 18:00 session has 6 seats and a separate 18:15 session has another 6 seats, even if durations overlap.
+Booking zauzima kapacitet od početka do kraja. Preklapanje troši isti resurs.
 
-Use this only when the business explicitly confirms it has enough physical capacity, staff, and equipment for concurrent sessions.
+MVP: konfigurabilni model; za Power Plate vidi pitanje u [14-example-powerplate.md](14-example-powerplate.md).
 
-### Model B — concurrent resource capacity
+---
 
-Each booking occupies a resource from start to end.
+## Kad je slot slobodan?
 
-Example: 18:00–18:30 uses 1 capacity unit. 18:15–18:45 overlaps it and therefore consumes capacity at 18:15–18:30.
+1. Usluga i studio aktivni  
+2. Unutar radnog vremena  
+3. Termin još nije prošao  
+4. Član ima aktivnu članarinu (ako treba)  
+5. Ima preostalih treninga  
+6. Ima slobodnog kapaciteta  
+7. Nema konfliktne rezervacije istog člana  
 
-This is safer and more generic.
+UI: `18:00 — 4/6`. Kad je `6/6` → **POPUNJENO**.
 
-For the MVP, implement a configurable capacity model, but start with Model A only if the pilot business confirms that interpretation. See the question in the [Power Plate example](14-example-powerplate.md).
+---
 
-## Availability
+## Otkaz
 
-A slot is bookable when:
+`cancellationWindowMinutes` npr. 15.  
+Za 18:00 član može otkazati do 17:45. Kasnije online ne može; osoblje može override.
 
-1. The service is active.
-2. The tenant is active.
-3. The date is within business hours.
-4. The current time is before the booking start.
-5. The customer has the required active membership.
-6. The membership has remaining sessions.
-7. The slot has capacity.
-8. The customer does not already have a conflicting booking.
+---
 
-## Capacity example
+## Potrošnja članarine
 
-Capacity is 6. Bookings at 18:00 are 4/6, so `available = 2`.
+Ne povećavaj „iskorišteno” naslijepo.
 
-UI: `18:00 — 4/6`. When the slot is `6/6`, show `POPUNJENO`.
+| Status | Tipično |
+| --- | --- |
+| CONFIRMED | drži 1 termin |
+| CANCELLED (u roku) | vraća termin |
+| COMPLETED | ostaje potrošen |
+| NO_SHOW | default: potrošen (kasnije konfigurabilno) |
 
-## Cancellation
+Koristi `sessionsIncluded` / `sessionsUsed` atomarno kad god možeš.
 
-Each service can have `cancellationWindowMinutes`. Example: 15 minutes.
+---
 
-For an 18:00 booking, cancellation is allowed until 17:45. After 17:45 the customer cannot cancel online. Staff can have permission to override this rule.
+## Zaštita od double-bookinga
 
-## Membership consumption
+Stvaranje rezervacije mora biti atomarno.  
+Server **ponovno** provjerava članarinu, kapacitet i konflikte neposredno prije inserta.  
+**Nikad** ne vjeruj brojkama koje je browser već pokazao.
 
-Do not blindly increment sessions when a booking is created.
+---
 
-Recommended MVP logic:
+## Waitlist (kasnije)
 
-- `CONFIRMED` — the reservation holds one session entitlement
-- `CANCELLED` within the allowed window — the entitlement is restored
-- `COMPLETED` — the session remains consumed
-- `NO_SHOW` — configurable; default is to consume one session
-
-To avoid double counting, implement a clear session ledger or an atomic counter update.
-
-For a simple MVP, maintain `sessionsIncluded` and `sessionsUsed`, and update them in one transaction where possible.
-
-## Double booking protection
-
-Booking creation must be atomic. The backend must re-check membership, capacity, and conflicting bookings immediately before creating the booking.
-
-Never trust availability previously displayed in the browser.
-
-## Future waitlist
-
-When a slot is full, offer `JOIN WAITLIST`. On cancellation:
-
-1. Find the earliest waitlist entry.
-2. Notify the customer.
-3. Optionally reserve temporarily.
-4. Expire the offer after a configured time.
-
-Waitlist can be phase 1.5.
+Kad je puno: „Pridruži se listi čekanja”. Pri otkazu: obavijesti prvog, privremeno rezerviraj, isteći nakon vremena.  
+Još **nije** u kodu.

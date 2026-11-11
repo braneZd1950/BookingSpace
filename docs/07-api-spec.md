@@ -1,164 +1,106 @@
-# REST API Specification
+# REST API — mapa
 
-> Living contract for the frontend. When you add endpoints, update this file and [lean/backend-status.md](lean/backend-status.md). Snapshot: [16-current-status.md](16-current-status.md).
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md) · Backend: [lean/backend-status.md](lean/backend-status.md)
 
-Base: `https://api.bookingspace.hr/api` (local default: `http://localhost:4001/api`)
+Živi ugovor s frontendom. Kad dodaš endpoint, ažuriraj ovaj file.
 
-Health: `GET /api/health`
+**Base (lokalno):** `http://localhost:4001/api`  
+**Base (produkcija, Opcija A):** `https://VAS-SERVIS.onrender.com/api`  
+**Health:** `GET /api/health`
 
-## Authentication — `/auth`
+---
 
-| Method | Path | Purpose |
+## Auth — `/auth`
+
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| POST | `/auth/register` | Create a user (rate-limited) |
-| POST | `/auth/login` | Return a JWT |
-| POST | `/auth/forgot-password` | Start password reset email |
-| POST | `/auth/reset-password` | Apply reset token |
-| POST | `/auth/logout` | Logout (auth) |
-| GET | `/auth/me` | Current user (+ `platformAdmin` when applicable) |
-| PATCH | `/auth/me` | Profile / notification prefs |
-| PATCH | `/auth/password` | Change password |
+| POST | `/auth/register` | Registracija (rate limit) |
+| POST | `/auth/login` | JWT |
+| POST | `/auth/forgot-password` | Reset mail |
+| POST | `/auth/reset-password` | Nova lozinka |
+| POST | `/auth/logout` | Odjava |
+| GET | `/auth/me` | Trenutni korisnik (+ `platformAdmin`) |
+| PATCH | `/auth/me` | Profil / obavijesti |
+| PATCH | `/auth/password` | Promjena lozinke |
 
-## Tenants — `/tenants`
+## Studiji — `/tenants`
 
-| Method | Path | Purpose |
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| POST | `/tenants` | Create a business + owner `TenantUser` |
-| GET | `/tenants/mine` | Actor’s tenants |
-| GET | `/tenants/:slug/public` | Public site config (+ trainers) |
-| PATCH | `/tenants/:tenantId` | Update profile / hours / billing-related fields |
-| PATCH | `/tenants/:tenantId/site` | Theme, layout, SEO, gallery |
-| POST | `/tenants/:tenantId/images` | Upload logo / hero / gallery (Cloudinary or local) |
-| DELETE | `/tenants/:tenantId/gallery` | Remove gallery image (`publicId` in body) |
+| POST | `/tenants` | Novi studio + owner |
+| GET | `/tenants/mine` | Moji studiji |
+| GET | `/tenants/:slug/public` | Javna konfiguracija |
+| PATCH | `/tenants/:tenantId` | Profil / sati / billing |
+| PATCH | `/tenants/:tenantId/site` | Tema, layout, SEO |
+| POST | `/tenants/:tenantId/images` | Upload slika |
+| DELETE | `/tenants/:tenantId/gallery` | Briši sliku galerije |
 
-## Services
+## Usluge i dostupnost
 
-| Method | Path | Purpose |
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| GET | `/tenants/:tenantId/services` | List services |
-| POST | `/tenants/:tenantId/services` | Create a service |
-| PATCH | `/services/:serviceId` | Update a service |
-| DELETE | `/services/:serviceId` | Soft-delete or deactivate |
+| GET/POST | `/tenants/:tenantId/services` | Lista / kreiranje |
+| PATCH/DELETE | `/services/:serviceId` | Izmjena / deaktivacija |
+| GET | `/tenants/:tenantId/services/:serviceId/availability` | Slotovi (`date`…) |
 
-## Availability
+Svaki slot: `startTime`, `endTime`, `capacity`, `booked`, `available`, `status`.
 
-`GET /tenants/:tenantId/services/:serviceId/availability`
+## Rezervacije — `/bookings`
 
-Parameters: `date`, and an optional start/end range.
-
-Each slot includes `startTime`, `endTime`, `capacity`, `booked`, `available`, and `status`.
-
-## Bookings
-
-| Method | Path | Purpose |
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| POST | `/bookings` | Create booking (capacity + membership; optional `staffId`) |
-| GET | `/bookings/my` | Customer bookings |
-| GET | `/tenants/:tenantId/bookings` | Studio calendar (`dateFrom` / `dateTo`) |
-| PATCH | `/bookings/:bookingId/cancel` | Cancel (+ session restore in window) |
-| PATCH | `/bookings/:bookingId/complete` | Mark completed |
-| PATCH | `/bookings/:bookingId/no-show` | Mark no-show |
+| POST | `/bookings` | Nova (kapacitet + članarina; `staffId` ako treba) |
+| GET | `/bookings/my` | Moje |
+| GET | `/tenants/:tenantId/bookings` | Kalendar studija |
+| PATCH | `…/cancel` · `…/complete` · `…/no-show` | Status |
 
-If the tenant has bookable staff, `staffId` is required on create.
+## Planovi, članarine, uplate
 
-## Membership plans
-
-| Method | Path | Purpose |
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| GET | `/tenants/:tenantId/membership-plans` | List plans |
-| POST | `/tenants/:tenantId/membership-plans` | Create a plan |
-| PATCH | `/membership-plans/:id` | Update a plan |
+| GET/POST | `/tenants/:tenantId/membership-plans` | Planovi |
+| PATCH | `/membership-plans/:id` | Izmjena plana |
+| GET/POST | `/tenants/:tenantId/memberships` | Članarine |
+| GET | `/memberships/my` | Moje (uključuje slug) |
+| PATCH | `/memberships/:id/suspend` | Suspend |
+| POST/GET | `/tenants/:tenantId/payments` | Fizičke uplate |
 
-## Memberships
+Metode uplate: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`, `ONLINE` (bez Stripe gatewaysa).
 
-| Method | Path | Purpose |
+## Članovi i osoblje
+
+| Metoda | Put | Svrha |
 | --- | --- | --- |
-| GET | `/tenants/:tenantId/memberships` | List tenant memberships |
-| POST | `/tenants/:tenantId/memberships` | Create after physical payment |
-| GET | `/memberships/my` | Customer memberships (includes tenant slug) |
-| PATCH | `/memberships/:id/suspend` | Suspend a membership |
+| GET | `/tenants/:tenantId/customers` | Lista / detalj |
+| GET/POST | `/tenants/:tenantId/staff` | Treneri |
+| PATCH | `…/staff/:userId/suspend` | Suspend trenera |
 
-## Payments
+## Online, push, privola
 
-| Method | Path | Purpose |
+| Područje | Putovi | Napomena |
 | --- | --- | --- |
-| POST | `/tenants/:tenantId/payments` | Record a physical payment |
-| GET | `/tenants/:tenantId/payments` | List payments |
+| Online | `/tenants/:tenantId/online…` | FE: `ONLINE_ENABLED = false` |
+| Push | `/push/vapid-public-key`, subscribe… | Web Push |
+| Privola | `POST /consent` | Auth opcionalan |
 
-Methods: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`, `ONLINE` (enum; no Stripe gateway in MVP).
+## Analitika platforme — `/analytics`
 
-## Customers
+Zahtijeva `ADMIN` (ili bootstrap email izvan produkcije).
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/tenants/:tenantId/customers` | Customers for the tenant |
-| GET | `/tenants/:tenantId/customers/:userId` | Customer detail |
+Sažetak, studiji, korisnici, aktivnost, izvještaji, sustav, billing, warn/invoice, studio analitika.
 
-## Staff / trainers — `/tenants/:tenantId/staff`
+---
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/tenants/:tenantId/staff` | List bookable staff |
-| POST | `/tenants/:tenantId/staff` | Owner invites / creates trainer |
-| PATCH | `/tenants/:tenantId/staff/:userId/suspend` | Suspend staff link |
+## Pravilo autorizacije
 
-## Online workouts — `/tenants/:tenantId/online`
+Za svaki tenant endpoint: JWT korisnik + uloga u studiju + `tenantId` resursa moraju se slagati.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/tenants/:tenantId/online/catalog` | Member / public catalog (optional auth) |
-| GET | `/tenants/:tenantId/online` | Staff list |
-| POST | `/tenants/:tenantId/online/upload` | Video upload |
-| POST | `/tenants/:tenantId/online` | Create workout |
-| PATCH | `/tenants/:tenantId/online/:workoutId` | Update |
-| DELETE | `/tenants/:tenantId/online/:workoutId` | Remove |
+**Nikad** ne prihvaćaj `tenantId` iz bodyja kao dokaz ovlasti.
 
-Frontend ships with `ONLINE_ENABLED = false` until product turns it on.
+## Još nije u API-ju
 
-## Push — `/push`
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/push/vapid-public-key` | Public VAPID key |
-| GET | `/push/subscriptions` | Current user’s subscriptions |
-| POST | `/push/subscribe` | Subscribe |
-| POST | `/push/unsubscribe` | Unsubscribe |
-
-## Consent — `/consent`
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/consent` | Record privacy consent (optional auth) |
-
-## Analytics / platform admin — `/analytics`
-
-Platform routes require `role === ADMIN` or email in `ADMIN_EMAILS`.
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/analytics/events` | Track usage (rate-limited) |
-| GET | `/analytics/platform` | Platform summary |
-| GET | `/analytics/platform/studios` | Studios |
-| GET | `/analytics/platform/users` | Users |
-| GET | `/analytics/platform/activity` | Activity |
-| GET | `/analytics/platform/reports` | Reports |
-| GET | `/analytics/platform/system` | System health flags |
-| GET | `/analytics/platform/billing` | SaaS billing list |
-| PATCH | `/analytics/platform/billing/:tenantId` | Update tenant billing |
-| POST | `/analytics/platform/billing/:tenantId/warn` | Warning email |
-| POST | `/analytics/platform/billing/:tenantId/invoice` | Invoice email |
-| GET | `/analytics/tenants/:tenantId` | Studio analytics |
-
-## Authorization rule
-
-For every tenant endpoint, the authenticated user, the tenant membership or role, and the resource `tenantId` must match.
-
-Never accept a `tenantId` from the frontend as proof of authorization.
-
-## Not implemented (documented elsewhere)
-
-| Idea | Status |
+| Ideja | Stanje |
 | --- | --- |
-| Waitlist endpoints | Spec / roadmap only |
-| Hostname → tenant resolver | Slug-based public routes only |
-| Stripe checkout | Deferred |
+| Waitlist | Samo roadmap |
+| Hostname → tenant | Samo slug |
+| Stripe checkout | Odgođeno |

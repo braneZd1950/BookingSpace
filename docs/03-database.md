@@ -1,224 +1,119 @@
-# Database Design
+# Dizajn baze
 
-> Living reference. Align with Mongoose models under `server/src/models/`. Snapshot: [16-current-status.md](16-current-status.md).
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md)
 
-## Collections
+Uskladi s Mongoose modelima u `server/src/models/`.
 
-### Core MVP
+---
 
-- `users`
-- `tenants`
-- `tenantUsers`
-- `services`
-- `membershipPlans`
-- `memberships`
-- `payments`
-- `bookings`
+## Kolekcije
 
-### Shipped beyond original MVP
+### Osnovne (MVP)
 
-- `onlineWorkouts`
-- `pushSubscriptions`
-- `consentEvents`
-- `usageEvents`
-- `staffNotifications`
+`users`, `tenants`, `tenantUsers`, `services`, `membershipPlans`, `memberships`, `payments`, `bookings`
 
-### Spec only (not implemented)
+### Već u kodu
 
-- `waitlistEntries` — roadmap later
-- Separate `sitePages` collection — **not used**; site lives in `tenants.siteSettings`
+`onlineWorkouts`, `pushSubscriptions`, `consentEvents`, `usageEvents`, `staffNotifications`
 
-## User
+### Samo u planu
 
-```text
-_id
-name
-email
-passwordHash
-phone
-role
-passwordResetTokenHash      (select: false)
-passwordResetExpires       (select: false)
-notificationPrefs          (email + push toggles)
-privacyConsent             { accepted, version, acceptedAt, withdrawnAt, source }
-createdAt
-updatedAt
-```
+- `waitlistEntries` — još nema  
+- Zasebna `sitePages` — **nema**; stranica živi u `tenants.siteSettings`
 
-Roles: `CUSTOMER`, `BUSINESS_OWNER`, `STAFF`, `ADMIN`.
+---
 
-Platform admin access: `role === ADMIN` **or** email listed in `ADMIN_EMAILS`.
+## User (korisnik)
 
-A user has one permanent `_id`. Do not create a new user every month.
+Jedan trajni račun. **Ne** stvaraj novog korisnika svaki mjesec.
 
-## Tenant
+| Polje | Napomena |
+| --- | --- |
+| name, email, passwordHash, phone | Osnovni profil |
+| role | `CUSTOMER`, `BUSINESS_OWNER`, `STAFF`, `ADMIN` |
+| notificationPrefs | e-pošta + push |
+| privacyConsent | privola (verzija, datum…) |
+| passwordReset* | select: false |
 
-```text
-_id
-name
-slug
-niche                         # powerplate | fitness | pilates | yoga | playroom | services | generic
-nicheCustom                   # free text when niche is generic
-ownerId
-logoUrl
-heroImageUrl
-description
-phone
-email
-address
-timezone
-theme                         # colors, font, radius, buttonStyle
-siteSettings                  # template, layout, paletteId, visibleSections, gallery, socialLinks, seo
-bookingSettings               # capacityModel PER_SLOT|CONCURRENT, workingHours, blockedPeriods
-billing                       # plan, status TRIAL|PAID|…, dates, notes
-active
-createdAt
-updatedAt
-```
+Platform admin: `role === ADMIN` **ili** (samo izvan produkcije) email u `ADMIN_EMAILS`.
+
+---
+
+## Tenant (studio)
+
+| Polje | Napomena |
+| --- | --- |
+| name, slug | Jedinstveni slug |
+| niche | npr. powerplate, fitness, pilates… |
+| ownerId, kontakt, adresa, timezone | |
+| theme | boje, font, radius |
+| siteSettings | predložak, layout, galerija, SEO |
+| bookingSettings | sati rada, kapacitet model |
+| billing | SaaS status (trial / paid…) |
+| active | |
+
+---
 
 ## TenantUser
 
-Associates a user with a business. One user can work with multiple businesses.
+Veza korisnik ↔ studio. Jedan korisnik može biti u više studija.
 
 ```text
-_id
-tenantId
-userId
-role                          # BUSINESS_OWNER | STAFF | CUSTOMER
-status                        # e.g. ACTIVE | INVITED | SUSPENDED
-createdAt
+tenantId, userId, role (OWNER|STAFF|CUSTOMER), status (ACTIVE|INVITED|SUSPENDED)
 ```
 
-## Service
+---
+
+## Service (usluga)
 
 ```text
-_id
-tenantId
-name
-description
-durationMinutes
-slotIntervalMinutes
-capacity
-price
-active
-membershipRequired
-cancellationWindowMinutes     # when set, drives cancel/session restore window
-createdAt
-updatedAt
+tenantId, name, durationMinutes, slotIntervalMinutes, capacity,
+price, active, membershipRequired, cancellationWindowMinutes
 ```
 
-Example: Power Plate, duration 30, slot interval 15, capacity 6.
+Primjer: Power Plate, 30 min, interval 15, kapacitet 6.
 
-## MembershipPlan
+---
 
-```text
-_id
-tenantId
-name
-description
-price
-validityDays
-sessionsIncluded              # null = unlimited
-allowedServiceIds
-active
-createdAt
-updatedAt
-```
+## MembershipPlan / Membership
 
-## Membership
+**Plan** = što se prodaje (npr. „12 treninga”, cijena, valjanost).  
+**Membership** = konkretna kupljena članarina člana (`MEM-2026-…`, status, potrošeni termini).
 
-```text
-_id
-tenantId
-userId
-membershipPlanId
-paymentId
-code                          # e.g. MEM-2026-000125
-validFrom
-validUntil
-sessionsIncluded
-sessionsUsed
-status                        # ACTIVE | EXPIRED | CANCELLED | SUSPENDED
-createdAt
-updatedAt
-```
+---
 
 ## Payment
 
-Physical ledger. Payment is an accounting record; membership is the right to use services.
+Knjiga fizičkih uplata. Metode: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`, `ONLINE` (enum; Stripe još nije).
 
-```text
-_id
-tenantId
-userId
-membershipId
-amount
-currency
-method                        # CASH | CARD_TERMINAL | BANK_TRANSFER | ONLINE
-status
-paidAt
-note
-createdBy
-createdAt
-```
+Uplata ≠ pravo na trening — pravo je **Membership**.
+
+---
 
 ## Booking
 
 ```text
-_id
-tenantId
-serviceId
-userId
-membershipId
-staffId                       # optional trainer; required when tenant has trainers
-date
-startTime
-endTime
-status                        # CONFIRMED | CANCELLED | COMPLETED | NO_SHOW
-source                        # CUSTOMER | STAFF
-createdAt
-updatedAt
-cancelledAt
-completedAt
+tenantId, serviceId, userId, membershipId, staffId?,
+date, startTime, endTime,
+status (CONFIRMED|CANCELLED|COMPLETED|NO_SHOW),
+source (CUSTOMER|STAFF)
 ```
 
-## OnlineWorkout
+---
 
-```text
-_id
-tenantId
-title
-description
-videoUrl / media fields
-price / access rules
-active
-createdAt
-updatedAt
-```
+## Ostalo (kratko)
 
-## PushSubscription
+| Kolekcija | Svrha |
+| --- | --- |
+| OnlineWorkout | Video treninzi (UI flag off) |
+| PushSubscription | Web Push pretplata |
+| ConsentEvent | Audit privole |
+| UsageEvent | Analitika |
+| StaffNotification | Red obavijesti osoblju |
 
-```text
-_id
-userId
-endpoint
-keys
-createdAt
-```
+---
 
-## ConsentEvent
-
-Audit trail for privacy consent accept / withdraw.
-
-## UsageEvent
-
-Platform / studio analytics events.
-
-## StaffNotification
-
-Queued staff notifications (email / push helpers).
-
-## Indexes
+## Indeksi (važni)
 
 ```text
 Tenant.slug unique
@@ -229,6 +124,6 @@ Booking(tenantId, date, startTime, serviceId, status)
 TenantUser(tenantId, userId) unique
 ```
 
-## Data isolation
+## Izolacija
 
-Every tenant-owned collection must contain `tenantId`. All queries must filter by authorized tenant context.
+Svaka kolekcija studija mora imati `tenantId`. Upiti uvijek filtriraju po autoriziranom studiju.

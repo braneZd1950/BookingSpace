@@ -54,6 +54,29 @@ const DEMO = {
     address: 'Ulica Ivana Meštrovića 1, Zadar',
     timezone: 'Europe/Zagreb',
   },
+  /** Unsplash placeholderi samo za lokalni dizajn / seed — ne produkcija. */
+  gallery: [
+    {
+      url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1400&q=80',
+      publicId: 'demo-gallery-1',
+      alt: 'Teretana — otvoreni prostor',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=80',
+      publicId: 'demo-gallery-2',
+      alt: 'Trening s utezima',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=1400&q=80',
+      publicId: 'demo-gallery-3',
+      alt: 'Grupni trening',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1540497077202-7c60f75d3d31?auto=format&fit=crop&w=1400&q=80',
+      publicId: 'demo-gallery-4',
+      alt: 'Kardio zona',
+    },
+  ],
 };
 
 async function upsertUser(profile, passwordHash) {
@@ -108,6 +131,7 @@ async function upsertStudio(owner) {
     tenant = await Tenant.create({
       ...DEMO.studio,
       ownerId: owner._id,
+      heroImageUrl: DEMO.gallery[0].url,
       theme: {
         primaryColor: '#243056',
         secondaryColor: '#d9e0ef',
@@ -119,6 +143,7 @@ async function upsertStudio(owner) {
         template: 'fitness',
         layout: 'banner',
         paletteId: 'navy',
+        gallery: DEMO.gallery,
         visibleSections: {
           hero: true,
           about: true,
@@ -160,8 +185,14 @@ async function upsertStudio(owner) {
     if (!tenant.siteSettings) tenant.siteSettings = {};
     if (!tenant.siteSettings.legal?.privacy) {
       tenant.siteSettings.legal = demoLegal(DEMO.studio);
-      tenant.markModified('siteSettings');
     }
+    if (!tenant.heroImageUrl) tenant.heroImageUrl = DEMO.gallery[0].url;
+    if (!Array.isArray(tenant.siteSettings.gallery) || tenant.siteSettings.gallery.length === 0) {
+      tenant.siteSettings.gallery = DEMO.gallery;
+      if (!tenant.siteSettings.visibleSections) tenant.siteSettings.visibleSections = {};
+      tenant.siteSettings.visibleSections.gallery = true;
+    }
+    tenant.markModified('siteSettings');
     await tenant.save();
   }
 

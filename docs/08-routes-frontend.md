@@ -1,69 +1,74 @@
-# Frontend routes
+# Frontend rute
 
-> Source of truth: `client/src/app/App.jsx`. Snapshot: [16-current-status.md](16-current-status.md).
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md)
 
-## Public platform (web)
+Izvor istine: `client/src/app/App.jsx`.
 
-| Route | Page |
+---
+
+## Javna platforma
+
+| Ruta | Stranica |
 | --- | --- |
-| `/` | B2B home (anyminutes) |
-| `/login` | Login |
-| `/register` | Business signup |
-| `/zaboravljena-lozinka` | Forgot password |
-| `/nova-lozinka` | Reset password |
-| `/postavljanje` | Studio setup wizard (template, layout, colors) |
-| `/privatnost`, `/uvjeti`, `/kolacici`, `/kontakt`, `/povratna-informacija` | Legal / contact |
-| `/odrzavanje` | Maintenance |
+| `/` | Početna (B2B) |
+| `/login` · `/register` | Prijava / registracija |
+| `/zaboravljena-lozinka` · `/nova-lozinka` | Reset lozinke |
+| `/postavljanje` | Wizard studija |
+| `/privatnost` · `/uvjeti` · `/kolacici` · `/kontakt` · `/povratna-informacija` | Pravni / kontakt |
+| `/odrzavanje` | Održavanje |
 | `*` | 404 |
 
-Maintenance for the whole app: `VITE_MAINTENANCE=true`.  
-Crash / unexpected UI error: React `ErrorBoundary` → `ErrorPage` (also `/greska`).
+Cijela app u maintenance: `VITE_MAINTENANCE=true`.  
+Neočekivana greška: `ErrorBoundary` → `/greska`.
 
-## Platform admin (web only) — `/analitika`
+---
 
-Gated by `PlatformGate` (`platformAdmin` from `/auth/me`).
+## Admin platforme — `/analitika`
 
-| Route | Page |
+Ulaz: `PlatformGate` (`platformAdmin` iz `/auth/me`).
+
+| Ruta | Stranica |
 | --- | --- |
-| `/analitika` | Summary |
-| `/analitika/studiji` | Studios |
-| `/analitika/korisnici` | Users |
-| `/analitika/aktivnost` | Activity |
-| `/analitika/placanja` | Partner SaaS billing |
-| `/analitika/izvjestaji` | Reports |
-| `/analitika/sustav` | System |
+| `/analitika` | Sažetak |
+| `/analitika/studiji` | Studiji |
+| `/analitika/korisnici` | Korisnici |
+| `/analitika/aktivnost` | Aktivnost |
+| `/analitika/placanja` | SaaS naplata partnera |
+| `/analitika/izvjestaji` | Izvještaji |
+| `/analitika/sustav` | Sustav |
 
-## Owner studio — `/stranica`
+---
 
-| Route | Nav | Page |
+## Studio vlasnika — `/stranica`
+
+| Ruta | Nav | Stranica |
 | --- | --- | --- |
-| `/stranica` | Početna | Public site preview |
-| `/stranica/termini` | Termini | Schedule / owner book & cancel |
-| `/stranica/kalendar` | Kalendar | Month view |
-| `/stranica/clanovi` | Članovi | Members + trainers |
-| `/stranica/analitika` | Analitika | Studio analytics |
-| `/stranica/postavke` | Postavke | Profile, hours, notifications |
+| `/stranica` | Početna | Preview javne stranice |
+| `/stranica/termini` | Termini | Raspored / rezervacija |
+| `/stranica/kalendar` | Kalendar | Mjesec |
+| `/stranica/clanovi` | Članovi | Članovi + treneri |
+| `/stranica/analitika` | Analitika | Analitika studija |
+| `/stranica/postavke` | Postavke | Profil, sati, obavijesti |
 
-Held (flags in `client/src/lib/studioFeatures.js`): galerija, online, placanja, plan.
+Isključeno flagovima (`studioFeatures.js`): galerija, online, plaćanja, plan.
 
-## Member studio — `/s/:slug`
+---
 
-| Route | Nav | Page |
+## Studio člana — `/s/:slug`
+
+| Ruta | Nav | Stranica |
 | --- | --- | --- |
-| `/s/:slug` | Početna | Studio overview + membership |
-| `/s/:slug/termini` | Termini | Member book / cancel |
-| `/s/:slug/online` | Online | Catalog (flagged) |
-| `/s/:slug/privatnost` | — | Privacy / consent |
+| `/s/:slug` | Početna | Pregled + članarina |
+| `/s/:slug/termini` | Termini | Self-book / otkaz |
+| `/s/:slug/online` | Online | Katalog (flag) |
+| `/s/:slug/privatnost` | — | Privola |
 
-## Later / deferred
+---
 
-| Idea | Notes |
+## Kasnije
+
+| Ideja | Napomena |
 | --- | --- |
-| Real DNS `{slug}.booking.hr` | Display/copy only today |
-| Full till / physical-payment UI | Phase 5 (prep route mounted) |
-
-## Explicitly not building as a product now
-
-- Tenant hostname routing as the primary public URL  
-- Cross-tenant discovery marketplace  
-- Stripe checkout UI  
+| Pravi DNS `{slug}.…` | Danas samo copy |
+| Blagajna UI | Faza 5 |
+| Marketplace / Stripe UI | Nije u planu sada |

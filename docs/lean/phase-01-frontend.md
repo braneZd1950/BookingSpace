@@ -1,44 +1,36 @@
-# Phase 1 — Frontend: One studio, one day
+# Faza 1 — Jedan studio, jedan dan
 
-**Status:** done (implemented in product)  
-**Hypothesis:** The owner will manage members and working hours in the app instead of a notebook.  
-**Backend:** existing tenant + membership APIs (server may evolve — see [backend-status](backend-status.md)).
+**Stanje:** gotovo  
+**Hipoteza:** Vlasnik će voditi članove i sate u app-u umjesto bilježnice.  
+**Backend:** postojeći tenant + membership API — [backend-status.md](backend-status.md)
 
-## Goal
+---
 
-Ship an operational cockpit for one pilot studio: sign in, set hours/contact, manage members, glance at schedule.
+## Cilj
 
-## In scope (as shipped)
+Operativni kokpit: prijava, sati/kontakt, članovi, pogled na raspored.
 
-| Area | Routes / files | Behavior |
+## U opsegu (shipped)
+
+| Područje | Rute | Ponašanje |
 | --- | --- | --- |
-| Auth | `/login`, `/register`, password reset | Owner registers or logs in → `/stranica` |
-| Shell | `/stranica`, `StudioLayout.jsx` | Termini, Kalendar, Članovi, Analitika, Postavke, Online |
-| Home | `/stranica`, `StudioHome` | Site preview / studio home |
-| Members | `/stranica/clanovi` | Add, suspend, renew |
-| Settings | `/stranica/postavke` | Profile, hours, notifications |
+| Auth | `/login`, `/register` | → `/stranica` |
+| Shell | `/stranica` | Termini, Kalendar, Članovi, Analitika, Postavke |
+| Članovi | `/stranica/clanovi` | Dodaj, suspend, obnovi |
+| Postavke | `/stranica/postavke` | Profil, sati, obavijesti |
 
-## Out of scope (this phase — historical)
+## Izvan faze (povijesno)
 
-- Owner-created bookings / capacity writes → Phase 2  
-- Customer self-booking → Phase 3  
-- Forced `/postavljanje` after every login  
+Booking vlasnika → faza 2 · Self-book → faza 3 · forsirani wizard svaki login → ne
 
-## Measure
+## Mjeri / uči
 
-One real studio enters members here for a full week (not Excel / paper only).
+Jedan pravi studio unosi članove tjedan dana.  
+Ako ne unosi — problem je vrijednost praćenja članarina, ne landing dizajn.
 
-## Learn
+## Done
 
-If they do not enter members, the problem is value of membership tracking — not landing-page design.
-
-## Done when
-
-- [x] Owner can register / log in and land on `/stranica`
-- [x] Owner can set contact + working hours
-- [x] Owner can add / suspend / renew members
-- [x] Owner can see Termini / Kalendar
-
-## Notes for Cursor
-
-Prefer small UI fixes in `client/`. Reuse `tenantApi` / `membershipApi`. See [../16-current-status.md](../16-current-status.md) for the live surface.
+- [x] Login → `/stranica`  
+- [x] Kontakt + radno vrijeme  
+- [x] Članovi add/suspend/renew  
+- [x] Termini / Kalendar vidljivi  

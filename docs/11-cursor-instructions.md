@@ -1,58 +1,53 @@
-# Cursor development instructions
+# Upute za rad u Cursoru / razvoj
 
-## Active rule
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md)
 
-1. Read [16-current-status.md](16-current-status.md) and the relevant lean phase doc.  
-2. Prefer the smallest change that advances the active goal (currently Phase 5 payments UI unless told otherwise).  
-3. Backend may change when needed — document the gap in [lean/backend-status.md](lean/backend-status.md) and update [07-api-spec.md](07-api-spec.md) / [03-database.md](03-database.md).  
-4. Keep Croatian UI copy for owner/customer surfaces. Product brand in UI: **anyminutes**.
+---
 
-## Before coding
+## Aktivna pravila
 
-1. Confirm which area owns the task (lean phase or status-doc gap).  
-2. Inspect existing `client/` / `server/` code.
-3. Propose the smallest implementation.  
-4. Implement; add or extend a server test for booking/membership/staff/billing changes.  
-5. Smoke-check in the browser.  
-6. Report changed files.
+1. Pročitaj [16-current-status.md](16-current-status.md) i relevantnu lean fazu.  
+2. Najmanja promjena koja pomiče cilj (trenutno: faza 5 blagajna UI, osim ako korisnik kaže drugačije).  
+3. Backend smiješ dirati — zabilježi rupu u [lean/backend-status.md](lean/backend-status.md) i ažuriraj [07-api-spec.md](07-api-spec.md) / [03-database.md](03-database.md).  
+4. UI copy na **hrvatskom**. Brand: **anyminutes**.
 
-## Code principles
+---
 
-- Clear naming; thin pages; shared helpers when already used.  
-- RTK Query for HTTP (no Axios).  
-- Do not put authorization rules only in React — backend is source of truth.  
-- Avoid premature abstractions.  
-## Repo layout
+## Prije koda
 
-```text
-client/src/          # web SPA
-server/src/          # Express modules, models, utils
-server/test/         # API tests
-docs/
-  lean/              # phase learning docs
-scripts/             # dev, smoke
-.github/workflows/   # CI
-```
+1. Odredi područje (lean faza ili rupa u statusu).  
+2. Pogledaj postojeći `client/` / `server/` kod.  
+3. Predloži najmanju implementaciju.  
+4. Implementiraj; dodaj/proširi server test za booking / članarine / staff / billing.  
+5. Smoke u browseru.  
+6. Navedi izmijenjene datoteke.
 
-## Do not
+---
 
-- reintroduce waitlist / Stripe / marketplace without an explicit product ask  
-- turn on Online workouts without flipping `ONLINE_ENABLED` intentionally  
-- trust frontend for capacity authorization  
-- commit secrets (root `.env`)  
+## Principi koda
 
-## Task format
+- Jasna imena; tanke stranice; dijeljeni helperi samo ako već postoje  
+- HTTP preko RTK Query (bez Axiosa)  
+- Autorizacija na **serveru**, ne samo u Reactu  
+- Bez preranih apstrakcija  
+
+## Layout repoa
 
 ```text
-Goal:
-[one clear goal]
-
-Phase / area:
-[lean phase or status-doc item]
-
-Constraints:
-[APIs to reuse, files to avoid]
-
-Done when:
-[checkable outcomes]
+client/src/     # SPA
+server/src/     # Express moduli, modeli
+server/test/    # API testovi
+docs/           # ova dokumentacija
+docs/lean/      # faze učenja
+scripts/        # dev, smoke
+.github/        # CI
 ```
+
+---
+
+## Nemoj
+
+- Waitlist / Stripe / marketplace bez eksplicitnog zahtjeva  
+- Paliti Online bez namjernog `ONLINE_ENABLED`  
+- `seed:demo` na produkcijskoj bazi  
+- Commitati `.env` / tajne  

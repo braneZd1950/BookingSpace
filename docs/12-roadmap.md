@@ -1,53 +1,42 @@
 # Roadmap
 
-## Now
+Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md) · Lean: [lean/README.md](lean/README.md)
 
-See [16-current-status.md](16-current-status.md) and [lean/README.md](lean/README.md).
+---
 
-1. **Phase 5** — dedicated physical payments / till UI (API already exists)  
-2. Pilot learning — real studio usage of members + bookings  
-3. Turn on **Online workouts** when product is ready (`ONLINE_ENABLED`)  
-4. Keep docs (`07`, `03`, `08`, status) aligned when APIs change  
+## Sada
 
-## After pilot feedback
+1. **Faza 5** — blagajna / fizička naplata UI (API već postoji)  
+2. Pilot učenje — pravi studio koristi članove + termine  
+3. Online treninzi kad proizvod kaže (`ONLINE_ENABLED`)  
+4. Drži docs (`07`, `03`, `08`, status) usklađene s kodom  
 
-Do not start these before proving core booking usage.
+## Nakon povratne informacije s pilota
+
+Ne kreći prije dokazane svakodnevne upotrebe bookinga:
 
 - waitlist  
-- richer email / push notification templates  
-- recurring bookings  
-- better staff permissions  
-- attendance check-in  
-- membership reminders  
-- real subdomain / custom domain product  
-- Native Android / iOS apps (deferred; web-only for now)  
+- bogatiji mail / push predlošci  
+- ponavljajuće rezervacije  
+- bolja prava osoblja  
+- check-in dolaska  
+- podsjetnici na istekle članarine  
+- pravi subdomena / custom domena proizvod  
+- native Android / iOS (odgođeno)  
 
-## Later product expansion
+## Kasnije širenje proizvoda
 
-- online payments (Stripe)  
-- automatic membership renewal  
-- packages / promo codes  
-- advanced reports  
-- SMS  
-- calendar integrations  
+Stripe, automatska obnova, promo kodovi, napredni izvještaji, SMS, kalendar integracije.
 
-## Niche expansion (after sports pilot)
+## Niše (nakon sportskog pilota)
 
-Full prep: [15-niches-playroom-wellness.md](15-niches-playroom-wellness.md).
+Vidi [15-niches-playroom-wellness.md](15-niches-playroom-wellness.md):
 
-1. Book **without** membership when the partner/service allows it (playroom / wellness)  
-2. Niche-aware copy (klijenti / termini vs članovi / članarine)  
-3. Client picks a **service** before a slot (wellness)  
-4. Partner directory / search (ties to Decision 8)  
+1. Booking **bez** članarine kad partner dopušta  
+2. Copy po niši (klijenti vs članovi)  
+3. Odabir usluge prije slota (wellness)  
+4. Direktorij partnera  
 
-## Far later
+## Daleko
 
-- custom domains / white-label  
-- multiple locations  
-- advanced staff scheduling  
-- resource management  
-- marketplace / cross-studio discovery  
-
-## Already shipped (do not re-plan as “later”)
-
-Owner + member booking, trainers, PWA/Web Push, privacy consent, platform admin + SaaS billing emails, site setup wizard, CI. Details in [16-current-status.md](16-current-status.md).
+White-label, više lokacija, napredni raspored osoblja, marketplace.

@@ -1,25 +1,26 @@
-.register {
+/* Atelier registracija — isti jezik kao LoginPage */
+.register--atelier {
   --reg-ink: var(--fg);
-  --reg-paper: color-mix(in srgb, var(--brand-soft) 35%, var(--bg));
-  --reg-panel: color-mix(in srgb, var(--surface) 88%, transparent);
-  --reg-line: color-mix(in srgb, var(--brand) 14%, var(--line));
+  --reg-mist: color-mix(in srgb, var(--brand-soft) 70%, var(--bg));
+  --reg-edge: color-mix(in srgb, var(--brand) 18%, transparent);
   position: relative;
   isolation: isolate;
-  width: 100%;
+  display: grid;
+  min-height: calc(100dvh - 4.5rem);
   margin: 0;
-  padding: 0 0 clamp(3rem, 7vw, 5rem);
+  padding: 0;
   overflow: clip;
   color: var(--reg-ink);
   background:
     linear-gradient(
-      180deg,
+      125deg,
       color-mix(in srgb, var(--brand-soft) 55%, var(--bg)) 0%,
-      var(--reg-paper) 18rem,
+      var(--reg-mist) 42%,
       var(--bg) 100%
     );
 }
 
-.register__atmosphere {
+.register--atelier .register__atmosphere {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -27,171 +28,450 @@
   overflow: hidden;
 }
 
-.register__orb {
+.register--atelier .register__shaft {
+  position: absolute;
+  top: -20%;
+  left: 18%;
+  width: min(22rem, 42vw);
+  height: 140%;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand) 16%, transparent),
+      transparent 55%,
+      color-mix(in srgb, var(--accent) 10%, transparent)
+    );
+  transform: skewX(-12deg);
+  filter: blur(2px);
+  animation: register-shaft 16s ease-in-out infinite alternate;
+}
+
+.register--atelier .register__orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(8px);
-  animation: register-orb 14s ease-in-out infinite alternate;
+  filter: blur(10px);
 }
 
-.register__orb--a {
-  top: -8rem;
+.register--atelier .register__orb--a {
+  top: -6rem;
+  right: -4rem;
+  width: min(28rem, 55vw);
+  height: min(28rem, 55vw);
+  background:
+    radial-gradient(circle at 40% 40%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 68%);
+  animation: register-drift 18s ease-in-out infinite alternate;
+}
+
+.register--atelier .register__orb--b {
+  bottom: -8rem;
   left: -6rem;
-  width: min(34rem, 70vw);
-  height: min(34rem, 70vw);
+  width: min(24rem, 50vw);
+  height: min(24rem, 50vw);
   background:
-    radial-gradient(circle at 40% 40%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 68%);
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%);
+  animation: register-drift 14s ease-in-out infinite alternate-reverse;
 }
 
-.register__orb--b {
-  top: 12rem;
-  right: -10rem;
-  width: min(28rem, 60vw);
-  height: min(28rem, 60vw);
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
-  animation-delay: -4s;
-}
-
-.register__grain {
+.register--atelier .register__grain {
   position: absolute;
   inset: 0;
-  opacity: 0.45;
+  opacity: 0.5;
   background:
-    repeating-linear-gradient(
-      -22deg,
-      transparent,
-      transparent 10px,
-      rgb(19 40 36 / 2.4%) 10px,
-      rgb(19 40 36 / 2.4%) 11px
-    );
+    radial-gradient(circle at 1px 1px, rgb(16 44 47 / 10%) 1px, transparent 0) 0 0 / 18px 18px;
 }
 
-.register__watermark {
-  position: absolute;
-  top: 4.5rem;
-  right: -2%;
-  color: color-mix(in srgb, var(--brand) 9%, var(--bg));
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(5rem, 18vw, 14rem);
-  font-weight: 640;
-  letter-spacing: -0.06em;
-  line-height: 0.8;
-  white-space: nowrap;
-  user-select: none;
-  transform: rotate(-8deg);
-  animation: register-mark 18s ease-in-out infinite alternate;
-}
-
-.register__shell {
+.register--atelier .register__layout {
   position: relative;
   z-index: 1;
-  width: min(68rem, calc(100% - 2.4rem));
+  display: grid;
+  grid-template-columns: minmax(0, 11.5rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  width: min(58rem, calc(100% - 2.4rem));
   margin: 0 auto;
-  padding-top: clamp(2.4rem, 6vh, 4rem);
+  padding: clamp(2rem, 6vh, 4.2rem) 0 clamp(2.5rem, 6vh, 4rem);
+  align-items: stretch;
 }
 
-.register__intro {
-  width: min(36rem, 100%);
-  margin-bottom: 1.6rem;
-  animation: register-rise 0.85s ease both;
+.register--atelier.register--partner .register__layout,
+.register--atelier.register--civilian .register__layout {
+  width: min(68rem, calc(100% - 2.4rem));
 }
 
-.register__brand {
-  margin: 0 0 0.85rem;
+.register--atelier .register__spine {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0 0.2rem;
+  border-right: 1px solid var(--reg-edge);
+  animation: register-rise 0.8s ease both;
+}
+
+.register--atelier .register__spine-mark {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin: 0;
   color: var(--brand-strong);
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
   font-weight: 640;
-  letter-spacing: -0.045em;
-  line-height: 0.92;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.register__brand::after {
+.register--atelier .register__spine-mark::after {
   content: '';
   display: block;
-  width: 3.2rem;
-  height: 0.22rem;
-  margin-top: 0.55rem;
+  width: 0.2rem;
+  height: 3.4rem;
+  margin-top: 0.85rem;
+  margin-inline: auto;
   border-radius: 999px;
   background: var(--accent);
-  transform-origin: left center;
-  animation: register-underline 0.9s 0.25s ease both;
+  transform-origin: top center;
+  animation: register-rule 1s 0.2s ease both;
 }
 
-.register h1 {
-  margin: 0 0 0.7rem;
-  max-width: 14ch;
+.register--atelier .register__stage {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  width: min(34rem, 100%);
+  animation: register-rise 0.9s 0.08s ease both;
+}
+
+.register--atelier.register--choose .register__stage {
+  align-content: center;
+  width: min(36rem, 100%);
+}
+
+.register--atelier.register--partner .register__stage,
+.register--atelier.register--civilian .register__stage {
+  width: min(42rem, 100%);
+}
+
+.register--atelier .register__intro {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0;
+}
+
+.register--atelier .register__back {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 0.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand-strong);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+.register--atelier .register__back:hover {
+  color: var(--accent);
+}
+
+.register--atelier .register__kicker {
+  margin: 0;
+  color: var(--brand-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.register--atelier h1 {
+  margin: 0;
+  max-width: 16ch;
   font-family: Fraunces, 'Source Serif 4', Georgia, serif;
-  font-size: clamp(1.55rem, 3.6vw, 2.15rem);
+  font-size: clamp(2.05rem, 5.5vw, 3.1rem);
   font-weight: 650;
   font-optical-sizing: auto;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
 }
 
-.register__lead,
-.register__login {
+.register--atelier .register__lead {
   margin: 0;
-  color: var(--muted);
-  line-height: 1.55;
+  max-width: 36ch;
+  color: color-mix(in srgb, var(--reg-ink) 76%, var(--bg));
+  font-size: 1.05rem;
+  line-height: 1.5;
 }
 
-.register__lead {
-  max-width: 38rem;
-  font-size: 1.02rem;
+.register--atelier .register__paths {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--reg-edge);
+  animation: register-rise 0.85s 0.1s ease both;
 }
 
-.register__google {
-  margin: 0.2rem 0 0.6rem;
+.register--atelier .register__path {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  margin: 0;
+  padding: 1.15rem 0 1.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--reg-edge);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.register--atelier .register__path:hover {
+  background: color-mix(in srgb, var(--brand-soft) 45%, transparent);
+}
+
+.register--atelier .register__path:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.register--atelier .register__path-kicker {
+  color: var(--brand-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.register--atelier .register__path-title {
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.register--atelier .register__path-note {
+  max-width: 34ch;
+  color: color-mix(in srgb, var(--reg-ink) 72%, var(--bg));
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.register--atelier .register__path-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin-top: 0.65rem;
+  padding: 0.7rem 1.05rem;
+  border: 0;
+  border-radius: 0.2rem;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.register--atelier .register__path:hover .register__path-cta {
+  background: var(--brand-strong);
+  transform: translateY(-1px);
+}
+
+.register--atelier .register__google {
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--reg-edge);
   animation: register-rise 0.85s 0.08s ease both;
 }
 
-.register__google-note {
+.register--atelier .register__google-note {
   margin: 0.65rem 0 0;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--reg-ink) 70%, var(--bg));
   font-size: 0.9rem;
   line-height: 1.45;
 }
 
-.register__google-error {
+.register--atelier .register__google-error {
   margin: 0.55rem 0 0;
   color: var(--full-ink, #a82e2e);
   font-size: 0.9rem;
   font-weight: 650;
 }
 
-.register__desk {
-  margin-top: 0.4rem;
+.register--atelier .register__desk {
+  margin-top: 0;
   animation: register-rise 0.9s 0.12s ease both;
 }
 
-.register__login {
-  margin-top: 1.35rem;
-  font-size: 0.95rem;
-  animation: register-rise 0.9s 0.2s ease both;
+.register--atelier .register__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.65rem 1.25rem;
+  margin: 0;
+  padding-top: 0.25rem;
+  color: color-mix(in srgb, var(--reg-ink) 70%, var(--bg));
+  font-size: 0.92rem;
+  animation: register-rise 0.9s 0.16s ease both;
 }
 
-.register__login a {
+.register--atelier .register__links a {
   color: var(--brand-strong);
   font-weight: 700;
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.18em;
 }
 
-/* Shared auth pages still use .register without atelier shell */
-.register:not(:has(.register__shell)) {
+@keyframes register-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.85rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes register-rule {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes register-rule-x {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes register-shaft {
+  from {
+    opacity: 0.55;
+    transform: skewX(-12deg) translateX(0);
+  }
+
+  to {
+    opacity: 0.9;
+    transform: skewX(-12deg) translateX(3%);
+  }
+}
+
+@keyframes register-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-2%, 3%, 0) scale(1.05);
+  }
+}
+
+@media (max-width: 720px) {
+  .register--atelier .register__layout {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+
+  .register--atelier .register__spine {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 0.85rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--reg-edge);
+  }
+
+  .register--atelier .register__spine-mark {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .register--atelier .register__spine-mark::after {
+    display: inline-block;
+    width: 2.4rem;
+    height: 0.2rem;
+    margin-top: 0;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+    transform-origin: left center;
+    animation-name: register-rule-x;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register--atelier .register__spine,
+  .register--atelier .register__stage,
+  .register--atelier .register__paths,
+  .register--atelier .register__links,
+  .register--atelier .register__desk,
+  .register--atelier .register__google,
+  .register--atelier .register__spine-mark::after,
+  .register--atelier .register__shaft,
+  .register--atelier .register__orb,
+  .register--atelier .register__path:hover .register__path-cta {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Jednostavne auth stranice (forgot/reset) bez atelier shella */
+.register:not(.register--atelier) {
   width: min(26rem, calc(100% - 2.5rem));
   margin: 0 auto;
   padding: 3.2rem 0 3.5rem;
   background: transparent;
+  color: var(--fg);
 }
 
-.register:not(:has(.register__shell)) h1 {
+.register:not(.register--atelier) h1 {
+  margin: 0;
   max-width: none;
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: clamp(2rem, 5vw, 2.7rem);
   font-weight: 640;
+}
+
+.register:not(.register--atelier) .register__lead,
+.register:not(.register--atelier) .register__login {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.register:not(.register--atelier) .register__lead {
+  margin-top: 0.7rem;
+  max-width: 38rem;
+  font-size: 1.02rem;
+}
+
+.register:not(.register--atelier) .register__login {
+  margin-top: 1.35rem;
+  font-size: 0.95rem;
+}
+
+.register:not(.register--atelier) .register__login a {
+  color: var(--brand-strong);
+  font-weight: 700;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
 }
 
 .register__form {
@@ -200,14 +480,14 @@
   margin-top: 1.6rem;
 }
 
-.register label {
+.register:not(.register--atelier) label {
   display: grid;
   gap: 0.35rem;
   font-size: 0.92rem;
   font-weight: 600;
 }
 
-.register input {
+.register:not(.register--atelier) input {
   width: 100%;
   padding: 0.75rem 0.8rem;
   border: 1px solid var(--line);
@@ -218,7 +498,7 @@
   font-weight: 500;
 }
 
-.register input:focus {
+.register:not(.register--atelier) input:focus {
   outline: 2px solid var(--brand);
   outline-offset: 1px;
 }
@@ -298,57 +578,4 @@
 .register__submit:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-}
-
-@keyframes register-rise {
-  from {
-    opacity: 0;
-    transform: translateY(0.9rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes register-underline {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes register-orb {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  to {
-    transform: translate3d(2%, 3%, 0) scale(1.06);
-  }
-}
-
-@keyframes register-mark {
-  from {
-    transform: rotate(-8deg) translate3d(0, 0, 0);
-  }
-
-  to {
-    transform: rotate(-6deg) translate3d(-1.5%, 1%, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .register__intro,
-  .register__desk,
-  .register__login,
-  .register__brand::after,
-  .register__orb,
-  .register__watermark {
-    animation: none;
-  }
 }

@@ -1,45 +1,38 @@
-# MVP build plan (lean)
+# MVP plan (lean)
 
-> Phase map: [lean/README.md](lean/README.md)  
-> Shipped snapshot: [16-current-status.md](16-current-status.md)  
-> Backend policy: [lean/backend-status.md](lean/backend-status.md)
+Indeks: [README.md](README.md) · Faze: [lean/README.md](lean/README.md) · Status: [16-current-status.md](16-current-status.md)
 
-## Lean phases
+---
 
-| Phase | Doc | Status |
+## Faze
+
+| Faza | Dokument | Stanje |
 | --- | --- | --- |
-| 1. One studio, one day | [phase-01-frontend](lean/phase-01-frontend.md) | **Done** |
-| 2. Real booking (owner) | [phase-02-frontend](lean/phase-02-frontend.md) | **Done** |
-| 3. Member books alone | [phase-03-frontend](lean/phase-03-frontend.md) | **Done** |
-| 4. Public studio page | [phase-04-frontend](lean/phase-04-frontend.md) | **Mostly done** |
-| 5. Payments and plans | [phase-05-frontend](lean/phase-05-frontend.md) | **Next** |
+| 1. Jedan studio, jedan dan | [phase-01](lean/phase-01-frontend.md) | **Gotovo** |
+| 2. Booking (vlasnik) | [phase-02](lean/phase-02-frontend.md) | **Gotovo** |
+| 3. Self-book (član) | [phase-03](lean/phase-03-frontend.md) | **Gotovo** |
+| 4. Javna stranica | [phase-04](lean/phase-04-frontend.md) | **Uglavnom** |
+| 5. Naplata / blagajna | [phase-05](lean/phase-05-frontend.md) | **Sljedeće** |
 
-## Acceptance for market pilot
+---
 
-A pilot is ready to *learn* when:
+## Acceptance za tržišni pilot
 
-1. Owner can register and open a studio. ✅  
-2. Owner can set contact + working hours. ✅  
-3. Owner can add / suspend / renew members. ✅  
-4. Owner can see open days (Termini / Kalendar). ✅  
-5. Owner can book and cancel sessions in the app. ✅  
-6. Member can self-book / cancel. ✅  
-7. At least one real studio uses members + bookings for a week. *(measure)*  
-8. *(Phase 5)* Owner can record physical payments in a clear till UI. *(remaining)*
+Pilot je spreman za učenje kad:
 
-Not required for first learning: real subdomain DNS, Stripe, marketplace, Online workouts flag on.
+1. ✅ Vlasnik registrira studio  
+2. ✅ Postavi kontakt i radno vrijeme  
+3. ✅ Dodaje / suspendira / obnavlja članove  
+4. ✅ Vidi Termini / Kalendar  
+5. ✅ Rezervira i otkazuje u app-u  
+6. ✅ Član sam rezervira / otkazuje  
+7. *(mjeriti)* Jedan pravi studio koristi članove + termine tjedan dana  
+8. *(faza 5)* Blagajna UI za fizičke uplate  
 
-## Deferred vs old checklist
+**Nije potrebno** za prvo učenje: pravi DNS, Stripe, marketplace, Online flag ON.
 
-| Old idea | Home now |
-| --- | --- |
-| Auth, tenant create | Done |
-| Multi-tenancy / hostname resolver | Deferred — slug routes are live |
-| Personalized website wizard | Mostly done (Phase 4) |
-| Services, schedules, booking engine UI | Done (Phases 2–3) |
-| Memberships + physical payments UI | Members done; till UI = Phase 5 |
-| Trainers, push, consent, platform admin | Shipped (see status doc) |
+---
 
-## Success metrics
+## Metrika uspjeha
 
-Primary metric remains **real completed bookings**. Phase 1 metric (members entered in-app) and Phase 2+ booking metrics apply to the pilot studio.
+Glavna metrika: **stvarno odrađene / potvrđene rezervacije** u pravom studiju.

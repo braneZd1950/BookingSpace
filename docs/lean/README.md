@@ -1,44 +1,41 @@
-# Lean launch — documentation by phase
+# Lean faze — učenje po koracima
 
-anyminutes follows **Build → Measure → Learn**. The five launch phases remain the learning narrative. **Phases 1–4 are implemented** (including gallery CMS); Phase 5 has a **prep page** (`/stranica/placanja`) — full till UI is still the main remaining lean gap.
+Indeks: [../README.md](../README.md) · Status: [../16-current-status.md](../16-current-status.md)
 
-Backend is **no longer frozen** — see [backend-status.md](backend-status.md). Prefer documenting API gaps before expanding the server; ship the smallest change that unblocks learning.
+**Build → Measure → Learn.** Faze 1–4 su u proizvodu. Faza 5 (blagajna UI) je glavni preostali fokus.
 
-Product snapshot: [../16-current-status.md](../16-current-status.md).
+Backend **nije zamrznut** — vidi [backend-status.md](backend-status.md). Preferiraj najmanju promjenu.
 
-## How to use these docs
+---
 
-| If you are… | Read |
+## Kako koristiti
+
+| Ako… | Čitaj |
 | --- | --- |
-| Checking what is already shipped | [../16-current-status.md](../16-current-status.md) |
-| Working on payments / till UI | [phase-05](phase-05-frontend.md) |
-| Touching booking UI | [phase-02](phase-02-frontend.md) / [phase-03](phase-03-frontend.md) |
-| Public studio page | [phase-04](phase-04-frontend.md) |
-| Changing `server/` | [backend-status](backend-status.md) + [../07-api-spec.md](../07-api-spec.md) |
+| Što je već gotovo | [../16-current-status.md](../16-current-status.md) |
+| Blagajna / naplata | [phase-05-frontend.md](phase-05-frontend.md) |
+| Booking UI | [phase-02](phase-02-frontend.md) / [phase-03](phase-03-frontend.md) |
+| Javna stranica | [phase-04-frontend.md](phase-04-frontend.md) |
+| Diram `server/` | [backend-status.md](backend-status.md) + [../07-api-spec.md](../07-api-spec.md) |
 
-## Phase map
+---
 
-| Phase | Title | Status | Notes |
-| --- | --- | --- | --- |
-| 1 | One studio, one day | **Done** | Auth, settings, members, schedule |
-| 2 | Real booking (owner) | **Done** | Termini create / cancel |
-| 3 | Member books alone | **Done** | `/s/:slug/termini` |
-| 4 | Public studio page | **Mostly done** | Wizard + SiteFrame; real DNS later |
-| 5 | Payments & plans | **Next** | Plans/renew exist; dedicated cash/card entry UI missing |
+## Mapa faza
 
-## What we deliberately skip until later
+| Faza | Naslov | Stanje |
+| --- | --- | --- |
+| 1 | Jedan studio, jedan dan | **Gotovo** |
+| 2 | Booking (vlasnik) | **Gotovo** |
+| 3 | Član rezervira sam | **Gotovo** |
+| 4 | Javna stranica | **Uglavnom** (DNS kasnije) |
+| 5 | Naplata i paketi | **Sljedeće** |
 
-- Subdomains / custom domains as a product
-- Waitlist
-- Stripe / online payments
-- Marketplace / cross-studio discovery
-- Online workouts in the live UI (`ONLINE_ENABLED` stays false until product says go)
-- Playroom / wellness booking models (prep: [../15-niches-playroom-wellness.md](../15-niches-playroom-wellness.md)) — **sports venues first**
+Detalji: `phase-01` … `phase-05` u ovom folderu.
 
-## In-app phase list
+---
 
-`client/src/pages/owner/launchPhases.js` mirrors these statuses. The `/stranica/plan` route is **not mounted** — keep the JS file aligned with this README when statuses change; remount the page only if product wants it visible again.
+## Namjerno kasnije
 
-## Related reference docs
+Subdomena, waitlist, Stripe, marketplace, Online UI, igraonica/wellness modeli.
 
-Full specs under `docs/` (`01`–`16`). Prefer [../16-current-status.md](../16-current-status.md) and this folder for *what to build next*; treat `02`–`07`, `10` as living contracts (updated with the code).
+U app-u: `client/src/pages/owner/launchPhases.js` prati statuse. Ruta `/stranica/plan` trenutno nije montirana.

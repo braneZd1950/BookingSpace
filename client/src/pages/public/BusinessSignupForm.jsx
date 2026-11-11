@@ -639,9 +639,10 @@ export default function BusinessSignupForm({ className = '' }) {
           </label>
 
           <fieldset className="biz-niches">
-            <legend>Vrsta poslovanja</legend>
+            <legend>Vrsta poslovanja (niša)</legend>
             <p className="biz-form__hint">
-              Odaberite nišu — od toga ovise predložak, raspored i preporučene boje.
+              Obavezno za partnere — studio/treninzi, pojedinačne usluge, igraonica ili
+              nešto drugo. Od toga ovise predložak, raspored i preporučene boje.
             </p>
             <div className="biz-niches__grid" role="radiogroup" aria-label="Vrsta poslovanja">
               {signupNiches.map((item) => (
@@ -757,11 +758,26 @@ export default function BusinessSignupForm({ className = '' }) {
       {step === 1 ? (
         <form className="biz-form__panel biz-form__atelier" onSubmit={goLegal} noValidate>
           <div className="biz-form__atelier-main">
+            <header className="biz-form__atelier-intro">
+              <p className="biz-form__kicker">
+                Postavljanje · 2/3 · {nicheMeta.name}
+              </p>
+              <h2 className="biz-form__atelier-title">Izgled stranice</h2>
+              <p className="biz-form__hint">
+                Odaberite predložak, raspored i boju za
+                {' '}
+                {values.businessName.trim() || 'vaš prostor'}
+                . Sve kasnije možete promijeniti.
+              </p>
+            </header>
+
             <div className="biz-form__block">
               <div className="biz-form__block-title">
                 <h3>Predložak</h3>
                 <p className="biz-form__hint">
-                  Predlošci za „{nicheMeta.name}” su prvi. Kasnije sve možete mijenjati.
+                  Predložak određuje osnovni izgled vaše stranice. Preporučeni za
+                  {' '}
+                  „{nicheMeta.name}” su prvi.
                 </p>
               </div>
               <div className="biz-templates" role="radiogroup" aria-label="Predložak stranice">
@@ -776,7 +792,9 @@ export default function BusinessSignupForm({ className = '' }) {
                       className={values.template === item.id ? 'biz-template is-selected' : 'biz-template'}
                       onClick={() => pickTemplate(item.id)}
                     >
-                      {matched ? <span className="biz-template__tag">Za vas</span> : null}
+                      {matched ? (
+                        <span className="biz-template__tag">Preporučeno za vas</span>
+                      ) : null}
                       <LayoutSketch
                         id={item.layout}
                         primary={chosen.theme.primaryColor}
@@ -795,7 +813,7 @@ export default function BusinessSignupForm({ className = '' }) {
               <div className="biz-form__block-title">
                 <h3>Raspored</h3>
                 <p className="biz-form__hint">
-                  Header je uvijek tu. Odaberite kako se sekcije slažu ispod njega.
+                  Raspored određuje gdje stoje termini, sati i kontakt.
                 </p>
               </div>
               <div className="biz-layouts" role="radiogroup" aria-label="Raspored stranice">
@@ -826,7 +844,9 @@ export default function BusinessSignupForm({ className = '' }) {
                 <div className="biz-form__block-title">
                   <h3>Boja</h3>
                   <p className="biz-form__hint">
-                    Prvih pet je usklađeno s „{nicheMeta.name}”. Ostale su dostupne u traci.
+                    Odabrano: {chosen.name}. Prve boje usklađene su s predloškom
+                    {' '}
+                    „{nicheMeta.name}”.
                   </p>
                 </div>
                 <span
@@ -846,10 +866,17 @@ export default function BusinessSignupForm({ className = '' }) {
 
             <div className="biz-form__actions">
               <button className="biz-form__back" type="button" onClick={() => setStep(0)}>
-                Natrag
+                ← Podaci računa
+              </button>
+              <button
+                className="biz-form__skip"
+                type="button"
+                onClick={goLegal}
+              >
+                Preskoči za sada
               </button>
               <button className="biz-form__submit" type="submit">
-                Nastavite na pravila
+                Dalje
               </button>
             </div>
           </div>
@@ -860,7 +887,13 @@ export default function BusinessSignupForm({ className = '' }) {
               <div className="biz-stage__frame">
                 <div className="biz-stage__top">
                   <span className="biz-stage__live">Uživo</span>
-                  <span className="biz-stage__url">{studioHost(slug)}</span>
+                  <span className="biz-stage__url">
+                    {studioHost(slug)}
+                    {' · '}
+                    {nicheMeta.name}
+                    {' · '}
+                    {layout.name}
+                  </span>
                 </div>
 
                 <article

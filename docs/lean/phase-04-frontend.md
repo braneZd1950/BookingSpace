@@ -1,40 +1,33 @@
-# Phase 4 — Frontend: Public studio page
+# Faza 4 — Javna stranica studija
 
-**Status:** mostly done (wizard + preview shipped; real DNS later)  
-**Hypothesis:** A simple public page attracts new clients only after booking already works.  
-**Backend:** uploads / site PATCH exist; expand SEO/social APIs only if product needs them.
+**Stanje:** uglavnom gotovo (pravi DNS kasnije)  
+**Hipoteza:** Jednostavna stranica + CTA dovoljni su za ulaz u termine.  
+**Detalji:** [../06-tenant-website.md](../06-tenant-website.md)
 
-## Goal
+---
 
-Provider gets `{slug}.booking.hr` address in the UI and a setup wizard (`/postavljanje`) for template, layout (header / bar / sidebar), colors, copy, sections, and images. DNS for real subdomains can follow later; slug + host display ship in the frontend now.
+## Cilj
 
-## In scope (as shipped)
+Wizard + preview + `/s/:slug` kao javni ulaz u booking.
 
-| Area | Behavior |
+## U opsegu (shipped)
+
+| Područje | Ponašanje |
 | --- | --- |
-| Setup wizard | `/postavljanje` — template, layout, palette, content |
-| Preview | Owner home + member home via `SiteFrame` |
-| CTA | Links into member book flow `/s/:slug/termini` |
+| `/postavljanje` | Predložak, layout, boje, copy, slike |
+| Preview | Owner / member početna |
+| CTA | → `/s/:slug/termini` |
 
-## Explicitly deferred
+## Izvan faze
 
-- Subdomain / custom domain product (real DNS)
-- Full gallery CMS as a dedicated owner nav item
-- Marketplace discovery
+Custom domena / DNS proizvod · marketplace · page builder
 
-See also [`../06-tenant-website.md`](../06-tenant-website.md).
+## Mjeri / uči
 
-## Measure
+Dolaze li članovi na termine preko `/s/:slug` ili samo linkom od vlasnika.
 
-New enquiries or registrations that arrive via the page.
+## Done
 
-## Learn
-
-Without proof from Phases 2–3, the page is decoration — not product.
-
-## Done when
-
-- [x] Public / preview page is readable on mobile
-- [x] CTA reaches a working book flow
-- [ ] Real `{slug}` hostname DNS product (optional / later)
-- [ ] No subdomain settings in the owner UI
+- [x] Wizard + preview  
+- [x] Javni slug radi  
+- [ ] Pravi DNS (kasnije)  
