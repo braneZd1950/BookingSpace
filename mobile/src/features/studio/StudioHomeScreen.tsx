@@ -10,19 +10,20 @@ import {
   View,
 } from 'react-native';
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
+import { useOwnerLogout } from '../../lib/useOwnerLogout.js';
 import { Ionicons } from '@expo/vector-icons';
-import { logout } from '../../api/auth.js';
 import { getMyTenants, updateTenant } from '../../api/tenants.js';
-import { studioChromeStyles as chrome } from './studioChrome.js';
-import { studioUiStyles as ui } from './studioUiStyles.js';
-import StudioScreenShell from './StudioScreenShell';
 import { findSignupNiche } from '../auth/signupDefaults.js';
+import AppBrandBar from './AppBrandBar';
 import StudioAnalyticsScreen from './StudioAnalyticsScreen';
 import StudioBookingsScreen from './StudioBookingsScreen';
+import StudioBoot from './StudioBoot';
 import StudioCalendarScreen from './StudioCalendarScreen';
 import StudioMembersScreen from './StudioMembersScreen';
+import StudioScreenShell from './StudioScreenShell';
 import StudioServicesScreen from './StudioServicesScreen';
 import StudioSettingsScreen from './StudioSettingsScreen';
+import { studioUiStyles as ui } from './studioUiStyles.js';
 
 type StudioHomeScreenProps = {
   fallbackName?: string;
@@ -43,39 +44,48 @@ type StudioInfo = {
   city?: string;
 };
 
+type PanelId =
+  | 'home'
+  | 'bookings'
+  | 'calendar'
+  | 'members'
+  | 'services'
+  | 'analytics'
+  | 'settings';
+
 const NAV_ITEMS = [
   {
-    id: 'bookings',
+    id: 'bookings' as const,
     label: 'Termini',
     note: 'Raspored i rezervacije',
     icon: 'calendar-outline' as const,
   },
   {
-    id: 'calendar',
+    id: 'calendar' as const,
     label: 'Kalendar',
     note: 'Zauzetost po mjesecu',
     icon: 'grid-outline' as const,
   },
   {
-    id: 'members',
+    id: 'members' as const,
     label: 'Članovi',
     note: 'Članarine i klijenti',
     icon: 'people-outline' as const,
   },
   {
-    id: 'services',
+    id: 'services' as const,
     label: 'Usluge',
     note: 'Ponuda i trajanja',
     icon: 'list-outline' as const,
   },
   {
-    id: 'analytics',
+    id: 'analytics' as const,
     label: 'Analitika',
     note: 'Uvidi i članarine',
     icon: 'stats-chart-outline' as const,
   },
   {
-    id: 'settings',
+    id: 'settings' as const,
     label: 'Postavke',
     note: 'Račun i obavijesti',
     icon: 'settings-outline' as const,
@@ -90,20 +100,12 @@ export default function StudioHomeScreen({
   fallbackEmail,
   onLogout,
 }: StudioHomeScreenProps) {
+  const { loggingOut, handleLogout } = useOwnerLogout(onLogout);
   const [studio, setStudio] = useState<StudioInfo | null>(
     fallbackName ? { name: fallbackName, email: fallbackEmail } : null,
   );
   const [loading, setLoading] = useState(true);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [panel, setPanel] = useState<
-    | 'home'
-    | 'bookings'
-    | 'calendar'
-    | 'members'
-    | 'services'
-    | 'analytics'
-    | 'settings'
-  >('home');
+  const [panel, setPanel] = useState<PanelId>('home');
   const [hint, setHint] = useState('');
   const [editingPhone, setEditingPhone] = useState(false);
   const [phoneDraft, setPhoneDraft] = useState('');
@@ -147,13 +149,7 @@ export default function StudioHomeScreen({
     };
   }, [fallbackName, fallbackEmail]);
 
-  if (loading) {
-    return (
-      <View style={chrome.boot}>
-        <ActivityIndicator color="#5EEAD4" />
-      </View>
-    );
-  }
+  if (loading) return <StudioBoot />;
 
   const studioName = studio?.name || fallbackName || 'Studio';
   const host = studio?.slug ? `${studio.slug}.booking.hr` : null;
@@ -165,18 +161,7 @@ export default function StudioHomeScreen({
         : null;
   const email = studio?.email || fallbackEmail || null;
   const phone = studio?.phone?.trim() || null;
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } catch {
-      /* lokalni logout */
-    } finally {
-      setLoggingOut(false);
-      onLogout?.();
-    }
-  }
+  const goHome = () => setPanel('home');
 
   function stopPhoneAnim() {
     phoneAnimRef.current?.stop();
@@ -211,7 +196,6 @@ export default function StudioHomeScreen({
       phoneAnimRef.current = anim;
       anim.start(({ finished }) => {
         if (finished) {
-          // Tipkovnica tek nakon otvaranja — ne prekida animaciju.
           setTimeout(() => phoneInputRef.current?.focus(), 60);
         }
       });
@@ -268,35 +252,11 @@ export default function StudioHomeScreen({
     }
   }
 
-  function onNavPress(id: string, label: string) {
-    if (id === 'bookings') {
+  function onNavPress(id: PanelId | string, label: string) {
+    const known = NAV_ITEMS.some((item) => item.id === id);
+    if (known) {
       setHint('');
-      setPanel('bookings');
-      return;
-    }
-    if (id === 'members') {
-      setHint('');
-      setPanel('members');
-      return;
-    }
-    if (id === 'services') {
-      setHint('');
-      setPanel('services');
-      return;
-    }
-    if (id === 'analytics') {
-      setHint('');
-      setPanel('analytics');
-      return;
-    }
-    if (id === 'calendar') {
-      setHint('');
-      setPanel('calendar');
-      return;
-    }
-    if (id === 'settings') {
-      setHint('');
-      setPanel('settings');
+      setPanel(id as PanelId);
       return;
     }
     setHint(`${label} stiže u sljedećem koraku.`);
@@ -308,269 +268,191 @@ export default function StudioHomeScreen({
         tenantId={studio?.id}
         studioName={studioName}
         siteHost={host}
-        onBack={() => setPanel('home')}
+        onBack={goHome}
       />
     );
   }
 
-  if (panel === 'members') {
-    return (
-      <StudioMembersScreen
-        tenantId={studio?.id}
-        studioName={studioName}
-        onBack={() => setPanel('home')}
-      />
-    );
-  }
-
-  if (panel === 'services') {
-    return (
-      <StudioServicesScreen
-        tenantId={studio?.id}
-        studioName={studioName}
-        onBack={() => setPanel('home')}
-      />
-    );
-  }
-
-  if (panel === 'analytics') {
-    return (
-      <StudioAnalyticsScreen
-        tenantId={studio?.id}
-        studioName={studioName}
-        onBack={() => setPanel('home')}
-      />
-    );
-  }
-
-  if (panel === 'calendar') {
-    return (
-      <StudioCalendarScreen
-        tenantId={studio?.id}
-        studioName={studioName}
-        onBack={() => setPanel('home')}
-      />
-    );
-  }
-
-  if (panel === 'settings') {
-    return (
-      <StudioSettingsScreen
-        tenantId={studio?.id}
-        studioName={studioName}
-        onBack={() => setPanel('home')}
-        onLogout={handleLogout}
-        onStudioUpdated={(patch) => {
-          setStudio((current) =>
-            current
-              ? {
-                  ...current,
-                  ...patch,
-                  name: patch.name || current.name,
-                }
-              : current,
-          );
-        }}
-      />
-    );
+  if (panel !== 'home') {
+    const shared = {
+      tenantId: studio?.id,
+      studioName,
+      onBack: goHome,
+    };
+    if (panel === 'members') return <StudioMembersScreen {...shared} />;
+    if (panel === 'services') return <StudioServicesScreen {...shared} />;
+    if (panel === 'analytics') return <StudioAnalyticsScreen {...shared} />;
+    if (panel === 'calendar') return <StudioCalendarScreen {...shared} />;
+    if (panel === 'settings') {
+      return (
+        <StudioSettingsScreen
+          {...shared}
+          onLogout={handleLogout}
+          onStudioUpdated={(patch) => {
+            setStudio((current) =>
+              current
+                ? {
+                    ...current,
+                    ...patch,
+                    name: patch.name || current.name,
+                  }
+                : current,
+            );
+          }}
+        />
+      );
+    }
   }
 
   return (
     <StudioScreenShell
       title={studioName}
       lead="Sve za vaš studio na jednom mjestu — termini, kalendar, članovi, usluge i analitika."
-      topBar={
-        <View style={styles.topBar}>
-          <Text style={styles.brand}>anyminutes</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Odjava"
-            onPress={handleLogout}
-            disabled={loggingOut}
-            hitSlop={10}
-            style={({ pressed }) => [styles.logoutBtn, pressed && ui.pressed]}
-          >
-            {loggingOut ? (
-              <ActivityIndicator color="#5EEAD4" size="small" />
-            ) : (
-              <Ionicons name="power-outline" size={22} color="#5EEAD4" />
-            )}
-          </Pressable>
-        </View>
-      }
+      topBar={<AppBrandBar onLogout={handleLogout} loggingOut={loggingOut} />}
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.facts} accessibilityLabel="Podaci poslovanja">
-            <Text style={styles.factsTitle}>Podaci poslovanja</Text>
+        <Text style={ui.sectionLabel}>Podaci poslovanja</Text>
 
-            {host ? (
-              <FactRow icon="globe-outline" label="Adresa stranice" value={host} />
-            ) : null}
-            {nicheLabel ? (
-              <FactRow
-                icon="apps-outline"
-                label="Vrsta poslovanja"
-                value={nicheLabel}
-              />
-            ) : null}
-            {email ? (
-              <FactRow icon="mail-outline" label="E-pošta" value={email} />
-            ) : null}
+        {host ? (
+          <FactRow icon="globe-outline" label="Adresa stranice" value={host} />
+        ) : null}
+        {nicheLabel ? (
+          <FactRow icon="apps-outline" label="Vrsta poslovanja" value={nicheLabel} />
+        ) : null}
+        {email ? <FactRow icon="mail-outline" label="E-pošta" value={email} /> : null}
 
-            <View
-              style={[
-                styles.factRow,
-                editingPhone && styles.factRowPhoneEdit,
-              ]}
-            >
-              <View style={styles.factIcon}>
-                <Ionicons name="call-outline" size={18} color="#5EEAD4" />
+        <View style={[ui.factRow, editingPhone && styles.factRowPhoneEdit]}>
+          <View style={ui.factIcon}>
+            <Ionicons name="call-outline" size={18} color="#5EEAD4" />
+          </View>
+          {editingPhone ? (
+            <View style={styles.phoneEditWrap}>
+              <View style={styles.phoneEditRow}>
+                <Animated.View
+                  style={[
+                    styles.phoneInputShell,
+                    {
+                      opacity: phoneReveal,
+                      transform: [
+                        {
+                          translateX: phoneReveal.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-22, 0],
+                          }),
+                        },
+                        {
+                          scaleX: phoneReveal.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.92, 1],
+                          }),
+                        },
+                        {
+                          scaleY: phoneReveal.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.98, 1],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <TextInput
+                    ref={phoneInputRef}
+                    style={ui.inputCompact}
+                    value={phoneDraft}
+                    onChangeText={(value) => {
+                      setPhoneDraft(value);
+                      if (phoneError) setPhoneError('');
+                    }}
+                    placeholder="+385 …"
+                    placeholderTextColor="rgba(232, 242, 239, 0.28)"
+                    keyboardType="phone-pad"
+                    editable={!savingPhone}
+                    accessibilityLabel="Telefon"
+                    returnKeyType="done"
+                    onSubmitEditing={savePhone}
+                  />
+                </Animated.View>
+                <Animated.View
+                  style={[
+                    styles.phoneActionGroup,
+                    {
+                      opacity: phoneActions,
+                      transform: [
+                        {
+                          translateX: phoneActions.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [8, 0],
+                          }),
+                        },
+                        {
+                          scale: phoneActions.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.94, 1],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Spremi telefon"
+                    onPress={savePhone}
+                    disabled={savingPhone}
+                    hitSlop={8}
+                    style={({ pressed }) => [
+                      styles.phoneIconBtn,
+                      styles.phoneIconBtnPrimary,
+                      pressed && ui.pressed,
+                    ]}
+                  >
+                    {savingPhone ? (
+                      <ActivityIndicator color="#061210" size="small" />
+                    ) : (
+                      <Ionicons name="checkmark" size={20} color="#061210" />
+                    )}
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Odustani"
+                    onPress={() => closePhoneEdit()}
+                    disabled={savingPhone}
+                    hitSlop={8}
+                    style={({ pressed }) => [styles.phoneIconBtn, pressed && ui.pressed]}
+                  >
+                    <Ionicons name="close" size={18} color="rgba(232, 242, 239, 0.55)" />
+                  </Pressable>
+                </Animated.View>
               </View>
-              {editingPhone ? (
-                <View style={styles.phoneEditWrap}>
-                  <View style={styles.phoneEditRow}>
-                    <Animated.View
-                      style={[
-                        styles.phoneInputShell,
-                        {
-                          opacity: phoneReveal,
-                          transform: [
-                            {
-                              translateX: phoneReveal.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [-22, 0],
-                              }),
-                            },
-                            {
-                              scaleX: phoneReveal.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.92, 1],
-                              }),
-                            },
-                            {
-                              scaleY: phoneReveal.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.98, 1],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    >
-                      <TextInput
-                        ref={phoneInputRef}
-                        style={styles.phoneInput}
-                        value={phoneDraft}
-                        onChangeText={(value) => {
-                          setPhoneDraft(value);
-                          if (phoneError) setPhoneError('');
-                        }}
-                        placeholder="+385 …"
-                        placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                        keyboardType="phone-pad"
-                        editable={!savingPhone}
-                        accessibilityLabel="Telefon"
-                        returnKeyType="done"
-                        onSubmitEditing={savePhone}
-                      />
-                    </Animated.View>
-                    <Animated.View
-                      style={[
-                        styles.phoneActionGroup,
-                        {
-                          opacity: phoneActions,
-                          transform: [
-                            {
-                              translateX: phoneActions.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [8, 0],
-                              }),
-                            },
-                            {
-                              scale: phoneActions.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.94, 1],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                    >
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Spremi telefon"
-                        onPress={savePhone}
-                        disabled={savingPhone}
-                        hitSlop={8}
-                        style={({ pressed }) => [
-                          styles.phoneIconBtn,
-                          styles.phoneIconBtnPrimary,
-                          pressed && ui.pressed,
-                        ]}
-                      >
-                        {savingPhone ? (
-                          <ActivityIndicator color="#061210" size="small" />
-                        ) : (
-                          <Ionicons name="checkmark" size={20} color="#061210" />
-                        )}
-                      </Pressable>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Odustani"
-                        onPress={() => closePhoneEdit()}
-                        disabled={savingPhone}
-                        hitSlop={8}
-                        style={({ pressed }) => [
-                          styles.phoneIconBtn,
-                          pressed && ui.pressed,
-                        ]}
-                      >
-                        <Ionicons
-                          name="close"
-                          size={18}
-                          color="rgba(232, 242, 239, 0.55)"
-                        />
-                      </Pressable>
-                    </Animated.View>
-                  </View>
-                  {phoneError ? (
-                    <Text style={styles.phoneError}>{phoneError}</Text>
-                  ) : null}
-                </View>
+              {phoneError ? <Text style={ui.error}>{phoneError}</Text> : null}
+            </View>
+          ) : (
+            <View style={ui.factCopy}>
+              <Text style={ui.factLabel}>Telefon</Text>
+              {phone ? (
+                <Text style={ui.factValue}>{phone}</Text>
               ) : (
-                <View style={styles.factCopy}>
-                  <Text style={styles.factLabel}>Telefon</Text>
-                  {phone ? (
-                    <Text style={styles.factValue}>{phone}</Text>
-                  ) : (
-                    <View style={styles.phoneIdle}>
-                      <Text style={[styles.factValue, styles.factMuted]}>
-                        Nije upisan
-                      </Text>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Dodaj telefon"
-                        onPress={openPhoneEdit}
-                        hitSlop={8}
-                        style={({ pressed }) => [
-                          styles.phoneAddBtn,
-                          pressed && ui.pressed,
-                        ]}
-                      >
-                        <Ionicons
-                          name="add-outline"
-                          size={18}
-                          color="#5EEAD4"
-                        />
-                      </Pressable>
-                    </View>
-                  )}
+                <View style={styles.phoneIdle}>
+                  <Text style={[ui.factValue, ui.factMuted]}>Nije upisan</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Dodaj telefon"
+                    onPress={openPhoneEdit}
+                    hitSlop={8}
+                    style={({ pressed }) => [styles.phoneAddBtn, pressed && ui.pressed]}
+                  >
+                    <Ionicons name="add-outline" size={18} color="#5EEAD4" />
+                  </Pressable>
                 </View>
               )}
             </View>
-          </View>
+          )}
+        </View>
+      </View>
 
-      <Text style={styles.menuTitle}>Brzi izbornik</Text>
+      <Text style={[ui.sectionLabel, styles.menuTitle]}>Brzi izbornik</Text>
       <View style={styles.menuGrid}>
         {NAV_ITEMS.map((item) => (
           <Pressable
@@ -601,13 +483,13 @@ function FactRow({
   value: string;
 }) {
   return (
-    <View style={styles.factRow}>
-      <View style={styles.factIcon}>
+    <View style={ui.factRow}>
+      <View style={ui.factIcon}>
         <Ionicons name={icon} size={18} color="#5EEAD4" />
       </View>
-      <View style={styles.factCopy}>
-        <Text style={styles.factLabel}>{label}</Text>
-        <Text style={styles.factValue} numberOfLines={2}>
+      <View style={ui.factCopy}>
+        <Text style={ui.factLabel}>{label}</Text>
+        <Text style={ui.factValue} numberOfLines={2}>
           {value}
         </Text>
       </View>
@@ -616,78 +498,8 @@ function FactRow({
 }
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 22,
-  },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 26,
-    lineHeight: 30,
-    letterSpacing: -0.5,
-    color: '#F7FCFA',
-  },
-  logoutBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  facts: {
-    paddingTop: 2,
-  },
-  factsTitle: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginBottom: 8,
-  },
-  factRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(232, 242, 239, 0.12)',
-  },
-  factIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(94, 234, 212, 0.1)',
-    marginTop: 1,
-  },
-  factCopy: {
-    flex: 1,
-    gap: 2,
-    minWidth: 0,
-  },
-  factLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-  },
-  factValue: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    lineHeight: 21,
-    color: '#E8F2EF',
-  },
-  factMuted: {
-    fontFamily: 'Outfit_400Regular',
-    color: 'rgba(232, 242, 239, 0.42)',
-  },
-  factRowPhoneEdit: {
-    alignItems: 'center',
-  },
+  facts: { paddingTop: 2 },
+  factRowPhoneEdit: { alignItems: 'center' },
   phoneIdle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -717,18 +529,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
     transformOrigin: 'left center',
   },
-  phoneInput: {
-    width: '100%',
-    height: 36,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    color: '#F7FCFA',
-    backgroundColor: 'rgba(10, 20, 18, 0.45)',
-  },
   phoneActionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -745,17 +545,7 @@ const styles = StyleSheet.create({
   phoneIconBtnPrimary: {
     backgroundColor: '#5EEAD4',
   },
-  phoneError: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(251, 113, 133, 0.95)',
-  },
   menuTitle: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
     marginBottom: 12,
     marginTop: 18,
   },

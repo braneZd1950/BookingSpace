@@ -18,6 +18,7 @@ import { changePassword, getMe, updateMe } from '../../api/auth.js';
 import { listServices, updateService, createService } from '../../api/services.js';
 import { getMyTenants, updateTenant } from '../../api/tenants.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
+import StudioBoot from './StudioBoot';
 import StudioScreenShell from './StudioScreenShell';
 import { studioUiStyles as ui } from './studioUiStyles.js';
 import {
@@ -28,7 +29,6 @@ import {
   hoursPayload,
   isValidClock,
 } from './studioTime.js';
-import { studioChromeStyles as chrome } from './studioChrome.js';
 
 type StudioSettingsScreenProps = {
   tenantId?: string;
@@ -358,13 +358,7 @@ export default function StudioSettingsScreen({
     }
   }
 
-  if (loading) {
-    return (
-      <View style={chrome.boot}>
-        <ActivityIndicator color="#5EEAD4" />
-      </View>
-    );
-  }
+  if (loading) return <StudioBoot />;
 
   return (
     <StudioScreenShell

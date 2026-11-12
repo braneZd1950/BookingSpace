@@ -13,7 +13,7 @@ import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { logout } from '../../api/auth.js';
+import { useOwnerLogout } from '../../lib/useOwnerLogout.js';
 import { listMyMemberships } from '../../api/memberships.js';
 import { getPublicTenant } from '../../api/tenants.js';
 import { colorsForTheme } from '../../lib/uiTheme.js';
@@ -162,7 +162,7 @@ export default function MemberHomeScreen({
 
   const [panel, setPanel] = useState<Panel>('home');
   const [loading, setLoading] = useState(true);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const { loggingOut, handleLogout } = useOwnerLogout(onLogout);
   const [error, setError] = useState('');
   const [tenant, setTenant] = useState<PublicTenant | null>(
     initialTenantName ? { name: initialTenantName, slug } : null,
@@ -233,18 +233,6 @@ export default function MemberHomeScreen({
     () => formatValidUntil(membership?.validUntil),
     [membership?.validUntil],
   );
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } catch {
-      /* lokalni logout */
-    } finally {
-      setLoggingOut(false);
-      onLogout?.();
-    }
-  }
 
   if (loading) {
     return (

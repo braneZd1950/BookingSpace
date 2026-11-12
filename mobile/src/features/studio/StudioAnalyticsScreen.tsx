@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   View,
@@ -13,9 +12,9 @@ import {
   localDesignAnalytics,
   localDesignMembers,
 } from './localDesignFixtures.js';
+import StudioBoot from './StudioBoot';
 import StudioScreenShell from './StudioScreenShell';
 import { formatShortDate } from './studioFormat.js';
-import { studioChromeStyles as chrome } from './studioChrome.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
 import { monthRange } from '../../../../shared/dateRange.js';
 import {
@@ -138,13 +137,7 @@ export default function StudioAnalyticsScreen({
     void load();
   }, [load]);
 
-  if (loading) {
-    return (
-      <View style={chrome.boot}>
-        <ActivityIndicator color="#5EEAD4" />
-      </View>
-    );
-  }
+  if (loading) return <StudioBoot />;
 
   return (
     <StudioScreenShell

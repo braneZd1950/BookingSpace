@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -10,8 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { listTenantBookings } from '../../api/bookings.js';
 import { listServices } from '../../api/services.js';
 import { isLocalDesignMode } from './localDesignFixtures.js';
+import StudioBoot from './StudioBoot';
 import StudioScreenShell from './StudioScreenShell';
-import { studioChromeStyles as chrome } from './studioChrome.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
 import {
   formatDay,
@@ -162,13 +161,7 @@ export default function StudioCalendarScreen({
     void load();
   }, [load]);
 
-  if (loading) {
-    return (
-      <View style={chrome.boot}>
-        <ActivityIndicator color="#5EEAD4" />
-      </View>
-    );
-  }
+  if (loading) return <StudioBoot />;
 
   return (
     <StudioScreenShell
