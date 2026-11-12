@@ -38,9 +38,11 @@ export async function apiRequest(path, options = {}) {
     headers: extraHeaders = {},
   } = options;
 
+  const hasBody = body != null;
   const headers = {
     Accept: 'application/json',
     ...extraHeaders,
+    ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
   };
 
   let hadToken = false;
@@ -52,11 +54,12 @@ export async function apiRequest(path, options = {}) {
     }
   }
 
-  const init = { method, headers };
-  if (body !== undefined && body !== null) {
-    headers['Content-Type'] = 'application/json';
-    init.body = JSON.stringify(body);
-  }
+  /** @type {RequestInit} */
+  const init = {
+    method,
+    headers,
+    ...(hasBody ? { body: JSON.stringify(body) } : {}),
+  };
 
   const response = await fetch(buildUrl(path, params), init);
   const text = await response.text();
@@ -64,8 +67,11 @@ export async function apiRequest(path, options = {}) {
   if (text) {
     try {
       data = JSON.parse(text);
-    } catch {
-      data = { message: text };
+    } catch (error) {
+      data = {
+        message: text,
+        parseError: error instanceof Error ? error.message : 'invalid-json',
+      };
     }
   }
 

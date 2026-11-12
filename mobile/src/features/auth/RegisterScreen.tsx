@@ -187,6 +187,8 @@ export default function RegisterScreen({
         ? 'Za pretraživanje i rezervacije kod partnera — bez otvaranja vlastitog prostora.'
         : 'Naziv, vrsta poslovanja i račun. Izgled stranice kasnije doradite na webu — ovdje odmah otvarate studio.';
 
+  const businessSlug = previewSlug(businessName);
+
   return (
     <AuthFormShell
       backLabel={intent === 'choose' ? '← Prijava' : '← Izbor uloge'}
@@ -306,9 +308,9 @@ export default function RegisterScreen({
                   placeholder="npr. Studio Sjever"
                   editable={!submitting}
                 />
-                {businessName.trim() && previewSlug(businessName) ? (
+                {businessName.trim() && businessSlug ? (
                   <Text style={styles.slugHint}>
-                    Poveznica: {previewSlug(businessName)}.booking.hr
+                    Poveznica: {businessSlug}.booking.hr
                   </Text>
                 ) : null}
 

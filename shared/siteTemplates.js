@@ -1,15 +1,22 @@
 /** Website templates for providers — map to layout, palette and sections. */
 export const SITE_HOST = 'booking.hr';
 
+function trimSlugDashes(value) {
+  let text = String(value || '');
+  while (text.startsWith('-')) text = text.slice(1);
+  while (text.endsWith('-')) text = text.slice(0, -1);
+  return text;
+}
+
+/** ASCII slug preview for studio hostnames (no ReDoS trim regex). */
 export function previewSlug(name) {
   const raw = String(name || '')
     .normalize('NFD')
-    .replace(/\p{M}/gu, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
     .slice(0, 60);
-  return raw;
+  return trimSlugDashes(raw);
 }
 
 export function studioHost(slug) {

@@ -1,6 +1,6 @@
 /** Niše, predlošci i boje za mobilnu registraciju / postavljanje partnera. */
 
-export {
+import {
   findLayout,
   findSignupNiche,
   findTemplate,
@@ -13,7 +13,18 @@ export {
   templatesForNiche,
 } from '../../../../shared/siteTemplates.js';
 
-import { templateForNiche } from '../../../../shared/siteTemplates.js';
+export {
+  findLayout,
+  findSignupNiche,
+  findTemplate,
+  pageLayouts,
+  previewSlug,
+  signupNiches,
+  siteTemplates,
+  studioHost,
+  templateForNiche,
+  templatesForNiche,
+};
 
 const palette = (id, name, primary, soft, canvas, ink) => ({
   id,
