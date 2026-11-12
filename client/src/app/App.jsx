@@ -29,7 +29,6 @@ import {
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage.jsx';
 import HomePage from '../pages/public/HomePage.jsx';
 import LoginPage from '../pages/public/LoginPage.jsx';
-import MobileAppPage from '../pages/public/MobileAppPage.jsx';
 import AdminGate from '../pages/admin/AdminGate.jsx';
 import AdminHomePage from '../pages/admin/AdminHomePage.jsx';
 import AdminStaffPage from '../pages/admin/AdminStaffPage.jsx';
@@ -103,7 +102,6 @@ export default function App() {
         </Route>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/mobile" element={<MobileAppPage />} />
           <Route path="/otkrij" element={<MemberDiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />

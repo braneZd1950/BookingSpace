@@ -57,12 +57,17 @@ Predložak: [`.env.production.example`](../.env.production.example)
 
 ### Gumb „Preuzmite aplikaciju” (Home)
 
-Trenutno **web distribucija** (bez storeova). U produkciji gumb vodi na `/mobile`.
+Bez storeova — gumb **instalira na uređaj** (ne otvara novu stranicu):
+
+| Redoslijed | Ponašanje |
+| --- | --- |
+| 1 | Ako postoji `VITE_MOBILE_APK_URL` → preuzme APK |
+| 2 | Inače PWA install prompt (Chrome / Android) |
+| 3 | iPhone → uputa: Podijeli → Dodaj na početni zaslon |
 
 | Key | Zašto |
 | --- | --- |
-| `VITE_MOBILE_WEB_URL` | (opcionalno) direktni Expo web host — CTA „Otvorite mobilnu aplikaciju” |
-| `VITE_MOBILE_APP_URL` | (opcionalno) override Home gumba; default `/mobile` |
+| `VITE_MOBILE_APK_URL` | (opcionalno) HTTPS link na `.apk` za sideload |
 
 Nakon izmjene `VITE_*`: **Clear build cache & deploy**.
 

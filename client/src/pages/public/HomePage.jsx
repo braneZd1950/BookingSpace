@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
+import AppInstallButton from '../../components/AppInstallButton.jsx';
 import { getHomePartners, SHOW_HOME_PARTNERS } from '../../lib/homePartners.js';
-import { getMobileAppUrl, isExternalAppUrl } from '../../lib/mobileAppUrl.js';
 import './HomePage.scss';
 
 const calendars = [
@@ -124,8 +124,6 @@ const faqs = [
 export default function HomePage() {
   const { partners, label, ariaLabel, live } = getHomePartners();
   const loop = [...partners, ...partners];
-  const mobileAppUrl = getMobileAppUrl();
-  const mobileAppExternal = isExternalAppUrl(mobileAppUrl);
 
   return (
     <main className="home">
@@ -397,19 +395,7 @@ export default function HomePage() {
             aplikaciji — isti račun kao na webu, bez poruka i dogovaranja.
           </p>
         </div>
-        {mobileAppUrl ? (
-          <a
-            className="home__cta home__cta--solid home__app-cta"
-            href={mobileAppUrl}
-            {...(mobileAppExternal
-              ? { target: '_blank', rel: 'noopener noreferrer' }
-              : {})}
-          >
-            Preuzmite aplikaciju
-          </a>
-        ) : (
-          <p className="home__note">Mobilna aplikacija stiže uskoro.</p>
-        )}
+        <AppInstallButton className="home__cta home__cta--solid home__app-cta" />
       </section>
 
       <section className="home__close" aria-labelledby="home-close">
@@ -422,21 +408,10 @@ export default function HomePage() {
           <Link className="home__cta home__cta--solid" to="/register">
             Napravite svoju stranicu
           </Link>
-          {mobileAppUrl ? (
-            <a
-              className="home__cta home__cta--line"
-              href={mobileAppUrl}
-              {...(mobileAppExternal
-                ? { target: '_blank', rel: 'noopener noreferrer' }
-                : {})}
-            >
-              Preuzmite aplikaciju
-            </a>
-          ) : (
-            <Link className="home__cta home__cta--line" to="/login">
-              Prijava
-            </Link>
-          )}
+          <AppInstallButton
+            className="home__cta home__cta--line"
+            label="Preuzmite aplikaciju"
+          />
         </div>
         <p className="home__trust home__trust--close">
           Jednostavno za postaviti. Jednostavno za koristiti.

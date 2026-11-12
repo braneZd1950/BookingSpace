@@ -440,7 +440,26 @@
   font: inherit;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.home__cta:disabled {
+  opacity: 0.72;
+  cursor: wait;
+  transform: none;
+}
+
+.home__app-install {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.home__actions .home__app-install {
+  margin-top: 0;
 }
 
 .home__cta:hover {
@@ -555,9 +574,13 @@
   padding: 3.2rem 0 0;
 }
 
+.home__app .home__app-install {
+  margin-top: 1.25rem;
+}
+
 .home__app .home__app-cta {
   display: inline-flex;
-  margin-top: 1.25rem;
+  margin-top: 0;
 }
 
 .home__block--wide {
