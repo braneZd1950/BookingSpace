@@ -10,6 +10,7 @@ import {
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { sessionCopyStyles as copy } from '../../ui/sessionCopyStyles.js';
 import AuthLegalStrip from './AuthLegalStrip';
 
 export type SessionRole = 'CUSTOMER' | 'BUSINESS_OWNER' | string;
@@ -102,13 +103,13 @@ export default function SessionSuccessScreen({
             ],
           }}
         >
-          <Text style={styles.brand}>anyminutes</Text>
-          <Text style={styles.kicker}>{kicker}</Text>
-          <Text style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}>
+          <Text style={[copy.brand, styles.brandGap]}>anyminutes</Text>
+          <Text style={copy.kicker}>{kicker}</Text>
+          <Text style={[copy.title, styles.titleGap, compact && { fontSize: 34, lineHeight: 38 }]}>
             {title}
           </Text>
-          {identity ? <Text style={styles.identity}>{identity}</Text> : null}
-          <Text style={styles.lead}>{lead}</Text>
+          {identity ? <Text style={copy.identity}>{identity}</Text> : null}
+          <Text style={[copy.lead, styles.leadMax]}>{lead}</Text>
         </Animated.View>
 
         <Animated.View style={[styles.actions, { opacity: enter }]}>
@@ -159,44 +160,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     boxSizing: 'border-box',
   },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.6,
-    color: '#F7FCFA',
-    marginBottom: 18,
-  },
-  kicker: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    color: '#5EEAD4',
-    marginBottom: 10,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 14,
-  },
-  identity: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.78)',
-    marginBottom: 12,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 23,
-    color: 'rgba(232, 242, 239, 0.64)',
-    maxWidth: 360,
-  },
+  brandGap: { marginBottom: 18 },
+  titleGap: { marginBottom: 14 },
+  leadMax: { maxWidth: 360, marginBottom: 0 },
   actions: {
     marginTop: 36,
     gap: 12,

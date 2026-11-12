@@ -9,14 +9,17 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { useOwnerLogout } from '../../lib/useOwnerLogout.js';
 import { listMyMemberships } from '../../api/memberships.js';
 import { getPublicTenant } from '../../api/tenants.js';
+import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
+import { useCancelledEffect } from '../../lib/useCancelledEffect.js';
+import { useOwnerLogout } from '../../lib/useOwnerLogout.js';
 import { colorsForTheme } from '../../lib/uiTheme.js';
+import AppBrandBar from '../../ui/AppBrandBar';
+import { sessionCopyStyles as copy } from '../../ui/sessionCopyStyles.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
 import { hourRows, hoursFromWorking } from '../studio/studioTime.js';
 import MemberBookScreen from './MemberBookScreen';
@@ -25,6 +28,13 @@ import MemberGalleryScreen from './MemberGalleryScreen';
 import MemberPolicyScreen from './MemberPolicyScreen';
 import MemberSettingsScreen from './MemberSettingsScreen';
 import { hoursLine } from './memberContent.js';
+import {
+  formatValidUntil,
+  resolveMembershipForSlug,
+  sessionsLeft,
+} from './memberHomeHelpers.js';
+import { MEMBER_HOME_NAV } from './memberHomeNav.js';
+import { memberHomeStyles as styles } from './memberHomeStyles.js';
 
 type MemberHomeScreenProps = {
   slug: string;
@@ -84,63 +94,6 @@ type Panel =
   | 'privacy'
   | 'settings';
 
-const NAV_ITEMS = [
-  {
-    id: 'book' as const,
-    label: 'Termini',
-    note: 'Rezervacija i otkaz',
-    icon: 'calendar-outline' as const,
-  },
-  {
-    id: 'gallery' as const,
-    label: 'Galerija',
-    note: 'Fotografije studija',
-    icon: 'images-outline' as const,
-  },
-  {
-    id: 'discover' as const,
-    label: 'Otkrij',
-    note: 'Drugi studiji',
-    icon: 'compass-outline' as const,
-  },
-  {
-    id: 'privacy' as const,
-    label: 'Privatnost',
-    note: 'Dokumenti studija',
-    icon: 'shield-checkmark-outline' as const,
-  },
-  {
-    id: 'settings' as const,
-    label: 'Postavke',
-    note: 'Račun i obavijesti',
-    icon: 'settings-outline' as const,
-  },
-];
-
-const untilDay = new Intl.DateTimeFormat('hr-HR', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
-
-function sessionsLeft(membership: MembershipPass | null | undefined) {
-  if (!membership || membership.sessionsIncluded == null) return null;
-  return (
-    membership.sessionsRemaining
-    ?? Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0))
-  );
-}
-
-function formatValidUntil(value?: string) {
-  if (!value) return '';
-  const raw = String(value);
-  const date = /^\d{4}-\d{2}-\d{2}/.test(raw)
-    ? new Date(`${raw.slice(0, 10)}T12:00:00`)
-    : new Date(raw);
-  if (Number.isNaN(date.getTime())) return raw;
-  return untilDay.format(date);
-}
-
 /**
  * Članski shell — parity s web /s/:slug (Početna, Termini, Otkrij, Privatnost, Postavke).
  */
@@ -169,8 +122,7 @@ export default function MemberHomeScreen({
   );
   const [membership, setMembership] = useState<MembershipPass | null>(initialMembership);
 
-  useEffect(() => {
-    let cancelled = false;
+  useCancelledEffect(({ cancelled }) => {
     setPanel('home');
     (async () => {
       setLoading(true);
@@ -180,7 +132,7 @@ export default function MemberHomeScreen({
           getPublicTenant(slug),
           listMyMemberships(50).catch(() => null),
         ]);
-        if (cancelled) return;
+        if (cancelled()) return;
 
         const nextTenant = (publicData?.tenant || publicData) as PublicTenant;
         if (nextTenant?.name || nextTenant?.slug) {
@@ -192,28 +144,21 @@ export default function MemberHomeScreen({
         }
 
         const list = Array.isArray(mine?.memberships) ? mine.memberships : [];
-        const match =
-          list.find(
-            (item: MembershipPass) =>
-              item?.status === 'ACTIVE'
-              && (item?.tenant?.slug === slug || item?.tenantId === nextTenant?.id),
-          )
-          || list.find((item: MembershipPass) => item?.tenant?.slug === slug)
-          || initialMembership
-          || null;
-        setMembership(match);
+        setMembership(
+          resolveMembershipForSlug(list, {
+            slug,
+            tenantId: nextTenant?.id,
+            initial: initialMembership,
+          }),
+        );
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled()) {
           setError(err instanceof Error ? err.message : 'Studio nije učitan.');
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled()) setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   useEffect(() => {
@@ -339,31 +284,21 @@ export default function MemberHomeScreen({
             ],
           }}
         >
-          <View style={styles.topRow}>
-            <Text style={[styles.brand, { color: colors.title }]}>anyminutes</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Odjava"
-              disabled={loggingOut}
-              onPress={handleLogout}
-              hitSlop={10}
-              style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
-            >
-              {loggingOut ? (
-                <ActivityIndicator color={colors.accent} size="small" />
-              ) : (
-                <Ionicons name="power-outline" size={22} color={colors.accent} />
-              )}
-            </Pressable>
-          </View>
+          <AppBrandBar
+            onLogout={handleLogout}
+            loggingOut={loggingOut}
+            accentColor={colors.accent}
+            brandColor={colors.title}
+            marginBottom={18}
+          />
 
-          <Text style={[styles.kicker, { color: colors.accent }]}>Vaš studio</Text>
-          <Text style={[styles.title, { color: colors.title }, compact && { fontSize: 34, lineHeight: 38 }]}>
+          <Text style={[copy.kicker, { color: colors.accent }]}>Vaš studio</Text>
+          <Text style={[copy.title, { color: colors.title }, compact && { fontSize: 34, lineHeight: 38 }]}>
             {studioName}
           </Text>
 
           {(fallbackName || fallbackEmail) ? (
-            <Text style={[styles.identity, { color: colors.soft }]}>
+            <Text style={[copy.identity, { color: colors.soft }]}>
               {[fallbackName, fallbackEmail].filter(Boolean).join('\n')}
             </Text>
           ) : null}
@@ -371,9 +306,9 @@ export default function MemberHomeScreen({
           {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
 
           {tenant?.description ? (
-            <Text style={[styles.lead, { color: colors.muted }]}>{tenant.description}</Text>
+            <Text style={[copy.lead, { color: colors.muted }]}>{tenant.description}</Text>
           ) : (
-            <Text style={[styles.lead, { color: colors.muted }]}>
+            <Text style={[copy.lead, { color: colors.muted }]}>
               Pregled članarine, termina i postavki u ovom prostoru.
             </Text>
           )}
@@ -427,12 +362,12 @@ export default function MemberHomeScreen({
 
           <Text style={[styles.navKicker, { color: colors.accent }]}>Izbornik</Text>
           <View style={styles.navList}>
-            {NAV_ITEMS.map((item) => (
+            {MEMBER_HOME_NAV.map((item) => (
               <Pressable
                 key={item.id}
                 accessibilityRole="button"
                 accessibilityLabel={item.label}
-                onPress={() => setPanel(item.id)}
+                onPress={() => setPanel(item.id as Panel)}
                 style={({ pressed }) => [
                   styles.navRow,
                   { borderColor: colors.border },
@@ -440,7 +375,7 @@ export default function MemberHomeScreen({
                 ]}
               >
                 <View style={[styles.navIcon, { borderColor: colors.cardBorder }]}>
-                  <Ionicons name={item.icon} size={18} color={colors.accent} />
+                  <Ionicons name={item.icon as any} size={18} color={colors.accent} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.navLabel, { color: colors.title }]}>{item.label}</Text>
@@ -489,214 +424,3 @@ export default function MemberHomeScreen({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  scroll: { flex: 1 },
-  content: {
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    flexGrow: 1,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 18,
-  },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.6,
-    color: '#F7FCFA',
-  },
-  logoutBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  kicker: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    color: '#5EEAD4',
-    marginBottom: 10,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 12,
-  },
-  identity: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.78)',
-    marginBottom: 12,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 23,
-    color: 'rgba(232, 242, 239, 0.64)',
-    marginBottom: 22,
-  },
-  error: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    color: '#FCA5A5',
-    marginBottom: 12,
-  },
-  pass: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(94, 234, 212, 0.35)',
-    backgroundColor: 'rgba(12, 28, 24, 0.72)',
-    padding: 18,
-    marginBottom: 22,
-  },
-  passLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(94, 234, 212, 0.9)',
-    marginBottom: 8,
-  },
-  passTitle: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 28,
-    lineHeight: 32,
-    color: '#F7FCFA',
-    marginBottom: 14,
-  },
-  passMeta: { gap: 10, marginBottom: 18 },
-  passMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  passIndex: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    color: 'rgba(94, 234, 212, 0.7)',
-    width: 22,
-  },
-  passMetaText: {
-    flex: 1,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.82)',
-  },
-  ctaPrimary: {
-    minHeight: 52,
-    borderRadius: 6,
-    backgroundColor: '#5EEAD4',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ctaPrimaryLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 15,
-    letterSpacing: 0.15,
-    color: '#061210',
-  },
-  notice: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-    padding: 16,
-    marginBottom: 22,
-  },
-  noticeText: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.72)',
-  },
-  navKicker: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: 10,
-  },
-  navList: { gap: 8, marginBottom: 22 },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  navIcon: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  navLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 15,
-  },
-  navNote: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  hoursCard: {
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    marginBottom: 22,
-    gap: 8,
-  },
-  hoursTitle: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  hoursLine: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  details: { gap: 12, marginTop: 4 },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  detailText: {
-    flex: 1,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 36,
-  },
-  pressed: { opacity: 0.82 },
-});
