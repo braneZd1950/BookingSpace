@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Animated,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -25,20 +24,32 @@ import {
   localDesignStaff,
 } from './localDesignFixtures.js';
 import StudioContactFields from './StudioContactFields';
+import StudioDangerAction from './StudioDangerAction';
 import StudioEmptyState from './StudioEmptyState';
+import StudioEntityRow, { entityRowStyles as rowStyles } from './StudioEntityRow';
+import StudioFilterChips from './StudioFilterChips';
 import StudioFormSubmit from './StudioFormSubmit';
 import StudioListHead from './StudioListHead';
+import StudioLoadingRow from './StudioLoadingRow';
 import StudioPresetRow from './StudioPresetRow';
 import StudioScreenShell from './StudioScreenShell';
 import { formatShortDate, memberCountLabel } from './studioFormat.js';
+import {
+  errorCode,
+  errorStatus,
+  expiryLabel,
+  filterMemberships,
+  inviteNotice,
+  isEndingSoon,
+  monthLabelHr,
+  sessionsLabel,
+  sessionsRatio,
+  statusLabel,
+  validateInviteContact,
+} from './studioMembersHelpers.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
 import { useStudioFormReveal } from './useStudioFormReveal.js';
-import { isEmail } from '../../../../shared/isEmail.js';
-import {
-  daysLeft,
-  daysLeftInMonth,
-  monthRange,
-} from '../../../../shared/dateRange.js';
+import { daysLeftInMonth, monthRange } from '../../../../shared/dateRange.js';
 
 type StudioMembersScreenProps = {
   tenantId?: string;
@@ -80,74 +91,6 @@ type SectionId = 'members' | 'team';
 type FilterId = 'active' | 'archive' | 'all';
 
 const SESSION_PRESETS = [6, 12, 18] as const;
-
-function monthLabelHr(from = new Date()) {
-  const label = new Intl.DateTimeFormat('hr-HR', { month: 'long' }).format(from);
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function statusLabel(status?: string) {
-  if (status === 'ACTIVE') return 'Aktivno';
-  if (status === 'SUSPENDED') return 'Uklonjeno';
-  if (status === 'EXPIRED') return 'Isteklo';
-  return status || '—';
-}
-
-function sessionsLabel(item: MemberRow) {
-  if (item.sessionsIncluded == null) return 'Neograničeno';
-  const used = Number(item.sessionsUsed) || 0;
-  const total = Number(item.sessionsIncluded) || 0;
-  return `${used} / ${total}`;
-}
-
-function sessionsRatio(item: MemberRow) {
-  if (item.sessionsIncluded == null) return 1;
-  const total = Number(item.sessionsIncluded) || 0;
-  if (total <= 0) return 0;
-  return Math.min(1, (Number(item.sessionsUsed) || 0) / total);
-}
-
-function expiryLabel(until?: string) {
-  const left = daysLeft(until);
-  if (left == null) return null;
-  if (left < 0) return 'Isteklo';
-  if (left === 0) return 'Ističe danas';
-  return `Još ${left} dana`;
-}
-
-function errorCode(failure: unknown) {
-  if (failure && typeof failure === 'object' && 'code' in failure) {
-    return String((failure as { code?: string }).code || '');
-  }
-  return '';
-}
-
-function errorStatus(failure: unknown) {
-  if (failure && typeof failure === 'object' && 'status' in failure) {
-    return Number((failure as { status?: number }).status) || 0;
-  }
-  return 0;
-}
-
-function inviteNotice(
-  kind: 'member' | 'staff',
-  email: string,
-  result: { accountCreated?: boolean; inviteSent?: boolean },
-) {
-  if (result.accountCreated && result.inviteSent) {
-    return kind === 'member'
-      ? `Član je dodan. Lozinka za prijavu poslana je na ${email}.`
-      : `Trener je dodan. Lozinka je poslana na ${email}.`;
-  }
-  if (result.accountCreated && !result.inviteSent) {
-    return kind === 'member'
-      ? `Član je dodan, ali e-pošta s lozinkom nije poslana na ${email}. Provjerite SMTP ili javite se članu.`
-      : `Trener je dodan, ali e-pošta s lozinkom nije poslana na ${email}.`;
-  }
-  return kind === 'member'
-    ? 'Članarina je aktivirana za postojeći račun. Lozinka nije mijenjana.'
-    : 'Trener je dodan u tim.';
-}
 
 /**
  * Članovi + Tim — paritet s web MembersPage (lista, dodaj, obnovi, ukloni).
@@ -200,11 +143,7 @@ export default function StudioMembersScreen({
     [staff],
   );
   const endingSoon = useMemo(
-    () =>
-      activeMembers.filter((item) => {
-        const left = daysLeft(item.validUntil);
-        return left != null && left >= 0 && left <= 7;
-      }).length,
+    () => activeMembers.filter((item) => isEndingSoon(item.validUntil)).length,
     [activeMembers],
   );
   const sessionsUsed = useMemo(
@@ -216,59 +155,28 @@ export default function StudioMembersScreen({
     [activeMembers],
   );
   const monthName = useMemo(() => monthLabelHr(), []);
-
-  const visibleMembers = useMemo(() => {
-    const base =
-      filter === 'active'
-        ? activeMembers
-        : filter === 'archive'
-          ? archiveMembers
-          : memberships;
-    const needle = query.trim().toLowerCase();
-    const filtered = !needle
-      ? base
-      : base.filter((item) =>
-          [
-            item.user?.name,
-            item.user?.email,
-            item.user?.phone,
-            item.planName,
-            item.code,
-          ]
-            .join(' ')
-            .toLowerCase()
-            .includes(needle),
-        );
-    return [...filtered].sort((a, b) => {
-      const aActive = a.status === 'ACTIVE' ? 0 : 1;
-      const bActive = b.status === 'ACTIVE' ? 0 : 1;
-      if (aActive !== bActive) return aActive - bActive;
-      return String(a.user?.name || '').localeCompare(String(b.user?.name || ''), 'hr');
-    });
-  }, [filter, activeMembers, archiveMembers, memberships, query]);
+  const visibleMembers = useMemo(
+    () => filterMemberships(memberships, filter, query),
+    [filter, memberships, query],
+  );
+  const trainerCount = useMemo(
+    () => activeStaff.filter((item) => item.role === 'STAFF').length,
+    [activeStaff],
+  );
+  const ownerCount = useMemo(
+    () => activeStaff.filter((item) => item.role === 'BUSINESS_OWNER').length,
+    [activeStaff],
+  );
 
   const load = useCallback(async () => {
-    // Lokalni dizajn: u __DEV__ uvijek 2 člana + 2 tima (ne dira bazu).
     if (isLocalDesignMode()) {
       setUsingLocalFixtures(true);
       setMemberships(localDesignMembers() as MemberRow[]);
       setStaff(localDesignStaff() as StaffRow[]);
       setVisitsThisMonth(3);
       setPlans([]);
-      setLoading(true);
-      setError('');
-      if (tenantId) {
-        try {
-          const plansData = await listPlans(tenantId);
-          setPlans(Array.isArray(plansData?.plans) ? plansData.plans : []);
-        } catch (failure: unknown) {
-          setPlans([]);
-          if (__DEV__) {
-            console.warn('StudioMembers plans load failed', errorCode(failure) || failure);
-          }
-        }
-      }
       setLoading(false);
+      setError('');
       return;
     }
 
@@ -401,19 +309,15 @@ export default function StudioMembersScreen({
   }
 
   async function onAddMember() {
-    if (!tenantId) {
-      setFormError('Studio još nije učitan.');
-      return;
-    }
-    if (!name.trim()) {
-      setFormError('Upišite ime člana.');
-      return;
-    }
-    const cleanEmail = email.trim().toLowerCase();
-    if (!isEmail(cleanEmail)) {
-      setFormError('Upišite ispravnu e-poštu.');
-      return;
-    }
+    const contact = validateInviteContact({
+      tenantId,
+      name,
+      email,
+      setFormError,
+      nameMissing: 'Upišite ime člana.',
+    });
+    if (!contact || !tenantId) return;
+
     const sessionCount = Number(sessions);
     if (!Number.isFinite(sessionCount) || sessionCount < 1 || sessionCount > 200) {
       setFormError('Upišite broj treninga od 1 do 200.');
@@ -427,15 +331,15 @@ export default function StudioMembersScreen({
       const planId = await ensurePlanForSessions(sessionCount);
       const result = await createMembership(tenantId, {
         customer: {
-          name: name.trim(),
-          email: cleanEmail,
+          name: contact.displayName,
+          email: contact.cleanEmail,
           phone: phone.trim() || undefined,
         },
         membershipPlanId: planId,
         method: 'CASH',
       });
       setFilter('active');
-      closeForm(() => setNotice(inviteNotice('member', cleanEmail, result)));
+      closeForm(() => setNotice(inviteNotice('member', contact.cleanEmail, result)));
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -451,31 +355,26 @@ export default function StudioMembersScreen({
   }
 
   async function onAddStaff() {
-    if (!tenantId) {
-      setFormError('Studio još nije učitan.');
-      return;
-    }
-    if (!name.trim()) {
-      setFormError('Upišite ime trenera.');
-      return;
-    }
-    const cleanEmail = email.trim().toLowerCase();
-    if (!isEmail(cleanEmail)) {
-      setFormError('Upišite ispravnu e-poštu.');
-      return;
-    }
+    const contact = validateInviteContact({
+      tenantId,
+      name,
+      email,
+      setFormError,
+      nameMissing: 'Upišite ime trenera.',
+    });
+    if (!contact || !tenantId) return;
 
     setSaving(true);
     setFormError('');
     setNotice('');
     try {
       const result = await createStaff(tenantId, {
-        name: name.trim(),
-        email: cleanEmail,
+        name: contact.displayName,
+        email: contact.cleanEmail,
         phone: phone.trim() || undefined,
         title: title.trim() || 'Trener',
       });
-      closeForm(() => setNotice(inviteNotice('staff', cleanEmail, result)));
+      closeForm(() => setNotice(inviteNotice('staff', contact.cleanEmail, result)));
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -569,16 +468,12 @@ export default function StudioMembersScreen({
       ? 'Treneri i vlasnik — članovi ih biraju pri rezervaciji termina.'
       : 'Članarine, preostali termini i brza obnova.';
 
+  const addLabel = section === 'team' ? 'Dodaj trenera' : 'Dodaj člana';
+
   const titleAccessory = (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={
-        formOpen
-          ? 'Zatvori formu'
-          : section === 'team'
-            ? 'Dodaj trenera'
-            : 'Dodaj člana'
-      }
+      accessibilityLabel={formOpen ? 'Zatvori formu' : addLabel}
       onPress={toggleForm}
       style={({ pressed }) => [ui.addBtnSolid, pressed && ui.pressed]}
     >
@@ -600,220 +495,186 @@ export default function StudioMembersScreen({
       keyboardShouldPersistTaps="handled"
     >
       <View style={ui.segmentTabs} accessibilityRole="tablist">
-            {(
-              [
-                {
-                  id: 'members' as const,
-                  label: `Članovi (${memberships.length})`,
-                },
-                {
-                  id: 'team' as const,
-                  label: `Tim (${activeStaff.length})`,
-                },
-              ]
-            ).map((item) => {
-              const on = section === item.id;
-              return (
-                <Pressable
-                  key={item.id}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: on }}
-                  onPress={() => switchSection(item.id)}
-                  style={({ pressed }) => [
-                    ui.segmentTab,
-                    on && ui.segmentTabOn,
-                    pressed && ui.pressed,
-                  ]}
-                >
-                  <Text style={[ui.segmentTabLabel, on && ui.segmentTabLabelOn]}>
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+        {(
+          [
+            { id: 'members' as const, label: `Članovi (${memberships.length})` },
+            { id: 'team' as const, label: `Tim (${activeStaff.length})` },
+          ]
+        ).map((item) => {
+          const on = section === item.id;
+          return (
+            <Pressable
+              key={item.id}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              onPress={() => switchSection(item.id)}
+              style={({ pressed }) => [
+                ui.segmentTab,
+                on && ui.segmentTabOn,
+                pressed && ui.pressed,
+              ]}
+            >
+              <Text style={[ui.segmentTabLabel, on && ui.segmentTabLabelOn]}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       {section === 'members' ? (
         <View style={ui.statsWrap}>
           <View style={[ui.statsRow, ui.statsRowInWrap]}>
-                <View style={ui.stat}>
-                  <Text style={ui.statLabel}>Aktivni</Text>
-                  <Text style={ui.statValue}>{activeMembers.length}</Text>
-                </View>
-                <View style={ui.stat}>
-                  <Text style={ui.statLabel}>Arhiva</Text>
-                  <Text style={ui.statValue}>{archiveMembers.length}</Text>
-                </View>
+            <View style={ui.stat}>
+              <Text style={ui.statLabel}>Aktivni</Text>
+              <Text style={ui.statValue}>{activeMembers.length}</Text>
+            </View>
+            <View style={ui.stat}>
+              <Text style={ui.statLabel}>Arhiva</Text>
+              <Text style={ui.statValue}>{archiveMembers.length}</Text>
+            </View>
             <View style={[ui.stat, endingSoon > 0 && ui.statWarn]}>
-                  <Text style={ui.statLabel}>Ističe uskoro</Text>
-                  <Text style={ui.statValue}>{endingSoon}</Text>
-                </View>
-              </View>
+              <Text style={ui.statLabel}>Ističe uskoro</Text>
+              <Text style={ui.statValue}>{endingSoon}</Text>
+            </View>
+          </View>
           <View style={[ui.statsRow, ui.statsRowInWrap]}>
-                <View style={ui.stat}>
-                  <Text style={ui.statLabel}>Iskorišteni termini</Text>
-                  <Text style={ui.statValue}>{sessionsUsed}</Text>
-                </View>
+            <View style={ui.stat}>
+              <Text style={ui.statLabel}>Iskorišteni termini</Text>
+              <Text style={ui.statValue}>{sessionsUsed}</Text>
+            </View>
             <View style={ui.statWide}>
-                  <Text style={ui.statLabel}>Dolasci ({monthName})</Text>
-                  <Text style={ui.statValue}>{visitsThisMonth}</Text>
-                </View>
-              </View>
+              <Text style={ui.statLabel}>Dolasci ({monthName})</Text>
+              <Text style={ui.statValue}>{visitsThisMonth}</Text>
             </View>
-          ) : (
+          </View>
+        </View>
+      ) : (
         <View style={[ui.statsRow, ui.statsRowSolo]}>
-              <View style={ui.stat}>
-                <Text style={ui.statLabel}>Aktivni u timu</Text>
-                <Text style={ui.statValue}>{activeStaff.length}</Text>
-              </View>
-              <View style={ui.stat}>
-                <Text style={ui.statLabel}>Treneri</Text>
-                <Text style={ui.statValue}>
-                  {activeStaff.filter((item) => item.role === 'STAFF').length}
+          <View style={ui.stat}>
+            <Text style={ui.statLabel}>Aktivni u timu</Text>
+            <Text style={ui.statValue}>{activeStaff.length}</Text>
+          </View>
+          <View style={ui.stat}>
+            <Text style={ui.statLabel}>Treneri</Text>
+            <Text style={ui.statValue}>{trainerCount}</Text>
+          </View>
+          <View style={ui.stat}>
+            <Text style={ui.statLabel}>Vlasnik</Text>
+            <Text style={ui.statValue}>{ownerCount}</Text>
+          </View>
+        </View>
+      )}
+
+      {usingLocalFixtures ? (
+        <Text style={ui.fixtureBanner} accessibilityRole="text">
+          Lokalni demo podaci — samo za dizajn (__DEV__).
+        </Text>
+      ) : null}
+      {notice ? <Text style={ui.notice}>{notice}</Text> : null}
+      {error ? <Text style={ui.error}>{error}</Text> : null}
+      {actionError ? <Text style={ui.error}>{actionError}</Text> : null}
+
+      {formVisible ? (
+        <View style={ui.formShell}>
+          <Animated.View style={[ui.form, formRevealStyle]}>
+            {section === 'members' ? (
+              <>
+                <Text style={ui.sectionLabel}>Novi član</Text>
+                <Text style={ui.formHint}>
+                  Novom članu šaljemo e-poštu s privremenom lozinkom za prijavu.
                 </Text>
-              </View>
-              <View style={ui.stat}>
-                <Text style={ui.statLabel}>Vlasnik</Text>
-                <Text style={ui.statValue}>
-                  {
-                    activeStaff.filter((item) => item.role === 'BUSINESS_OWNER')
-                      .length
-                  }
+                <StudioContactFields
+                  name={name}
+                  email={email}
+                  phone={phone}
+                  onChangeName={setName}
+                  onChangeEmail={setEmail}
+                  onChangePhone={setPhone}
+                  editable={!saving}
+                />
+                <StudioPresetRow
+                  label="Treninga u paketu"
+                  values={SESSION_PRESETS}
+                  selected={sessions}
+                  onSelect={setSessions}
+                  disabled={saving}
+                />
+                <TextInput
+                  style={ui.input}
+                  value={sessions}
+                  onChangeText={setSessions}
+                  placeholder="Broj treninga"
+                  placeholderTextColor="rgba(232, 242, 239, 0.28)"
+                  keyboardType="number-pad"
+                  editable={!saving}
+                />
+                <StudioFormSubmit
+                  label="Dodaj člana"
+                  accessibilityLabel="Spremi člana"
+                  onPress={onAddMember}
+                  saving={saving}
+                  error={formError}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={ui.sectionLabel}>Novi trener</Text>
+                <Text style={ui.formHint}>
+                  Članovi ga mogu izabrati pri rezervaciji. Novom računu
+                  lozinka ide na e-poštu.
                 </Text>
-              </View>
-            </View>
-          )}
+                <StudioContactFields
+                  name={name}
+                  email={email}
+                  phone={phone}
+                  onChangeName={setName}
+                  onChangeEmail={setEmail}
+                  onChangePhone={setPhone}
+                  editable={!saving}
+                />
+                <TextInput
+                  style={ui.input}
+                  value={title}
+                  onChangeText={setTitle}
+                  placeholder="Uloga / naziv"
+                  placeholderTextColor="rgba(232, 242, 239, 0.28)"
+                  editable={!saving}
+                />
+                <StudioFormSubmit
+                  label="Dodaj trenera"
+                  accessibilityLabel="Spremi trenera"
+                  onPress={onAddStaff}
+                  saving={saving}
+                  error={formError}
+                />
+              </>
+            )}
+          </Animated.View>
+        </View>
+      ) : null}
 
-          {usingLocalFixtures ? (
-            <Text style={ui.fixtureBanner} accessibilityRole="text">
-              Lokalni demo podaci — samo za dizajn (__DEV__).
-            </Text>
-          ) : null}
-          {notice ? <Text style={ui.notice}>{notice}</Text> : null}
-          {error ? <Text style={ui.error}>{error}</Text> : null}
-          {actionError ? <Text style={ui.error}>{actionError}</Text> : null}
-
-          {formVisible ? (
-            <View style={ui.formShell}>
-              <Animated.View style={[ui.form, formRevealStyle]}>
-                {section === 'members' ? (
-                  <>
-                    <Text style={ui.sectionLabel}>Novi član</Text>
-                    <Text style={ui.formHint}>
-                      Novom članu šaljemo e-poštu s privremenom lozinkom za prijavu.
-                    </Text>
-                    <StudioContactFields
-                      name={name}
-                      email={email}
-                      phone={phone}
-                      onChangeName={setName}
-                      onChangeEmail={setEmail}
-                      onChangePhone={setPhone}
-                      editable={!saving}
-                    />
-                    <StudioPresetRow
-                      label="Treninga u paketu"
-                      values={SESSION_PRESETS}
-                      selected={sessions}
-                      onSelect={setSessions}
-                      disabled={saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={sessions}
-                      onChangeText={setSessions}
-                      placeholder="Broj treninga"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      keyboardType="number-pad"
-                      editable={!saving}
-                    />
-                    <StudioFormSubmit
-                      label="Dodaj člana"
-                      accessibilityLabel="Spremi člana"
-                      onPress={onAddMember}
-                      saving={saving}
-                      error={formError}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <Text style={ui.sectionLabel}>Novi trener</Text>
-                    <Text style={ui.formHint}>
-                      Članovi ga mogu izabrati pri rezervaciji. Novom računu
-                      lozinka ide na e-poštu.
-                    </Text>
-                    <StudioContactFields
-                      name={name}
-                      email={email}
-                      phone={phone}
-                      onChangeName={setName}
-                      onChangeEmail={setEmail}
-                      onChangePhone={setPhone}
-                      editable={!saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={title}
-                      onChangeText={setTitle}
-                      placeholder="Uloga / naziv"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      editable={!saving}
-                    />
-                    <StudioFormSubmit
-                      label="Dodaj trenera"
-                      accessibilityLabel="Spremi trenera"
-                      onPress={onAddStaff}
-                      saving={saving}
-                      error={formError}
-                    />
-                  </>
-                )}
-              </Animated.View>
-            </View>
-          ) : null}
-
-          {section === 'members' ? (
-            <>
+      {section === 'members' ? (
+        <>
           <TextInput
             style={ui.search}
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Traži ime, e-poštu ili plan…"
-                placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Traži ime, e-poštu ili plan…"
+            placeholderTextColor="rgba(232, 242, 239, 0.28)"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-              <View style={ui.filterRow}>
-                {(
-                  [
-                    { id: 'active' as const, label: `Aktivni (${activeMembers.length})` },
-                    { id: 'archive' as const, label: `Arhiva (${archiveMembers.length})` },
-                    { id: 'all' as const, label: `Svi (${memberships.length})` },
-                  ]
-                ).map((item) => {
-                  const on = filter === item.id;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: on }}
-                      onPress={() => setFilter(item.id)}
-                      style={({ pressed }) => [
-                        ui.filterChip,
-                        on && ui.filterChipOn,
-                        pressed && ui.pressed,
-                      ]}
-                    >
-                      <Text
-                        style={[ui.filterLabel, on && ui.filterLabelOn]}
-                      >
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+          <StudioFilterChips
+            items={[
+              { id: 'active' as const, label: `Aktivni (${activeMembers.length})` },
+              { id: 'archive' as const, label: `Arhiva (${archiveMembers.length})` },
+              { id: 'all' as const, label: `Svi (${memberships.length})` },
+            ]}
+            selected={filter}
+            onSelect={setFilter}
+          />
 
           <StudioListHead
             sectionLabel="Popis"
@@ -822,12 +683,7 @@ export default function StudioMembersScreen({
             countStrong={visibleMembers.length > 0}
           />
 
-              {loading ? (
-                <View style={ui.loadingRow}>
-                  <ActivityIndicator color="#5EEAD4" size="small" />
-                  <Text style={ui.hint}>Učitavamo članove…</Text>
-                </View>
-              ) : null}
+          {loading ? <StudioLoadingRow hint="Učitavamo članove…" /> : null}
 
           {!loading && visibleMembers.length === 0 ? (
             <StudioEmptyState
@@ -843,122 +699,101 @@ export default function StudioMembersScreen({
             />
           ) : null}
 
-              {!loading && visibleMembers.length > 0 ? (
-                <View style={ui.list}>
-                  {visibleMembers.map((item) => {
-                    const displayName = item.user?.name || 'Član';
-                    const active = item.status === 'ACTIVE';
-                    const ratio = sessionsRatio(item);
-                    const expiry = active ? expiryLabel(item.validUntil) : null;
-                    const soon = (() => {
-                      const left = daysLeft(item.validUntil);
-                      return left != null && left >= 0 && left <= 7;
-                    })();
-                    const busy = busyId === item.id;
-                    return (
-                      <View
-                        key={item.id}
-                        style={[ui.row, !active && ui.rowMuted]}
-                      >
-                        <View style={ui.avatar}>
-                          <Text style={ui.avatarText}>
-                            {displayName.trim().slice(0, 1).toUpperCase() || 'Č'}
-                          </Text>
+          {!loading && visibleMembers.length > 0 ? (
+            <View style={ui.list}>
+              {visibleMembers.map((item) => {
+                const displayName = item.user?.name || 'Član';
+                const active = item.status === 'ACTIVE';
+                const ratio = sessionsRatio(item);
+                const expiry = active ? expiryLabel(item.validUntil) : null;
+                const soon = isEndingSoon(item.validUntil);
+                const busy = busyId === item.id;
+                const canRenew =
+                  item.status === 'ACTIVE'
+                  || item.status === 'EXPIRED'
+                  || item.status === 'SUSPENDED';
+                return (
+                  <StudioEntityRow
+                    key={item.id}
+                    name={displayName}
+                    initialFallback="Č"
+                    badge={statusLabel(item.status)}
+                    badgeOk={active}
+                    muted={!active}
+                    meta={`${item.user?.email || 'Bez e-pošte'}${item.user?.phone ? ` · ${item.user.phone}` : ''}`}
+                    extra={(
+                      <>
+                        <Text style={rowStyles.rowPlan} numberOfLines={1}>
+                          {item.planName || 'Plan'}
+                          {' · '}
+                          {sessionsLabel(item)}
+                        </Text>
+                        <View style={rowStyles.barTrack}>
+                          <View
+                            style={[
+                              rowStyles.barFill,
+                              { width: `${Math.round(ratio * 100)}%` },
+                              ratio >= 0.85 && item.sessionsIncluded != null
+                                ? rowStyles.barHot
+                                : null,
+                            ]}
+                          />
                         </View>
-                        <View style={ui.rowCopy}>
-                          <View style={ui.rowTitle}>
-                            <Text style={ui.rowName} numberOfLines={1}>
-                              {displayName}
+                        <Text style={ui.rowDates}>
+                          {formatShortDate(item.validFrom)}
+                          {' – '}
+                          {formatShortDate(item.validUntil)}
+                          {expiry ? (
+                            <Text style={soon ? rowStyles.expirySoon : rowStyles.expiry}>
+                              {` · ${expiry}`}
                             </Text>
-                            <Text
-                              style={[
-                                ui.badge,
-                                active ? ui.badgeOk : ui.badgeMuted,
-                              ]}
-                            >
-                              {statusLabel(item.status)}
-                            </Text>
-                          </View>
-                          <Text style={ui.rowMeta} numberOfLines={1}>
-                            {item.user?.email || 'Bez e-pošte'}
-                            {item.user?.phone ? ` · ${item.user.phone}` : ''}
-                          </Text>
-                          <Text style={styles.rowPlan} numberOfLines={1}>
-                            {item.planName || 'Plan'}
-                            {' · '}
-                            {sessionsLabel(item)}
-                          </Text>
-                          <View style={styles.barTrack}>
-                            <View
-                              style={[
-                                styles.barFill,
-                                { width: `${Math.round(ratio * 100)}%` },
-                                ratio >= 0.85 && item.sessionsIncluded != null
-                                  ? styles.barHot
-                                  : null,
-                              ]}
-                            />
-                          </View>
-                          <Text style={ui.rowDates}>
-                            {formatShortDate(item.validFrom)}
-                            {' – '}
-                            {formatShortDate(item.validUntil)}
-                            {expiry ? (
-                              <Text style={soon ? styles.expirySoon : styles.expiry}>
-                                {` · ${expiry}`}
-                              </Text>
-                            ) : null}
-                          </Text>
-                          <View style={ui.actions}>
-                            {(item.status === 'ACTIVE'
-                              || item.status === 'EXPIRED'
-                              || item.status === 'SUSPENDED') ? (
-                              <Pressable
-                                accessibilityRole="button"
-                                accessibilityLabel="Obnovite članarinu"
-                                onPress={() => {
-                                  void onRenew(item);
-                                }}
-                                disabled={Boolean(busyId)}
-                                style={({ pressed }) => [
-                                  ui.actionBtn,
-                                  pressed && ui.pressed,
-                                ]}
-                              >
-                                {busy ? (
-                                  <ActivityIndicator color="#5EEAD4" size="small" />
-                                ) : (
-                                  <Text style={ui.actionLabel}>Obnovite</Text>
-                                )}
-                              </Pressable>
-                            ) : null}
-                            {item.status === 'ACTIVE' ? (
-                              <Pressable
-                                accessibilityRole="button"
-                                accessibilityLabel="Uklonite člana"
-                                onPress={() => {
-                                  void onRemoveMember(item);
-                                }}
-                                disabled={Boolean(busyId)}
-                                style={({ pressed }) => [
-                                  ui.actionBtn,
-                                  ui.actionDanger,
-                                  pressed && ui.pressed,
-                                ]}
-                              >
-                                <Text style={ui.actionDangerLabel}>Uklonite</Text>
-                              </Pressable>
-                            ) : null}
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : null}
-            </>
-          ) : (
-            <>
+                          ) : null}
+                        </Text>
+                      </>
+                    )}
+                    actions={(
+                      <>
+                        {canRenew ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel="Obnovite članarinu"
+                            onPress={() => {
+                              void onRenew(item);
+                            }}
+                            disabled={Boolean(busyId)}
+                            style={({ pressed }) => [
+                              ui.actionBtn,
+                              pressed && ui.pressed,
+                            ]}
+                          >
+                            {busy ? (
+                              <ActivityIndicator color="#5EEAD4" size="small" />
+                            ) : (
+                              <Text style={ui.actionLabel}>Obnovite</Text>
+                            )}
+                          </Pressable>
+                        ) : null}
+                        {active ? (
+                          <StudioDangerAction
+                            accessibilityLabel="Uklonite člana"
+                            onPress={() => {
+                              void onRemoveMember(item);
+                            }}
+                            disabled={Boolean(busyId)}
+                            busy={busy}
+                            spinnerColor="#5EEAD4"
+                          />
+                        ) : null}
+                      </>
+                    )}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+        </>
+      ) : (
+        <>
           <StudioListHead
             sectionLabel="Tim"
             dayLabel="Osoblje"
@@ -966,12 +801,7 @@ export default function StudioMembersScreen({
             countStrong={activeStaff.length > 0}
           />
 
-              {loading ? (
-                <View style={ui.loadingRow}>
-                  <ActivityIndicator color="#5EEAD4" size="small" />
-                  <Text style={ui.hint}>Učitavamo tim…</Text>
-                </View>
-              ) : null}
+          {loading ? <StudioLoadingRow hint="Učitavamo tim…" /> : null}
 
           {!loading && activeStaff.length === 0 ? (
             <StudioEmptyState
@@ -983,105 +813,42 @@ export default function StudioMembersScreen({
             />
           ) : null}
 
-              {!loading && activeStaff.length > 0 ? (
-                <View style={ui.list}>
-                  {activeStaff.map((item) => {
-                    const displayName = item.name || 'Trener';
-                    const busy = busyId === item.id;
-                    const isOwner = item.role === 'BUSINESS_OWNER';
-                    return (
-                      <View key={item.id} style={ui.row}>
-                        <View style={ui.avatar}>
-                          <Text style={ui.avatarText}>
-                            {displayName.trim().slice(0, 1).toUpperCase() || 'T'}
-                          </Text>
-                        </View>
-                        <View style={ui.rowCopy}>
-                          <View style={ui.rowTitle}>
-                            <Text style={ui.rowName} numberOfLines={1}>
-                              {displayName}
-                            </Text>
-                            <Text style={[ui.badge, ui.badgeOk]}>
-                              {item.title || (isOwner ? 'Vlasnik' : 'Trener')}
-                            </Text>
-                          </View>
-                          <Text style={ui.rowMeta} numberOfLines={2}>
-                            {item.email || 'Bez e-pošte'}
-                            {item.phone ? ` · ${item.phone}` : ''}
-                            {` · ${isOwner ? 'Vlasnik' : 'Trener'}`}
-                          </Text>
-                          <View style={ui.actions}>
-                            {item.role === 'STAFF' ? (
-                              <Pressable
-                                accessibilityRole="button"
-                                accessibilityLabel="Uklonite trenera"
-                                onPress={() => {
-                                  void onRemoveStaff(item);
-                                }}
-                                disabled={Boolean(busyId)}
-                                style={({ pressed }) => [
-                                  ui.actionBtn,
-                                  ui.actionDanger,
-                                  pressed && ui.pressed,
-                                ]}
-                              >
-                                {busy ? (
-                                  <ActivityIndicator color="#FCA5A5" size="small" />
-                                ) : (
-                                  <Text style={ui.actionDangerLabel}>
-                                    Uklonite
-                                  </Text>
-                                )}
-                              </Pressable>
-                            ) : (
-                              <Text style={styles.teamNote}>
-                                Uvijek dostupan za rezervacije
-                              </Text>
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : null}
-            </>
-          )}
+          {!loading && activeStaff.length > 0 ? (
+            <View style={ui.list}>
+              {activeStaff.map((item) => {
+                const displayName = item.name || 'Trener';
+                const busy = busyId === item.id;
+                const isOwner = item.role === 'BUSINESS_OWNER';
+                return (
+                  <StudioEntityRow
+                    key={item.id}
+                    name={displayName}
+                    initialFallback="T"
+                    badge={item.title || (isOwner ? 'Vlasnik' : 'Trener')}
+                    meta={`${item.email || 'Bez e-pošte'}${item.phone ? ` · ${item.phone}` : ''} · ${isOwner ? 'Vlasnik' : 'Trener'}`}
+                    actions={
+                      item.role === 'STAFF' ? (
+                        <StudioDangerAction
+                          accessibilityLabel="Uklonite trenera"
+                          onPress={() => {
+                            void onRemoveStaff(item);
+                          }}
+                          disabled={Boolean(busyId)}
+                          busy={busy}
+                        />
+                      ) : (
+                        <Text style={rowStyles.teamNote}>
+                          Uvijek dostupan za rezervacije
+                        </Text>
+                      )
+                    }
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+        </>
+      )}
     </StudioScreenShell>
   );
 }
-
-const styles = StyleSheet.create({
-  rowPlan: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.72)',
-  },
-  barTrack: {
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(232, 242, 239, 0.1)',
-    overflow: 'hidden',
-    marginTop: 2,
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: 999,
-    backgroundColor: 'rgba(94, 234, 212, 0.75)',
-  },
-  barHot: {
-    backgroundColor: 'rgba(251, 191, 36, 0.85)',
-  },
-  expiry: {
-    color: 'rgba(232, 242, 239, 0.48)',
-  },
-  expirySoon: {
-    color: 'rgba(251, 191, 36, 0.95)',
-  },
-  teamNote: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 12,
-    color: 'rgba(232, 242, 239, 0.45)',
-    paddingVertical: 6,
-  },
-});
