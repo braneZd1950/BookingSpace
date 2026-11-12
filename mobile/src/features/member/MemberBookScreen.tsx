@@ -113,7 +113,7 @@ export default function MemberBookScreen({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const data = await getMe();
         const user = data?.user || data;
@@ -142,7 +142,7 @@ export default function MemberBookScreen({
       return undefined;
     }
     let cancelled = false;
-    (async () => {
+    void (async () => {
       setLoadingSlots(true);
       try {
         const data = await getAvailability(tenantId, serviceId, date);
@@ -457,7 +457,9 @@ export default function MemberBookScreen({
                   {allowed ? (
                     <Pressable
                       disabled={busyId === item.id}
-                      onPress={() => onCancel(item.id)}
+                      onPress={() => {
+                        void onCancel(item.id);
+                      }}
                       style={({ pressed }) => [styles.cancelBtn, pressed && styles.pressed]}
                     >
                       <Text style={styles.cancelLabel}>

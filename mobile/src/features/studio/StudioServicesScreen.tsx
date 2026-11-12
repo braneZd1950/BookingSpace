@@ -467,7 +467,9 @@ export default function StudioServicesScreen({
                       <Text style={ui.actionLabel}>Uredi</Text>
                     </Pressable>
                     <Pressable
-                      onPress={() => onToggleActive(item)}
+                      onPress={() => {
+                        void onToggleActive(item);
+                      }}
                       disabled={Boolean(busyId)}
                       style={({ pressed }) => [
                         ui.actionBtn,

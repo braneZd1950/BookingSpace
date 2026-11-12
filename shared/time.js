@@ -34,8 +34,9 @@ export function isValidTimeZone(timeZone) {
   try {
     Intl.DateTimeFormat('en-US', { timeZone });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (error instanceof RangeError) return false;
+    throw error;
   }
 }
 

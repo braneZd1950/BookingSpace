@@ -5,16 +5,18 @@ import { logout } from '../api/auth.js';
 export function useOwnerLogout(onLogout) {
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = useCallback(async () => {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } catch {
-      /* lokalni logout */
-    } finally {
-      setLoggingOut(false);
-      onLogout?.();
-    }
+  const handleLogout = useCallback(() => {
+    void (async () => {
+      setLoggingOut(true);
+      try {
+        await logout();
+      } catch {
+        /* lokalni logout */
+      } finally {
+        setLoggingOut(false);
+        onLogout?.();
+      }
+    })();
   }, [onLogout]);
 
   return { loggingOut, handleLogout };

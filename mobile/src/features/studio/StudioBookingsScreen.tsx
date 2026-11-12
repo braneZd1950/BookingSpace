@@ -153,7 +153,7 @@ export default function StudioBookingsScreen({
   useEffect(() => {
     let cancelled = false;
     if (!tenantId || isLocalDesignMode()) return undefined;
-    (async () => {
+    void (async () => {
       try {
         const [membersData, staffData, servicesData] = await Promise.all([
           listMemberships(tenantId),
@@ -207,7 +207,7 @@ export default function StudioBookingsScreen({
     }
     setLoadingSlots(true);
     setSlotTime('');
-    (async () => {
+    void (async () => {
       try {
         const data = await getAvailability(tenantId, serviceId, date);
         if (cancelled) return;
@@ -555,7 +555,9 @@ export default function StudioBookingsScreen({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Otkaži rezervaciju"
-                    onPress={() => handleCancel(item.id)}
+                    onPress={() => {
+                      void handleCancel(item.id);
+                    }}
                     disabled={Boolean(busyId)}
                 style={({ pressed }) => [
                   styles.cancelBtn,

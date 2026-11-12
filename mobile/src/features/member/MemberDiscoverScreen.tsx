@@ -66,7 +66,7 @@ export default function MemberDiscoverScreen({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       setLoading(true);
       setError('');
       try {

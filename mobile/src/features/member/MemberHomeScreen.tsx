@@ -124,7 +124,7 @@ export default function MemberHomeScreen({
 
   useCancelledEffect(({ cancelled }) => {
     setPanel('home');
-    (async () => {
+    void (async () => {
       setLoading(true);
       setError('');
       try {

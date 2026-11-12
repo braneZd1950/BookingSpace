@@ -202,7 +202,9 @@ export default function StudioPhoneField({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Spremi telefon"
-                onPress={save}
+                onPress={() => {
+                  void save();
+                }}
                 disabled={saving}
                 hitSlop={8}
                 style={({ pressed }) => [

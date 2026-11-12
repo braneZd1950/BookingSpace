@@ -111,7 +111,7 @@ export default function MemberSettingsScreen({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const data = await getMe();
         const user = data?.user || data;
@@ -320,7 +320,9 @@ export default function MemberSettingsScreen({
             return (
               <Pressable
                 key={option.value}
-                onPress={() => saveUiTheme(option.value)}
+                onPress={() => {
+                  void saveUiTheme(option.value);
+                }}
                 style={({ pressed }) => [
                   styles.themeOption,
                   {

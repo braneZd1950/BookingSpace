@@ -64,7 +64,7 @@ export default function StudioHomeScreen({
   const [hint, setHint] = useState('');
 
   useCancelledEffect(({ cancelled }) => {
-    (async () => {
+    void (async () => {
       try {
         const data = await getMyTenants();
         const owned = data?.tenants?.find(

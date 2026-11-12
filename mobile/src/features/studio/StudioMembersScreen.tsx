@@ -902,7 +902,9 @@ export default function StudioMembersScreen({
                               <Pressable
                                 accessibilityRole="button"
                                 accessibilityLabel="Obnovite članarinu"
-                                onPress={() => onRenew(item)}
+                                onPress={() => {
+                                  void onRenew(item);
+                                }}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
                                   ui.actionBtn,
@@ -920,7 +922,9 @@ export default function StudioMembersScreen({
                               <Pressable
                                 accessibilityRole="button"
                                 accessibilityLabel="Uklonite člana"
-                                onPress={() => onRemoveMember(item)}
+                                onPress={() => {
+                                  void onRemoveMember(item);
+                                }}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
                                   ui.actionBtn,
@@ -997,7 +1001,9 @@ export default function StudioMembersScreen({
                               <Pressable
                                 accessibilityRole="button"
                                 accessibilityLabel="Uklonite trenera"
-                                onPress={() => onRemoveStaff(item)}
+                                onPress={() => {
+                                  void onRemoveStaff(item);
+                                }}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
                                   ui.actionBtn,
