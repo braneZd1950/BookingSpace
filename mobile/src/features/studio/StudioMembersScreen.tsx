@@ -129,6 +129,26 @@ function errorStatus(failure: unknown) {
   return 0;
 }
 
+function inviteNotice(
+  kind: 'member' | 'staff',
+  email: string,
+  result: { accountCreated?: boolean; inviteSent?: boolean },
+) {
+  if (result.accountCreated && result.inviteSent) {
+    return kind === 'member'
+      ? `Član je dodan. Lozinka za prijavu poslana je na ${email}.`
+      : `Trener je dodan. Lozinka je poslana na ${email}.`;
+  }
+  if (result.accountCreated && !result.inviteSent) {
+    return kind === 'member'
+      ? `Član je dodan, ali e-pošta s lozinkom nije poslana na ${email}. Provjerite SMTP ili javite se članu.`
+      : `Trener je dodan, ali e-pošta s lozinkom nije poslana na ${email}.`;
+  }
+  return kind === 'member'
+    ? 'Članarina je aktivirana za postojeći račun. Lozinka nije mijenjana.'
+    : 'Trener je dodan u tim.';
+}
+
 /**
  * Članovi + Tim — paritet s web MembersPage (lista, dodaj, obnovi, ukloni).
  */
@@ -241,8 +261,11 @@ export default function StudioMembersScreen({
         try {
           const plansData = await listPlans(tenantId);
           setPlans(Array.isArray(plansData?.plans) ? plansData.plans : []);
-        } catch {
+        } catch (failure: unknown) {
           setPlans([]);
+          if (__DEV__) {
+            console.warn('StudioMembers plans load failed', errorCode(failure) || failure);
+          }
         }
       }
       setLoading(false);
@@ -284,12 +307,17 @@ export default function StudioMembersScreen({
             item.status === 'CONFIRMED' || item.status === 'COMPLETED',
         ).length,
       );
-    } catch {
+    } catch (failure: unknown) {
       setMemberships([]);
       setPlans([]);
       setStaff([]);
       setVisitsThisMonth(0);
-      setError('Podaci se nisu učitali. Pokušajte ponovno.');
+      const detail = errorCode(failure);
+      setError(
+        detail
+          ? `Podaci se nisu učitali (${detail}). Pokušajte ponovno.`
+          : 'Podaci se nisu učitali. Pokušajte ponovno.',
+      );
     } finally {
       setLoading(false);
     }
@@ -407,13 +435,7 @@ export default function StudioMembersScreen({
         method: 'CASH',
       });
       setFilter('active');
-      const nextNotice =
-        result.accountCreated && result.inviteSent
-          ? `Član je dodan. Lozinka za prijavu poslana je na ${cleanEmail}.`
-          : result.accountCreated && !result.inviteSent
-            ? `Član je dodan, ali e-pošta s lozinkom nije poslana na ${cleanEmail}. Provjerite SMTP ili javite se članu.`
-            : 'Članarina je aktivirana za postojeći račun. Lozinka nije mijenjana.';
-      closeForm(() => setNotice(nextNotice));
+      closeForm(() => setNotice(inviteNotice('member', cleanEmail, result)));
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -453,13 +475,7 @@ export default function StudioMembersScreen({
         phone: phone.trim() || undefined,
         title: title.trim() || 'Trener',
       });
-      const nextNotice =
-        result.accountCreated && result.inviteSent
-          ? `Trener je dodan. Lozinka je poslana na ${cleanEmail}.`
-          : result.accountCreated && !result.inviteSent
-            ? `Trener je dodan, ali e-pošta s lozinkom nije poslana na ${cleanEmail}.`
-            : 'Trener je dodan u tim.';
-      closeForm(() => setNotice(nextNotice));
+      closeForm(() => setNotice(inviteNotice('staff', cleanEmail, result)));
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -496,8 +512,11 @@ export default function StudioMembersScreen({
       });
       setNotice(`Članarina za ${item.user?.name || 'člana'} je obnovljena.`);
       await load();
-    } catch {
-      setActionError('Članarina nije obnovljena.');
+    } catch (failure: unknown) {
+      const code = errorCode(failure);
+      setActionError(
+        code ? `Članarina nije obnovljena (${code}).` : 'Članarina nije obnovljena.',
+      );
     } finally {
       setBusyId('');
     }
@@ -514,8 +533,9 @@ export default function StudioMembersScreen({
       await suspendMembership(item.id);
       setNotice(`${item.user?.name || 'Član'} je uklonjen/a.`);
       await load();
-    } catch {
-      setActionError('Član nije uklonjen.');
+    } catch (failure: unknown) {
+      const code = errorCode(failure);
+      setActionError(code ? `Član nije uklonjen (${code}).` : 'Član nije uklonjen.');
     } finally {
       setBusyId('');
     }
@@ -563,13 +583,7 @@ export default function StudioMembersScreen({
       style={({ pressed }) => [ui.addBtnSolid, pressed && ui.pressed]}
     >
       <Ionicons
-        name={
-          formOpen
-            ? 'close'
-            : section === 'team'
-              ? 'person-add-outline'
-              : 'person-add-outline'
-        }
+        name={formOpen ? 'close' : 'person-add-outline'}
         size={18}
         color="#061210"
       />

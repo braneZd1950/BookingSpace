@@ -4,7 +4,7 @@ import { studioUiStyles as ui } from './studioUiStyles.js';
 type StudioFormSubmitProps = {
   label: string;
   accessibilityLabel?: string;
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
   saving?: boolean;
   error?: string;
 };
@@ -22,7 +22,9 @@ export default function StudioFormSubmit({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel || label}
-        onPress={onPress}
+        onPress={() => {
+          void onPress();
+        }}
         disabled={saving}
         style={({ pressed }) => [
           ui.primaryBtn,
