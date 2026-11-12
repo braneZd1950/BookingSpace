@@ -108,7 +108,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const token = await getToken();
         if (!token) return;
@@ -238,7 +238,9 @@ export default function App() {
           onBack={() => setScreen('landing')}
           onForgotPassword={() => setScreen('forgot')}
           onRegister={() => setScreen('register')}
-          onSuccess={(result) => openSession(result, 'login')}
+          onSuccess={(result) => {
+            void openSession(result, 'login');
+          }}
         />
       </View>
     );
@@ -261,7 +263,9 @@ export default function App() {
         <RegisterScreen
           onBack={() => setScreen('login')}
           onLogin={() => setScreen('login')}
-          onSuccess={(result) => openSession(result, 'register')}
+          onSuccess={(result) => {
+            void openSession(result, 'register');
+          }}
         />
       </View>
     );
