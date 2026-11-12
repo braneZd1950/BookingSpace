@@ -57,15 +57,16 @@ export async function installOrDownloadApp() {
     link.href = apk;
     link.rel = 'noopener noreferrer';
     if (isDirectApk) {
+      // Browser only downloads the file — Android install dialog opens after the user taps it.
       link.setAttribute('download', 'anyminutes.apk');
     } else {
-      // Expo build page / install landing — open so the device can install
+      // Expo build / install page (not a raw .apk)
       link.target = '_blank';
     }
     document.body.appendChild(link);
     link.click();
     link.remove();
-    return 'apk';
+    return isDirectApk ? 'apk' : 'expo-link';
   }
 
   if (deferredInstallPrompt) {

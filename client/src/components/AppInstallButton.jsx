@@ -36,7 +36,13 @@ const [hint, setHint] = useState('');
     try {
       const result = await installOrDownloadApp();
       if (result === 'apk') {
-        setHint('Preuzimanje je pokrenuto. Otvorite datoteku i potvrdite instalaciju.');
+        setHint(
+          'Datoteka se preuzima. Android ne otvara instalaciju sam — u obavijestima ili Downloadima otvorite anyminutes.apk, dopustite „Nepoznate aplikacije” za Chrome, pa potvrdite Instaliraj.',
+        );
+      } else if (result === 'expo-link') {
+        setHint(
+          'Otvorena je Expo stranica za instalaciju. Na telefonu pratite „Install” tamo. Sistemski dijalog se pojavi tek nakon što potvrdite preuzimanje/instalaciju.',
+        );
       } else if (result === 'accepted' || result === 'installed') {
         setHint('Aplikacija je dodana na uređaj.');
       } else if (result === 'ios-hint') {
