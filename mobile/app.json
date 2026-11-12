@@ -12,9 +12,11 @@
       "backgroundColor": "#060908"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "hr.anyminutes.app"
     },
     "android": {
+      "package": "hr.anyminutes.app",
       "adaptiveIcon": {
         "backgroundColor": "#060908",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -28,6 +30,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cc5d8cb4-f6c1-4d4a-97b2-cb6feefd7776"
+      }
+    }
   }
 }
