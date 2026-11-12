@@ -7,13 +7,13 @@ import {
 } from '../lib/appInstall.js';
 
 /**
- * „Preuzmite aplikaciju” — APK download ili PWA install na uređaj (bez storeova).
+ * „Preuzmite aplikaciju” — APK install na Androidu ili PWA (bez storeova).
  */
 export default function AppInstallButton({
   className = '',
   label = 'Preuzmite aplikaciju',
 }) {
-const [hint, setHint] = useState('');
+  const [hint, setHint] = useState('');
   const [busy, setBusy] = useState(false);
   const already = isStandaloneDisplay();
 
@@ -35,13 +35,17 @@ const [hint, setHint] = useState('');
     setHint('');
     try {
       const result = await installOrDownloadApp();
-      if (result === 'apk') {
+      if (result === 'apk-android') {
         setHint(
-          'Datoteka se preuzima. Android ne otvara instalaciju sam — u obavijestima ili Downloadima otvorite anyminutes.apk, dopustite „Nepoznate aplikacije” za Chrome, pa potvrdite Instaliraj.',
+          'Ako se ne otvori dijalog „Instaliraj”, u Postavkama dopustite instalaciju iz Chromea (Nepoznati izvori), pa ponovno pritisnite gumb.',
+        );
+      } else if (result === 'apk-desktop') {
+        setHint(
+          'APK se instalira na Android telefonu, ne na računalu. APK izgleda kao ZIP — nemojte ga extraktati. Otvorite ovu stranicu na telefonu ili skenirajte QR s Expo builda.',
         );
       } else if (result === 'expo-link') {
         setHint(
-          'Otvorena je Expo stranica za instalaciju. Na telefonu pratite „Install” tamo. Sistemski dijalog se pojavi tek nakon što potvrdite preuzimanje/instalaciju.',
+          'Na telefonu otvorite Expo stranicu i pritisnite Install. Nemojte na računalu skidati/extractati ZIP.',
         );
       } else if (result === 'accepted' || result === 'installed') {
         setHint('Aplikacija je dodana na uređaj.');
@@ -54,8 +58,8 @@ const [hint, setHint] = useState('');
       } else {
         setHint(
           getMobileApkUrl()
-            ? 'Preuzimanje nije uspjelo. Pokušajte ponovno.'
-            : 'Otvorite stranicu u Chromeu na Androidu da instalirate aplikaciju na početni zaslon.',
+            ? 'Preuzimanje nije uspjelo. Pokušajte ponovno na Android Chromeu.'
+            : 'Otvorite stranicu u Chromeu na Androidu da instalirate aplikaciju.',
         );
       }
     } finally {

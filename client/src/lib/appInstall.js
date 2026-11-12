@@ -1,13 +1,24 @@
 /**
  * Web distribucija mobilne app bez storeova:
- * 1) VITE_MOBILE_APK_URL → direktno preuzimanje APK-a
+ * 1) VITE_MOBILE_APK_URL → na Androidu otvori APK (instalacija), na desktopu uputa
  * 2) inače PWA install prompt (Chrome/Android)
+ *
+ * Napomena: APK je ZIP format — ne extraktati na Windowsu. Instalira se samo na Androidu.
  */
 
 let deferredInstallPrompt = null;
 
 export function getMobileApkUrl() {
   return String(import.meta.env.VITE_MOBILE_APK_URL || '').trim();
+}
+
+export function isAndroidBrowser() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android/i.test(navigator.userAgent || '');
+}
+
+export function isDirectApkUrl(url) {
+  return /\.apk(\?|#|$)/i.test(String(url || ''));
 }
 
 /** Call once from app boot to capture the browser install event. */
@@ -45,28 +56,41 @@ export function isStandaloneDisplay() {
 }
 
 /**
- * @returns {Promise<'apk'|'installed'|'accepted'|'dismissed'|'ios-hint'|'unavailable'|'already'>}
+ * @returns {Promise<
+ *   'apk-android'|'apk-desktop'|'expo-link'|'installed'|'accepted'|
+ *   'dismissed'|'ios-hint'|'unavailable'|'already'
+ * >}
  */
 export async function installOrDownloadApp() {
   if (isStandaloneDisplay()) return 'already';
 
   const apk = getMobileApkUrl();
   if (apk) {
-    const isDirectApk = /\.apk(\?|#|$)/i.test(apk);
+    const direct = isDirectApkUrl(apk);
+    const android = isAndroidBrowser();
+
+    // Desktop: do not force APK download (Windows treats APK as broken ZIP).
+    if (!android && direct) {
+      return 'apk-desktop';
+    }
+
+    // Android: NEVER use the HTML download attribute for APK.
+    // That only saves the file; "Open" then shows content:// blank page.
+    // Navigating to the APK URL lets Chrome hand off to the package installer.
+    if (android && direct) {
+      window.location.assign(apk);
+      return 'apk-android';
+    }
+
+    // Expo build page / non-direct URL
     const link = document.createElement('a');
     link.href = apk;
     link.rel = 'noopener noreferrer';
-    if (isDirectApk) {
-      // Browser only downloads the file — Android install dialog opens after the user taps it.
-      link.setAttribute('download', 'anyminutes.apk');
-    } else {
-      // Expo build / install page (not a raw .apk)
-      link.target = '_blank';
-    }
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     link.remove();
-    return isDirectApk ? 'apk' : 'expo-link';
+    return 'expo-link';
   }
 
   if (deferredInstallPrompt) {
