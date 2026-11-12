@@ -52,10 +52,16 @@ export async function installOrDownloadApp() {
 
   const apk = getMobileApkUrl();
   if (apk) {
+    const isDirectApk = /\.apk(\?|#|$)/i.test(apk);
     const link = document.createElement('a');
     link.href = apk;
-    link.setAttribute('download', 'anyminutes.apk');
-    link.rel = 'noopener';
+    link.rel = 'noopener noreferrer';
+    if (isDirectApk) {
+      link.setAttribute('download', 'anyminutes.apk');
+    } else {
+      // Expo build page / install landing — open so the device can install
+      link.target = '_blank';
+    }
     document.body.appendChild(link);
     link.click();
     link.remove();

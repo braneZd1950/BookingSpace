@@ -65,9 +65,17 @@ Bez storeova — gumb **instalira na uređaj** (ne otvara novu stranicu):
 | 2 | Inače PWA install prompt (Chrome / Android) |
 | 3 | iPhone → uputa: Podijeli → Dodaj na početni zaslon |
 
-| Key | Zašto |
+| Key | Vrijednost |
 | --- | --- |
-| `VITE_MOBILE_APK_URL` | (opcionalno) HTTPS link na `.apk` za sideload |
+| `VITE_MOBILE_APK_URL` | Direktni `.apk` **ili** Expo build install link |
+
+Primjer (Expo install stranica nakon EAS builda):
+
+`VITE_MOBILE_APK_URL=https://expo.dev/accounts/branezd1950/projects/anyminutes/builds/<BUILD_ID>`
+
+Bolje dugoročno: stavi APK u `client/public/downloads/anyminutes.apk` pa:
+
+`VITE_MOBILE_APK_URL=https://bookingspaceapp.onrender.com/downloads/anyminutes.apk`
 
 Nakon izmjene `VITE_*`: **Clear build cache & deploy**.
 
