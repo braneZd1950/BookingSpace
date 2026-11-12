@@ -28,6 +28,7 @@ import {
   readStoredUiTheme,
   syncUiTheme,
 } from './src/lib/uiTheme.js';
+import AppErrorBoundary from './src/ui/AppErrorBoundary';
 
 type AppScreen =
   | 'landing'
@@ -59,13 +60,29 @@ type MemberStudio = {
  * Partner → StudioHome. Član → studio članarine. Token → restore bez ponovne prijave.
  */
 export default function App() {
-  const [fontsLoaded] = useFonts(APP_FONTS);
+  return (
+    <AppErrorBoundary>
+      <AppRoot />
+    </AppErrorBoundary>
+  );
+}
+
+function AppRoot() {
+  const [fontsLoaded, fontError] = useFonts(APP_FONTS);
+  const [fontWaitExpired, setFontWaitExpired] = useState(false);
   const [booting, setBooting] = useState(true);
   const [screen, setScreen] = useState<AppScreen>('landing');
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [sessionSource, setSessionSource] = useState<'login' | 'register'>('login');
   const [memberStudio, setMemberStudio] = useState<MemberStudio | null>(null);
   const [uiTheme, setUiTheme] = useState(() => readStoredUiTheme());
+
+  const fontsReady = fontsLoaded || Boolean(fontError) || fontWaitExpired;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFontWaitExpired(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     applyUiTheme(uiTheme);
@@ -174,10 +191,11 @@ export default function App() {
     }
   }
 
-  if (booting || !fontsLoaded) {
+  if (booting || !fontsReady) {
     return (
       <View style={[styles.shell, styles.boot]}>
         <ActivityIndicator color="#5EEAD4" />
+        <Text style={styles.bootLabel}>Učitavanje…</Text>
       </View>
     );
   }
@@ -361,6 +379,11 @@ const styles = StyleSheet.create({
   boot: {
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 14,
+  },
+  bootLabel: {
+    color: 'rgba(232, 242, 239, 0.7)',
+    fontSize: 15,
   },
   placeholder: {
     paddingHorizontal: 28,
