@@ -21,9 +21,13 @@ test.describe('Auth screens', () => {
     await expect(page).toHaveURL(/\/register$/);
   });
 
-  test('register page loads business signup entry', async ({ page }) => {
+  test('register page loads role chooser then partner signup', async ({ page }) => {
     await page.goto('/register');
+    await expect(page.getByRole('heading', { name: /Kako se želite registrirati/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Nastavi kao partner/i })).toBeVisible();
+
+    await page.getByRole('button', { name: /Nastavi kao partner/i }).click();
     await expect(page.getByRole('heading', { name: /Pokrenite svoj prostor/i })).toBeVisible();
-    await expect(page.getByText(/vlastitu poveznicu za rezervacije/i)).toBeVisible();
+    await expect(page.getByText(/Naziv, niša i račun/i)).toBeVisible();
   });
 });
