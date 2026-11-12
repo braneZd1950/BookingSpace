@@ -22,8 +22,8 @@ Predložak: [`.env.production.example`](../.env.production.example)
 | `JWT_SECRET` | ≥ 32 znaka |
 | `EXPORT_SEAL_SECRET` | druga tajna ≠ JWT |
 | `JWT_EXPIRES_IN` | npr. `24h` |
-| `CLIENT_ORIGIN` | `https://VAS.onrender.com` |
-| `VITE_API_URL` | `https://VAS.onrender.com/api` |
+| `CLIENT_ORIGIN` | `https://bookingspaceapp.onrender.com` |
+| `VITE_API_URL` | `https://bookingspaceapp.onrender.com/api` |
 | `VITE_APP_MODE` | `production` |
 | `ADMIN_EMAIL_BOOTSTRAP` | `false` |
 | `ADMIN_EMAILS` | prazno u produkciji |
@@ -55,6 +55,17 @@ Predložak: [`.env.production.example`](../.env.production.example)
 
 `GOOGLE_CLIENT_ID` + `VITE_GOOGLE_CLIENT_ID`, `CLIENT_ORIGINS`, `VITE_SHOW_HOME_PARTNERS`
 
+### Gumb „Preuzmite aplikaciju” (Home)
+
+Trenutno **web distribucija** (bez storeova). U produkciji gumb vodi na `/mobile`.
+
+| Key | Zašto |
+| --- | --- |
+| `VITE_MOBILE_WEB_URL` | (opcionalno) direktni Expo web host — CTA „Otvorite mobilnu aplikaciju” |
+| `VITE_MOBILE_APP_URL` | (opcionalno) override Home gumba; default `/mobile` |
+
+Nakon izmjene `VITE_*`: **Clear build cache & deploy**.
+
 ## Ne stavljati na Render
 
 `EMAIL_API_KEY`, `GOOGLE_CLIENT_SECRET`, `STRIPE_*`, `ANDROID_APP_*`, `API_ORIGIN`, `APP_ORIGIN`, localhost URL-ovi.
@@ -78,7 +89,7 @@ Predložak: [`.env.production.example`](../.env.production.example)
 5. Smoke:
 
 ```powershell
-$env:SMOKE_API="https://VAS.onrender.com/api"
-$env:SMOKE_WEB="https://VAS.onrender.com"
+$env:SMOKE_API="https://bookingspaceapp.onrender.com/api"
+$env:SMOKE_WEB="https://bookingspaceapp.onrender.com"
 npm run smoke
 ```
