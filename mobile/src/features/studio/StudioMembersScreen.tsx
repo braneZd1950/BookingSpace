@@ -24,7 +24,9 @@ import {
   localDesignMembers,
   localDesignStaff,
 } from './localDesignFixtures.js';
+import StudioContactFields from './StudioContactFields';
 import StudioEmptyState from './StudioEmptyState';
+import StudioFormSubmit from './StudioFormSubmit';
 import StudioListHead from './StudioListHead';
 import StudioPresetRow from './StudioPresetRow';
 import StudioScreenShell from './StudioScreenShell';
@@ -686,33 +688,13 @@ export default function StudioMembersScreen({
                     <Text style={ui.formHint}>
                       Novom članu šaljemo e-poštu s privremenom lozinkom za prijavu.
                     </Text>
-                    <TextInput
-                      style={ui.input}
-                      value={name}
-                      onChangeText={setName}
-                      placeholder="Ime i prezime"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      autoCapitalize="words"
-                      editable={!saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={email}
-                      onChangeText={setEmail}
-                      placeholder="E-pošta"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={phone}
-                      onChangeText={setPhone}
-                      placeholder="Telefon (opcionalno)"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      keyboardType="phone-pad"
+                    <StudioContactFields
+                      name={name}
+                      email={email}
+                      phone={phone}
+                      onChangeName={setName}
+                      onChangeEmail={setEmail}
+                      onChangePhone={setPhone}
                       editable={!saving}
                     />
                     <StudioPresetRow
@@ -731,24 +713,13 @@ export default function StudioMembersScreen({
                       keyboardType="number-pad"
                       editable={!saving}
                     />
-                    {formError ? <Text style={ui.error}>{formError}</Text> : null}
-                    <Pressable
-                      accessibilityRole="button"
+                    <StudioFormSubmit
+                      label="Dodaj člana"
                       accessibilityLabel="Spremi člana"
                       onPress={onAddMember}
-                      disabled={saving}
-                      style={({ pressed }) => [
-                        ui.primaryBtn,
-                        pressed && ui.pressed,
-                        saving && ui.disabled,
-                      ]}
-                    >
-                      {saving ? (
-                        <ActivityIndicator color="#061210" size="small" />
-                      ) : (
-                        <Text style={ui.primaryLabel}>Dodaj člana</Text>
-                      )}
-                    </Pressable>
+                      saving={saving}
+                      error={formError}
+                    />
                   </>
                 ) : (
                   <>
@@ -757,33 +728,13 @@ export default function StudioMembersScreen({
                       Članovi ga mogu izabrati pri rezervaciji. Novom računu
                       lozinka ide na e-poštu.
                     </Text>
-                    <TextInput
-                      style={ui.input}
-                      value={name}
-                      onChangeText={setName}
-                      placeholder="Ime i prezime"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      autoCapitalize="words"
-                      editable={!saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={email}
-                      onChangeText={setEmail}
-                      placeholder="E-pošta"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!saving}
-                    />
-                    <TextInput
-                      style={ui.input}
-                      value={phone}
-                      onChangeText={setPhone}
-                      placeholder="Telefon (opcionalno)"
-                      placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                      keyboardType="phone-pad"
+                    <StudioContactFields
+                      name={name}
+                      email={email}
+                      phone={phone}
+                      onChangeName={setName}
+                      onChangeEmail={setEmail}
+                      onChangePhone={setPhone}
                       editable={!saving}
                     />
                     <TextInput
@@ -794,24 +745,13 @@ export default function StudioMembersScreen({
                       placeholderTextColor="rgba(232, 242, 239, 0.28)"
                       editable={!saving}
                     />
-                    {formError ? <Text style={ui.error}>{formError}</Text> : null}
-                    <Pressable
-                      accessibilityRole="button"
+                    <StudioFormSubmit
+                      label="Dodaj trenera"
                       accessibilityLabel="Spremi trenera"
                       onPress={onAddStaff}
-                      disabled={saving}
-                      style={({ pressed }) => [
-                        ui.primaryBtn,
-                        pressed && ui.pressed,
-                        saving && ui.disabled,
-                      ]}
-                    >
-                      {saving ? (
-                        <ActivityIndicator color="#061210" size="small" />
-                      ) : (
-                        <Text style={ui.primaryLabel}>Dodaj trenera</Text>
-                      )}
-                    </Pressable>
+                      saving={saving}
+                      error={formError}
+                    />
                   </>
                 )}
               </Animated.View>

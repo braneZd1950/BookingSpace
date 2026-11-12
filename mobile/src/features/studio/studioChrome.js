@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
+import { StyleSheet } from 'react-native';
+import {
+  APP_GRADIENT,
+  APP_GRADIENT_LOCATIONS,
+  enterStyle,
+  useEnterAnimation,
+} from '../../lib/appShell.js';
 
-export const STUDIO_GRADIENT = ['#0C1815', '#070B0A', '#050706'];
-export const STUDIO_GRADIENT_LOCATIONS = [0, 0.42, 1];
+export const STUDIO_GRADIENT = APP_GRADIENT;
+export const STUDIO_GRADIENT_LOCATIONS = APP_GRADIENT_LOCATIONS;
 
 /** Shared shell styles for owner studio screens (boot → lead / title row). */
 export const studioChromeStyles = StyleSheet.create({
@@ -85,29 +89,9 @@ export const studioChromeStyles = StyleSheet.create({
 });
 
 export function useStudioEnterAnimation() {
-  const enter = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [enter]);
-  return enter;
+  return useEnterAnimation(520);
 }
 
 export function studioEnterStyle(enter) {
-  return {
-    opacity: enter,
-    transform: [
-      {
-        translateY: enter.interpolate({
-          inputRange: [0, 1],
-          outputRange: [14, 0],
-        }),
-      },
-    ],
-  };
+  return enterStyle(enter);
 }

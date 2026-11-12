@@ -4,28 +4,18 @@ import {
   Animated,
   Easing,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { logout } from '../../api/auth.js';
 import { getMyTenants, updateTenant } from '../../api/tenants.js';
-import AuthLegalStrip from '../auth/AuthLegalStrip';
-import {
-  STUDIO_GRADIENT,
-  STUDIO_GRADIENT_LOCATIONS,
-  studioChromeStyles as chrome,
-  studioEnterStyle,
-  useStudioEnterAnimation,
-} from './studioChrome.js';
+import { studioChromeStyles as chrome } from './studioChrome.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
+import StudioScreenShell from './StudioScreenShell';
 import { findSignupNiche } from '../auth/signupDefaults.js';
 import StudioAnalyticsScreen from './StudioAnalyticsScreen';
 import StudioBookingsScreen from './StudioBookingsScreen';
@@ -100,10 +90,6 @@ export default function StudioHomeScreen({
   fallbackEmail,
   onLogout,
 }: StudioHomeScreenProps) {
-  const { height } = useWindowDimensions();
-  const compact = height < 740;
-  const enter = useStudioEnterAnimation();
-
   const [studio, setStudio] = useState<StudioInfo | null>(
     fallbackName ? { name: fallbackName, email: fallbackEmail } : null,
   );
@@ -390,59 +376,31 @@ export default function StudioHomeScreen({
   }
 
   return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={STUDIO_GRADIENT as [string, string, ...string[]]}
-        locations={STUDIO_GRADIENT_LOCATIONS as [number, number, ...number[]]}
-        style={StyleSheet.absoluteFill}
-      />
-
-      <ScrollView
-        style={chrome.flex}
-        contentContainerStyle={[
-          chrome.stage,
-          {
-            paddingTop: compact ? 48 : 64,
-            paddingBottom: compact ? 28 : 40,
-            minHeight: height,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-      >
-        <Animated.View style={studioEnterStyle(enter)}>
-          <View style={styles.topBar}>
-            <Text style={styles.brand}>anyminutes</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Odjava"
-              onPress={handleLogout}
-              disabled={loggingOut}
-              hitSlop={10}
-              style={({ pressed }) => [styles.logoutBtn, pressed && ui.pressed]}
-            >
-              {loggingOut ? (
-                <ActivityIndicator color="#5EEAD4" size="small" />
-              ) : (
-                <Ionicons name="power-outline" size={22} color="#5EEAD4" />
-              )}
-            </Pressable>
-          </View>
-
-          <Text
-            style={[ui.title, compact && { fontSize: 34, lineHeight: 38 }]}
-            numberOfLines={2}
+    <StudioScreenShell
+      title={studioName}
+      lead="Sve za vaš studio na jednom mjestu — termini, kalendar, članovi, usluge i analitika."
+      topBar={
+        <View style={styles.topBar}>
+          <Text style={styles.brand}>anyminutes</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Odjava"
+            onPress={handleLogout}
+            disabled={loggingOut}
+            hitSlop={10}
+            style={({ pressed }) => [styles.logoutBtn, pressed && ui.pressed]}
           >
-            {studioName}
-          </Text>
-          <Text style={[chrome.lead, styles.leadHome]}>
-            Sve za vaš studio na jednom mjestu — termini, kalendar, članovi,
-            usluge i analitika.
-          </Text>
-
-          <View style={styles.facts} accessibilityLabel="Podaci poslovanja">
+            {loggingOut ? (
+              <ActivityIndicator color="#5EEAD4" size="small" />
+            ) : (
+              <Ionicons name="power-outline" size={22} color="#5EEAD4" />
+            )}
+          </Pressable>
+        </View>
+      }
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.facts} accessibilityLabel="Podaci poslovanja">
             <Text style={styles.factsTitle}>Podaci poslovanja</Text>
 
             {host ? (
@@ -611,33 +569,25 @@ export default function StudioHomeScreen({
               )}
             </View>
           </View>
-        </Animated.View>
 
-        <Animated.View style={{ opacity: enter, marginTop: 8 }}>
-          <Text style={styles.menuTitle}>Brzi izbornik</Text>
-          <View style={styles.menuGrid}>
-            {NAV_ITEMS.map((item) => (
-              <Pressable
-                key={item.id}
-                accessibilityRole="button"
-                accessibilityLabel={item.label}
-                onPress={() => onNavPress(item.id, item.label)}
-                style={({ pressed }) => [styles.menuCard, pressed && ui.pressed]}
-              >
-                <Ionicons name={item.icon} size={20} color="#5EEAD4" />
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Text style={styles.menuNote}>{item.note}</Text>
-              </Pressable>
-            ))}
-          </View>
-          {hint ? <Text style={styles.hint}>{hint}</Text> : null}
-        </Animated.View>
-
-        <View style={ui.footer}>
-          <AuthLegalStrip />
-        </View>
-      </ScrollView>
-    </View>
+      <Text style={styles.menuTitle}>Brzi izbornik</Text>
+      <View style={styles.menuGrid}>
+        {NAV_ITEMS.map((item) => (
+          <Pressable
+            key={item.id}
+            accessibilityRole="button"
+            accessibilityLabel={item.label}
+            onPress={() => onNavPress(item.id, item.label)}
+            style={({ pressed }) => [styles.menuCard, pressed && ui.pressed]}
+          >
+            <Ionicons name={item.icon} size={20} color="#5EEAD4" />
+            <Text style={styles.menuLabel}>{item.label}</Text>
+            <Text style={styles.menuNote}>{item.note}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+    </StudioScreenShell>
   );
 }
 
@@ -671,10 +621,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 22,
-  },
-  leadHome: {
-    maxWidth: 360,
-    marginBottom: 20,
   },
   brand: {
     fontFamily: 'CormorantGaramond_600SemiBold',

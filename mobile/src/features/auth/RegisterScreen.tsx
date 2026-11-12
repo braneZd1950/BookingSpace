@@ -9,10 +9,7 @@ import {
 import {
   ActivityIndicator,
   Animated,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -20,19 +17,12 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { register as registerRequest } from '../../api/auth.js';
+import AuthFormShell from './AuthFormShell';
 import AuthPasswordField from './AuthPasswordField';
 import { isEmail } from '../../../../shared/isEmail.js';
-import {
-  AUTH_GRADIENT,
-  AUTH_GRADIENT_LOCATIONS,
-  authChromeStyles as chrome,
-  authEnterStyle,
-} from './authChrome.js';
+import { authChromeStyles as chrome } from './authChrome.js';
 import { createTenant } from '../../api/tenants.js';
-import AuthLegalStrip from './AuthLegalStrip';
 import {
   defaultsForNiche,
   findSignupNiche,
@@ -198,55 +188,17 @@ export default function RegisterScreen({
         : 'Naziv, vrsta poslovanja i račun. Izgled stranice kasnije doradite na webu — ovdje odmah otvarate studio.';
 
   return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={AUTH_GRADIENT as [string, string, ...string[]]}
-        locations={AUTH_GRADIENT_LOCATIONS as [number, number, ...number[]]}
-        style={StyleSheet.absoluteFill}
-      />
-
-      <KeyboardAvoidingView
-        style={chrome.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          style={chrome.flex}
-          contentContainerStyle={[
-            chrome.stage,
-            {
-              paddingTop: compact ? 40 : 52,
-              paddingBottom: compact ? 28 : 40,
-              minHeight: height,
-            },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          <Animated.View style={authEnterStyle(enter)}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={intent === 'choose' ? 'Natrag na prijavu' : 'Natrag na izbor'}
-              onPress={goBack}
-              style={({ pressed }) => [chrome.backBtn, pressed && chrome.pressed]}
-            >
-              <Text style={chrome.backLabel}>
-                {intent === 'choose' ? '← Prijava' : '← Izbor uloge'}
-              </Text>
-            </Pressable>
-
-            <Text style={chrome.brand}>anyminutes</Text>
-            <Text style={[chrome.title, compact && { fontSize: 30, lineHeight: 34 }]}>
-              {title}
-            </Text>
-            <Text style={chrome.lead}>{lead}</Text>
-          </Animated.View>
-
-          <Animated.View
-            style={[chrome.form, { opacity: enter, marginTop: compact ? 22 : 30 }]}
-          >
-            {intent === 'choose' ? (
+    <AuthFormShell
+      backLabel={intent === 'choose' ? '← Prijava' : '← Izbor uloge'}
+      onBack={goBack}
+      title={title}
+      lead={lead}
+      compactTitleSize={30}
+      enter={enter}
+      stagePaddingTop={compact ? 40 : 52}
+      formMarginTop={compact ? 22 : 30}
+    >
+      {intent === 'choose' ? (
               <View style={styles.intentList}>
                 <Pressable
                   accessibilityRole="button"
@@ -478,22 +430,15 @@ export default function RegisterScreen({
               </>
             ) : null}
 
-            {intent !== 'choose' ? (
-              <Text style={chrome.linkMuted}>
-                Već imate račun?{' '}
-                <Text style={chrome.linkLabel} onPress={onLogin}>
-                  Prijavite se
-                </Text>
-              </Text>
-            ) : null}
-          </Animated.View>
-
-          <View style={chrome.footer}>
-            <AuthLegalStrip />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+      {intent !== 'choose' ? (
+        <Text style={chrome.linkMuted}>
+          Već imate račun?{' '}
+          <Text style={chrome.linkLabel} onPress={onLogin}>
+            Prijavite se
+          </Text>
+        </Text>
+      ) : null}
+    </AuthFormShell>
   );
 }
 
