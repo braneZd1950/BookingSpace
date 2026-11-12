@@ -22,7 +22,10 @@ import {
   STUDIO_GRADIENT,
   STUDIO_GRADIENT_LOCATIONS,
   studioChromeStyles as chrome,
+  studioEnterStyle,
+  useStudioEnterAnimation,
 } from './studioChrome.js';
+import { studioUiStyles as ui } from './studioUiStyles.js';
 import { findSignupNiche } from '../auth/signupDefaults.js';
 import StudioAnalyticsScreen from './StudioAnalyticsScreen';
 import StudioBookingsScreen from './StudioBookingsScreen';
@@ -99,7 +102,7 @@ export default function StudioHomeScreen({
 }: StudioHomeScreenProps) {
   const { height } = useWindowDimensions();
   const compact = height < 740;
-  const enter = useRef(new Animated.Value(0)).current;
+  const enter = useStudioEnterAnimation();
 
   const [studio, setStudio] = useState<StudioInfo | null>(
     fallbackName ? { name: fallbackName, email: fallbackEmail } : null,
@@ -157,17 +160,6 @@ export default function StudioHomeScreen({
       cancelled = true;
     };
   }, [fallbackName, fallbackEmail]);
-
-  useEffect(() => {
-    if (loading) return undefined;
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 560,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [loading, enter]);
 
   if (loading) {
     return (
@@ -420,19 +412,7 @@ export default function StudioHomeScreen({
         keyboardShouldPersistTaps="handled"
         bounces={false}
       >
-        <Animated.View
-          style={{
-            opacity: enter,
-            transform: [
-              {
-                translateY: enter.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [16, 0],
-                }),
-              },
-            ],
-          }}
-        >
+        <Animated.View style={studioEnterStyle(enter)}>
           <View style={styles.topBar}>
             <Text style={styles.brand}>anyminutes</Text>
             <Pressable
@@ -441,7 +421,7 @@ export default function StudioHomeScreen({
               onPress={handleLogout}
               disabled={loggingOut}
               hitSlop={10}
-              style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.logoutBtn, pressed && ui.pressed]}
             >
               {loggingOut ? (
                 <ActivityIndicator color="#5EEAD4" size="small" />
@@ -452,12 +432,12 @@ export default function StudioHomeScreen({
           </View>
 
           <Text
-            style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}
+            style={[ui.title, compact && { fontSize: 34, lineHeight: 38 }]}
             numberOfLines={2}
           >
             {studioName}
           </Text>
-          <Text style={styles.lead}>
+          <Text style={[chrome.lead, styles.leadHome]}>
             Sve za vaš studio na jednom mjestu — termini, kalendar, članovi,
             usluge i analitika.
           </Text>
@@ -567,7 +547,7 @@ export default function StudioHomeScreen({
                         style={({ pressed }) => [
                           styles.phoneIconBtn,
                           styles.phoneIconBtnPrimary,
-                          pressed && styles.pressed,
+                          pressed && ui.pressed,
                         ]}
                       >
                         {savingPhone ? (
@@ -584,7 +564,7 @@ export default function StudioHomeScreen({
                         hitSlop={8}
                         style={({ pressed }) => [
                           styles.phoneIconBtn,
-                          pressed && styles.pressed,
+                          pressed && ui.pressed,
                         ]}
                       >
                         <Ionicons
@@ -616,7 +596,7 @@ export default function StudioHomeScreen({
                         hitSlop={8}
                         style={({ pressed }) => [
                           styles.phoneAddBtn,
-                          pressed && styles.pressed,
+                          pressed && ui.pressed,
                         ]}
                       >
                         <Ionicons
@@ -642,7 +622,7 @@ export default function StudioHomeScreen({
                 accessibilityRole="button"
                 accessibilityLabel={item.label}
                 onPress={() => onNavPress(item.id, item.label)}
-                style={({ pressed }) => [styles.menuCard, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.menuCard, pressed && ui.pressed]}
               >
                 <Ionicons name={item.icon} size={20} color="#5EEAD4" />
                 <Text style={styles.menuLabel}>{item.label}</Text>
@@ -653,7 +633,7 @@ export default function StudioHomeScreen({
           {hint ? <Text style={styles.hint}>{hint}</Text> : null}
         </Animated.View>
 
-        <View style={styles.footer}>
+        <View style={ui.footer}>
           <AuthLegalStrip />
         </View>
       </ScrollView>
@@ -692,19 +672,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 22,
   },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 10,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
+  leadHome: {
     maxWidth: 360,
     marginBottom: 20,
   },
@@ -880,9 +848,4 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: 'rgba(94, 234, 212, 0.75)',
   },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 28,
-  },
-  pressed: { opacity: 0.82 },
 });

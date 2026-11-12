@@ -1,22 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Animated,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { listTenantBookings } from '../../api/bookings.js';
 import { listServices } from '../../api/services.js';
-import AuthLegalStrip from '../auth/AuthLegalStrip';
 import { isLocalDesignMode } from './localDesignFixtures.js';
+import StudioScreenShell from './StudioScreenShell';
+import { studioChromeStyles as chrome } from './studioChrome.js';
+import { studioUiStyles as ui } from './studioUiStyles.js';
 import {
   formatDay,
   monthCells,
@@ -29,12 +25,6 @@ import {
   dayPeak,
   occupancyLevel,
 } from '../../../../shared/calendarOccupancy.js';
-import {
-  STUDIO_GRADIENT,
-  STUDIO_GRADIENT_LOCATIONS,
-  studioChromeStyles as chrome,
-} from './studioChrome.js';
-
 type StudioCalendarScreenProps = {
   tenantId?: string;
   studioName?: string;
@@ -95,9 +85,6 @@ export default function StudioCalendarScreen({
   studioName,
   onBack,
 }: StudioCalendarScreenProps) {
-  const { height } = useWindowDimensions();
-  const compact = height < 740;
-  const enter = useRef(new Animated.Value(0)).current;
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -175,18 +162,6 @@ export default function StudioCalendarScreen({
     void load();
   }, [load]);
 
-  useEffect(() => {
-    if (loading) return undefined;
-    enter.setValue(0);
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [loading, enter, year, month]);
-
   if (loading) {
     return (
       <View style={chrome.boot}>
@@ -196,78 +171,30 @@ export default function StudioCalendarScreen({
   }
 
   return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={STUDIO_GRADIENT}
-        locations={STUDIO_GRADIENT_LOCATIONS}
-        style={StyleSheet.absoluteFill}
-      />
-      <ScrollView
-        style={chrome.flex}
-        contentContainerStyle={[
-          chrome.stage,
-          {
-            paddingTop: compact ? 48 : 64,
-            paddingBottom: compact ? 28 : 40,
-            minHeight: height,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        <Animated.View
-          style={{
-            opacity: enter,
-            transform: [
-              {
-                translateY: enter.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View style={chrome.topBar}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onBack}
-              hitSlop={10}
-              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={chrome.backLabel} numberOfLines={1}>
-                {studioName || 'Moj studio'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
-            Kalendar
-          </Text>
-          <Text style={chrome.lead}>
-            Mjesečni pregled zauzetosti. Detalji i rezervacije po danu.
-          </Text>
-
-          {usingLocalFixtures ? (
-            <Text style={styles.fixtureBanner}>
-              Lokalni demo podaci — samo za dizajn (__DEV__).
-            </Text>
-          ) : null}
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+    <StudioScreenShell
+      studioName={studioName}
+      onBack={onBack}
+      title="Kalendar"
+      lead="Mjesečni pregled zauzetosti. Detalji i rezervacije po danu."
+    >
+      {usingLocalFixtures ? (
+        <Text style={ui.fixtureBanner}>
+          Lokalni demo podaci — samo za dizajn (__DEV__).
+        </Text>
+      ) : null}
+      {error ? <Text style={ui.error}>{error}</Text> : null}
 
           <View style={styles.monthNav}>
             <Pressable
               onPress={() => setCursor(new Date(year, month - 1, 1))}
-              style={({ pressed }) => [styles.navBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.navBtn, pressed && ui.pressed]}
             >
               <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
             </Pressable>
             <Text style={styles.monthTitle}>{monthLabel(cursor)}</Text>
             <Pressable
               onPress={() => setCursor(new Date(year, month + 1, 1))}
-              style={({ pressed }) => [styles.navBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.navBtn, pressed && ui.pressed]}
             >
               <Ionicons name="chevron-forward" size={18} color="#5EEAD4" />
             </Pressable>
@@ -301,7 +228,7 @@ export default function StudioCalendarScreen({
                     styles.cell,
                     { backgroundColor: legend?.color },
                     active && styles.cellActive,
-                    pressed && styles.pressed,
+                    pressed && ui.pressed,
                   ]}
                 >
                   <Text
@@ -330,42 +257,25 @@ export default function StudioCalendarScreen({
             ))}
           </View>
 
-          <Text style={styles.sectionLabel}>Odabrani dan</Text>
-          <Text style={styles.dayTitle}>{formatDay(new Date(`${selected}T12:00:00`))}</Text>
-          {selectedList.length === 0 ? (
-            <Text style={styles.empty}>Nema rezervacija za ovaj dan.</Text>
-          ) : (
-            selectedList.map((item) => (
-              <View key={item.id} style={styles.row}>
-                <Text style={styles.rowTime}>
-                  {item.startTime}–{item.endTime}
-                </Text>
-                <Text style={styles.rowMeta}>{item.user?.name || 'Član'}</Text>
-              </View>
-            ))
-          )}
-        </Animated.View>
-        <View style={styles.footer}>
-          <AuthLegalStrip />
-        </View>
-      </ScrollView>
-    </View>
+      <Text style={ui.sectionLabel}>Odabrani dan</Text>
+      <Text style={styles.dayTitle}>{formatDay(new Date(`${selected}T12:00:00`))}</Text>
+      {selectedList.length === 0 ? (
+        <Text style={styles.emptyLine}>Nema rezervacija za ovaj dan.</Text>
+      ) : (
+        selectedList.map((item) => (
+          <View key={item.id} style={styles.dayRow}>
+            <Text style={styles.rowTime}>
+              {item.startTime}–{item.endTime}
+            </Text>
+            <Text style={ui.rowMeta}>{item.user?.name || 'Član'}</Text>
+          </View>
+        ))
+      )}
+    </StudioScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  fixtureBanner: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    color: 'rgba(251, 191, 36, 0.95)',
-    marginBottom: 10,
-  },
-  error: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(251, 113, 133, 0.95)',
-    marginBottom: 10,
-  },
   monthNav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -454,26 +364,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: 'rgba(232, 242, 239, 0.55)',
   },
-  sectionLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginBottom: 6,
-  },
   dayTitle: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     color: '#E8F2EF',
     marginBottom: 8,
   },
-  empty: {
+  emptyLine: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     color: 'rgba(232, 242, 239, 0.5)',
   },
-  row: {
+  dayRow: {
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(232, 242, 239, 0.12)',
@@ -484,11 +386,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#F7FCFA',
   },
-  rowMeta: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.62)',
-  },
-  footer: { marginTop: 'auto', paddingTop: 32 },
-  pressed: { opacity: 0.72 },
 });

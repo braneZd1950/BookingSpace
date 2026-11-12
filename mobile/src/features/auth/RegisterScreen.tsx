@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -15,13 +22,14 @@ import {
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
 import { register as registerRequest } from '../../api/auth.js';
+import AuthPasswordField from './AuthPasswordField';
 import { isEmail } from '../../../../shared/isEmail.js';
 import {
   AUTH_GRADIENT,
   AUTH_GRADIENT_LOCATIONS,
   authChromeStyles as chrome,
+  authEnterStyle,
 } from './authChrome.js';
 import { createTenant } from '../../api/tenants.js';
 import AuthLegalStrip from './AuthLegalStrip';
@@ -61,7 +69,6 @@ export default function RegisterScreen({
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -217,38 +224,28 @@ export default function RegisterScreen({
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          <Animated.View
-            style={{
-              opacity: enter,
-              transform: [
-                {
-                  translateY: enter.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [14, 0],
-                  }),
-                },
-              ],
-            }}
-          >
+          <Animated.View style={authEnterStyle(enter)}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={intent === 'choose' ? 'Natrag na prijavu' : 'Natrag na izbor'}
               onPress={goBack}
-              style={({ pressed }) => [styles.backBtn, pressed && chrome.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && chrome.pressed]}
             >
               <Text style={chrome.backLabel}>
                 {intent === 'choose' ? '← Prijava' : '← Izbor uloge'}
               </Text>
             </Pressable>
 
-            <Text style={styles.brand}>anyminutes</Text>
-            <Text style={[styles.title, compact && { fontSize: 30, lineHeight: 34 }]}>
+            <Text style={chrome.brand}>anyminutes</Text>
+            <Text style={[chrome.title, compact && { fontSize: 30, lineHeight: 34 }]}>
               {title}
             </Text>
-            <Text style={styles.lead}>{lead}</Text>
+            <Text style={chrome.lead}>{lead}</Text>
           </Animated.View>
 
-          <Animated.View style={[styles.form, { opacity: enter, marginTop: compact ? 22 : 30 }]}>
+          <Animated.View
+            style={[chrome.form, { opacity: enter, marginTop: compact ? 22 : 30 }]}
+          >
             {intent === 'choose' ? (
               <View style={styles.intentList}>
                 <Pressable
@@ -313,7 +310,7 @@ export default function RegisterScreen({
                   placeholder="ime@email.com"
                   editable={!submitting}
                 />
-                <PasswordField
+                <AuthPasswordField
                   label="Lozinka"
                   value={password}
                   onChangeText={(v) => {
@@ -321,8 +318,6 @@ export default function RegisterScreen({
                     clearError(setFieldErrors, 'password');
                   }}
                   error={fieldErrors.password}
-                  showPassword={showPassword}
-                  onToggleShow={() => setShowPassword((s) => !s)}
                   editable={!submitting}
                   placeholder="Najmanje 8 znakova"
                   textContentType="newPassword"
@@ -439,7 +434,7 @@ export default function RegisterScreen({
                   placeholder="studio@email.com"
                   editable={!submitting}
                 />
-                <PasswordField
+                <AuthPasswordField
                   label="Lozinka"
                   value={password}
                   onChangeText={(v) => {
@@ -447,14 +442,12 @@ export default function RegisterScreen({
                     clearError(setFieldErrors, 'password');
                   }}
                   error={fieldErrors.password}
-                  showPassword={showPassword}
-                  onToggleShow={() => setShowPassword((s) => !s)}
                   editable={!submitting}
                   placeholder="Najmanje 8 znakova"
                   textContentType="newPassword"
                   autoComplete="new-password"
                 />
-                <PasswordField
+                <AuthPasswordField
                   label="Ponovite lozinku"
                   value={passwordAgain}
                   onChangeText={(v) => {
@@ -462,12 +455,11 @@ export default function RegisterScreen({
                     clearError(setFieldErrors, 'passwordAgain');
                   }}
                   error={fieldErrors.passwordAgain}
-                  showPassword={showPassword}
-                  onToggleShow={() => setShowPassword((s) => !s)}
                   editable={!submitting}
                   placeholder="Ponovite lozinku"
                   textContentType="newPassword"
                   autoComplete="new-password"
+                  accessibilityLabel="Ponovite lozinku"
                 />
                 <TermsRow
                   checked={acceptTerms}
@@ -487,9 +479,9 @@ export default function RegisterScreen({
             ) : null}
 
             {intent !== 'choose' ? (
-              <Text style={styles.linkMuted}>
+              <Text style={chrome.linkMuted}>
                 Već imate račun?{' '}
-                <Text style={styles.linkLabel} onPress={onLogin}>
+                <Text style={chrome.linkLabel} onPress={onLogin}>
                   Prijavite se
                 </Text>
               </Text>
@@ -552,70 +544,6 @@ function Field({
   );
 }
 
-function PasswordField({
-  label,
-  value,
-  onChangeText,
-  error,
-  showPassword,
-  onToggleShow,
-  editable,
-  placeholder,
-  textContentType,
-  autoComplete,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  error?: string;
-  showPassword: boolean;
-  onToggleShow: () => void;
-  editable: boolean;
-  placeholder: string;
-  textContentType?: ComponentProps<typeof TextInput>['textContentType'];
-  autoComplete?: ComponentProps<typeof TextInput>['autoComplete'];
-}) {
-  return (
-    <View style={chrome.field}>
-      <Text style={chrome.label}>{label}</Text>
-      <View style={styles.passwordRow}>
-        <TextInput
-          style={[
-            chrome.input,
-            styles.passwordInput,
-            error ? chrome.inputInvalid : null,
-          ]}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete={autoComplete}
-          textContentType={textContentType}
-          placeholder={placeholder}
-          placeholderTextColor="rgba(232, 242, 239, 0.28)"
-          editable={editable}
-          accessibilityLabel={label}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
-          onPress={onToggleShow}
-          hitSlop={8}
-          style={({ pressed }) => [styles.eyeBtn, pressed && chrome.pressed]}
-        >
-          <Ionicons
-            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            size={22}
-            color="#5EEAD4"
-          />
-        </Pressable>
-      </View>
-      {error ? <Text style={chrome.fieldError}>{error}</Text> : null}
-    </View>
-  );
-}
-
 function TermsRow({
   checked,
   error,
@@ -661,7 +589,7 @@ function SubmitButton({
       onPress={onPress}
       disabled={submitting}
       style={({ pressed }) => [
-        styles.submit,
+        chrome.submit,
         (pressed || submitting) && chrome.pressed,
       ]}
     >
@@ -675,35 +603,6 @@ function SubmitButton({
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    marginBottom: 16,
-  },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.6,
-    color: '#F7FCFA',
-    marginBottom: 16,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 34,
-    lineHeight: 38,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 10,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.68)',
-    maxWidth: 360,
-  },
-  form: { gap: 16 },
   intentList: { gap: 12 },
   intentCard: {
     borderWidth: 1,
@@ -743,22 +642,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
     color: '#5EEAD4',
-  },
-  passwordRow: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  passwordInput: {
-    paddingRight: 48,
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: 6,
-    top: 0,
-    bottom: 0,
-    width: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   slugHint: {
     marginTop: -8,
@@ -829,23 +712,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: 'rgba(232, 242, 239, 0.68)',
-  },
-  submit: {
-    minHeight: 56,
-    marginTop: 4,
-    borderRadius: 6,
-    backgroundColor: '#5EEAD4',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  linkMuted: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.5)',
-  },
-  linkLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: '#5EEAD4',
   },
 });

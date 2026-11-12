@@ -1,29 +1,25 @@
 import {
   useCallback,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import {
   ActivityIndicator,
-  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { changePassword, getMe, updateMe } from '../../api/auth.js';
 import { listServices, updateService, createService } from '../../api/services.js';
 import { getMyTenants, updateTenant } from '../../api/tenants.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
+import StudioScreenShell from './StudioScreenShell';
+import { studioUiStyles as ui } from './studioUiStyles.js';
 import {
   fallbackHours,
   formatCancellationWindow,
@@ -32,11 +28,7 @@ import {
   hoursPayload,
   isValidClock,
 } from './studioTime.js';
-import {
-  STUDIO_GRADIENT,
-  STUDIO_GRADIENT_LOCATIONS,
-  studioChromeStyles as chrome,
-} from './studioChrome.js';
+import { studioChromeStyles as chrome } from './studioChrome.js';
 
 type StudioSettingsScreenProps = {
   tenantId?: string;
@@ -123,10 +115,6 @@ export default function StudioSettingsScreen({
   onLogout,
   onStudioUpdated,
 }: StudioSettingsScreenProps) {
-  const { height } = useWindowDimensions();
-  const compact = height < 740;
-  const enter = useRef(new Animated.Value(0)).current;
-
   const [tab, setTab] = useState<TabId>('business');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -202,18 +190,6 @@ export default function StudioSettingsScreen({
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    if (loading) return undefined;
-    enter.setValue(0);
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 480,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [loading, enter, tab]);
 
   function changeHours(key: HourKey, patch: Partial<HourRow>) {
     setHours((current) => ({
@@ -391,59 +367,15 @@ export default function StudioSettingsScreen({
   }
 
   return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={STUDIO_GRADIENT}
-        locations={STUDIO_GRADIENT_LOCATIONS}
-        style={StyleSheet.absoluteFill}
-      />
+    <StudioScreenShell
+      studioName={studioName}
+      onBack={onBack}
+      title="Postavke"
+      lead={TAB_LEAD[tab]}
+      keyboardShouldPersistTaps="handled"
+      hideFooter={tab === 'privacy'}
+    >
       <ScrollView
-        style={chrome.flex}
-        contentContainerStyle={[
-          chrome.stage,
-          {
-            paddingTop: compact ? 48 : 64,
-            paddingBottom: compact ? 28 : 40,
-            minHeight: height,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-      >
-        <Animated.View
-          style={{
-            opacity: enter,
-            transform: [
-              {
-                translateY: enter.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [12, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View style={chrome.topBar}>
-            <Pressable
-              onPress={onBack}
-              hitSlop={10}
-              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={chrome.backLabel} numberOfLines={1}>
-                {studioName || 'Moj studio'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
-            Postavke
-          </Text>
-          <Text style={chrome.lead}>{TAB_LEAD[tab]}</Text>
-
-          <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabRail}
@@ -462,7 +394,7 @@ export default function StudioSettingsScreen({
                   style={({ pressed }) => [
                     styles.tab,
                     on && styles.tabOn,
-                    pressed && styles.pressed,
+                    pressed && ui.pressed,
                   ]}
                 >
                   <Text style={[styles.tabLabel, on && styles.tabLabelOn]}>
@@ -473,14 +405,14 @@ export default function StudioSettingsScreen({
             })}
           </ScrollView>
 
-          {notice ? <Text style={styles.notice}>{notice}</Text> : null}
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+      {notice ? <Text style={ui.notice}>{notice}</Text> : null}
+      {error ? <Text style={ui.error}>{error}</Text> : null}
 
           {tab === 'business' ? (
             <View style={styles.form}>
               <Field label="Naziv">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={name}
                   onChangeText={setName}
                   placeholder="Naziv studija"
@@ -489,7 +421,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Kratki opis">
                 <TextInput
-                  style={[styles.input, styles.textarea]}
+                  style={[ui.input, styles.textarea]}
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Što članovi trebaju znati"
@@ -499,7 +431,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Telefon">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={phone}
                   onChangeText={setPhone}
                   placeholder="Kontakt telefon"
@@ -509,7 +441,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="E-pošta poslovanja">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="studio@primjer.hr"
@@ -520,7 +452,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Adresa">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={address}
                   onChangeText={setAddress}
                   placeholder="Ulica i broj"
@@ -529,7 +461,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Grad">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={city}
                   onChangeText={setCity}
                   placeholder="Grad"
@@ -544,9 +476,9 @@ export default function StudioSettingsScreen({
                   <View key={key} style={styles.hourCard}>
                     <Pressable
                       onPress={() => changeHours(key as HourKey, { works: !row.works })}
-                      style={({ pressed }) => [styles.hourToggle, pressed && styles.pressed]}
+                      style={({ pressed }) => [styles.hourToggle, pressed && ui.pressed]}
                     >
-                      <View style={[styles.checkbox, row.works && styles.checkboxOn]}>
+                      <View style={[ui.checkbox, row.works && ui.checkboxOn]}>
                         {row.works ? (
                           <Ionicons name="checkmark" size={14} color="#061210" />
                         ) : null}
@@ -590,7 +522,7 @@ export default function StudioSettingsScreen({
               <Text style={styles.hint}>
                 Članovi ovo vide na Termini. Unutar roka otkaz ne troši dolazak.
               </Text>
-              <View style={styles.presetRow}>
+              <View style={ui.presetRow}>
                 {CANCEL_PRESETS.map((value) => {
                   const on = cancelWindow === String(value);
                   return (
@@ -598,12 +530,12 @@ export default function StudioSettingsScreen({
                       key={value}
                       onPress={() => setCancelWindow(String(value))}
                       style={({ pressed }) => [
-                        styles.preset,
-                        on && styles.presetOn,
-                        pressed && styles.pressed,
+                        ui.preset,
+                        on && ui.presetOn,
+                        pressed && ui.pressed,
                       ]}
                     >
-                      <Text style={[styles.presetLabel, on && styles.presetLabelOn]}>
+                      <Text style={[ui.presetLabel, on && ui.presetLabelOn]}>
                         {value === 0 ? '0' : value >= 60 ? `${value / 60}h` : `${value}m`}
                       </Text>
                     </Pressable>
@@ -626,7 +558,7 @@ export default function StudioSettingsScreen({
             <View style={styles.form}>
               <Field label="Ime i prezime">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={accountName}
                   onChangeText={setAccountName}
                   placeholder="Vaše ime"
@@ -635,7 +567,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Telefon">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={accountPhone}
                   onChangeText={setAccountPhone}
                   placeholder="Telefon računa"
@@ -645,7 +577,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="E-pošta za prijavu">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={accountEmail}
                   onChangeText={setAccountEmail}
                   placeholder="email@primjer.hr"
@@ -656,7 +588,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Adresa studija">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={address}
                   onChangeText={setAddress}
                   placeholder="Ulica i broj"
@@ -665,7 +597,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Grad">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={city}
                   onChangeText={setCity}
                   placeholder="Grad"
@@ -674,7 +606,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="OIB">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={oib}
                   onChangeText={(value) => setOib(value.replace(/\D/g, '').slice(0, 11))}
                   placeholder="11 znamenki (opcionalno)"
@@ -698,7 +630,7 @@ export default function StudioSettingsScreen({
               </Text>
               <Field label="Trenutna lozinka">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   placeholder="••••••••"
@@ -708,7 +640,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Nova lozinka">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   placeholder="Najmanje 8 znakova"
@@ -718,7 +650,7 @@ export default function StudioSettingsScreen({
               </Field>
               <Field label="Ponovite novu">
                 <TextInput
-                  style={styles.input}
+                  style={ui.input}
                   value={again}
                   onChangeText={setAgain}
                   placeholder="Ponovite lozinku"
@@ -728,9 +660,9 @@ export default function StudioSettingsScreen({
               </Field>
               <Pressable
                 onPress={() => setShowPasswords((value) => !value)}
-                style={({ pressed }) => [styles.checkRow, pressed && styles.pressed]}
+                style={({ pressed }) => [ui.checkRow, pressed && ui.pressed]}
               >
-                <View style={[styles.checkbox, showPasswords && styles.checkboxOn]}>
+                <View style={[ui.checkbox, showPasswords && ui.checkboxOn]}>
                   {showPasswords ? (
                     <Ionicons name="checkmark" size={14} color="#061210" />
                   ) : null}
@@ -751,7 +683,7 @@ export default function StudioSettingsScreen({
                   </Text>
                   <Pressable
                     onPress={onLogout}
-                    style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
+                    style={({ pressed }) => [styles.logoutBtn, pressed && ui.pressed]}
                   >
                     <Text style={styles.logoutLabel}>Odjavite se</Text>
                   </Pressable>
@@ -882,16 +814,7 @@ export default function StudioSettingsScreen({
               />
             </View>
           ) : null}
-        </Animated.View>
-        {tab !== 'privacy' ? (
-          <View style={styles.footer}>
-            <AuthLegalStrip />
-          </View>
-        ) : (
-          <View style={styles.footerSpacer} />
-        )}
-      </ScrollView>
-    </View>
+    </StudioScreenShell>
   );
 }
 
@@ -904,7 +827,7 @@ function Field({
 }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={ui.fieldLabel}>{label}</Text>
       {children}
     </View>
   );
@@ -924,15 +847,15 @@ function SaveButton({
       onPress={onPress}
       disabled={saving}
       style={({ pressed }) => [
-        styles.primaryBtn,
-        pressed && styles.pressed,
-        saving && styles.disabled,
+        ui.primaryBtn,
+        pressed && ui.pressed,
+        saving && ui.disabled,
       ]}
     >
       {saving ? (
         <ActivityIndicator color="#061210" />
       ) : (
-        <Text style={styles.primaryLabel}>{label}</Text>
+        <Text style={ui.primaryLabel}>{label}</Text>
       )}
     </Pressable>
   );
@@ -952,9 +875,9 @@ function PrefRow({
   return (
     <Pressable
       onPress={onToggle}
-      style={({ pressed }) => [styles.prefRow, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.prefRow, pressed && ui.pressed]}
     >
-      <View style={[styles.checkbox, on && styles.checkboxOn]}>
+      <View style={[ui.checkbox, on && ui.checkboxOn]}>
         {on ? <Ionicons name="checkmark" size={14} color="#061210" /> : null}
       </View>
       <View style={styles.prefCopy}>

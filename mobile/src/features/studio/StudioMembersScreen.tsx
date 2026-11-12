@@ -1,18 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { listTenantBookings } from '../../api/bookings.js';
 import {
@@ -23,23 +18,25 @@ import {
   suspendMembership,
 } from '../../api/memberships.js';
 import { createStaff, listStaff, suspendStaff } from '../../api/staff.js';
-import AuthLegalStrip from '../auth/AuthLegalStrip';
 import {
+  isFixtureId,
   isLocalDesignMode,
   localDesignMembers,
   localDesignStaff,
 } from './localDesignFixtures.js';
+import StudioEmptyState from './StudioEmptyState';
+import StudioListHead from './StudioListHead';
+import StudioPresetRow from './StudioPresetRow';
+import StudioScreenShell from './StudioScreenShell';
+import { formatShortDate, memberCountLabel } from './studioFormat.js';
+import { studioUiStyles as ui } from './studioUiStyles.js';
+import { useStudioFormReveal } from './useStudioFormReveal.js';
 import { isEmail } from '../../../../shared/isEmail.js';
 import {
   daysLeft,
   daysLeftInMonth,
   monthRange,
 } from '../../../../shared/dateRange.js';
-import {
-  STUDIO_GRADIENT,
-  STUDIO_GRADIENT_LOCATIONS,
-  studioChromeStyles as chrome,
-} from './studioChrome.js';
 
 type StudioMembersScreenProps = {
   tenantId?: string;
@@ -81,11 +78,6 @@ type SectionId = 'members' | 'team';
 type FilterId = 'active' | 'archive' | 'all';
 
 const SESSION_PRESETS = [6, 12, 18] as const;
-const dateFmt = new Intl.DateTimeFormat('hr-HR', {
-  day: 'numeric',
-  month: 'numeric',
-  year: 'numeric',
-});
 
 function monthLabelHr(from = new Date()) {
   const label = new Intl.DateTimeFormat('hr-HR', { month: 'long' }).format(from);
@@ -97,23 +89,6 @@ function statusLabel(status?: string) {
   if (status === 'SUSPENDED') return 'Uklonjeno';
   if (status === 'EXPIRED') return 'Isteklo';
   return status || '—';
-}
-
-function memberCountLabel(count: number) {
-  const n = Number(count) || 0;
-  if (n === 0) return 'Nema članova';
-  const mod100 = n % 100;
-  const mod10 = n % 10;
-  if (mod10 === 1 && mod100 !== 11) return `${n} član`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} člana`;
-  return `${n} članova`;
-}
-
-function formatShortDate(value?: string) {
-  if (!value) return '—';
-  const [y, m, d] = value.split('-').map(Number);
-  if (!y || !m || !d) return value;
-  return dateFmt.format(new Date(y, m - 1, d));
 }
 
 function sessionsLabel(item: MemberRow) {
@@ -160,11 +135,13 @@ export default function StudioMembersScreen({
   studioName,
   onBack,
 }: StudioMembersScreenProps) {
-  const { height } = useWindowDimensions();
-  const compact = height < 740;
-  const enter = useRef(new Animated.Value(0)).current;
-  const formReveal = useRef(new Animated.Value(0)).current;
-  const formAnimRef = useRef<Animated.CompositeAnimation | null>(null);
+  const {
+    formOpen,
+    formVisible,
+    openForm: revealOpen,
+    closeForm: revealClose,
+    formRevealStyle,
+  } = useStudioFormReveal();
 
   const [section, setSection] = useState<SectionId>('members');
   const [filter, setFilter] = useState<FilterId>('active');
@@ -180,8 +157,6 @@ export default function StudioMembersScreen({
   const [notice, setNotice] = useState('');
   const [busyId, setBusyId] = useState('');
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [formVisible, setFormVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
   const [name, setName] = useState('');
@@ -322,18 +297,6 @@ export default function StudioMembersScreen({
     void load();
   }, [load]);
 
-  useEffect(() => {
-    
-    enter.setValue(0);
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [enter]);
-
   function resetMemberForm() {
     setName('');
     setEmail('');
@@ -350,44 +313,16 @@ export default function StudioMembersScreen({
     setFormError('');
   }
 
-  function stopFormAnim() {
-    formAnimRef.current?.stop();
-    formAnimRef.current = null;
-  }
-
   function openForm() {
-    stopFormAnim();
-    setFormError('');
-    setNotice('');
-    setActionError('');
-    setFormOpen(true);
-    setFormVisible(true);
-    formReveal.setValue(0);
-    requestAnimationFrame(() => {
-      const anim = Animated.timing(formReveal, {
-        toValue: 1,
-        duration: 820,
-        easing: Easing.bezier(0.33, 0.1, 0.25, 1),
-        useNativeDriver: USE_NATIVE_DRIVER,
-      });
-      formAnimRef.current = anim;
-      anim.start();
+    revealOpen(() => {
+      setFormError('');
+      setNotice('');
+      setActionError('');
     });
   }
 
   function closeForm(after?: () => void) {
-    stopFormAnim();
-    const anim = Animated.timing(formReveal, {
-      toValue: 0,
-      duration: 460,
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    formAnimRef.current = anim;
-    anim.start(({ finished }) => {
-      if (!finished) return;
-      setFormVisible(false);
-      setFormOpen(false);
+    revealClose(() => {
       if (section === 'team') resetStaffForm();
       else resetMemberForm();
       after?.();
@@ -538,10 +473,6 @@ export default function StudioMembersScreen({
     }
   }
 
-  function isFixtureId(id?: string) {
-    return Boolean(id && String(id).startsWith('local-design-'));
-  }
-
   async function onRenew(item: MemberRow) {
     if (isFixtureId(item.id)) {
       setNotice('Lokalni demo podatak — obnova je isključena.');
@@ -616,93 +547,43 @@ export default function StudioMembersScreen({
       ? 'Treneri i vlasnik — članovi ih biraju pri rezervaciji termina.'
       : 'Članarine, preostali termini i brza obnova.';
 
-  return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={STUDIO_GRADIENT}
-        locations={STUDIO_GRADIENT_LOCATIONS}
-        style={StyleSheet.absoluteFill}
+  const titleAccessory = (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={
+        formOpen
+          ? 'Zatvori formu'
+          : section === 'team'
+            ? 'Dodaj trenera'
+            : 'Dodaj člana'
+      }
+      onPress={toggleForm}
+      style={({ pressed }) => [ui.addBtnSolid, pressed && ui.pressed]}
+    >
+      <Ionicons
+        name={
+          formOpen
+            ? 'close'
+            : section === 'team'
+              ? 'person-add-outline'
+              : 'person-add-outline'
+        }
+        size={18}
+        color="#061210"
       />
+    </Pressable>
+  );
 
-      <ScrollView
-        style={chrome.flex}
-        contentContainerStyle={[
-          chrome.stage,
-          {
-            paddingTop: compact ? 48 : 64,
-            paddingBottom: compact ? 28 : 40,
-            minHeight: height,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-      >
-        <Animated.View
-          style={{
-            opacity: enter,
-            transform: [
-              {
-                translateY: enter.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View style={chrome.topBar}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Natrag na ${studioName || 'studio'}`}
-              onPress={onBack}
-              hitSlop={10}
-              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={chrome.backLabel} numberOfLines={1}>
-                {studioName || 'Moj studio'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.titleRow}>
-            <View style={styles.titleCopy}>
-              <Text
-                style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}
-              >
-                {section === 'team' ? 'Tim' : 'Članovi'}
-              </Text>
-              <Text style={styles.lead}>{lead}</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={
-                formOpen
-                  ? 'Zatvori formu'
-                  : section === 'team'
-                    ? 'Dodaj trenera'
-                    : 'Dodaj člana'
-              }
-              onPress={toggleForm}
-              style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
-            >
-              <Ionicons
-                name={
-                  formOpen
-                    ? 'close'
-                    : section === 'team'
-                      ? 'person-add-outline'
-                      : 'person-add-outline'
-                }
-                size={18}
-                color="#061210"
-              />
-            </Pressable>
-          </View>
-
-          <View style={styles.sectionTabs} accessibilityRole="tablist">
+  return (
+    <StudioScreenShell
+      studioName={studioName}
+      onBack={onBack}
+      title={section === 'team' ? 'Tim' : 'Članovi'}
+      lead={lead}
+      titleAccessory={titleAccessory}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={ui.segmentTabs} accessibilityRole="tablist">
             {(
               [
                 {
@@ -723,12 +604,12 @@ export default function StudioMembersScreen({
                   accessibilityState={{ selected: on }}
                   onPress={() => switchSection(item.id)}
                   style={({ pressed }) => [
-                    styles.sectionTab,
-                    on && styles.sectionTabOn,
-                    pressed && styles.pressed,
+                    ui.segmentTab,
+                    on && ui.segmentTabOn,
+                    pressed && ui.pressed,
                   ]}
                 >
-                  <Text style={[styles.sectionTabLabel, on && styles.sectionTabLabelOn]}>
+                  <Text style={[ui.segmentTabLabel, on && ui.segmentTabLabelOn]}>
                     {item.label}
                   </Text>
                 </Pressable>
@@ -736,48 +617,48 @@ export default function StudioMembersScreen({
             })}
           </View>
 
-          {section === 'members' ? (
-            <View style={styles.statsWrap}>
-              <View style={styles.statsRow}>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>Aktivni</Text>
-                  <Text style={styles.statValue}>{activeMembers.length}</Text>
+      {section === 'members' ? (
+        <View style={ui.statsWrap}>
+          <View style={[ui.statsRow, ui.statsRowInWrap]}>
+                <View style={ui.stat}>
+                  <Text style={ui.statLabel}>Aktivni</Text>
+                  <Text style={ui.statValue}>{activeMembers.length}</Text>
                 </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>Arhiva</Text>
-                  <Text style={styles.statValue}>{archiveMembers.length}</Text>
+                <View style={ui.stat}>
+                  <Text style={ui.statLabel}>Arhiva</Text>
+                  <Text style={ui.statValue}>{archiveMembers.length}</Text>
                 </View>
-                <View style={[styles.stat, endingSoon > 0 && styles.statWarn]}>
-                  <Text style={styles.statLabel}>Ističe uskoro</Text>
-                  <Text style={styles.statValue}>{endingSoon}</Text>
+            <View style={[ui.stat, endingSoon > 0 && ui.statWarn]}>
+                  <Text style={ui.statLabel}>Ističe uskoro</Text>
+                  <Text style={ui.statValue}>{endingSoon}</Text>
                 </View>
               </View>
-              <View style={styles.statsRow}>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>Iskorišteni termini</Text>
-                  <Text style={styles.statValue}>{sessionsUsed}</Text>
+          <View style={[ui.statsRow, ui.statsRowInWrap]}>
+                <View style={ui.stat}>
+                  <Text style={ui.statLabel}>Iskorišteni termini</Text>
+                  <Text style={ui.statValue}>{sessionsUsed}</Text>
                 </View>
-                <View style={styles.statWide}>
-                  <Text style={styles.statLabel}>Dolasci ({monthName})</Text>
-                  <Text style={styles.statValue}>{visitsThisMonth}</Text>
+            <View style={ui.statWide}>
+                  <Text style={ui.statLabel}>Dolasci ({monthName})</Text>
+                  <Text style={ui.statValue}>{visitsThisMonth}</Text>
                 </View>
               </View>
             </View>
           ) : (
-            <View style={[styles.statsRow, styles.statsRowSolo]}>
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Aktivni u timu</Text>
-                <Text style={styles.statValue}>{activeStaff.length}</Text>
+        <View style={[ui.statsRow, ui.statsRowSolo]}>
+              <View style={ui.stat}>
+                <Text style={ui.statLabel}>Aktivni u timu</Text>
+                <Text style={ui.statValue}>{activeStaff.length}</Text>
               </View>
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Treneri</Text>
-                <Text style={styles.statValue}>
+              <View style={ui.stat}>
+                <Text style={ui.statLabel}>Treneri</Text>
+                <Text style={ui.statValue}>
                   {activeStaff.filter((item) => item.role === 'STAFF').length}
                 </Text>
               </View>
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Vlasnik</Text>
-                <Text style={styles.statValue}>
+              <View style={ui.stat}>
+                <Text style={ui.statLabel}>Vlasnik</Text>
+                <Text style={ui.statValue}>
                   {
                     activeStaff.filter((item) => item.role === 'BUSINESS_OWNER')
                       .length
@@ -788,46 +669,25 @@ export default function StudioMembersScreen({
           )}
 
           {usingLocalFixtures ? (
-            <Text style={styles.fixtureBanner} accessibilityRole="text">
+            <Text style={ui.fixtureBanner} accessibilityRole="text">
               Lokalni demo podaci — samo za dizajn (__DEV__).
             </Text>
           ) : null}
-          {notice ? <Text style={styles.notice}>{notice}</Text> : null}
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          {actionError ? <Text style={styles.error}>{actionError}</Text> : null}
+          {notice ? <Text style={ui.notice}>{notice}</Text> : null}
+          {error ? <Text style={ui.error}>{error}</Text> : null}
+          {actionError ? <Text style={ui.error}>{actionError}</Text> : null}
 
           {formVisible ? (
-            <View style={styles.formShell}>
-              <Animated.View
-                style={[
-                  styles.form,
-                  {
-                    opacity: formReveal,
-                    transform: [
-                      {
-                        translateY: formReveal.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [-36, 0],
-                        }),
-                      },
-                      {
-                        scaleY: formReveal.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.94, 1],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
+            <View style={ui.formShell}>
+              <Animated.View style={[ui.form, formRevealStyle]}>
                 {section === 'members' ? (
                   <>
-                    <Text style={styles.sectionLabel}>Novi član</Text>
-                    <Text style={styles.formHint}>
+                    <Text style={ui.sectionLabel}>Novi član</Text>
+                    <Text style={ui.formHint}>
                       Novom članu šaljemo e-poštu s privremenom lozinkom za prijavu.
                     </Text>
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={name}
                       onChangeText={setName}
                       placeholder="Ime i prezime"
@@ -836,7 +696,7 @@ export default function StudioMembersScreen({
                       editable={!saving}
                     />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={email}
                       onChangeText={setEmail}
                       placeholder="E-pošta"
@@ -847,7 +707,7 @@ export default function StudioMembersScreen({
                       editable={!saving}
                     />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={phone}
                       onChangeText={setPhone}
                       placeholder="Telefon (opcionalno)"
@@ -855,36 +715,15 @@ export default function StudioMembersScreen({
                       keyboardType="phone-pad"
                       editable={!saving}
                     />
-                    <Text style={styles.fieldLabel}>Treninga u paketu</Text>
-                    <View style={styles.presetRow}>
-                      {SESSION_PRESETS.map((value) => {
-                        const on = sessions === String(value);
-                        return (
-                          <Pressable
-                            key={value}
-                            accessibilityRole="button"
-                            accessibilityState={{ selected: on }}
-                            onPress={() => setSessions(String(value))}
-                            style={({ pressed }) => [
-                              styles.preset,
-                              on && styles.presetOn,
-                              pressed && styles.pressed,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.presetLabel,
-                                on && styles.presetLabelOn,
-                              ]}
-                            >
-                              {value}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
+                    <StudioPresetRow
+                      label="Treninga u paketu"
+                      values={SESSION_PRESETS}
+                      selected={sessions}
+                      onSelect={setSessions}
+                      disabled={saving}
+                    />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={sessions}
                       onChangeText={setSessions}
                       placeholder="Broj treninga"
@@ -892,34 +731,34 @@ export default function StudioMembersScreen({
                       keyboardType="number-pad"
                       editable={!saving}
                     />
-                    {formError ? <Text style={styles.error}>{formError}</Text> : null}
+                    {formError ? <Text style={ui.error}>{formError}</Text> : null}
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Spremi člana"
                       onPress={onAddMember}
                       disabled={saving}
                       style={({ pressed }) => [
-                        styles.primaryBtn,
-                        pressed && styles.pressed,
-                        saving && styles.disabled,
+                        ui.primaryBtn,
+                        pressed && ui.pressed,
+                        saving && ui.disabled,
                       ]}
                     >
                       {saving ? (
                         <ActivityIndicator color="#061210" size="small" />
                       ) : (
-                        <Text style={styles.primaryLabel}>Dodaj člana</Text>
+                        <Text style={ui.primaryLabel}>Dodaj člana</Text>
                       )}
                     </Pressable>
                   </>
                 ) : (
                   <>
-                    <Text style={styles.sectionLabel}>Novi trener</Text>
-                    <Text style={styles.formHint}>
+                    <Text style={ui.sectionLabel}>Novi trener</Text>
+                    <Text style={ui.formHint}>
                       Članovi ga mogu izabrati pri rezervaciji. Novom računu
                       lozinka ide na e-poštu.
                     </Text>
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={name}
                       onChangeText={setName}
                       placeholder="Ime i prezime"
@@ -928,7 +767,7 @@ export default function StudioMembersScreen({
                       editable={!saving}
                     />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={email}
                       onChangeText={setEmail}
                       placeholder="E-pošta"
@@ -939,7 +778,7 @@ export default function StudioMembersScreen({
                       editable={!saving}
                     />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={phone}
                       onChangeText={setPhone}
                       placeholder="Telefon (opcionalno)"
@@ -948,29 +787,29 @@ export default function StudioMembersScreen({
                       editable={!saving}
                     />
                     <TextInput
-                      style={styles.input}
+                      style={ui.input}
                       value={title}
                       onChangeText={setTitle}
                       placeholder="Uloga / naziv"
                       placeholderTextColor="rgba(232, 242, 239, 0.28)"
                       editable={!saving}
                     />
-                    {formError ? <Text style={styles.error}>{formError}</Text> : null}
+                    {formError ? <Text style={ui.error}>{formError}</Text> : null}
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Spremi trenera"
                       onPress={onAddStaff}
                       disabled={saving}
                       style={({ pressed }) => [
-                        styles.primaryBtn,
-                        pressed && styles.pressed,
-                        saving && styles.disabled,
+                        ui.primaryBtn,
+                        pressed && ui.pressed,
+                        saving && ui.disabled,
                       ]}
                     >
                       {saving ? (
                         <ActivityIndicator color="#061210" size="small" />
                       ) : (
-                        <Text style={styles.primaryLabel}>Dodaj trenera</Text>
+                        <Text style={ui.primaryLabel}>Dodaj trenera</Text>
                       )}
                     </Pressable>
                   </>
@@ -981,8 +820,8 @@ export default function StudioMembersScreen({
 
           {section === 'members' ? (
             <>
-              <TextInput
-                style={styles.search}
+          <TextInput
+            style={ui.search}
                 value={query}
                 onChangeText={setQuery}
                 placeholder="Traži ime, e-poštu ili plan…"
@@ -991,7 +830,7 @@ export default function StudioMembersScreen({
                 autoCorrect={false}
               />
 
-              <View style={styles.filterRow}>
+              <View style={ui.filterRow}>
                 {(
                   [
                     { id: 'active' as const, label: `Aktivni (${activeMembers.length})` },
@@ -1007,13 +846,13 @@ export default function StudioMembersScreen({
                       accessibilityState={{ selected: on }}
                       onPress={() => setFilter(item.id)}
                       style={({ pressed }) => [
-                        styles.filterChip,
-                        on && styles.filterChipOn,
-                        pressed && styles.pressed,
+                        ui.filterChip,
+                        on && ui.filterChipOn,
+                        pressed && ui.pressed,
                       ]}
                     >
                       <Text
-                        style={[styles.filterLabel, on && styles.filterLabelOn]}
+                        style={[ui.filterLabel, on && ui.filterLabelOn]}
                       >
                         {item.label}
                       </Text>
@@ -1022,58 +861,36 @@ export default function StudioMembersScreen({
                 })}
               </View>
 
-              <View style={styles.listHead}>
-                <View style={styles.listHeadCopy}>
-                  <Text style={styles.sectionLabel}>Popis</Text>
-                  <Text style={styles.listDay}>Članarine</Text>
-                </View>
-                <Text
-                  style={[
-                    styles.count,
-                    visibleMembers.length > 0 && styles.countStrong,
-                  ]}
-                >
-                  {memberCountLabel(visibleMembers.length)}
-                </Text>
-              </View>
+          <StudioListHead
+            sectionLabel="Popis"
+            dayLabel="Članarine"
+            countLabel={memberCountLabel(visibleMembers.length)}
+            countStrong={visibleMembers.length > 0}
+          />
 
               {loading ? (
-                <View style={styles.loadingRow}>
+                <View style={ui.loadingRow}>
                   <ActivityIndicator color="#5EEAD4" size="small" />
-                  <Text style={styles.hint}>Učitavamo članove…</Text>
+                  <Text style={ui.hint}>Učitavamo članove…</Text>
                 </View>
               ) : null}
 
-              {!loading && visibleMembers.length === 0 ? (
-                <View style={styles.empty}>
-                  <View style={styles.emptyIcon}>
-                    <Ionicons name="people-outline" size={22} color="#5EEAD4" />
-                  </View>
-                  <Text style={styles.emptyTitle}>
-                    {query ? 'Nema rezultata' : 'Još nema članova'}
-                  </Text>
-                  <Text style={styles.emptyBody}>
-                    {query
-                      ? 'Pokušajte drugi pojam ili promijenite filter.'
-                      : 'Dodajte prvog člana da počnete pratiti članarine i termine.'}
-                  </Text>
-                  {!query && !formVisible ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={openForm}
-                      style={({ pressed }) => [
-                        styles.primaryBtn,
-                        pressed && styles.pressed,
-                      ]}
-                    >
-                      <Text style={styles.primaryLabel}>Dodajte člana</Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              ) : null}
+          {!loading && visibleMembers.length === 0 ? (
+            <StudioEmptyState
+              icon="people-outline"
+              title={query ? 'Nema rezultata' : 'Još nema članova'}
+              body={
+                query
+                  ? 'Pokušajte drugi pojam ili promijenite filter.'
+                  : 'Dodajte prvog člana da počnete pratiti članarine i termine.'
+              }
+              actionLabel={!query && !formVisible ? 'Dodajte člana' : undefined}
+              onAction={!query && !formVisible ? openForm : undefined}
+            />
+          ) : null}
 
               {!loading && visibleMembers.length > 0 ? (
-                <View style={styles.list}>
+                <View style={ui.list}>
                   {visibleMembers.map((item) => {
                     const displayName = item.user?.name || 'Član';
                     const active = item.status === 'ACTIVE';
@@ -1087,28 +904,28 @@ export default function StudioMembersScreen({
                     return (
                       <View
                         key={item.id}
-                        style={[styles.row, !active && styles.rowMuted]}
+                        style={[ui.row, !active && ui.rowMuted]}
                       >
-                        <View style={styles.avatar}>
-                          <Text style={styles.avatarText}>
+                        <View style={ui.avatar}>
+                          <Text style={ui.avatarText}>
                             {displayName.trim().slice(0, 1).toUpperCase() || 'Č'}
                           </Text>
                         </View>
-                        <View style={styles.rowCopy}>
-                          <View style={styles.rowTitle}>
-                            <Text style={styles.rowName} numberOfLines={1}>
+                        <View style={ui.rowCopy}>
+                          <View style={ui.rowTitle}>
+                            <Text style={ui.rowName} numberOfLines={1}>
                               {displayName}
                             </Text>
                             <Text
                               style={[
-                                styles.badge,
-                                active ? styles.badgeOk : styles.badgeMuted,
+                                ui.badge,
+                                active ? ui.badgeOk : ui.badgeMuted,
                               ]}
                             >
                               {statusLabel(item.status)}
                             </Text>
                           </View>
-                          <Text style={styles.rowMeta} numberOfLines={1}>
+                          <Text style={ui.rowMeta} numberOfLines={1}>
                             {item.user?.email || 'Bez e-pošte'}
                             {item.user?.phone ? ` · ${item.user.phone}` : ''}
                           </Text>
@@ -1128,7 +945,7 @@ export default function StudioMembersScreen({
                               ]}
                             />
                           </View>
-                          <Text style={styles.rowDates}>
+                          <Text style={ui.rowDates}>
                             {formatShortDate(item.validFrom)}
                             {' – '}
                             {formatShortDate(item.validUntil)}
@@ -1138,7 +955,7 @@ export default function StudioMembersScreen({
                               </Text>
                             ) : null}
                           </Text>
-                          <View style={styles.actions}>
+                          <View style={ui.actions}>
                             {(item.status === 'ACTIVE'
                               || item.status === 'EXPIRED'
                               || item.status === 'SUSPENDED') ? (
@@ -1148,14 +965,14 @@ export default function StudioMembersScreen({
                                 onPress={() => onRenew(item)}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
-                                  styles.actionBtn,
-                                  pressed && styles.pressed,
+                                  ui.actionBtn,
+                                  pressed && ui.pressed,
                                 ]}
                               >
                                 {busy ? (
                                   <ActivityIndicator color="#5EEAD4" size="small" />
                                 ) : (
-                                  <Text style={styles.actionLabel}>Obnovite</Text>
+                                  <Text style={ui.actionLabel}>Obnovite</Text>
                                 )}
                               </Pressable>
                             ) : null}
@@ -1166,12 +983,12 @@ export default function StudioMembersScreen({
                                 onPress={() => onRemoveMember(item)}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
-                                  styles.actionBtn,
-                                  styles.actionDanger,
-                                  pressed && styles.pressed,
+                                  ui.actionBtn,
+                                  ui.actionDanger,
+                                  pressed && ui.pressed,
                                 ]}
                               >
-                                <Text style={styles.actionDangerLabel}>Uklonite</Text>
+                                <Text style={ui.actionDangerLabel}>Uklonite</Text>
                               </Pressable>
                             ) : null}
                           </View>
@@ -1184,81 +1001,58 @@ export default function StudioMembersScreen({
             </>
           ) : (
             <>
-              <View style={styles.listHead}>
-                <View style={styles.listHeadCopy}>
-                  <Text style={styles.sectionLabel}>Tim</Text>
-                  <Text style={styles.listDay}>Osoblje</Text>
-                </View>
-                <Text
-                  style={[
-                    styles.count,
-                    activeStaff.length > 0 && styles.countStrong,
-                  ]}
-                >
-                  {activeStaff.length} aktivno
-                </Text>
-              </View>
+          <StudioListHead
+            sectionLabel="Tim"
+            dayLabel="Osoblje"
+            countLabel={`${activeStaff.length} aktivno`}
+            countStrong={activeStaff.length > 0}
+          />
 
               {loading ? (
-                <View style={styles.loadingRow}>
+                <View style={ui.loadingRow}>
                   <ActivityIndicator color="#5EEAD4" size="small" />
-                  <Text style={styles.hint}>Učitavamo tim…</Text>
+                  <Text style={ui.hint}>Učitavamo tim…</Text>
                 </View>
               ) : null}
 
-              {!loading && activeStaff.length === 0 ? (
-                <View style={styles.empty}>
-                  <View style={styles.emptyIcon}>
-                    <Ionicons name="fitness-outline" size={22} color="#5EEAD4" />
-                  </View>
-                  <Text style={styles.emptyTitle}>Još nema tima</Text>
-                  <Text style={styles.emptyBody}>
-                    Dodajte trenera da članovi mogu birati kod koga rezerviraju
-                    termin.
-                  </Text>
-                  {!formVisible ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={openForm}
-                      style={({ pressed }) => [
-                        styles.primaryBtn,
-                        pressed && styles.pressed,
-                      ]}
-                    >
-                      <Text style={styles.primaryLabel}>Dodajte trenera</Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              ) : null}
+          {!loading && activeStaff.length === 0 ? (
+            <StudioEmptyState
+              icon="fitness-outline"
+              title="Još nema tima"
+              body="Dodajte trenera da članovi mogu birati kod koga rezerviraju termin."
+              actionLabel={!formVisible ? 'Dodajte trenera' : undefined}
+              onAction={!formVisible ? openForm : undefined}
+            />
+          ) : null}
 
               {!loading && activeStaff.length > 0 ? (
-                <View style={styles.list}>
+                <View style={ui.list}>
                   {activeStaff.map((item) => {
                     const displayName = item.name || 'Trener';
                     const busy = busyId === item.id;
                     const isOwner = item.role === 'BUSINESS_OWNER';
                     return (
-                      <View key={item.id} style={styles.row}>
-                        <View style={styles.avatar}>
-                          <Text style={styles.avatarText}>
+                      <View key={item.id} style={ui.row}>
+                        <View style={ui.avatar}>
+                          <Text style={ui.avatarText}>
                             {displayName.trim().slice(0, 1).toUpperCase() || 'T'}
                           </Text>
                         </View>
-                        <View style={styles.rowCopy}>
-                          <View style={styles.rowTitle}>
-                            <Text style={styles.rowName} numberOfLines={1}>
+                        <View style={ui.rowCopy}>
+                          <View style={ui.rowTitle}>
+                            <Text style={ui.rowName} numberOfLines={1}>
                               {displayName}
                             </Text>
-                            <Text style={[styles.badge, styles.badgeOk]}>
+                            <Text style={[ui.badge, ui.badgeOk]}>
                               {item.title || (isOwner ? 'Vlasnik' : 'Trener')}
                             </Text>
                           </View>
-                          <Text style={styles.rowMeta} numberOfLines={2}>
+                          <Text style={ui.rowMeta} numberOfLines={2}>
                             {item.email || 'Bez e-pošte'}
                             {item.phone ? ` · ${item.phone}` : ''}
                             {` · ${isOwner ? 'Vlasnik' : 'Trener'}`}
                           </Text>
-                          <View style={styles.actions}>
+                          <View style={ui.actions}>
                             {item.role === 'STAFF' ? (
                               <Pressable
                                 accessibilityRole="button"
@@ -1266,15 +1060,15 @@ export default function StudioMembersScreen({
                                 onPress={() => onRemoveStaff(item)}
                                 disabled={Boolean(busyId)}
                                 style={({ pressed }) => [
-                                  styles.actionBtn,
-                                  styles.actionDanger,
-                                  pressed && styles.pressed,
+                                  ui.actionBtn,
+                                  ui.actionDanger,
+                                  pressed && ui.pressed,
                                 ]}
                               >
                                 {busy ? (
                                   <ActivityIndicator color="#FCA5A5" size="small" />
                                 ) : (
-                                  <Text style={styles.actionDangerLabel}>
+                                  <Text style={ui.actionDangerLabel}>
                                     Uklonite
                                   </Text>
                                 )}
@@ -1293,385 +1087,11 @@ export default function StudioMembersScreen({
               ) : null}
             </>
           )}
-        </Animated.View>
-
-        <View style={styles.footer}>
-          <AuthLegalStrip />
-        </View>
-      </ScrollView>
-    </View>
+    </StudioScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 16,
-  },
-  titleCopy: { flex: 1, minWidth: 0 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#5EEAD4',
-    marginTop: 4,
-  },
-  sectionTabs: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-  },
-  sectionTab: {
-    flex: 1,
-    minHeight: 40,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.14)',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-  },
-  sectionTabOn: {
-    borderColor: 'rgba(94, 234, 212, 0.55)',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
-  },
-  sectionTabLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.55)',
-  },
-  sectionTabLabelOn: {
-    color: '#5EEAD4',
-  },
-  statsWrap: {
-    gap: 8,
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  statsRowSolo: {
-    marginBottom: 16,
-  },
-  stat: {
-    flex: 1,
-    minWidth: 0,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(232, 242, 239, 0.12)',
-    backgroundColor: 'rgba(10, 20, 18, 0.28)',
-    gap: 4,
-  },
-  statWide: {
-    flex: 2,
-    minWidth: 0,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(232, 242, 239, 0.12)',
-    backgroundColor: 'rgba(10, 20, 18, 0.28)',
-    gap: 4,
-  },
-  statWarn: {
-    borderColor: 'rgba(251, 191, 36, 0.35)',
-  },
-  statLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 10,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-  },
-  statValue: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 18,
-    color: '#E8F2EF',
-  },
-  fixtureBanner: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    lineHeight: 18,
-    color: 'rgba(251, 191, 36, 0.95)',
-    marginBottom: 10,
-  },
-  notice: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: '#5EEAD4',
-    marginBottom: 12,
-  },
-  error: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: 'rgba(251, 113, 133, 0.95)',
-    marginBottom: 10,
-  },
-  formShell: {
-    overflow: 'hidden',
-    marginBottom: 18,
-  },
-  form: {
-    gap: 10,
-    paddingBottom: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(232, 242, 239, 0.12)',
-    transformOrigin: 'top center',
-  },
-  formHint: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.55)',
-    marginTop: -4,
-    marginBottom: 4,
-  },
-  fieldLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginTop: 4,
-  },
-  input: {
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    color: '#F7FCFA',
-    backgroundColor: 'rgba(10, 20, 18, 0.45)',
-  },
-  search: {
-    minHeight: 42,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.16)',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    color: '#F7FCFA',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
-    marginBottom: 10,
-  },
-  presetRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  preset: {
-    minWidth: 52,
-    height: 36,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.14)',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
-  },
-  presetOn: {
-    borderColor: 'rgba(94, 234, 212, 0.55)',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
-  },
-  presetLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.6)',
-  },
-  presetLabelOn: {
-    color: '#5EEAD4',
-  },
-  primaryBtn: {
-    alignSelf: 'flex-start',
-    minHeight: 44,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#5EEAD4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  primaryLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: '#061210',
-  },
-  disabled: { opacity: 0.7 },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
-  },
-  filterChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.14)',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
-  },
-  filterChipOn: {
-    borderColor: 'rgba(94, 234, 212, 0.55)',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
-  },
-  filterLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    color: 'rgba(232, 242, 239, 0.55)',
-  },
-  filterLabelOn: {
-    color: '#5EEAD4',
-  },
-  sectionLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginBottom: 10,
-  },
-  listHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 8,
-  },
-  listHeadCopy: { flex: 1, minWidth: 0 },
-  listDay: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#E8F2EF',
-    marginTop: -4,
-  },
-  count: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.48)',
-    paddingBottom: 2,
-  },
-  countStrong: {
-    fontFamily: 'Outfit_600SemiBold',
-    color: '#5EEAD4',
-  },
-  loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-  },
-  hint: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.55)',
-  },
-  empty: {
-    paddingTop: 8,
-    gap: 10,
-  },
-  emptyIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(94, 234, 212, 0.1)',
-    marginBottom: 4,
-  },
-  emptyTitle: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 18,
-    color: '#E8F2EF',
-  },
-  emptyBody: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 23,
-    color: 'rgba(232, 242, 239, 0.64)',
-    maxWidth: 340,
-  },
-  list: { gap: 0 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 14,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(232, 242, 239, 0.12)',
-  },
-  rowMuted: { opacity: 0.62 },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
-    marginTop: 2,
-  },
-  avatarText: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: '#5EEAD4',
-  },
-  rowCopy: {
-    flex: 1,
-    minWidth: 0,
-    gap: 3,
-  },
-  rowTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  rowName: {
-    flex: 1,
-    minWidth: 0,
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 16,
-    color: '#F7FCFA',
-  },
-  badge: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  badgeOk: { color: '#5EEAD4' },
-  badgeMuted: { color: 'rgba(232, 242, 239, 0.45)' },
-  rowMeta: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.62)',
-  },
   rowPlan: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
@@ -1692,46 +1112,11 @@ const styles = StyleSheet.create({
   barHot: {
     backgroundColor: 'rgba(251, 191, 36, 0.85)',
   },
-  rowDates: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 12,
-    color: 'rgba(232, 242, 239, 0.42)',
-  },
   expiry: {
     color: 'rgba(232, 242, 239, 0.48)',
   },
   expirySoon: {
     color: 'rgba(251, 191, 36, 0.95)',
-  },
-  actions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 6,
-  },
-  actionBtn: {
-    minHeight: 32,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 234, 212, 0.35)',
-    backgroundColor: 'rgba(94, 234, 212, 0.08)',
-  },
-  actionLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 12,
-    color: '#5EEAD4',
-  },
-  actionDanger: {
-    borderColor: 'rgba(251, 113, 133, 0.35)',
-    backgroundColor: 'rgba(251, 113, 133, 0.08)',
-  },
-  actionDangerLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 12,
-    color: '#FCA5A5',
   },
   teamNote: {
     fontFamily: 'Outfit_400Regular',
@@ -1739,9 +1124,4 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.45)',
     paddingVertical: 6,
   },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 32,
-  },
-  pressed: { opacity: 0.72 },
 });

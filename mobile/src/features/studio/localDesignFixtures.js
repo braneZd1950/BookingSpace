@@ -22,6 +22,10 @@ export function isLocalDesignMode() {
   return typeof __DEV__ !== 'undefined' && __DEV__ === true;
 }
 
+export function isFixtureId(id) {
+  return Boolean(id && String(id).startsWith('local-design-'));
+}
+
 /**
  * Dva demo člana za prilagodbu UI-a dok je lista prazna.
  * @returns {Array<object>}

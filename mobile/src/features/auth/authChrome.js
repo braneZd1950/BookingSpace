@@ -111,6 +111,20 @@ export const authChromeStyles = StyleSheet.create({
     marginTop: 'auto',
     paddingTop: 28,
   },
+  links: {
+    marginTop: 8,
+    gap: 12,
+  },
+  linkLabel: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 14,
+    color: '#5EEAD4',
+  },
+  linkMuted: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 14,
+    color: 'rgba(232, 242, 239, 0.55)',
+  },
   pressed: { opacity: 0.82 },
 });
 

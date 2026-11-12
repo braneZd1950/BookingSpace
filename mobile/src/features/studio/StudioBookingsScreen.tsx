@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -6,13 +6,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import {
   cancelBooking,
@@ -22,15 +17,12 @@ import {
 import { listMemberships } from '../../api/memberships.js';
 import { getAvailability, listServices } from '../../api/services.js';
 import { listStaff } from '../../api/staff.js';
-import AuthLegalStrip from '../auth/AuthLegalStrip';
 import { isLocalDesignMode } from './localDesignFixtures.js';
-import {
-  STUDIO_GRADIENT,
-  STUDIO_GRADIENT_LOCATIONS,
-  studioChromeStyles as chrome,
-  studioEnterStyle,
-  useStudioEnterAnimation,
-} from './studioChrome.js';
+import StudioEmptyState from './StudioEmptyState';
+import StudioListHead from './StudioListHead';
+import StudioScreenShell from './StudioScreenShell';
+import { studioUiStyles as ui } from './studioUiStyles.js';
+import { useStudioFormReveal } from './useStudioFormReveal.js';
 import {
   dateFromKey,
   formatDay,
@@ -98,9 +90,13 @@ export default function StudioBookingsScreen({
   siteHost,
   onBack,
 }: StudioBookingsScreenProps) {
-  const { height } = useWindowDimensions();
-  const compact = height < 740;
-  const enter = useStudioEnterAnimation();
+  const {
+    formOpen,
+    formVisible,
+    openForm: revealOpen,
+    closeForm: revealClose,
+    formRevealStyle,
+  } = useStudioFormReveal();
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => toDateKey(days[0]));
   const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -110,10 +106,6 @@ export default function StudioBookingsScreen({
   const [ok, setOk] = useState('');
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'error'>('idle');
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [formVisible, setFormVisible] = useState(false);
-  const formReveal = useRef(new Animated.Value(0)).current;
-  const formAnimRef = useRef<Animated.CompositeAnimation | null>(null);
   const [members, setMembers] = useState<MemberOption[]>([]);
   const [trainers, setTrainers] = useState<StaffOption[]>([]);
   const [serviceId, setServiceId] = useState('');
@@ -233,37 +225,14 @@ export default function StudioBookingsScreen({
   }, [tenantId, serviceId, date]);
 
   function openForm() {
-    formAnimRef.current?.stop();
-    setFormError('');
-    setOk('');
-    setFormOpen(true);
-    setFormVisible(true);
-    formReveal.setValue(0);
-    requestAnimationFrame(() => {
-      const anim = Animated.timing(formReveal, {
-        toValue: 1,
-        duration: 720,
-        easing: Easing.bezier(0.33, 0.1, 0.25, 1),
-        useNativeDriver: USE_NATIVE_DRIVER,
-      });
-      formAnimRef.current = anim;
-      anim.start();
+    revealOpen(() => {
+      setFormError('');
+      setOk('');
     });
   }
 
   function closeForm() {
-    formAnimRef.current?.stop();
-    const anim = Animated.timing(formReveal, {
-      toValue: 0,
-      duration: 420,
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    formAnimRef.current = anim;
-    anim.start(({ finished }) => {
-      if (!finished) return;
-      setFormVisible(false);
-      setFormOpen(false);
+    revealClose(() => {
       setFormError('');
     });
   }
@@ -340,209 +309,144 @@ export default function StudioBookingsScreen({
     }
   }
 
-  return (
-    <View style={chrome.root}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={STUDIO_GRADIENT}
-        locations={STUDIO_GRADIENT_LOCATIONS}
-        style={StyleSheet.absoluteFill}
+  const titleAccessory = (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={formOpen ? 'Zatvori formu' : 'Nova rezervacija'}
+      onPress={() => (formOpen || formVisible ? closeForm() : openForm())}
+      style={({ pressed }) => [ui.addBtnSolid, pressed && ui.pressed]}
+    >
+      <Ionicons
+        name={formOpen ? 'close' : 'add-outline'}
+        size={20}
+        color="#061210"
       />
+    </Pressable>
+  );
 
-      <ScrollView
-        style={chrome.flex}
-        contentContainerStyle={[
-          chrome.stage,
-          {
-            paddingTop: compact ? 48 : 64,
-            paddingBottom: compact ? 28 : 40,
-            minHeight: height,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-      >
-        <Animated.View style={studioEnterStyle(enter)}>
-          <View style={chrome.topBar}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Natrag na ${studioName || 'studio'}`}
-              onPress={onBack}
-              hitSlop={10}
-              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
-            >
-              <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={chrome.backLabel} numberOfLines={1}>
-                {studioName || 'Moj studio'}
-              </Text>
-            </Pressable>
-          </View>
+  return (
+    <StudioScreenShell
+      studioName={studioName}
+      onBack={onBack}
+      title="Termini"
+      lead="Raspored i rezervacije"
+      titleAccessory={titleAccessory}
+      keyboardShouldPersistTaps="handled"
+    >
+      {ok ? <Text style={ui.notice}>{ok}</Text> : null}
 
-          <View style={styles.titleRow}>
-            <View style={styles.titleCopy}>
-              <Text
-                style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}
-              >
-                Termini
-              </Text>
-              <Text style={styles.lead}>Raspored i rezervacije</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={formOpen ? 'Zatvori formu' : 'Nova rezervacija'}
-              onPress={() => (formOpen || formVisible ? closeForm() : openForm())}
-              style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
-            >
-              <Ionicons
-                name={formOpen ? 'close' : 'add-outline'}
-                size={20}
-                color="#061210"
-              />
-            </Pressable>
-          </View>
-
-          {ok ? <Text style={styles.ok}>{ok}</Text> : null}
-
-          {formVisible ? (
-            <View style={styles.formShell}>
-              <Animated.View
-                style={[
-                  styles.form,
-                  {
-                    opacity: formReveal,
-                    transform: [
-                      {
-                        translateY: formReveal.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [-28, 0],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Text style={styles.sectionLabel}>Nova rezervacija</Text>
-                <Text style={styles.formHint}>
+      {formVisible ? (
+        <View style={ui.formShell}>
+          <Animated.View style={[ui.form, formRevealStyle]}>
+            <Text style={ui.sectionLabel}>Nova rezervacija</Text>
+            <Text style={ui.formHint}>
                   Odaberite člana i slobodni sat za {formatDay(selectedDate)}.
                 </Text>
 
-                <Text style={styles.fieldLabel}>Član</Text>
-                <View style={styles.optionWrap}>
-                  {members.length === 0 ? (
-                    <Text style={styles.hint}>Nema aktivnih članova.</Text>
-                  ) : (
-                    members.map((item) => {
-                      const on = memberId === item.userId;
-                      return (
-                        <Pressable
-                          key={item.userId}
-                          onPress={() => setMemberId(item.userId)}
-                          style={({ pressed }) => [
-                            styles.optionChip,
-                            on && styles.optionChipOn,
-                            pressed && styles.pressed,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.optionLabel,
-                              on && styles.optionLabelOn,
-                            ]}
-                          >
-                            {item.label}
-                          </Text>
-                        </Pressable>
-                      );
-                    })
-                  )}
-                </View>
+            <Text style={ui.fieldLabel}>Član</Text>
+            <View style={styles.optionWrap}>
+              {members.length === 0 ? (
+                <Text style={ui.hint}>Nema aktivnih članova.</Text>
+              ) : (
+                members.map((item) => {
+                  const on = memberId === item.userId;
+                  return (
+                    <Pressable
+                      key={item.userId}
+                      onPress={() => setMemberId(item.userId)}
+                      style={({ pressed }) => [
+                        ui.filterChip,
+                        on && ui.filterChipOn,
+                        pressed && ui.pressed,
+                      ]}
+                    >
+                      <Text style={[ui.filterLabel, on && ui.filterLabelOn]}>
+                        {item.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })
+              )}
+            </View>
 
-                {trainers.length > 0 ? (
-                  <>
-                    <Text style={styles.fieldLabel}>Trener</Text>
-                    <View style={styles.optionWrap}>
-                      {trainers.map((item) => {
-                        const on = staffId === item.id;
-                        return (
-                          <Pressable
-                            key={item.id}
-                            onPress={() => setStaffId(item.id)}
-                            style={({ pressed }) => [
-                              styles.optionChip,
-                              on && styles.optionChipOn,
-                              pressed && styles.pressed,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.optionLabel,
-                                on && styles.optionLabelOn,
-                              ]}
-                            >
-                              {item.name}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  </>
-                ) : null}
-
-                <Text style={styles.fieldLabel}>Slobodni sati</Text>
-                {loadingSlots ? (
-                  <Text style={styles.hint}>Učitavamo sate…</Text>
-                ) : null}
-                {!loadingSlots && slots.length === 0 ? (
-                  <Text style={styles.hint}>Nema slobodnih sati za ovaj dan.</Text>
-                ) : null}
+            {trainers.length > 0 ? (
+              <>
+                <Text style={ui.fieldLabel}>Trener</Text>
                 <View style={styles.optionWrap}>
-                  {slots.map((slot) => {
-                    const on = slotTime === slot.startTime;
+                  {trainers.map((item) => {
+                    const on = staffId === item.id;
                     return (
                       <Pressable
-                        key={slot.startTime}
-                        onPress={() => setSlotTime(slot.startTime)}
+                        key={item.id}
+                        onPress={() => setStaffId(item.id)}
                         style={({ pressed }) => [
-                          styles.optionChip,
-                          on && styles.optionChipOn,
-                          pressed && styles.pressed,
+                          ui.filterChip,
+                          on && ui.filterChipOn,
+                          pressed && ui.pressed,
                         ]}
                       >
-                        <Text
-                          style={[styles.optionLabel, on && styles.optionLabelOn]}
-                        >
-                          {slot.startTime}
-                          {slot.available != null && slot.capacity != null
-                            ? ` · ${slot.available}/${slot.capacity}`
-                            : ''}
+                        <Text style={[ui.filterLabel, on && ui.filterLabelOn]}>
+                          {item.name}
                         </Text>
                       </Pressable>
                     );
                   })}
                 </View>
+              </>
+            ) : null}
 
-                {formError ? <Text style={styles.error}>{formError}</Text> : null}
-                <Pressable
-                  onPress={handleBook}
-                  disabled={booking}
-                  style={({ pressed }) => [
-                    styles.primaryBtn,
-                    pressed && styles.pressed,
-                    booking && styles.disabled,
-                  ]}
-                >
-                  {booking ? (
-                    <ActivityIndicator color="#061210" />
-                  ) : (
-                    <Text style={styles.primaryLabel}>Spremi rezervaciju</Text>
-                  )}
-                </Pressable>
-              </Animated.View>
+            <Text style={ui.fieldLabel}>Slobodni sati</Text>
+            {loadingSlots ? (
+              <Text style={ui.hint}>Učitavamo sate…</Text>
+            ) : null}
+            {!loadingSlots && slots.length === 0 ? (
+              <Text style={ui.hint}>Nema slobodnih sati za ovaj dan.</Text>
+            ) : null}
+            <View style={styles.optionWrap}>
+              {slots.map((slot) => {
+                const on = slotTime === slot.startTime;
+                return (
+                  <Pressable
+                    key={slot.startTime}
+                    onPress={() => setSlotTime(slot.startTime)}
+                    style={({ pressed }) => [
+                      ui.filterChip,
+                      on && ui.filterChipOn,
+                      pressed && ui.pressed,
+                    ]}
+                  >
+                    <Text style={[ui.filterLabel, on && ui.filterLabelOn]}>
+                      {slot.startTime}
+                      {slot.available != null && slot.capacity != null
+                        ? ` · ${slot.available}/${slot.capacity}`
+                        : ''}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
-          ) : null}
 
-          <Text style={styles.sectionLabel}>Dan</Text>
+            {formError ? <Text style={ui.error}>{formError}</Text> : null}
+            <Pressable
+              onPress={handleBook}
+              disabled={booking}
+              style={({ pressed }) => [
+                ui.primaryBtn,
+                pressed && ui.pressed,
+                booking && ui.disabled,
+              ]}
+            >
+              {booking ? (
+                <ActivityIndicator color="#061210" />
+              ) : (
+                <Text style={ui.primaryLabel}>Spremi rezervaciju</Text>
+              )}
+            </Pressable>
+          </Animated.View>
+        </View>
+      ) : null}
+
+      <Text style={ui.sectionLabel}>Dan</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -563,7 +467,7 @@ export default function StudioBookingsScreen({
                   style={({ pressed }) => [
                     styles.dayChip,
                     active && styles.dayChipActive,
-                    pressed && styles.pressed,
+                    pressed && ui.pressed,
                   ]}
                 >
                   <Text style={[styles.dayWeek, active && styles.dayWeekActive]}>
@@ -577,81 +481,68 @@ export default function StudioBookingsScreen({
             })}
           </ScrollView>
 
-          <View style={styles.listHead}>
-            <View style={styles.listHeadCopy}>
-              <Text style={styles.sectionLabel}>Rezervacije</Text>
-              <Text style={styles.listDay}>{formatDay(selectedDate)}</Text>
-            </View>
-            <Text
-              style={[
-                styles.count,
-                dayBookings.length > 0 && styles.countStrong,
-              ]}
-            >
-              {reservationCountLabel(dayBookings.length)}
-            </Text>
-          </View>
+      <StudioListHead
+        sectionLabel="Rezervacije"
+        dayLabel={formatDay(selectedDate)}
+        countLabel={reservationCountLabel(dayBookings.length)}
+        countStrong={dayBookings.length > 0}
+      />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={ui.error}>{error}</Text> : null}
 
-          {loading ? (
-            <View style={styles.loadingRow}>
-              <ActivityIndicator color="#5EEAD4" size="small" />
-              <Text style={styles.hint}>Učitavamo rezervacije…</Text>
-            </View>
-          ) : null}
+      {loading ? (
+        <View style={ui.loadingRow}>
+          <ActivityIndicator color="#5EEAD4" size="small" />
+          <Text style={ui.hint}>Učitavamo rezervacije…</Text>
+        </View>
+      ) : null}
 
-          {!loading && dayBookings.length === 0 ? (
-            <View style={styles.empty}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="calendar-outline" size={22} color="#5EEAD4" />
-              </View>
-              <Text style={styles.emptyTitle}>Još nema rezervacija</Text>
-              <Text style={styles.emptyBody}>
-                Podijelite svoju adresu stranice s klijentima i prve će uskoro
-                stići.
-              </Text>
-              {siteHost ? (
-                <>
-                  <Text style={styles.hostHint}>{siteHost}</Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Kopiraj adresu stranice"
-                    onPress={handleCopy}
-                    style={({ pressed }) => [
-                      styles.copyBtn,
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <Ionicons name="copy-outline" size={18} color="#061210" />
-                    <Text style={styles.copyLabel}>Kopiraj adresu stranice</Text>
-                  </Pressable>
-                  {copyState === 'done' ? (
-                    <Text style={styles.copyOk} accessibilityLiveRegion="polite">
-                      Adresa je kopirana.
-                    </Text>
-                  ) : null}
-                  {copyState === 'error' ? (
-                    <Text style={styles.copyFail}>
-                      Adresa nije kopirana. Pokušajte ponovno.
-                    </Text>
-                  ) : null}
-                </>
-              ) : null}
-            </View>
-          ) : null}
+      {!loading && dayBookings.length === 0 ? (
+        <StudioEmptyState
+          icon="calendar-outline"
+          title="Još nema rezervacija"
+          body="Podijelite svoju adresu stranice s klijentima i prve će uskoro stići."
+          extra={
+            siteHost ? (
+              <>
+                <Text style={styles.hostHint}>{siteHost}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Kopiraj adresu stranice"
+                  onPress={handleCopy}
+                  style={({ pressed }) => [
+                    styles.copyBtn,
+                    pressed && ui.pressed,
+                  ]}
+                >
+                  <Ionicons name="copy-outline" size={18} color="#061210" />
+                  <Text style={ui.primaryLabel}>Kopiraj adresu stranice</Text>
+                </Pressable>
+                {copyState === 'done' ? (
+                  <Text style={styles.copyOk} accessibilityLiveRegion="polite">
+                    Adresa je kopirana.
+                  </Text>
+                ) : null}
+                {copyState === 'error' ? (
+                  <Text style={ui.error}>Adresa nije kopirana. Pokušajte ponovno.</Text>
+                ) : null}
+              </>
+            ) : null
+          }
+        />
+      ) : null}
 
-          {!loading && dayBookings.length > 0 ? (
-            <View style={styles.list}>
-              {dayBookings.map((item) => (
-                <View key={item.id} style={styles.row}>
-                  <View style={styles.rowCopy}>
-                    <Text style={styles.rowTime}>
+      {!loading && dayBookings.length > 0 ? (
+        <View style={ui.list}>
+          {dayBookings.map((item) => (
+            <View key={item.id} style={styles.bookingRow}>
+              <View style={ui.rowCopy}>
+                <Text style={styles.rowTime}>
                       {item.startTime || '—'}
                       –
                       {item.endTime || '—'}
                     </Text>
-                    <Text style={styles.rowMeta} numberOfLines={2}>
+                <Text style={ui.rowMeta} numberOfLines={2}>
                       {memberName(item)}
                       {item.staff?.name ? ` · ${item.staff.name}` : ''}
                     </Text>
@@ -666,10 +557,10 @@ export default function StudioBookingsScreen({
                     accessibilityLabel="Otkaži rezervaciju"
                     onPress={() => handleCancel(item.id)}
                     disabled={Boolean(busyId)}
-                    style={({ pressed }) => [
-                      styles.cancelBtn,
-                      pressed && styles.pressed,
-                    ]}
+                style={({ pressed }) => [
+                  styles.cancelBtn,
+                  pressed && ui.pressed,
+                ]}
                   >
                     {busyId === item.id ? (
                       <ActivityIndicator color="#FCA5A5" size="small" />
@@ -681,128 +572,15 @@ export default function StudioBookingsScreen({
               ))}
             </View>
           ) : null}
-        </Animated.View>
-
-        <View style={styles.footer}>
-          <AuthLegalStrip />
-        </View>
-      </ScrollView>
-    </View>
+    </StudioScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
-    marginBottom: 8,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 8,
-  },
-  titleCopy: { flex: 1, minWidth: 0 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#5EEAD4',
-    marginTop: 4,
-  },
-  ok: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: '#5EEAD4',
-    marginBottom: 10,
-  },
-  formShell: {
-    overflow: 'hidden',
-    marginBottom: 18,
-  },
-  form: {
-    gap: 10,
-    paddingBottom: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(232, 242, 239, 0.12)',
-  },
-  formHint: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.55)',
-    marginTop: -4,
-  },
-  fieldLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginTop: 4,
-  },
   optionWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  optionChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.14)',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
-  },
-  optionChipOn: {
-    borderColor: 'rgba(94, 234, 212, 0.55)',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
-  },
-  optionLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.6)',
-  },
-  optionLabelOn: {
-    color: '#5EEAD4',
-  },
-  primaryBtn: {
-    alignSelf: 'flex-start',
-    minHeight: 44,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#5EEAD4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  primaryLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: '#061210',
-  },
-  disabled: { opacity: 0.7 },
-  sectionLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.42)',
-    marginBottom: 10,
   },
   dayRailScroll: {
     marginHorizontal: -24,
@@ -845,76 +623,6 @@ const styles = StyleSheet.create({
   dayNumActive: {
     color: '#F7FCFA',
   },
-  listHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 14,
-  },
-  listHeadCopy: {
-    flex: 1,
-    minWidth: 0,
-  },
-  listDay: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#E8F2EF',
-    marginTop: -4,
-  },
-  count: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.48)',
-    paddingBottom: 2,
-  },
-  countStrong: {
-    fontFamily: 'Outfit_600SemiBold',
-    color: '#5EEAD4',
-  },
-  loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-  },
-  hint: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.55)',
-  },
-  error: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: 'rgba(251, 113, 133, 0.95)',
-    marginBottom: 10,
-  },
-  empty: {
-    paddingTop: 8,
-    gap: 10,
-  },
-  emptyIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(94, 234, 212, 0.1)',
-    marginBottom: 4,
-  },
-  emptyTitle: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 18,
-    color: '#E8F2EF',
-  },
-  emptyBody: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 23,
-    color: 'rgba(232, 242, 239, 0.64)',
-    maxWidth: 340,
-  },
   hostHint: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
@@ -932,27 +640,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#5EEAD4',
     marginTop: 8,
   },
-  copyLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: '#061210',
-  },
   copyOk: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     color: '#5EEAD4',
     marginTop: 2,
   },
-  copyFail: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(251, 113, 133, 0.95)',
-    marginTop: 2,
-  },
-  list: {
-    gap: 0,
-  },
-  row: {
+  bookingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -960,20 +654,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(232, 242, 239, 0.12)',
   },
-  rowCopy: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
   rowTime: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     color: '#F7FCFA',
-  },
-  rowMeta: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.72)',
   },
   rowService: {
     fontFamily: 'Outfit_400Regular',
@@ -995,9 +679,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FCA5A5',
   },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 32,
-  },
-  pressed: { opacity: 0.72 },
 });
