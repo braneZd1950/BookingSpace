@@ -29,6 +29,17 @@ import {
   localDesignMembers,
   localDesignStaff,
 } from './localDesignFixtures.js';
+import { isEmail } from '../../../../shared/isEmail.js';
+import {
+  daysLeft,
+  daysLeftInMonth,
+  monthRange,
+} from '../../../../shared/dateRange.js';
+import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+} from './studioChrome.js';
 
 type StudioMembersScreenProps = {
   tenantId?: string;
@@ -70,43 +81,15 @@ type SectionId = 'members' | 'team';
 type FilterId = 'active' | 'archive' | 'all';
 
 const SESSION_PRESETS = [6, 12, 18] as const;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const dateFmt = new Intl.DateTimeFormat('hr-HR', {
   day: 'numeric',
   month: 'numeric',
   year: 'numeric',
 });
 
-function isEmail(value: string) {
-  return EMAIL_RE.test(value);
-}
-
-function daysLeftInMonth(from = new Date()) {
-  const end = new Date(from.getFullYear(), from.getMonth() + 1, 0);
-  return Math.max(1, end.getDate() - from.getDate() + 1);
-}
-
-function monthRange(from = new Date()) {
-  const year = from.getFullYear();
-  const month = from.getMonth();
-  const pad = (value: number) => String(value).padStart(2, '0');
-  const last = new Date(year, month + 1, 0).getDate();
-  return {
-    dateFrom: `${year}-${pad(month + 1)}-01`,
-    dateTo: `${year}-${pad(month + 1)}-${pad(last)}`,
-  };
-}
-
 function monthLabelHr(from = new Date()) {
   const label = new Intl.DateTimeFormat('hr-HR', { month: 'long' }).format(from);
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function daysLeft(until?: string) {
-  if (!until) return null;
-  const end = new Date(`${until}T23:59:59`);
-  if (Number.isNaN(end.getTime())) return null;
-  return Math.ceil((end.getTime() - Date.now()) / 86400000);
 }
 
 function statusLabel(status?: string) {
@@ -634,18 +617,18 @@ export default function StudioMembersScreen({
       : 'Članarine, preostali termini i brza obnova.';
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
 
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -669,16 +652,16 @@ export default function StudioMembersScreen({
             ],
           }}
         >
-          <View style={styles.topBar}>
+          <View style={chrome.topBar}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Natrag na ${studioName || 'studio'}`}
               onPress={onBack}
               hitSlop={10}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
             >
               <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={styles.backLabel} numberOfLines={1}>
+              <Text style={chrome.backLabel} numberOfLines={1}>
                 {studioName || 'Moj studio'}
               </Text>
             </Pressable>
@@ -1321,56 +1304,6 @@ export default function StudioMembersScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 22,
-  },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: -6,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#5EEAD4',
-    maxWidth: 260,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 16,
-  },
-  titleCopy: { flex: 1, minWidth: 0 },
   title: {
     fontFamily: 'CormorantGaramond_500Medium',
     fontSize: 40,
@@ -1385,6 +1318,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: 'rgba(232, 242, 239, 0.66)',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  titleCopy: { flex: 1, minWidth: 0 },
   addBtn: {
     width: 40,
     height: 40,

@@ -25,6 +25,13 @@ import { listStaff } from '../../api/staff.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
 import { isLocalDesignMode } from './localDesignFixtures.js';
 import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+  studioEnterStyle,
+  useStudioEnterAnimation,
+} from './studioChrome.js';
+import {
   dateFromKey,
   formatDay,
   formatDayChip,
@@ -93,7 +100,7 @@ export default function StudioBookingsScreen({
 }: StudioBookingsScreenProps) {
   const { height } = useWindowDimensions();
   const compact = height < 740;
-  const enter = useRef(new Animated.Value(0)).current;
+  const enter = useStudioEnterAnimation();
   const days = useMemo(() => upcomingDays(14), []);
   const [date, setDate] = useState(() => toDateKey(days[0]));
   const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -150,18 +157,6 @@ export default function StudioBookingsScreen({
   useEffect(() => {
     void loadBookings();
   }, [loadBookings]);
-
-  useEffect(() => {
-    
-    enter.setValue(0);
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [enter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -346,18 +341,18 @@ export default function StudioBookingsScreen({
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
 
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -368,29 +363,17 @@ export default function StudioBookingsScreen({
         keyboardShouldPersistTaps="handled"
         bounces={false}
       >
-        <Animated.View
-          style={{
-            opacity: enter,
-            transform: [
-              {
-                translateY: enter.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View style={styles.topBar}>
+        <Animated.View style={studioEnterStyle(enter)}>
+          <View style={chrome.topBar}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Natrag na ${studioName || 'studio'}`}
               onPress={onBack}
               hitSlop={10}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
             >
               <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={styles.backLabel} numberOfLines={1}>
+              <Text style={chrome.backLabel} numberOfLines={1}>
                 {studioName || 'Moj studio'}
               </Text>
             </Pressable>
@@ -709,56 +692,6 @@ export default function StudioBookingsScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 22,
-  },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: -6,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#5EEAD4',
-    maxWidth: 260,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 8,
-  },
-  titleCopy: { flex: 1, minWidth: 0 },
   title: {
     fontFamily: 'CormorantGaramond_500Medium',
     fontSize: 40,
@@ -774,6 +707,14 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.66)',
     marginBottom: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 8,
+  },
+  titleCopy: { flex: 1, minWidth: 0 },
   addBtn: {
     width: 40,
     height: 40,

@@ -24,6 +24,16 @@ import {
   sameDay,
   toDateKey,
 } from './studioTime.js';
+import {
+  DEFAULT_CAPACITY,
+  dayPeak,
+  occupancyLevel,
+} from '../../../../shared/calendarOccupancy.js';
+import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+} from './studioChrome.js';
 
 type StudioCalendarScreenProps = {
   tenantId?: string;
@@ -42,7 +52,6 @@ type BookingRow = {
 };
 
 const WEEK = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
-const DEFAULT_CAPACITY = 12;
 
 const LEGEND = [
   { id: 'free', label: 'Slobodno', color: 'rgba(232, 242, 239, 0.12)' },
@@ -51,30 +60,6 @@ const LEGEND = [
   { id: 'high', label: 'Visoko', color: 'rgba(251, 191, 36, 0.45)' },
   { id: 'max', label: 'Puno', color: 'rgba(251, 113, 133, 0.45)' },
 ];
-
-function occupancyLevel(ratio: number) {
-  if (ratio <= 0) return 'free';
-  if (ratio <= 0.25) return 'low';
-  if (ratio <= 0.5) return 'mid';
-  if (ratio <= 0.75) return 'high';
-  return 'max';
-}
-
-function dayPeak(list: BookingRow[], capacity: number) {
-  if (!list.length) return { count: 0, peak: 0, ratio: 0 };
-  const bySlot = new Map<string, number>();
-  for (const item of list) {
-    const key = `${item.startTime}-${item.endTime}`;
-    bySlot.set(key, (bySlot.get(key) || 0) + 1);
-  }
-  const peak = Math.max(...bySlot.values());
-  const cap = Math.max(1, capacity || DEFAULT_CAPACITY);
-  return {
-    count: list.length,
-    peak,
-    ratio: Math.min(1, peak / cap),
-  };
-}
 
 function localMonthBookings(year: number, month: number): BookingRow[] {
   if (!isLocalDesignMode()) return [];
@@ -204,24 +189,24 @@ export default function StudioCalendarScreen({
 
   if (loading) {
     return (
-      <View style={styles.boot}>
+      <View style={chrome.boot}>
         <ActivityIndicator color="#5EEAD4" />
       </View>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -244,24 +229,24 @@ export default function StudioCalendarScreen({
             ],
           }}
         >
-          <View style={styles.topBar}>
+          <View style={chrome.topBar}>
             <Pressable
               accessibilityRole="button"
               onPress={onBack}
               hitSlop={10}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
             >
               <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={styles.backLabel} numberOfLines={1}>
+              <Text style={chrome.backLabel} numberOfLines={1}>
                 {studioName || 'Moj studio'}
               </Text>
             </Pressable>
           </View>
 
-          <Text style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}>
+          <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
             Kalendar
           </Text>
-          <Text style={styles.lead}>
+          <Text style={chrome.lead}>
             Mjesečni pregled zauzetosti. Detalji i rezervacije po danu.
           </Text>
 
@@ -369,59 +354,6 @@ export default function StudioCalendarScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  topBar: { flexDirection: 'row', alignItems: 'center', marginBottom: 22 },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: -6,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#5EEAD4',
-    maxWidth: 260,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
-    marginBottom: 16,
-  },
   fixtureBanner: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 12,

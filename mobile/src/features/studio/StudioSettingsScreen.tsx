@@ -32,6 +32,11 @@ import {
   hoursPayload,
   isValidClock,
 } from './studioTime.js';
+import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+} from './studioChrome.js';
 
 type StudioSettingsScreenProps = {
   tenantId?: string;
@@ -379,24 +384,24 @@ export default function StudioSettingsScreen({
 
   if (loading) {
     return (
-      <View style={styles.boot}>
+      <View style={chrome.boot}>
         <ActivityIndicator color="#5EEAD4" />
       </View>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -420,23 +425,23 @@ export default function StudioSettingsScreen({
             ],
           }}
         >
-          <View style={styles.topBar}>
+          <View style={chrome.topBar}>
             <Pressable
               onPress={onBack}
               hitSlop={10}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
             >
               <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={styles.backLabel} numberOfLines={1}>
+              <Text style={chrome.backLabel} numberOfLines={1}>
                 {studioName || 'Moj studio'}
               </Text>
             </Pressable>
           </View>
 
-          <Text style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}>
+          <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
             Postavke
           </Text>
-          <Text style={styles.lead}>{TAB_LEAD[tab]}</Text>
+          <Text style={chrome.lead}>{TAB_LEAD[tab]}</Text>
 
           <ScrollView
             horizontal
@@ -961,59 +966,6 @@ function PrefRow({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  topBar: { flexDirection: 'row', alignItems: 'center', marginBottom: 22 },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: -6,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#5EEAD4',
-    maxWidth: 260,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
-    marginBottom: 16,
-  },
   tabScroll: { marginHorizontal: -24, marginBottom: 16 },
   tabRail: { paddingHorizontal: 24, gap: 8 },
   tab: {

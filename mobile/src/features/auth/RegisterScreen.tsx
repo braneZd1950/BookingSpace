@@ -17,6 +17,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { register as registerRequest } from '../../api/auth.js';
+import { isEmail } from '../../../../shared/isEmail.js';
+import {
+  AUTH_GRADIENT,
+  AUTH_GRADIENT_LOCATIONS,
+  authChromeStyles as chrome,
+} from './authChrome.js';
 import { createTenant } from '../../api/tenants.js';
 import AuthLegalStrip from './AuthLegalStrip';
 import {
@@ -33,10 +39,6 @@ type RegisterScreenProps = {
 };
 
 type Intent = 'choose' | 'civilian' | 'partner';
-
-function isEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
 
 /**
  * Registracija: civilni korisnik ili partner (s izborom niše).
@@ -189,22 +191,22 @@ export default function RegisterScreen({
         : 'Naziv, vrsta poslovanja i račun. Izgled stranice kasnije doradite na webu — ovdje odmah otvarate studio.';
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={AUTH_GRADIENT as [string, string, ...string[]]}
+        locations={AUTH_GRADIENT_LOCATIONS as [number, number, ...number[]]}
         style={StyleSheet.absoluteFill}
       />
 
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={chrome.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          style={styles.flex}
+          style={chrome.flex}
           contentContainerStyle={[
-            styles.stage,
+            chrome.stage,
             {
               paddingTop: compact ? 40 : 52,
               paddingBottom: compact ? 28 : 40,
@@ -232,9 +234,9 @@ export default function RegisterScreen({
               accessibilityRole="button"
               accessibilityLabel={intent === 'choose' ? 'Natrag na prijavu' : 'Natrag na izbor'}
               onPress={goBack}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.backBtn, pressed && chrome.pressed]}
             >
-              <Text style={styles.backLabel}>
+              <Text style={chrome.backLabel}>
                 {intent === 'choose' ? '← Prijava' : '← Izbor uloge'}
               </Text>
             </Pressable>
@@ -253,7 +255,7 @@ export default function RegisterScreen({
                   accessibilityRole="button"
                   accessibilityLabel="Nastavi kao klijent"
                   onPress={() => setIntent('civilian')}
-                  style={({ pressed }) => [styles.intentCard, pressed && styles.pressed]}
+                  style={({ pressed }) => [styles.intentCard, pressed && chrome.pressed]}
                 >
                   <Text style={styles.intentEyebrow}>Klijent</Text>
                   <Text style={styles.intentTitle}>Želim rezervirati termine</Text>
@@ -266,7 +268,7 @@ export default function RegisterScreen({
                   accessibilityRole="button"
                   accessibilityLabel="Nastavi kao partner"
                   onPress={() => setIntent('partner')}
-                  style={({ pressed }) => [styles.intentCard, pressed && styles.pressed]}
+                  style={({ pressed }) => [styles.intentCard, pressed && chrome.pressed]}
                 >
                   <Text style={styles.intentEyebrow}>Partner</Text>
                   <Text style={styles.intentTitle}>Nudim svoje usluge</Text>
@@ -334,7 +336,7 @@ export default function RegisterScreen({
                     clearError(setFieldErrors, 'acceptTerms');
                   }}
                 />
-                {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+                {formError ? <Text style={chrome.formError}>{formError}</Text> : null}
                 <SubmitButton
                   label="Registrirajte se"
                   submitting={submitting}
@@ -363,8 +365,8 @@ export default function RegisterScreen({
                   </Text>
                 ) : null}
 
-                <View style={styles.field}>
-                  <Text style={styles.label}>Vrsta poslovanja</Text>
+                <View style={chrome.field}>
+                  <Text style={chrome.label}>Vrsta poslovanja</Text>
                   <View style={styles.nicheList}>
                     {signupNiches.map((item) => {
                       const selected = niche === item.id;
@@ -382,7 +384,7 @@ export default function RegisterScreen({
                           style={({ pressed }) => [
                             styles.nicheCard,
                             selected && styles.nicheCardSelected,
-                            pressed && styles.pressed,
+                            pressed && chrome.pressed,
                           ]}
                         >
                           <Text
@@ -399,7 +401,7 @@ export default function RegisterScreen({
                     })}
                   </View>
                   {fieldErrors.niche ? (
-                    <Text style={styles.fieldError}>{fieldErrors.niche}</Text>
+                    <Text style={chrome.fieldError}>{fieldErrors.niche}</Text>
                   ) : null}
                 </View>
 
@@ -475,7 +477,7 @@ export default function RegisterScreen({
                     clearError(setFieldErrors, 'acceptTerms');
                   }}
                 />
-                {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+                {formError ? <Text style={chrome.formError}>{formError}</Text> : null}
                 <SubmitButton
                   label="Otvorite studio"
                   submitting={submitting}
@@ -494,7 +496,7 @@ export default function RegisterScreen({
             ) : null}
           </Animated.View>
 
-          <View style={styles.footer}>
+          <View style={chrome.footer}>
             <AuthLegalStrip />
           </View>
         </ScrollView>
@@ -537,15 +539,15 @@ function Field({
   error?: string;
 } & ComponentProps<typeof TextInput>) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={chrome.field}>
+      <Text style={chrome.label}>{label}</Text>
       <TextInput
-        style={[styles.input, error ? styles.inputInvalid : null]}
+        style={[chrome.input, error ? chrome.inputInvalid : null]}
         placeholderTextColor="rgba(232, 242, 239, 0.28)"
         accessibilityLabel={label}
         {...inputProps}
       />
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
+      {error ? <Text style={chrome.fieldError}>{error}</Text> : null}
     </View>
   );
 }
@@ -574,14 +576,14 @@ function PasswordField({
   autoComplete?: ComponentProps<typeof TextInput>['autoComplete'];
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={chrome.field}>
+      <Text style={chrome.label}>{label}</Text>
       <View style={styles.passwordRow}>
         <TextInput
           style={[
-            styles.input,
+            chrome.input,
             styles.passwordInput,
-            error ? styles.inputInvalid : null,
+            error ? chrome.inputInvalid : null,
           ]}
           value={value}
           onChangeText={onChangeText}
@@ -600,7 +602,7 @@ function PasswordField({
           accessibilityLabel={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}
           onPress={onToggleShow}
           hitSlop={8}
-          style={({ pressed }) => [styles.eyeBtn, pressed && styles.pressed]}
+          style={({ pressed }) => [styles.eyeBtn, pressed && chrome.pressed]}
         >
           <Ionicons
             name={showPassword ? 'eye-off-outline' : 'eye-outline'}
@@ -609,7 +611,7 @@ function PasswordField({
           />
         </Pressable>
       </View>
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
+      {error ? <Text style={chrome.fieldError}>{error}</Text> : null}
     </View>
   );
 }
@@ -624,12 +626,12 @@ function TermsRow({
   onToggle: () => void;
 }) {
   return (
-    <View style={styles.field}>
+    <View style={chrome.field}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked }}
         onPress={onToggle}
-        style={({ pressed }) => [styles.termsRow, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.termsRow, pressed && chrome.pressed]}
       >
         <View style={[styles.checkbox, checked && styles.checkboxOn]}>
           {checked ? <Text style={styles.checkboxMark}>✓</Text> : null}
@@ -638,7 +640,7 @@ function TermsRow({
           Prihvaćam privatnost i uvjete korištenja platforme.
         </Text>
       </Pressable>
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
+      {error ? <Text style={chrome.fieldError}>{error}</Text> : null}
     </View>
   );
 }
@@ -660,46 +662,23 @@ function SubmitButton({
       disabled={submitting}
       style={({ pressed }) => [
         styles.submit,
-        (pressed || submitting) && styles.pressed,
+        (pressed || submitting) && chrome.pressed,
       ]}
     >
       {submitting ? (
         <ActivityIndicator color="#061210" />
       ) : (
-        <Text style={styles.submitLabel}>{label}</Text>
+        <Text style={chrome.submitLabel}>{label}</Text>
       )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#060908' },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
   backBtn: {
     alignSelf: 'flex-start',
     paddingVertical: 8,
     marginBottom: 16,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.62)',
   },
   brand: {
     fontFamily: 'CormorantGaramond_600SemiBold',
@@ -764,28 +743,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
     color: '#5EEAD4',
-  },
-  field: { gap: 8 },
-  label: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.5)',
-  },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 16,
-    color: '#F7FCFA',
-    backgroundColor: 'rgba(10, 20, 18, 0.45)',
-  },
-  inputInvalid: {
-    borderColor: 'rgba(251, 113, 133, 0.7)',
   },
   passwordRow: {
     position: 'relative',
@@ -873,17 +830,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: 'rgba(232, 242, 239, 0.68)',
   },
-  fieldError: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(251, 113, 133, 0.95)',
-  },
-  formError: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 20,
-    color: 'rgba(251, 113, 133, 0.95)',
-  },
   submit: {
     minHeight: 56,
     marginTop: 4,
@@ -891,12 +837,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#5EEAD4',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  submitLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 16,
-    letterSpacing: 0.15,
-    color: '#061210',
   },
   linkMuted: {
     fontFamily: 'Outfit_400Regular',
@@ -908,9 +848,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#5EEAD4',
   },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 28,
-  },
-  pressed: { opacity: 0.82 },
 });

@@ -4,6 +4,12 @@ import { useListTenantBookingsQuery } from '../../api/bookingApi.js';
 import { useListMembershipsQuery } from '../../api/membershipApi.js';
 import { useListServicesQuery } from '../../api/serviceApi.js';
 import {
+  DEFAULT_CAPACITY,
+  dayPeak,
+  loadLabel,
+  occupancyLevel,
+} from '../../../../shared/calendarOccupancy.js';
+import {
   dayHours,
   formatDay,
   monthCells,
@@ -15,7 +21,6 @@ import './CalendarPage.scss';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 const weekLabels = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
-const DEFAULT_CAPACITY = 12;
 
 const demoNames = [
   'Ivan Horvat',
@@ -63,41 +68,6 @@ function hourSlots(from, to) {
     return Array.from({ length: 14 }, (_, index) => `${pad(7 + index)}:00`);
   }
   return Array.from({ length: end - start }, (_, index) => `${pad(start + index)}:00`);
-}
-
-function occupancyLevel(ratio, open) {
-  if (!open) return 'closed';
-  if (ratio <= 0) return 'free';
-  if (ratio <= 0.25) return 'low';
-  if (ratio <= 0.5) return 'mid';
-  if (ratio <= 0.75) return 'high';
-  return 'max';
-}
-
-function loadLabel(level) {
-  if (level === 'max') return 'Puno';
-  if (level === 'high') return 'Visoko';
-  if (level === 'mid') return 'Srednje';
-  if (level === 'low') return 'Nisko';
-  if (level === 'closed') return 'Zatvoreno';
-  return 'Slobodno';
-}
-
-function dayPeak(list, capacity) {
-  if (!list.length) return { count: 0, peak: 0, ratio: 0, capacity };
-  const bySlot = new Map();
-  for (const item of list) {
-    const key = `${item.startTime}-${item.endTime}`;
-    bySlot.set(key, (bySlot.get(key) || 0) + 1);
-  }
-  const peak = Math.max(...bySlot.values());
-  const cap = Math.max(1, capacity || DEFAULT_CAPACITY);
-  return {
-    count: list.length,
-    peak,
-    ratio: Math.min(1, peak / cap),
-    capacity: cap,
-  };
 }
 
 function enrichBookings(bookings, memberships) {

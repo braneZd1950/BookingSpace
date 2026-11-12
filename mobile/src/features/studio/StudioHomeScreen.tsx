@@ -18,6 +18,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { logout } from '../../api/auth.js';
 import { getMyTenants, updateTenant } from '../../api/tenants.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
+import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+} from './studioChrome.js';
 import { findSignupNiche } from '../auth/signupDefaults.js';
 import StudioAnalyticsScreen from './StudioAnalyticsScreen';
 import StudioBookingsScreen from './StudioBookingsScreen';
@@ -166,7 +171,7 @@ export default function StudioHomeScreen({
 
   if (loading) {
     return (
-      <View style={styles.boot}>
+      <View style={chrome.boot}>
         <ActivityIndicator color="#5EEAD4" />
       </View>
     );
@@ -393,18 +398,18 @@ export default function StudioHomeScreen({
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
 
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -681,47 +686,11 @@ function FactRow({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 22,
-  },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 26,
-    lineHeight: 30,
-    letterSpacing: -0.5,
-    color: '#F7FCFA',
-  },
-  logoutBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontFamily: 'CormorantGaramond_500Medium',
@@ -738,6 +707,19 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.66)',
     maxWidth: 360,
     marginBottom: 20,
+  },
+  brand: {
+    fontFamily: 'CormorantGaramond_600SemiBold',
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.5,
+    color: '#F7FCFA',
+  },
+  logoutBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   facts: {
     paddingTop: 2,

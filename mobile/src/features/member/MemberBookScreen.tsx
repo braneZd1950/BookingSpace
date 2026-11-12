@@ -23,7 +23,14 @@ import {
   messageForCancelBookingError,
   messageForCreateBookingError,
 } from '../../lib/bookingErrors.js';
+import { memberChromeStyles as chrome } from './memberChrome';
 import { CONSENT_VERSION, hasValidConsent } from '../../lib/consent.js';
+import {
+  firstOpenKey,
+  formatBookingDay,
+  sessionsLabel,
+  slotNote,
+} from '../../../../shared/memberBookLabels.js';
 import {
   dateFromKey,
   dayOpen,
@@ -42,39 +49,6 @@ type MemberBookScreenProps = {
   isMember: boolean;
   onBack: () => void;
 };
-
-const bookingDay = new Intl.DateTimeFormat('hr-HR', {
-  weekday: 'short',
-  day: 'numeric',
-  month: 'numeric',
-});
-
-function sessionsLabel(membership: any) {
-  if (!membership) return '';
-  if (membership.sessionsIncluded == null) return 'Neograničeno';
-  const left = membership.sessionsRemaining
-    ?? Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0));
-  return `${left} preostalo`;
-}
-
-function slotNote(slot: any) {
-  if (slot.status === 'FULL') return 'Puno';
-  if (slot.status === 'PAST') return 'Prošlo';
-  if (slot.available === slot.capacity) return 'Slobodno';
-  if (slot.available === 1) return '1 mjesto';
-  return `${slot.available} mjesta`;
-}
-
-function formatBookingDay(dateKey: string) {
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const label = bookingDay.format(new Date(y, m - 1, d));
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function firstOpenKey(days: Date[], workingHours: any[]) {
-  const open = days.find((item) => dayOpen(workingHours, item));
-  return toDateKey(open || days[0]);
-}
 
 export default function MemberBookScreen({
   tenant,
@@ -257,7 +231,7 @@ export default function MemberBookScreen({
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[chrome.root, { backgroundColor: '#060908' }]}>
       <StatusBar style="light" />
       <LinearGradient
         colors={['#0C1815', '#070B0A', '#050706']}
@@ -266,7 +240,7 @@ export default function MemberBookScreen({
       />
       <ScrollView
         contentContainerStyle={[
-          styles.content,
+          chrome.content,
           { paddingTop: compact ? 44 : 56, paddingBottom: 36 },
         ]}
         showsVerticalScrollIndicator={false}
@@ -274,14 +248,14 @@ export default function MemberBookScreen({
         <Pressable
           accessibilityRole="button"
           onPress={onBack}
-          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+          style={({ pressed }) => [chrome.back, pressed && styles.pressed]}
         >
           <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
-          <Text style={styles.backLabel}>Početna</Text>
+          <Text style={[chrome.backLabel, { color: '#5EEAD4' }]}>Početna</Text>
         </Pressable>
 
         <Text style={styles.studio}>{tenant?.name || 'Studio'}</Text>
-        <Text style={styles.title}>Termini</Text>
+        <Text style={[chrome.title, { color: '#E8F2EF' }]}>Termini</Text>
         <Text style={styles.lead}>
           {service
             ? `${service.name} · ${service.durationMinutes} min`
@@ -504,38 +478,12 @@ export default function MemberBookScreen({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060908' },
-  content: {
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  back: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: '#5EEAD4',
-  },
   studio: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 12,
     letterSpacing: 0.4,
     color: 'rgba(94, 234, 212, 0.85)',
     marginBottom: 6,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 36,
-    lineHeight: 40,
-    color: '#E8F2EF',
-    marginBottom: 8,
   },
   lead: {
     fontFamily: 'Outfit_400Regular',

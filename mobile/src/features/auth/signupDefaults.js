@@ -1,104 +1,19 @@
 /** Niše, predlošci i boje za mobilnu registraciju / postavljanje partnera. */
 
-export const signupNiches = [
-  {
-    id: 'fitness',
-    name: 'Treninzi i grupe',
-    note: 'Fitness, pilates, yoga, tečajevi — raspored i članarine.',
-  },
-  {
-    id: 'services',
-    name: 'Pojedinačni termini',
-    note: 'Frizeri, beauty, masaže, PT — usluga s trajanjem.',
-  },
-  {
-    id: 'playroom',
-    name: 'Igraonice i događaji',
-    note: 'Rođendani, sati igre, najam prostora.',
-  },
-  {
-    id: 'generic',
-    name: 'Nešto drugo',
-    note: 'Za sve što se ne uklopi u ostale kategorije.',
-  },
-];
+export {
+  findLayout,
+  findSignupNiche,
+  findTemplate,
+  pageLayouts,
+  previewSlug,
+  signupNiches,
+  siteTemplates,
+  studioHost,
+  templateForNiche,
+  templatesForNiche,
+} from '../../../../shared/siteTemplates.js';
 
-export const pageLayouts = [
-  {
-    id: 'banner',
-    name: 'Naslovnica',
-    note: 'Široki header. Ispod: termini, sati i kontakt.',
-  },
-  {
-    id: 'bar',
-    name: 'Traka',
-    note: 'Uski header. Sadržaj kreće odmah ispod.',
-  },
-  {
-    id: 'sidebar',
-    name: 'Stupac',
-    note: 'Header + bočna traka za kontakt i sate.',
-  },
-];
-
-const allOn = {
-  hero: true,
-  about: true,
-  services: true,
-  schedule: true,
-  gallery: true,
-  contact: true,
-  location: true,
-  openingHours: true,
-};
-
-export const siteTemplates = [
-  {
-    id: 'fitness',
-    name: 'Treninzi i grupe',
-    note: 'Široka naslovnica, termini ispod.',
-    layout: 'banner',
-    palette: 'navy',
-    niches: ['fitness', 'powerplate'],
-    sections: { ...allOn, gallery: true },
-  },
-  {
-    id: 'pilates',
-    name: 'Mirniji ritam',
-    note: 'Bočni stupac — pilates, yoga, manje grupe.',
-    layout: 'sidebar',
-    palette: 'teal',
-    niches: ['pilates', 'yoga'],
-    sections: { ...allOn, gallery: false, services: true },
-  },
-  {
-    id: 'services',
-    name: 'Pojedinačni termini',
-    note: 'Naglasak na uslugu i trajanje.',
-    layout: 'sidebar',
-    palette: 'wine',
-    niches: ['services'],
-    sections: { ...allOn, gallery: true, schedule: true },
-  },
-  {
-    id: 'playroom',
-    name: 'Igraonica i događaji',
-    note: 'Uski header — brzo do termina.',
-    layout: 'bar',
-    palette: 'sky',
-    niches: ['playroom'],
-    sections: { ...allOn, gallery: true, services: false, about: true },
-  },
-  {
-    id: 'generic',
-    name: 'Univerzalni',
-    note: 'Jednostavan izgled za ostalo.',
-    layout: 'banner',
-    palette: 'stone',
-    niches: ['generic'],
-    sections: { ...allOn, gallery: false },
-  },
-];
+import { templateForNiche } from '../../../../shared/siteTemplates.js';
 
 const palette = (id, name, primary, soft, canvas, ink) => ({
   id,
@@ -125,6 +40,7 @@ export const studioPalettes = [
   palette('apple', 'Jabuka', '#26702c', '#def0dc', '#f4faf3', '#17301a'),
   palette('honey', 'Med', '#925c00', '#fcf0d4', '#fbf8f0', '#35260c'),
   palette('raspberry', 'Malina', '#ac1e60', '#fbdeeb', '#fcf5f8', '#3a1024'),
+  palette('lavender', 'Lavanda', '#624ca2', '#ece6fa', '#f7f5fc', '#241c3a'),
 ];
 
 const nichePaletteIds = {
@@ -135,27 +51,6 @@ const nichePaletteIds = {
   pilates: ['teal', 'pine', 'emerald', 'lavender', 'sand'],
   yoga: ['teal', 'pine', 'emerald', 'lavender', 'sand'],
 };
-
-// lavender/pine aliases for recommended lists
-studioPalettes.push(
-  palette('lavender', 'Lavanda', '#624ca2', '#ece6fa', '#f7f5fc', '#241c3a'),
-);
-
-export function findSignupNiche(id) {
-  return signupNiches.find((item) => item.id === id) || signupNiches[0];
-}
-
-export function findTemplate(id) {
-  return siteTemplates.find((item) => item.id === id) || siteTemplates[0];
-}
-
-export function templateForNiche(niche) {
-  return siteTemplates.find((item) => item.niches.includes(niche)) || siteTemplates[0];
-}
-
-export function findLayout(id) {
-  return pageLayouts.find((item) => item.id === id) || pageLayouts[0];
-}
 
 export function findPalette(id) {
   return studioPalettes.find((item) => item.id === id) || studioPalettes[0];
@@ -178,28 +73,4 @@ export function palettesForNiche(niche) {
   const first = preferred.map((id) => findPalette(id)).filter(Boolean);
   const rest = studioPalettes.filter((item) => !preferredSet.has(item.id));
   return { recommendedIds: preferred, palettes: [...first, ...rest] };
-}
-
-export function templatesForNiche(niche) {
-  return [...siteTemplates].sort((a, b) => {
-    const aMatch = a.niches.includes(niche) ? 0 : 1;
-    const bMatch = b.niches.includes(niche) ? 0 : 1;
-    return aMatch - bMatch;
-  });
-}
-
-export function previewSlug(name) {
-  const raw = String(name || '')
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
-  return raw;
-}
-
-export function studioHost(slug) {
-  const clean = previewSlug(slug);
-  return clean ? `${clean}.booking.hr` : 'vas-studio.booking.hr';
 }

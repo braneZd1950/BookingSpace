@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -12,12 +12,19 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { login as loginRequest } from '../../api/auth.js';
+import { isEmail } from '../../../../shared/isEmail.js';
 import AuthLegalStrip from './AuthLegalStrip';
+import {
+  AUTH_GRADIENT,
+  AUTH_GRADIENT_LOCATIONS,
+  authChromeStyles as chrome,
+  authEnterStyle,
+  useAuthEnterAnimation,
+} from './authChrome.js';
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -25,10 +32,6 @@ type LoginScreenProps = {
   onRegister?: () => void;
   onSuccess?: (result: unknown) => void;
 };
-
-function isEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
 
 /**
  * Mobilna prijava — isti vizualni jezik kao landing, ne web LoginPage.
@@ -49,18 +52,7 @@ export default function LoginScreen({
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const enter = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    
-    const anim = Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      useNativeDriver: USE_NATIVE_DRIVER,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [enter]);
+  const enter = useAuthEnterAnimation();
 
   async function onSubmit() {
     const nextEmail = email.trim().toLowerCase();
@@ -87,22 +79,22 @@ export default function LoginScreen({
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={AUTH_GRADIENT as [string, string, ...string[]]}
+        locations={AUTH_GRADIENT_LOCATIONS as [number, number, ...number[]]}
         style={StyleSheet.absoluteFill}
       />
 
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={chrome.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          style={styles.flex}
+          style={chrome.flex}
           contentContainerStyle={[
-            styles.stage,
+            chrome.stage,
             {
               paddingTop: compact ? 44 : 56,
               paddingBottom: compact ? 28 : 40,
@@ -113,51 +105,39 @@ export default function LoginScreen({
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          <Animated.View
-            style={{
-              opacity: enter,
-              transform: [
-                {
-                  translateY: enter.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [14, 0],
-                  }),
-                },
-              ],
-            }}
-          >
+          <Animated.View style={authEnterStyle(enter)}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Natrag na početnu"
               onPress={onBack}
               style={({ pressed }) => [
-                styles.backBtn,
-                pressed && styles.pressed,
+                chrome.backBtn,
+                pressed && chrome.pressed,
               ]}
             >
-              <Text style={styles.backLabel}>← Početna</Text>
+              <Text style={chrome.backLabel}>← Početna</Text>
             </Pressable>
 
-            <Text style={styles.brand}>anyminutes</Text>
-            <Text style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}>
+            <Text style={chrome.brand}>anyminutes</Text>
+            <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
               Prijavite se.
             </Text>
-            <Text style={styles.lead}>Ista prijava za člana i za studio.</Text>
+            <Text style={chrome.lead}>Ista prijava za člana i za studio.</Text>
           </Animated.View>
 
           <Animated.View
             style={[
-              styles.form,
+              chrome.form,
               {
                 opacity: enter,
                 marginTop: compact ? 28 : 36,
               },
             ]}
           >
-            <View style={styles.field}>
-              <Text style={styles.label}>E-pošta</Text>
+            <View style={chrome.field}>
+              <Text style={chrome.label}>E-pošta</Text>
               <TextInput
-                style={[styles.input, fieldErrors.email && styles.inputInvalid]}
+                style={[chrome.input, fieldErrors.email && chrome.inputInvalid]}
                 value={email}
                 onChangeText={(value) => {
                   setEmail(value);
@@ -174,18 +154,18 @@ export default function LoginScreen({
                 accessibilityLabel="E-pošta"
               />
               {fieldErrors.email ? (
-                <Text style={styles.fieldError}>{fieldErrors.email}</Text>
+                <Text style={chrome.fieldError}>{fieldErrors.email}</Text>
               ) : null}
             </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Lozinka</Text>
+            <View style={chrome.field}>
+              <Text style={chrome.label}>Lozinka</Text>
               <View style={styles.passwordRow}>
                 <TextInput
                   style={[
-                    styles.input,
+                    chrome.input,
                     styles.passwordInput,
-                    fieldErrors.password && styles.inputInvalid,
+                    fieldErrors.password && chrome.inputInvalid,
                   ]}
                   value={password}
                   onChangeText={(value) => {
@@ -213,7 +193,7 @@ export default function LoginScreen({
                   hitSlop={8}
                   style={({ pressed }) => [
                     styles.eyeBtn,
-                    pressed && styles.pressed,
+                    pressed && chrome.pressed,
                   ]}
                 >
                   <Ionicons
@@ -224,11 +204,11 @@ export default function LoginScreen({
                 </Pressable>
               </View>
               {fieldErrors.password ? (
-                <Text style={styles.fieldError}>{fieldErrors.password}</Text>
+                <Text style={chrome.fieldError}>{fieldErrors.password}</Text>
               ) : null}
             </View>
 
-            {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+            {formError ? <Text style={chrome.formError}>{formError}</Text> : null}
 
             <Pressable
               accessibilityRole="button"
@@ -236,14 +216,14 @@ export default function LoginScreen({
               onPress={onSubmit}
               disabled={submitting}
               style={({ pressed }) => [
-                styles.submit,
-                (pressed || submitting) && styles.pressed,
+                chrome.submit,
+                (pressed || submitting) && chrome.pressed,
               ]}
             >
               {submitting ? (
                 <ActivityIndicator color="#061210" />
               ) : (
-                <Text style={styles.submitLabel}>Prijavite se</Text>
+                <Text style={chrome.submitLabel}>Prijavite se</Text>
               )}
             </Pressable>
 
@@ -252,7 +232,7 @@ export default function LoginScreen({
                 accessibilityRole="link"
                 accessibilityLabel="Zaboravljena lozinka"
                 onPress={onForgotPassword}
-                style={({ pressed }) => [pressed && styles.pressed]}
+                style={({ pressed }) => [pressed && chrome.pressed]}
               >
                 <Text style={styles.linkLabel}>Zaboravljena lozinka?</Text>
               </Pressable>
@@ -265,7 +245,7 @@ export default function LoginScreen({
             </View>
           </Animated.View>
 
-          <View style={styles.footer}>
+          <View style={chrome.footer}>
             <AuthLegalStrip />
           </View>
         </ScrollView>
@@ -275,91 +255,6 @@ export default function LoginScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: {
-    flex: 1,
-    minHeight: 0,
-  },
-  stage: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  backBtn: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    marginBottom: 20,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: 'rgba(232, 242, 239, 0.62)',
-  },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.6,
-    color: '#F7FCFA',
-    marginBottom: 18,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 10,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.68)',
-    maxWidth: 320,
-  },
-  form: {
-    gap: 18,
-  },
-  field: {
-    gap: 8,
-  },
-  label: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-    color: 'rgba(232, 242, 239, 0.5)',
-  },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 16,
-    color: '#F7FCFA',
-    backgroundColor: 'rgba(10, 20, 18, 0.45)',
-  },
-  inputInvalid: {
-    borderColor: 'rgba(251, 113, 133, 0.7)',
-  },
   passwordRow: {
     position: 'relative',
     justifyContent: 'center',
@@ -376,31 +271,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fieldError: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(251, 113, 133, 0.95)',
-  },
-  formError: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 14,
-    lineHeight: 20,
-    color: 'rgba(251, 113, 133, 0.95)',
-  },
-  submit: {
-    minHeight: 56,
-    marginTop: 6,
-    borderRadius: 6,
-    backgroundColor: '#5EEAD4',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitLabel: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 16,
-    letterSpacing: 0.15,
-    color: '#061210',
-  },
   links: {
     marginTop: 8,
     gap: 12,
@@ -415,12 +285,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_400Regular',
     fontSize: 14,
     color: 'rgba(232, 242, 239, 0.5)',
-  },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 28,
-  },
-  pressed: {
-    opacity: 0.82,
   },
 });

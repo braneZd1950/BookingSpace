@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { listMyMemberships } from '../../api/memberships.js';
 import { discoverTenants } from '../../api/tenants.js';
 import { signupNiches } from '../auth/signupDefaults.js';
+import { memberChromeStyles as chrome } from './memberChrome';
 
 type MemberDiscoverScreenProps = {
   slug: string;
@@ -119,7 +120,7 @@ export default function MemberDiscoverScreen({
   }, [places, category, slug]);
 
   return (
-    <View style={styles.root}>
+    <View style={[chrome.root, { backgroundColor: '#060908' }]}>
       <StatusBar style="light" />
       <LinearGradient
         colors={['#0C1815', '#070B0A', '#050706']}
@@ -128,7 +129,7 @@ export default function MemberDiscoverScreen({
       />
       <ScrollView
         contentContainerStyle={[
-          styles.content,
+          chrome.content,
           { paddingTop: compact ? 44 : 56, paddingBottom: 36 },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -137,15 +138,17 @@ export default function MemberDiscoverScreen({
         <Pressable
           accessibilityRole="button"
           onPress={onBack}
-          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+          style={({ pressed }) => [chrome.back, pressed && styles.pressed]}
         >
           <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
-          <Text style={styles.backLabel}>Početna</Text>
+          <Text style={[chrome.backLabel, { color: '#5EEAD4' }]}>Početna</Text>
         </Pressable>
 
-        <Text style={styles.studio}>{studioName || 'anyminutes'}</Text>
-        <Text style={styles.title}>Otkrij</Text>
-        <Text style={styles.lead}>
+        <Text style={[chrome.studio, { color: 'rgba(94, 234, 212, 0.85)' }]}>
+          {studioName || 'anyminutes'}
+        </Text>
+        <Text style={[chrome.title, { color: '#E8F2EF' }]}>Otkrij</Text>
+        <Text style={[chrome.lead, { color: 'rgba(232, 242, 239, 0.68)' }]}>
           Pronađite druge studije ili prijeđite na studio u kojem ste član.
         </Text>
 
@@ -230,45 +233,6 @@ export default function MemberDiscoverScreen({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060908' },
-  content: {
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  back: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: '#5EEAD4',
-  },
-  studio: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    color: 'rgba(94, 234, 212, 0.85)',
-    marginBottom: 6,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 36,
-    lineHeight: 40,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.68)',
-    marginBottom: 16,
-  },
   search: {
     minHeight: 48,
     borderWidth: StyleSheet.hairlineWidth,

@@ -16,6 +16,13 @@ import {
 } from '../../lib/bookingErrors.js';
 import { dateKeyToLocalDate } from '../../lib/dateRange.js';
 import {
+  firstOpenKey,
+  formatBookingDay,
+  sessionsLabel,
+  slotNote,
+} from '../../../../shared/memberBookLabels.js';
+import {
+  dayOpen,
   formatCancellationWindow,
   formatDay,
   toDateKey,
@@ -26,44 +33,10 @@ import {
 import './MemberBookPage.scss';
 
 const shortWeekday = new Intl.DateTimeFormat('hr-HR', { weekday: 'short' });
-const bookingDay = new Intl.DateTimeFormat('hr-HR', {
-  weekday: 'short',
-  day: 'numeric',
-  month: 'numeric',
-});
-
-function dayOpen(workingHours, date) {
-  const day = date.getDay();
-  const row = (workingHours || []).find((item) => Number(item.day) === day);
-  if (!row) return false;
-  return !row.closed && Boolean(row.open) && Boolean(row.close);
-}
-
-function sessionsLabel(membership) {
-  if (!membership) return '';
-  if (membership.sessionsIncluded == null) return 'Neograničeno';
-  const left = membership.sessionsRemaining
-    ?? Math.max(0, (membership.sessionsIncluded || 0) - (membership.sessionsUsed || 0));
-  return `${left} preostalo`;
-}
 
 function shortDay(date) {
   const name = shortWeekday.format(date).replace('.', '');
   return `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
-}
-
-function formatBookingDay(dateKey) {
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const label = bookingDay.format(new Date(y, m - 1, d));
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
-function slotNote(slot) {
-  if (slot.status === 'FULL') return 'Puno';
-  if (slot.status === 'PAST') return 'Prošlo';
-  if (slot.available === slot.capacity) return 'Slobodno';
-  if (slot.available === 1) return '1 mjesto';
-  return `${slot.available} mjesta`;
 }
 
 function canCancelBooking(booking, windowMinutes, timeZone) {
@@ -74,11 +47,6 @@ function canCancelBooking(booking, windowMinutes, timeZone) {
     booking.startTime,
     windowMinutes ?? 0,
   );
-}
-
-function firstOpenKey(days, workingHours) {
-  const open = days.find((item) => dayOpen(workingHours, item));
-  return toDateKey(open || days[0]);
 }
 
 function policyMark(minutes) {

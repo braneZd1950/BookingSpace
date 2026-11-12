@@ -16,6 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { mediaUrl } from '../../lib/mediaUrl.js';
+import { memberChromeStyles as chrome } from './memberChrome';
 
 type MemberGalleryScreenProps = {
   tenant: any;
@@ -103,7 +104,7 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[chrome.root, { backgroundColor: '#060908' }]}>
       <StatusBar style="light" />
       <LinearGradient
         colors={['#0C1815', '#070B0A', '#050706']}
@@ -123,14 +124,16 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
         <Pressable
           accessibilityRole="button"
           onPress={onBack}
-          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+          style={({ pressed }) => [chrome.back, pressed && styles.pressed]}
         >
           <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
-          <Text style={styles.backLabel}>Početna</Text>
+          <Text style={[chrome.backLabel, { color: '#5EEAD4' }]}>Početna</Text>
         </Pressable>
 
-        <Text style={styles.studio}>{tenant?.name || 'Studio'}</Text>
-        <Text style={styles.title}>Galerija</Text>
+        <Text style={[chrome.studio, { color: 'rgba(94, 234, 212, 0.85)' }]}>
+          {tenant?.name || 'Studio'}
+        </Text>
+        <Text style={[chrome.title, { color: '#E8F2EF' }]}>Galerija</Text>
         <Text style={styles.lead}>
           Povucite prstom lijevo ili desno za pregled fotografija.
         </Text>
@@ -262,36 +265,10 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060908' },
   header: {
     paddingHorizontal: 24,
     width: '100%',
     alignSelf: 'center',
-  },
-  back: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    color: '#5EEAD4',
-  },
-  studio: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 12,
-    color: 'rgba(94, 234, 212, 0.85)',
-    marginBottom: 6,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 36,
-    lineHeight: 40,
-    color: '#E8F2EF',
-    marginBottom: 8,
   },
   lead: {
     fontFamily: 'Outfit_400Regular',

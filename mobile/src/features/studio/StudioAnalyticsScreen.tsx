@@ -22,6 +22,18 @@ import {
   localDesignAnalytics,
   localDesignMembers,
 } from './localDesignFixtures.js';
+import { monthRange } from '../../../../shared/dateRange.js';
+import {
+  buildMemberInsights,
+  formatMonthHr,
+  memberName,
+  seriesByMonth,
+} from '../../../../shared/memberInsights.js';
+import {
+  STUDIO_GRADIENT,
+  STUDIO_GRADIENT_LOCATIONS,
+  studioChromeStyles as chrome,
+} from './studioChrome.js';
 
 type StudioAnalyticsScreenProps = {
   tenantId?: string;
@@ -61,129 +73,11 @@ const dateFmt = new Intl.DateTimeFormat('hr-HR', {
   year: 'numeric',
 });
 
-function monthRange(from = new Date()) {
-  const year = from.getFullYear();
-  const month = from.getMonth();
-  const pad = (value: number) => String(value).padStart(2, '0');
-  const last = new Date(year, month + 1, 0).getDate();
-  return {
-    dateFrom: `${year}-${pad(month + 1)}-01`,
-    dateTo: `${year}-${pad(month + 1)}-${pad(last)}`,
-  };
-}
-
-function daysLeft(until?: string) {
-  if (!until) return null;
-  const end = new Date(`${until}T23:59:59`);
-  if (Number.isNaN(end.getTime())) return null;
-  return Math.ceil((end.getTime() - Date.now()) / 86400000);
-}
-
-function formatMonthHr(yearMonth: string) {
-  const [year, month] = String(yearMonth).split('-').map(Number);
-  if (!year || !month) return yearMonth;
-  const label = new Intl.DateTimeFormat('hr-HR', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(year, month - 1, 1));
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-}
-
 function formatShortDate(value?: string) {
   if (!value) return '—';
   const [y, m, d] = value.split('-').map(Number);
   if (!y || !m || !d) return value;
   return dateFmt.format(new Date(y, m - 1, d));
-}
-
-function memberName(item: MembershipRow) {
-  return item.user?.name || item.user?.email || 'Član';
-}
-
-function seriesByMonth(series: Array<Record<string, unknown>>) {
-  const map = new Map<
-    string,
-    {
-      month: string;
-      page_view: number;
-      booking_created: number;
-      booking_cancelled: number;
-      member_created: number;
-    }
-  >();
-  for (const row of series) {
-    const key = String(row.date || '').slice(0, 7);
-    if (!/^\d{4}-\d{2}$/.test(key)) continue;
-    const current = map.get(key) || {
-      month: key,
-      page_view: 0,
-      booking_created: 0,
-      booking_cancelled: 0,
-      member_created: 0,
-    };
-    current.page_view += Number(row.page_view) || 0;
-    current.booking_created += Number(row.booking_created) || 0;
-    current.booking_cancelled += Number(row.booking_cancelled) || 0;
-    current.member_created += Number(row.member_created) || 0;
-    map.set(key, current);
-  }
-  return [...map.values()].sort((a, b) => a.month.localeCompare(b.month));
-}
-
-function buildMemberInsights(memberships: MembershipRow[], bookings: BookingRow[]) {
-  const active = memberships.filter((item) => item.status === 'ACTIVE');
-  const visitsByUser = new Map<string, number>();
-  for (const booking of bookings) {
-    if (booking.status !== 'CONFIRMED' && booking.status !== 'COMPLETED') continue;
-    const id = String(booking.userId || '');
-    if (!id) continue;
-    visitsByUser.set(id, (visitsByUser.get(id) || 0) + 1);
-  }
-
-  const endingSoon: Array<{ item: MembershipRow; left: number }> = [];
-  const packageHot: Array<{
-    item: MembershipRow;
-    used: number;
-    total: number;
-  }> = [];
-  const noVisit: MembershipRow[] = [];
-  let withVisit = 0;
-
-  for (const item of active) {
-    const userId = String(item.userId || '');
-    const left = daysLeft(item.validUntil);
-    const visits = visitsByUser.get(userId) || 0;
-    if (visits > 0) withVisit += 1;
-    else noVisit.push(item);
-
-    if (left != null && left >= 0 && left <= 7) {
-      endingSoon.push({ item, left });
-    }
-
-    const included = item.sessionsIncluded;
-    if (included != null) {
-      const used = Number(item.sessionsUsed) || 0;
-      const total = Number(included) || 0;
-      if (total > 0 && used / total >= 0.85) {
-        packageHot.push({ item, used, total });
-      }
-    }
-  }
-
-  endingSoon.sort((a, b) => a.left - b.left);
-  packageHot.sort((a, b) => b.used / b.total - a.used / a.total);
-  noVisit.sort((a, b) => memberName(a).localeCompare(memberName(b), 'hr'));
-
-  return {
-    activeCount: active.length,
-    endingSoonCount: endingSoon.length,
-    packageHotCount: packageHot.length,
-    noVisitCount: noVisit.length,
-    regularity: active.length > 0 ? Math.round((withVisit / active.length) * 100) : 0,
-    endingSoon: endingSoon.slice(0, 6),
-    packageHot: packageHot.slice(0, 6),
-    noVisit: noVisit.slice(0, 6),
-  };
 }
 
 /**
@@ -286,25 +180,25 @@ export default function StudioAnalyticsScreen({
 
   if (loading) {
     return (
-      <View style={styles.boot}>
+      <View style={chrome.boot}>
         <ActivityIndicator color="#5EEAD4" />
       </View>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
-        locations={[0, 0.42, 1]}
+        colors={STUDIO_GRADIENT}
+        locations={STUDIO_GRADIENT_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
 
       <ScrollView
-        style={styles.flex}
+        style={chrome.flex}
         contentContainerStyle={[
-          styles.stage,
+          chrome.stage,
           {
             paddingTop: compact ? 48 : 64,
             paddingBottom: compact ? 28 : 40,
@@ -327,25 +221,25 @@ export default function StudioAnalyticsScreen({
             ],
           }}
         >
-          <View style={styles.topBar}>
+          <View style={chrome.topBar}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Natrag na ${studioName || 'studio'}`}
               onPress={onBack}
               hitSlop={10}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [chrome.backBtn, pressed && styles.pressed]}
             >
               <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
-              <Text style={styles.backLabel} numberOfLines={1}>
+              <Text style={chrome.backLabel} numberOfLines={1}>
                 {studioName || 'Moj studio'}
               </Text>
             </Pressable>
           </View>
 
-          <Text style={[styles.title, compact && { fontSize: 34, lineHeight: 38 }]}>
+          <Text style={[chrome.title, compact && { fontSize: 34, lineHeight: 38 }]}>
             Analitika
           </Text>
-          <Text style={styles.lead}>
+          <Text style={chrome.lead}>
             Samo vaš studio — zadnjih {days} dana. Drugi studiji i platforma ne
             vide ove brojke.
           </Text>
@@ -501,63 +395,6 @@ export default function StudioAnalyticsScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#060908',
-  },
-  root: {
-    flex: 1,
-    width: '100%',
-    maxWidth: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#060908',
-  },
-  flex: { flex: 1, minHeight: 0 },
-  stage: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
-    boxSizing: 'border-box',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 22,
-  },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginLeft: -6,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  backLabel: {
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 15,
-    color: '#5EEAD4',
-    maxWidth: 260,
-  },
-  title: {
-    fontFamily: 'CormorantGaramond_500Medium',
-    fontSize: 40,
-    lineHeight: 44,
-    letterSpacing: -0.6,
-    color: '#E8F2EF',
-    marginBottom: 8,
-  },
-  lead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.66)',
-    marginBottom: 16,
-  },
   fixtureBanner: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 12,
