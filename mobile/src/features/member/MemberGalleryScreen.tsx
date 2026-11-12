@@ -10,13 +10,19 @@ import {
   Text,
   View,
   useWindowDimensions,
-  type ViewToken,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { mediaUrl } from '../../lib/mediaUrl.js';
 import { memberChromeStyles as chrome } from './memberChrome';
+
+type ViewToken = {
+  item?: unknown;
+  key?: string;
+  index?: number | null;
+  isViewable?: boolean;
+};
 
 type MemberGalleryScreenProps = {
   tenant: any;
@@ -178,7 +184,7 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
                 <View style={styles.slideFrame}>
                   <Image
                     source={{ uri: item.uri }}
-                    style={StyleSheet.absoluteFillObject}
+                    style={StyleSheet.absoluteFill}
                     resizeMode="cover"
                     accessibilityLabel={item.alt}
                   />
@@ -309,7 +315,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(232, 242, 239, 0.14)',
   },
   slideShade: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(6, 9, 8, 0.06)',
   },
   dots: {

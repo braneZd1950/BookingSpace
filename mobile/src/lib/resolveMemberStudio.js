@@ -9,7 +9,7 @@ import { getMyTenants } from '../api/tenants.js';
  *   slug: string,
  *   tenantId?: string,
  *   tenantName?: string,
- *   membership?: object|null,
+ *   membership?: Record<string, unknown>|null,
  * }|null>}
  */
 export async function resolveMemberStudio() {

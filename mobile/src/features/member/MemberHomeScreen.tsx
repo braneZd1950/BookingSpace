@@ -467,7 +467,7 @@ export default function MemberHomeScreen({
             <Text style={[styles.hoursTitle, { color: colors.title }]}>Radno vrijeme</Text>
             {hourRows.map(([key, label]) => (
               <Text key={key} style={[styles.hoursLine, { color: colors.soft }]}>
-                {hoursLine(label, hours[key])}
+                {hoursLine(label, hours[key as keyof typeof hours])}
               </Text>
             ))}
           </View>

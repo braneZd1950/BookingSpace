@@ -33,10 +33,12 @@ export function monthLabel(date) {
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
 }
 
+/** @returns {Array<Date|null>} */
 export function monthCells(year, month) {
   const first = new Date(year, month, 1);
   const pad = (first.getDay() + 6) % 7;
   const total = new Date(year, month + 1, 0).getDate();
+  /** @type {Array<Date|null>} */
   const cells = Array.from({ length: pad }, () => null);
   for (let day = 1; day <= total; day += 1) cells.push(new Date(year, month, day));
   while (cells.length % 7 !== 0) cells.push(null);

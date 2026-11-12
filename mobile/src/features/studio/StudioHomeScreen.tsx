@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import React, { useEffect, useRef, useState, type ComponentProps } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -125,7 +125,7 @@ export default function StudioHomeScreen({
   const [phoneError, setPhoneError] = useState('');
   const phoneReveal = useRef(new Animated.Value(0)).current;
   const phoneActions = useRef(new Animated.Value(0)).current;
-  const phoneInputRef = useRef<TextInput>(null);
+  const phoneInputRef = useRef<React.ElementRef<typeof TextInput>>(null);
   const phoneAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
@@ -393,8 +393,8 @@ export default function StudioHomeScreen({
     <View style={chrome.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={STUDIO_GRADIENT}
-        locations={STUDIO_GRADIENT_LOCATIONS}
+        colors={STUDIO_GRADIENT as [string, string, ...string[]]}
+        locations={STUDIO_GRADIENT_LOCATIONS as [number, number, ...number[]]}
         style={StyleSheet.absoluteFill}
       />
 

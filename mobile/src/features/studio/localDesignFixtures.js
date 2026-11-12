@@ -135,7 +135,7 @@ export function localDesignServices() {
 
 /**
  * Demo analitika (30 dana) za lokalni dizajn.
- * @returns {{ days: number, counts: Record<string, number>, series: Array<object> }}
+ * @returns {{ days: number, counts: Record<string, number>, series: Array<Record<string, unknown>> }}
  */
 export function localDesignAnalytics() {
   if (!isLocalDesignMode()) {

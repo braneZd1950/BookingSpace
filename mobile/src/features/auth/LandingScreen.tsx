@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10, 20, 18, 0.55)',
   },
   clockRing: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderWidth: 1.5,
     borderColor: 'rgba(232, 242, 239, 0.22)',
   },

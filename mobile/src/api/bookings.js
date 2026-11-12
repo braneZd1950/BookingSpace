@@ -1,6 +1,10 @@
 import { http } from './http.js';
 
-/** GET /tenants/:tenantId/bookings */
+/**
+ * GET /tenants/:tenantId/bookings
+ * @param {string} tenantId
+ * @param {{ date?: string, dateFrom?: string, dateTo?: string, limit?: number }} [options]
+ */
 export function listTenantBookings(tenantId, { date, dateFrom, dateTo, limit = 200 } = {}) {
   return http.get(`/tenants/${tenantId}/bookings`, {
     params: {
