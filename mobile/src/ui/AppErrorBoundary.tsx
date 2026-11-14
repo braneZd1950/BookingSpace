@@ -41,7 +41,7 @@ export default class AppErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   shell: {
     flex: 1,
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
     paddingHorizontal: 28,
     paddingTop: 96,
   },

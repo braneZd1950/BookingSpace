@@ -376,7 +376,7 @@ export default function MemberSettingsScreen({
           style={styles.input}
         />
         {errors.account ? <Text style={styles.error}>{errors.account}</Text> : null}
-        {notes.account ? <Text style={styles.note}>{notes.account}</Text> : null}
+        {notes.account ? <Text style={[styles.note, { color: colors.accent }]}>{notes.account}</Text> : null}
         <Pressable
           accessibilityRole="button"
           disabled={savingAccount}
@@ -390,10 +390,10 @@ export default function MemberSettingsScreen({
 
         <Text style={[styles.section, { color: colors.title }]}>03 · Obavijesti</Text>
         {NOTIFY_OPTIONS.map((item) => (
-          <View key={item.key} style={styles.prefRow}>
+          <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.prefLabel}>{item.label}</Text>
-              <Text style={styles.prefHint}>{item.hint}</Text>
+              <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
+              <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
             </View>
             <Switch
               value={Boolean(prefs[item.key])}
@@ -403,7 +403,7 @@ export default function MemberSettingsScreen({
             />
           </View>
         ))}
-        {notes.prefs ? <Text style={styles.note}>{notes.prefs}</Text> : null}
+        {notes.prefs ? <Text style={[styles.note, { color: colors.accent }]}>{notes.prefs}</Text> : null}
         <Pressable
           accessibilityRole="button"
           disabled={savingPrefs}
@@ -441,7 +441,7 @@ export default function MemberSettingsScreen({
           style={styles.input}
         />
         {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
-        {notes.password ? <Text style={styles.note}>{notes.password}</Text> : null}
+        {notes.password ? <Text style={[styles.note, { color: colors.accent }]}>{notes.password}</Text> : null}
         <Pressable
           accessibilityRole="button"
           disabled={savingPassword}
@@ -454,12 +454,12 @@ export default function MemberSettingsScreen({
         </Pressable>
 
         <Text style={[styles.section, { color: colors.title }]}>05 · Privola</Text>
-        <Text style={styles.prefHint}>
+        <Text style={[styles.prefHint, { color: colors.muted }]}>
           {consentOk
             ? 'Privola za rezervacije je aktivna.'
             : 'Za rezervacije i otkaze potrebna je privola.'}
         </Text>
-        {notes.consent ? <Text style={styles.note}>{notes.consent}</Text> : null}
+        {notes.consent ? <Text style={[styles.note, { color: colors.accent }]}>{notes.consent}</Text> : null}
         {!consentOk ? (
           <Pressable
             accessibilityRole="button"
@@ -482,9 +482,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
-  root: { flex: 1, backgroundColor: '#060908' },
+  root: { flex: 1, backgroundColor: '#0E1614' },
   content: {
     paddingHorizontal: 24,
     maxWidth: 440,

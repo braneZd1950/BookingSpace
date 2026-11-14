@@ -15,7 +15,7 @@ export const studioChromeStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   root: {
     flex: 1,
@@ -23,7 +23,7 @@ export const studioChromeStyles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   flex: { flex: 1, minHeight: 0 },
   stage: {

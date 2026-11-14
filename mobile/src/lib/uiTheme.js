@@ -57,15 +57,15 @@ export function syncUiTheme(theme) {
 
 export const THEME_COLORS = {
   dark: {
-    bg: '#060908',
-    gradient: ['#0C1815', '#070B0A', '#050706'],
+    bg: '#0E1614',
+    gradient: ['#163028', '#111A18', '#0E1614'],
     text: '#E8F2EF',
     title: '#F7FCFA',
-    muted: 'rgba(232, 242, 239, 0.64)',
-    soft: 'rgba(232, 242, 239, 0.78)',
+    muted: 'rgba(232, 242, 239, 0.68)',
+    soft: 'rgba(232, 242, 239, 0.82)',
     accent: '#5EEAD4',
-    border: 'rgba(232, 242, 239, 0.18)',
-    card: 'rgba(12, 28, 24, 0.72)',
+    border: 'rgba(232, 242, 239, 0.2)',
+    card: 'rgba(18, 34, 30, 0.78)',
     cardBorder: 'rgba(94, 234, 212, 0.35)',
     ctaBg: '#5EEAD4',
     ctaText: '#061210',

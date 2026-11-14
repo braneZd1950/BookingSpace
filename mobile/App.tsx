@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   boot: {
     alignItems: 'center',

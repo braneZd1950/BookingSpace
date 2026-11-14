@@ -231,10 +231,10 @@ export default function MemberBookScreen({
   }
 
   return (
-    <View style={[chrome.root, { backgroundColor: '#060908' }]}>
+    <View style={[chrome.root, { backgroundColor: '#0E1614' }]}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
+        colors={['#163028', '#111A18', '#0E1614']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />

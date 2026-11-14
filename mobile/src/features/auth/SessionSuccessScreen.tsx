@@ -11,6 +11,7 @@ import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { sessionCopyStyles as copy } from '../../ui/sessionCopyStyles.js';
+import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
 
 export type SessionRole = 'CUSTOMER' | 'BUSINESS_OWNER' | string;
@@ -76,7 +77,7 @@ export default function SessionSuccessScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
+        colors={['#163028', '#111A18', '#0E1614']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -103,7 +104,10 @@ export default function SessionSuccessScreen({
             ],
           }}
         >
-          <Text style={[copy.brand, styles.brandGap]}>anyminutes</Text>
+          <View style={styles.brandRow}>
+            <LiveClockMark size={28} />
+            <Text style={copy.brand}>anyminutes</Text>
+          </View>
           <Text style={copy.kicker}>{kicker}</Text>
           <Text style={[copy.title, styles.titleGap, compact && { fontSize: 34, lineHeight: 38 }]}>
             {title}
@@ -142,14 +146,14 @@ export default function SessionSuccessScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#060908' },
+  boot: { flex: 1, backgroundColor: '#0E1614' },
   root: {
     flex: 1,
     width: '100%',
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   stage: {
     flex: 1,
@@ -160,7 +164,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     boxSizing: 'border-box',
   },
-  brandGap: { marginBottom: 18 },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 18,
+  },
   titleGap: { marginBottom: 14 },
   leadMax: { maxWidth: 360, marginBottom: 0 },
   actions: {

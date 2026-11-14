@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Animated,
   Pressable,
@@ -10,6 +10,7 @@ import {
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
 
 type LandingScreenProps = {
@@ -18,151 +19,6 @@ type LandingScreenProps = {
   onDiscover?: () => void;
   onFaq?: () => void;
   onAbout?: () => void;
-};
-
-function clockAngles(now = new Date()) {
-  const minutes = now.getMinutes() + now.getSeconds() / 60;
-  const hours = (now.getHours() % 12) + minutes / 60;
-  return {
-    minuteDeg: minutes * 6,
-    hourDeg: hours * 30,
-  };
-}
-
-/** Studio sat s pravim vremenom — brand „vrijeme”, ne dekorativna petlja. */
-function StudioClock({ size = 172 }: { size?: number }) {
-  const [{ minuteDeg, hourDeg }, setAngles] = useState(clockAngles);
-  const markPulse = useRef(new Animated.Value(0.55)).current;
-
-  useEffect(() => {
-    const sync = () => setAngles(clockAngles());
-    sync();
-    const id = setInterval(sync, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(markPulse, {
-          toValue: 1,
-          duration: 2200,
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-        Animated.timing(markPulse, {
-          toValue: 0.45,
-          duration: 2200,
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-      ]),
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [markPulse]);
-
-  const ticks = Array.from({ length: 12 }, (_, i) => i);
-  const handOrigin = size / 2;
-
-  return (
-    <View
-      style={[styles.clock, { width: size, height: size, borderRadius: size / 2 }]}
-      accessibilityRole="image"
-      accessibilityLabel={`Trenutno vrijeme, sat`}
-    >
-      <View style={[styles.clockRing, { borderRadius: size / 2 }]} />
-      <View
-        style={[
-          styles.clockInner,
-          {
-            width: size * 0.78,
-            height: size * 0.78,
-            borderRadius: size * 0.39,
-          },
-        ]}
-      />
-
-      {ticks.map((tick) => (
-        <View
-          key={tick}
-          style={[
-            styles.tickWrap,
-            {
-              width: size,
-              height: size,
-              transform: [{ rotate: `${tick * 30}deg` }],
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.tick,
-              tick % 3 === 0 ? styles.tickMajor : styles.tickMinor,
-            ]}
-          />
-        </View>
-      ))}
-
-      {/* Metafora slobodnog termina — ne pravi booking slot */}
-      <Animated.View
-        style={[
-          styles.slotMarkWrap,
-          {
-            width: size,
-            height: size,
-            opacity: markPulse,
-            transform: [{ rotate: '150deg' }],
-          },
-        ]}
-      >
-        <View style={styles.slotMark} />
-      </Animated.View>
-
-      <View
-        style={[
-          styles.handWrap,
-          {
-            width: size,
-            height: size,
-            transform: [{ rotate: `${hourDeg}deg` }],
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.handHour,
-            {
-              height: size * 0.22,
-              top: handOrigin - size * 0.22,
-            },
-          ]}
-        />
-      </View>
-
-      <View
-        style={[
-          styles.handWrap,
-          {
-            width: size,
-            height: size,
-            transform: [{ rotate: `${minuteDeg}deg` }],
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.handMinute,
-            {
-              height: size * 0.32,
-              top: handOrigin - size * 0.32,
-            },
-          ]}
-        />
-      </View>
-
-      <View style={styles.hubOuter} />
-      <View style={styles.hubInner} />
-    </View>
-  );
 }
 
 /**
@@ -253,7 +109,7 @@ export default function LandingScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
+        colors={['#163028', '#111A18', '#0E1614']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -302,7 +158,7 @@ export default function LandingScreen({
           },
         ]}
       >
-        <StudioClock size={clockSize} />
+        <LiveClockMark size={clockSize} showSlotMark />
       </Animated.View>
 
       <View style={styles.haze} pointerEvents="none" />
@@ -445,7 +301,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   root: {
     flex: 1,
@@ -453,7 +309,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   glow: {
     position: 'absolute',
@@ -477,87 +333,6 @@ const styles = StyleSheet.create({
     right: 12,
     maxWidth: '46%',
     alignItems: 'flex-end',
-  },
-  clock: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(10, 20, 18, 0.55)',
-  },
-  clockRing: {
-    ...StyleSheet.absoluteFill,
-    borderWidth: 1.5,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
-  },
-  clockInner: {
-    position: 'absolute',
-    borderWidth: 1,
-    borderColor: 'rgba(94, 234, 212, 0.18)',
-    backgroundColor: 'rgba(5, 10, 9, 0.35)',
-  },
-  tickWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  tick: {
-    position: 'absolute',
-    top: 10,
-    borderRadius: 1,
-    backgroundColor: 'rgba(232, 242, 239, 0.55)',
-  },
-  tickMajor: {
-    width: 2,
-    height: 11,
-    backgroundColor: 'rgba(232, 242, 239, 0.82)',
-  },
-  tickMinor: {
-    width: 1.5,
-    height: 6,
-    backgroundColor: 'rgba(232, 242, 239, 0.35)',
-  },
-  slotMarkWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  slotMark: {
-    position: 'absolute',
-    top: 18,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#5EEAD4',
-    shadowColor: '#5EEAD4',
-    shadowOpacity: 0.65,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  handWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  handHour: {
-    position: 'absolute',
-    width: 3,
-    borderRadius: 2,
-    backgroundColor: 'rgba(232, 242, 239, 0.88)',
-  },
-  handMinute: {
-    position: 'absolute',
-    width: 2,
-    borderRadius: 2,
-    backgroundColor: '#5EEAD4',
-  },
-  hubOuter: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'rgba(232, 242, 239, 0.35)',
-  },
-  hubInner: {
-    position: 'absolute',
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#5EEAD4',
   },
   stage: {
     flex: 1,

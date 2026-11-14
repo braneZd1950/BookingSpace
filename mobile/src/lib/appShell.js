@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
 import { USE_NATIVE_DRIVER } from './nativeDriver.js';
 
-/** Shared dark atelier gradient for studio + auth screens. */
-export const APP_GRADIENT = ['#0C1815', '#070B0A', '#050706'];
+/** Shared dark atelier surface — soft charcoal-teal, not pure black. */
+export const APP_BG = '#0E1614';
+export const APP_GRADIENT = ['#163028', '#111A18', '#0E1614'];
 export const APP_GRADIENT_LOCATIONS = [0, 0.42, 1];
 
 export function useEnterAnimation(duration = 520) {

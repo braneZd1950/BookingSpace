@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#060908"
+      "backgroundColor": "#0E1614"
     },
     "ios": {
       "supportsTablet": false,
@@ -18,7 +18,7 @@
     "android": {
       "package": "hr.anyminutes.app",
       "adaptiveIcon": {
-        "backgroundColor": "#060908",
+        "backgroundColor": "#0E1614",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -31,6 +31,12 @@
     "plugins": [
       "expo-font"
     ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/cc5d8cb4-f6c1-4d4a-97b2-cb6feefd7776"
+    },
     "extra": {
       "eas": {
         "projectId": "cc5d8cb4-f6c1-4d4a-97b2-cb6feefd7776"

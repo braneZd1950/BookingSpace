@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import GradientScrollShell from '../../ui/GradientScrollShell';
+import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
 import {
   authChromeStyles as chrome,
@@ -73,7 +74,10 @@ export default function AuthFormShell({
           <Text style={chrome.backLabel}>{backLabel}</Text>
         </Pressable>
       ) : null}
-      <Text style={chrome.brand}>anyminutes</Text>
+      <View style={chrome.brandRow}>
+        <LiveClockMark size={28} />
+        <Text style={chrome.brand}>anyminutes</Text>
+      </View>
       <Text
         style={[
           chrome.title,

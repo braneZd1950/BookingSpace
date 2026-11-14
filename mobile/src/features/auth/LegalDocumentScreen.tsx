@@ -56,7 +56,7 @@ export default function LegalDocumentScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#0C1815', '#070B0A', '#050706']}
+        colors={['#163028', '#111A18', '#0E1614']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -177,12 +177,12 @@ export default function LegalDocumentScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#060908' },
+  boot: { flex: 1, backgroundColor: '#0E1614' },
   root: {
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#060908',
+    backgroundColor: '#0E1614',
   },
   flex: { flex: 1, minHeight: 0 },
   stage: {

@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import LiveClockMark from './LiveClockMark';
 
 type AppBrandBarProps = {
   onLogout: () => void;
@@ -9,7 +10,7 @@ type AppBrandBarProps = {
   marginBottom?: number;
 };
 
-/** Brand + logout control for studio / member home tops. */
+/** Brand + live clock logo + logout control for studio / member home tops. */
 export default function AppBrandBar({
   onLogout,
   loggingOut = false,
@@ -19,7 +20,10 @@ export default function AppBrandBar({
 }: AppBrandBarProps) {
   return (
     <View style={[styles.topBar, { marginBottom }]}>
-      <Text style={[styles.brand, { color: brandColor }]}>anyminutes</Text>
+      <View style={styles.brandRow}>
+        <LiveClockMark size={30} accentColor={accentColor} />
+        <Text style={[styles.brand, { color: brandColor }]}>anyminutes</Text>
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Odjava"
@@ -43,6 +47,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
   },
   brand: {
     fontFamily: 'CormorantGaramond_600SemiBold',
