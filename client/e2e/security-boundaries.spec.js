@@ -26,10 +26,16 @@ test.describe('Security boundaries', () => {
     }
   });
 
-  test('unauthenticated /stranica asks for login', async ({ page }) => {
+  test('unauthenticated /stranica redirects to login', async ({ page }) => {
+    // StudioLayout briefly shows "Prijava je potrebna", then navigates to /login.
+    // Assert the stable end state so CI timing does not flake.
     await page.goto('/stranica');
-    await expect(page.getByRole('heading', { name: /Prijava je potrebna/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Prijava/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
+    await expect(
+      page.getByRole('heading', { name: /Prijava|Prijavite se/i }).or(
+        page.getByRole('button', { name: /Prijavite se/i }),
+      ).first(),
+    ).toBeVisible();
   });
 
   test('garbage Bearer token is rejected on /auth/me', async () => {
