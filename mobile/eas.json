@@ -18,6 +18,16 @@
         "EXPO_PUBLIC_API_URL": "https://bookingspaceapp.onrender.com/api"
       }
     },
+    "e2e-test": {
+      "withoutCredentials": true,
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://bookingspaceapp.onrender.com/api"
+      }
+    },
     "production": {
       "autoIncrement": true,
       "channel": "production",

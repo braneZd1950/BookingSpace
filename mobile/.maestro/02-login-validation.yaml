@@ -1,0 +1,17 @@
+appId: hr.anyminutes.app
+tags:
+  - auth
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn: "Prijavite se"
+- assertVisible: "Prijavite se."
+- assertVisible: "E-pošta"
+- tapOn: "Prijavite se"
+- assertVisible: "Upišite ispravnu e-poštu."
+- tapOn: "E-pošta"
+- inputText: "ne-email"
+- tapOn: "Prijavite se"
+- assertVisible:
+    text: ".*ispravnu e-poštu.*|.*lozink.*"

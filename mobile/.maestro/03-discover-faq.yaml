@@ -1,0 +1,23 @@
+appId: hr.anyminutes.app
+tags:
+  - marketing
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn: "Nastavite bez prijave"
+- assertVisible:
+    text: ".*Otkrij.*|.*studio.*|.*pretraž.*"
+- launchApp
+- tapOn: "Česta pitanja"
+- assertVisible:
+    text: ".*pitanj.*|.*FAQ.*|.*Odgovor.*|.*Česta.*"
+- launchApp
+- scrollUntilVisible:
+    element:
+      text: "O nama"
+    direction: DOWN
+    timeout: 10000
+- tapOn: "O nama"
+- assertVisible:
+    text: "O nama"

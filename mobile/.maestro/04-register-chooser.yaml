@@ -1,0 +1,13 @@
+appId: hr.anyminutes.app
+tags:
+  - auth
+---
+- launchApp:
+    clearState: true
+- tapOn: "Prijavite se"
+- tapOn:
+    text: ".*Registrirajte se.*"
+- assertVisible:
+    text: ".*klijent.*|.*partner.*|.*registr.*"
+- assertVisible: "Nastavi kao klijent"
+- assertVisible: "Nastavi kao partner"

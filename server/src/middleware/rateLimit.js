@@ -11,6 +11,13 @@ export function createRateLimiter({
   message,
   keyByUser = false,
 }) {
+  // Ephemeral e2e / unit API: dense register matrices must not trip 429 noise.
+  if (process.env.NODE_ENV === 'test' || process.env.E2E_DISABLE_RATE_LIMIT === '1') {
+    return function skipRateLimit(req, res, next) {
+      next();
+    };
+  }
+
   return rateLimit({
     windowMs,
     limit,

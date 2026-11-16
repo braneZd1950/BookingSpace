@@ -16,7 +16,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  // Deep seed suites register many users; keep workers low to avoid flaky races.
+  workers: process.env.CI ? 2 : 1,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   timeout: 30_000,
   expect: { timeout: 8_000 },
@@ -41,7 +42,7 @@ export default defineConfig({
       command: 'node scripts/e2e-api.mjs',
       cwd: serverDir,
       url: 'http://127.0.0.1:4001/api/health',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {

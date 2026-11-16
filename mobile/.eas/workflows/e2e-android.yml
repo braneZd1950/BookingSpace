@@ -1,0 +1,21 @@
+name: Android E2E (Maestro)
+
+jobs:
+  build_android:
+    name: Build Android for E2E
+    type: build
+    params:
+      platform: android
+      profile: e2e-test
+
+  test_android:
+    name: Run Maestro flows
+    needs: [build_android]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      flow_path:
+        - .maestro/01-landing.yaml
+        - .maestro/02-login-validation.yaml
+        - .maestro/03-discover-faq.yaml
+        - .maestro/04-register-chooser.yaml

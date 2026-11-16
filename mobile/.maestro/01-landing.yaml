@@ -1,0 +1,12 @@
+appId: hr.anyminutes.app
+tags:
+  - smoke
+  - landing
+---
+- launchApp:
+    clearState: true
+- assertVisible: "anyminutes"
+- assertVisible:
+    text: ".*termin.*|.*džepu.*|.*Vaš termin.*"
+- assertVisible: "Prijavite se"
+- assertVisible: "Nastavite bez prijave"
