@@ -66,7 +66,7 @@ export default function StudioScreenShell({
             hitSlop={10}
             style={({ pressed }) => [chrome.backBtn, pressed && ui.pressed]}
           >
-            <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
+            <Ionicons name="chevron-back" size={22} color="#14B8A6" />
             <Text style={chrome.backLabel} numberOfLines={1}>
               {studioName || 'Moj studio'}
             </Text>

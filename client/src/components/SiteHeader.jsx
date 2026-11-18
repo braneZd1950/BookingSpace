@@ -1,6 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useGetMeQuery } from '../api/authApi.js';
+import BrandWordmark from './BrandWordmark.jsx';
 import { clearSession } from '../lib/clearSession.js';
 import './SiteHeader.scss';
 
@@ -21,15 +22,12 @@ const adminLinks = [
 function BrandMark() {
   return (
     <span className="site-header__brand-inner">
-      <img
-        className="site-header__logo"
-        src="/icons/icon.svg"
-        alt=""
-        width="32"
-        height="32"
-        decoding="async"
+      <BrandWordmark
+        slot="header"
+        tone="light"
+        decorative
+        className="site-header__brand-text"
       />
-      <span className="site-header__brand-text">anyminutes</span>
     </span>
   );
 }
@@ -49,15 +47,6 @@ function NavIcon({ children }) {
   );
 }
 
-function IconCompass() {
-  return (
-    <NavIcon>
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path fill="currentColor" d="M14.8 9.2 13.1 13.1 9.2 14.8l1.7-3.9z" />
-    </NavIcon>
-  );
-}
-
 function IconSteps() {
   return (
     <NavIcon>
@@ -68,17 +57,6 @@ function IconSteps() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M4 17h4v3H4zm6-6h4v9h-4zm6-7h4v16h-4z"
-      />
-    </NavIcon>
-  );
-}
-
-function IconStar() {
-  return (
-    <NavIcon>
-      <path
-        fill="currentColor"
-        d="m12 3.2 2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 8.4l5-.7z"
       />
     </NavIcon>
   );
@@ -116,6 +94,32 @@ function IconAbout() {
   );
 }
 
+function IconFeatures() {
+  return (
+    <NavIcon>
+      <rect x="4" y="5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="13" y="5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="4" y="14" width="7" height="5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="13" y="14" width="7" height="5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" />
+    </NavIcon>
+  );
+}
+
+function IconDiscover() {
+  return (
+    <NavIcon>
+      <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        d="M16.2 16.2 20 20"
+      />
+    </NavIcon>
+  );
+}
+
 function IconLogin() {
   return (
     <NavIcon>
@@ -131,7 +135,7 @@ function IconLogin() {
   );
 }
 
-function IconRegister() {
+function IconStart() {
   return (
     <NavIcon>
       <path
@@ -140,15 +144,7 @@ function IconRegister() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
-      />
-      <circle cx="9" cy="7" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        d="M19 8v6m3-3h-6"
+        d="M5 12h12m0 0-4-4m4 4-4 4"
       />
     </NavIcon>
   );
@@ -224,7 +220,7 @@ export default function SiteHeader() {
     const isSuper = Boolean(meData?.platformSuperAdmin);
     return (
       <header className="site-header site-header--admin">
-        <Link className="site-header__brand" to="/admin" aria-label="anyminutes">
+        <Link className="site-header__brand" to="/admin" aria-label="Blizari">
           <BrandMark />
         </Link>
         <nav className="site-header__nav" aria-label="Platforma">
@@ -254,17 +250,17 @@ export default function SiteHeader() {
     const role = meData?.user?.role;
     return (
       <header className="site-header">
-        <Link className="site-header__brand" to="/" aria-label="anyminutes">
+        <Link className="site-header__brand" to="/" aria-label="Blizari">
           <BrandMark />
         </Link>
         <nav className="site-header__nav" aria-label="Račun">
-          <NavItem to="/otkrij" label="Otkrij" icon={<IconCompass />} />
-          <NavItem to="/#kako" label="Kako funkcionira" icon={<IconSteps />} />
-          <NavItem to="/#prednosti" label="Prednosti" icon={<IconStar />} />
-          <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
+          <NavItem to="/" label="Početna" icon={<IconSteps />} />
+          <NavItem to="/mogucnosti" label="Mogućnosti" icon={<IconFeatures />} />
+          <NavItem to="/otkrij" label="Otkrij" icon={<IconDiscover />} />
           <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
+          <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
           {role === 'BUSINESS_OWNER' ? (
-            <NavItem to="/stranica" label="Studio" icon={<IconStudio />} />
+            <NavItem to="/stranica" label="Poslovanje" icon={<IconStudio />} />
           ) : null}
           <button
             type="button"
@@ -282,20 +278,20 @@ export default function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link className="site-header__brand" to="/" aria-label="anyminutes">
+      <Link className="site-header__brand" to="/" aria-label="Blizari">
         <BrandMark />
       </Link>
       <nav className="site-header__nav" aria-label="Navigacija">
-        <NavItem to="/otkrij" label="Otkrij" icon={<IconCompass />} />
-        <NavItem to="/#kako" label="Kako funkcionira" icon={<IconSteps />} />
-        <NavItem to="/#prednosti" label="Prednosti" icon={<IconStar />} />
-        <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
+        <NavItem to="/" label="Početna" icon={<IconSteps />} />
+        <NavItem to="/mogucnosti" label="Mogućnosti" icon={<IconFeatures />} />
+        <NavItem to="/otkrij" label="Otkrij" icon={<IconDiscover />} />
         <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
+        <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
         <NavItem to="/login" label="Prijava" icon={<IconLogin />} />
         <NavItem
           to="/register"
-          label="Registracija"
-          icon={<IconRegister />}
+          label="Započnite"
+          icon={<IconStart />}
           className="site-header__cta"
         />
       </nav>

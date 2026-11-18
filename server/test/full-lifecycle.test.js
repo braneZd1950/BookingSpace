@@ -362,6 +362,19 @@ describe('full lifecycle API', () => {
     assert.ok((publicProfile.body.tenant.trainers || []).length > 0);
     const staffId = publicProfile.body.tenant.trainers[0].id;
 
+    const discoverPrivate = await request('/api/tenants/discover?limit=20');
+    assert.equal(discoverPrivate.status, 200);
+    assert.ok(Array.isArray(discoverPrivate.body.places));
+    assert.ok(!discoverPrivate.body.places.some((place) => place.slug === tenant.slug));
+
+    const discoverOn = await request(`/api/tenants/${tenant.id}`, {
+      method: 'PATCH',
+      token: ownerToken,
+      body: { discoverVisibility: 'public' },
+    });
+    assert.equal(discoverOn.status, 200);
+    assert.equal(discoverOn.body.tenant.discoverVisibility, 'public');
+
     const discover = await request('/api/tenants/discover?limit=20');
     assert.equal(discover.status, 200);
     assert.ok(Array.isArray(discover.body.places));

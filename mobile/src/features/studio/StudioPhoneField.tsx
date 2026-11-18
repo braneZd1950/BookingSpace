@@ -127,7 +127,7 @@ export default function StudioPhoneField({
   return (
     <View style={[ui.factRow, editing && styles.factRowPhoneEdit]}>
       <View style={ui.factIcon}>
-        <Ionicons name="call-outline" size={18} color="#5EEAD4" />
+        <Ionicons name="call-outline" size={18} color="#14B8A6" />
       </View>
       {editing ? (
         <View style={styles.phoneEditWrap}>
@@ -214,9 +214,9 @@ export default function StudioPhoneField({
                 ]}
               >
                 {saving ? (
-                  <ActivityIndicator color="#061210" size="small" />
+                  <ActivityIndicator color="#042F2E" size="small" />
                 ) : (
-                  <Ionicons name="checkmark" size={20} color="#061210" />
+                  <Ionicons name="checkmark" size={20} color="#042F2E" />
                 )}
               </Pressable>
               <Pressable
@@ -248,7 +248,7 @@ export default function StudioPhoneField({
                 hitSlop={8}
                 style={({ pressed }) => [styles.phoneAddBtn, pressed && ui.pressed]}
               >
-                <Ionicons name="add-outline" size={18} color="#5EEAD4" />
+                <Ionicons name="add-outline" size={18} color="#14B8A6" />
               </Pressable>
             </View>
           )}
@@ -268,7 +268,7 @@ export function StudioFactRow({ icon, label, value }: FactRowProps) {
   return (
     <View style={ui.factRow}>
       <View style={ui.factIcon}>
-        <Ionicons name={icon} size={18} color="#5EEAD4" />
+        <Ionicons name={icon} size={18} color="#14B8A6" />
       </View>
       <View style={ui.factCopy}>
         <Text style={ui.factLabel}>{label}</Text>
@@ -325,6 +325,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232, 242, 239, 0.08)',
   },
   phoneIconBtnPrimary: {
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
   },
 });

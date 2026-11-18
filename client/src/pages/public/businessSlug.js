@@ -16,8 +16,8 @@ export function previewSlug(name) {
 }
 
 export const niches = [
-  ['fitness', 'Treninzi i grupe'],
-  ['services', 'Pojedinačni termini'],
-  ['playroom', 'Igraonice i događaji'],
-  ['generic', 'Nešto drugo'],
+  ['fitness', 'Treninzi i grupne aktivnosti'],
+  ['services', 'Pojedinačne usluge'],
+  ['playroom', 'Igraonice i događanja'],
+  ['generic', 'Druga djelatnost'],
 ];

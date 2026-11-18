@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures.js';
 
 const pages = [
-  { path: '/o-nama', heading: /o nama|anyminutes/i },
+  { path: '/o-nama', heading: /o nama|Blizari/i },
   { path: '/kontakt', heading: /kontakt/i },
   { path: '/povratna-informacija', heading: /povrat|feedback|informacij/i },
 ];

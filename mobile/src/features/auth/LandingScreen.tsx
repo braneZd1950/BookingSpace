@@ -8,8 +8,10 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
+import { BRAND, DARK_SURFACE } from '../../lib/brandColors.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import BrandWordmark from '../../ui/BrandWordmark';
 import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
 
@@ -34,7 +36,7 @@ export default function LandingScreen({
   onAbout,
 }: LandingScreenProps) {
   const { height, width } = useWindowDimensions();
-  // Drži „anyminutes” u jednoj liniji na uskom mobilnom layoutu.
+  // Drži brand u jednoj liniji na uskom mobilnom layoutu.
   const brandFontSize = Math.min(48, Math.max(34, Math.round(width * 0.112)));
   const brandOpacity = useRef(new Animated.Value(0)).current;
   const brandY = useRef(new Animated.Value(22)).current;
@@ -109,7 +111,7 @@ export default function LandingScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#163028', '#111A18', '#0E1614']}
+        colors={DARK_SURFACE.gradient as [string, string, ...string[]]}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -129,7 +131,7 @@ export default function LandingScreen({
         ]}
       >
         <LinearGradient
-          colors={['rgba(94, 234, 212, 0.34)', 'rgba(94, 234, 212, 0.0)']}
+          colors={['rgba(37, 99, 235, 0.38)', 'rgba(20, 184, 166, 0.0)']}
           style={styles.glowInner}
         />
       </Animated.View>
@@ -181,21 +183,11 @@ export default function LandingScreen({
               transform: [{ translateY: brandY }],
             }}
           >
-            <Text
-              style={[
-                styles.brand,
-                {
-                  fontSize: brandFontSize,
-                  lineHeight: brandFontSize + 4,
-                },
-              ]}
-              accessibilityRole="header"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.78}
-            >
-              anyminutes
-            </Text>
+            <BrandWordmark
+              tone="light"
+              height={Math.min(44, Math.max(32, Math.round(brandFontSize * 0.85)))}
+            />
+            <Text style={styles.slogan}>Your business. Your way.</Text>
           </Animated.View>
 
           <Animated.View
@@ -301,7 +293,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: BRAND.navy,
   },
   root: {
     flex: 1,
@@ -309,7 +301,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: BRAND.navy,
   },
   glow: {
     position: 'absolute',
@@ -351,19 +343,19 @@ const styles = StyleSheet.create({
     maxWidth: '78%',
     alignSelf: 'flex-start',
   },
-  brand: {
-    fontFamily: 'CormorantGaramond_600SemiBold',
-    fontSize: 48,
-    lineHeight: 52,
-    letterSpacing: -1.2,
-    color: '#F7FCFA',
+  slogan: {
+    marginTop: 10,
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 14,
+    letterSpacing: 0.2,
+    color: BRAND.teal,
   },
   rule: {
     alignSelf: 'flex-start',
     width: 56,
     height: 2,
     marginTop: 20,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: BRAND.blue,
   },
   bodyBlock: {
     flexShrink: 1,
@@ -375,14 +367,14 @@ const styles = StyleSheet.create({
     fontSize: 34,
     lineHeight: 38,
     letterSpacing: -0.5,
-    color: '#E8F2EF',
+    color: BRAND.onDark,
     marginBottom: 14,
   },
   lead: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 16,
     lineHeight: 25,
-    color: 'rgba(232, 242, 239, 0.74)',
+    color: 'rgba(248, 250, 252, 0.74)',
     maxWidth: '100%',
     marginBottom: 18,
   },
@@ -391,7 +383,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
-    color: 'rgba(94, 234, 212, 0.9)',
+    color: BRAND.tealBright,
     marginBottom: 8,
   },
   actions: {
@@ -402,8 +394,8 @@ const styles = StyleSheet.create({
   },
   ctaPrimary: {
     minHeight: 56,
-    borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    borderRadius: 10,
+    backgroundColor: BRAND.blue,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -412,13 +404,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     letterSpacing: 0.15,
-    color: '#061210',
+    color: '#FFFFFF',
   },
   ctaGhost: {
     minHeight: 56,
-    borderRadius: 6,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.3)',
+    borderColor: 'rgba(248, 250, 252, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -426,7 +418,7 @@ const styles = StyleSheet.create({
   ctaGhostLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 16,
-    color: '#E8F2EF',
+    color: BRAND.onDark,
   },
   quickLinks: {
     marginTop: 4,
@@ -443,7 +435,7 @@ const styles = StyleSheet.create({
   quickLinkLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: BRAND.teal,
   },
   quickDot: {
     fontFamily: 'Outfit_400Regular',

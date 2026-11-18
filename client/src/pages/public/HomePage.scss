@@ -61,13 +61,18 @@
 }
 
 .home__brand {
-  margin: 0 0 0.75rem;
-  color: var(--brand-strong);
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(2.4rem, 7vw, 3.8rem);
-  font-weight: 640;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
+  margin: 0 0 0.45rem;
+  line-height: 0;
+}
+
+.home__slogan {
+  margin: 0 0 1.15rem;
+  color: color-mix(in srgb, var(--brand-ink) 62%, #64748b);
+  font-family: var(--brand-wordmark-font);
+  font-size: clamp(0.98rem, 2.2vw, 1.12rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
 }
 
 .home__calendars {
@@ -327,6 +332,25 @@
   line-height: 1.55;
 }
 
+.home__lead--tight {
+  margin-top: 0.65rem;
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
+  font-weight: 600;
+}
+
+.home__prose-strong {
+  margin: 0.35rem 0 0;
+  color: var(--fg);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+}
+
+.home__prose--after {
+  margin-top: 1.25rem;
+}
+
 .home__trust {
   margin: 0.85rem 0 0;
   max-width: 28rem;
@@ -373,9 +397,55 @@
   padding-bottom: 3.8rem;
 }
 
+.home__faq-lead {
+  margin: 0.7rem 0 0;
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
 .home__faq {
   margin-top: 1.35rem;
   border-top: 1px solid var(--home-line);
+}
+
+.home__faq-close {
+  margin-top: 2rem;
+  padding: 1.2rem 1.15rem 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 14%, var(--home-line));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--brand-soft) 42%, #fff);
+}
+
+.home__faq-close-kicker {
+  margin: 0 0 0.45rem;
+  color: var(--brand-strong, var(--brand));
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.home__faq-close p {
+  margin: 0 0 0.7rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.home__faq-close p:last-child {
+  margin-bottom: 0;
+}
+
+.home__faq-close a {
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.home__faq-close a:hover {
+  text-decoration: underline;
 }
 
 .home__faq-item {
@@ -612,6 +682,93 @@
   margin: 0 0 1.2rem !important;
 }
 
+.home__offer-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .home__offer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .home__offer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home__offer-card {
+  display: grid;
+  grid-template-columns: 2.55rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  min-height: 100%;
+  padding: 1.05rem 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 12%, var(--home-line));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--brand-soft) 28%, #fff);
+  list-style: none;
+}
+
+.home__offer-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--brand-soft) 75%, #fff);
+  color: var(--brand);
+}
+
+.home__offer-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.home__offer-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.home__offer-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.home__offer-close {
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 70%, var(--brand));
+  border-radius: 0 0.85rem 0.85rem 0;
+  background: color-mix(in srgb, var(--brand-soft) 40%, #fff);
+}
+
+.home__offer-close-kicker {
+  margin: 0 0 0.35rem;
+  color: var(--brand-strong, var(--brand));
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.home__offer-close p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .home__edges {
   display: grid;
   gap: 0;
@@ -631,6 +788,7 @@
 .home__edges li {
   padding: 1.15rem 0;
   border-bottom: 1px solid var(--home-line);
+  list-style: none;
 }
 
 .home__edges h3 {

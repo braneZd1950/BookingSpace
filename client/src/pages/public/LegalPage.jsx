@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import BrandWordmark from '../../components/BrandWordmark.jsx';
 import { entityLine, legalEntity } from '../../lib/legal.js';
 import './LegalPage.scss';
 
@@ -48,7 +49,9 @@ export default function LegalPage({
       <div className="legal__wash" aria-hidden="true" />
 
       <header className="legal__hero">
-        <p className="legal__brand">{legalEntity.productName}</p>
+        <p className="legal__brand">
+          <BrandWordmark slot="page" tone="dark" />
+        </p>
         <p className="legal__kicker">Jasna pravila · RH i EU</p>
         <h1>{title}</h1>
         <p className="legal__lead">{lead}</p>
@@ -121,8 +124,9 @@ export default function LegalPage({
                 (platforma)
               </strong>
               <span>
-                Odgovara za rad aplikacije i tehničku obradu podataka potrebnih
-                za prijavu i rezervaciju. Ne izvršava trening ni tretman umjesto
+                Pruža tehničku platformu. Za podatke klijenata studija u pravilu
+                djeluje kao izvršitelj obrade; za račune, naplatu i sigurnost
+                platforme kao samostalni voditelj. Ne izvršava uslugu umjesto
                 studija.
               </span>
             </div>

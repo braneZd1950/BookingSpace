@@ -131,6 +131,7 @@ async function upsertStudio(owner) {
     tenant = await Tenant.create({
       ...DEMO.studio,
       ownerId: owner._id,
+      discoverVisibility: 'private',
       heroImageUrl: DEMO.gallery[0].url,
       theme: {
         primaryColor: '#243056',
@@ -181,6 +182,7 @@ async function upsertStudio(owner) {
       timezone: DEMO.studio.timezone,
       ownerId: owner._id,
       active: true,
+      discoverVisibility: 'private',
     });
     if (!tenant.siteSettings) tenant.siteSettings = {};
     if (!tenant.siteSettings.legal?.privacy) {

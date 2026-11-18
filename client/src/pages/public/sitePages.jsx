@@ -63,7 +63,7 @@ export function ContactPage() {
     <InfoPage title="Kontakt">
       <p>Za svoj termin javite se studiju kod kojeg ste upisani.</p>
       <p>
-        Za sam anyminutes pišite na{' '}
+        Za sam Blizari pišite na{' '}
         <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
       </p>
     </InfoPage>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import BrandWordmark from './BrandWordmark.jsx';
 import { usePrivacyConsent } from '../hooks/usePrivacyConsent.js';
 import './ConsentBanner.scss';
 
@@ -55,7 +56,9 @@ export default function ConsentBanner() {
     <div className="consent-banner" role="dialog" aria-labelledby="consent-banner-title">
       <div className="consent-banner__inner">
         <div className="consent-banner__copy">
-          <p className="consent-banner__brand">anyminutes</p>
+          <p className="consent-banner__brand">
+            <BrandWordmark slot="banner" tone="dark" decorative />
+          </p>
           <h2 id="consent-banner-title">Privola za korištenje podataka</h2>
           <p>
             Sadržaj možete pregledavati bez privole. Za rezervacije, članstvo i

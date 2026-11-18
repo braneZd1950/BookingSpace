@@ -1,1 +1,1 @@
-export const contactEmail = 'kontakt@anyminutes.hr';
+export const contactEmail = 'kontakt@blizari.com';

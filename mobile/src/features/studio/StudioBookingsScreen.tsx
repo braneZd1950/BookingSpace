@@ -319,7 +319,7 @@ export default function StudioBookingsScreen({
       <Ionicons
         name={formOpen ? 'close' : 'add-outline'}
         size={20}
-        color="#061210"
+        color="#042F2E"
       />
     </Pressable>
   );
@@ -437,7 +437,7 @@ export default function StudioBookingsScreen({
               ]}
             >
               {booking ? (
-                <ActivityIndicator color="#061210" />
+                <ActivityIndicator color="#042F2E" />
               ) : (
                 <Text style={ui.primaryLabel}>Spremi rezervaciju</Text>
               )}
@@ -492,7 +492,7 @@ export default function StudioBookingsScreen({
 
       {loading ? (
         <View style={ui.loadingRow}>
-          <ActivityIndicator color="#5EEAD4" size="small" />
+          <ActivityIndicator color="#14B8A6" size="small" />
           <Text style={ui.hint}>Učitavamo rezervacije…</Text>
         </View>
       ) : null}
@@ -515,7 +515,7 @@ export default function StudioBookingsScreen({
                     pressed && ui.pressed,
                   ]}
                 >
-                  <Ionicons name="copy-outline" size={18} color="#061210" />
+                  <Ionicons name="copy-outline" size={18} color="#042F2E" />
                   <Text style={ui.primaryLabel}>Kopiraj adresu stranice</Text>
                 </Pressable>
                 {copyState === 'done' ? (
@@ -639,13 +639,13 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     marginTop: 8,
   },
   copyOk: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginTop: 2,
   },
   bookingRow: {

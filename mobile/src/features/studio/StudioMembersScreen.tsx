@@ -480,7 +480,7 @@ export default function StudioMembersScreen({
       <Ionicons
         name={formOpen ? 'close' : 'person-add-outline'}
         size={18}
-        color="#061210"
+        color="#042F2E"
       />
     </Pressable>
   );
@@ -767,7 +767,7 @@ export default function StudioMembersScreen({
                             ]}
                           >
                             {busy ? (
-                              <ActivityIndicator color="#5EEAD4" size="small" />
+                              <ActivityIndicator color="#14B8A6" size="small" />
                             ) : (
                               <Text style={ui.actionLabel}>Obnovite</Text>
                             )}
@@ -781,7 +781,7 @@ export default function StudioMembersScreen({
                             }}
                             disabled={Boolean(busyId)}
                             busy={busy}
-                            spinnerColor="#5EEAD4"
+                            spinnerColor="#14B8A6"
                           />
                         ) : null}
                       </>

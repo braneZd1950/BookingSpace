@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   insightValue: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   empty: {
     fontFamily: 'Outfit_400Regular',

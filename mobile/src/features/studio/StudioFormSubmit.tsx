@@ -33,7 +33,7 @@ export default function StudioFormSubmit({
         ]}
       >
         {saving ? (
-          <ActivityIndicator color="#061210" size="small" />
+          <ActivityIndicator color="#042F2E" size="small" />
         ) : (
           <Text style={ui.primaryLabel}>{label}</Text>
         )}

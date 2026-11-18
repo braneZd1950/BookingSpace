@@ -39,7 +39,7 @@ function timeLabel(now = new Date()) {
  */
 export default function LiveClockMark({
   size = 36,
-  accentColor = '#5EEAD4',
+  accentColor = '#14B8A6',
   faceColor = 'rgba(10, 20, 18, 0.55)',
   showSlotMark = false,
 }: LiveClockMarkProps) {

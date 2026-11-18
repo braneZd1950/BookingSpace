@@ -33,7 +33,7 @@ export const studioUiStyles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     marginTop: 4,
   },
   statsRow: {
@@ -99,7 +99,7 @@ export const studioUiStyles = StyleSheet.create({
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     lineHeight: 19,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 12,
   },
   error: {
@@ -185,7 +185,7 @@ export const studioUiStyles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.55)',
   },
   segmentTabLabelOn: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   presetRow: {
     flexDirection: 'row',
@@ -212,14 +212,14 @@ export const studioUiStyles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.6)',
   },
   presetLabelOn: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   primaryBtn: {
     alignSelf: 'flex-start',
     minHeight: 44,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -227,7 +227,7 @@ export const studioUiStyles = StyleSheet.create({
   primaryLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 14,
-    color: '#061210',
+    color: '#042F2E',
   },
   disabled: { opacity: 0.7 },
   filterRow: {
@@ -254,7 +254,7 @@ export const studioUiStyles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.55)',
   },
   filterLabelOn: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   sectionLabel: {
     fontFamily: 'Outfit_500Medium',
@@ -338,7 +338,7 @@ export const studioUiStyles = StyleSheet.create({
   },
   countStrong: {
     fontFamily: 'Outfit_600SemiBold',
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   loadingRow: {
     flexDirection: 'row',
@@ -398,7 +398,7 @@ export const studioUiStyles = StyleSheet.create({
   avatarText: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   rowCopy: {
     flex: 1,
@@ -423,7 +423,7 @@ export const studioUiStyles = StyleSheet.create({
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
-  badgeOk: { color: '#5EEAD4' },
+  badgeOk: { color: '#14B8A6' },
   badgeMuted: { color: 'rgba(232, 242, 239, 0.45)' },
   rowMeta: {
     fontFamily: 'Outfit_500Medium',
@@ -454,7 +454,7 @@ export const studioUiStyles = StyleSheet.create({
   actionLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 12,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   actionDanger: {
     borderColor: 'rgba(251, 113, 133, 0.35)',
@@ -487,8 +487,8 @@ export const studioUiStyles = StyleSheet.create({
     backgroundColor: 'rgba(10, 20, 18, 0.35)',
   },
   checkboxOn: {
-    backgroundColor: '#5EEAD4',
-    borderColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
+    borderColor: '#14B8A6',
   },
   checkLabel: {
     fontFamily: 'Outfit_500Medium',

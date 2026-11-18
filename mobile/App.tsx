@@ -194,7 +194,7 @@ function AppRoot() {
   if (booting || !fontsReady) {
     return (
       <View style={[styles.shell, styles.boot]}>
-        <ActivityIndicator color="#5EEAD4" />
+        <ActivityIndicator color="#14B8A6" />
         <Text style={styles.bootLabel}>Učitavanje…</Text>
       </View>
     );
@@ -219,7 +219,8 @@ function AppRoot() {
       <View style={styles.shell}>
         <MemberDiscoverScreen
           slug=""
-          studioName="anyminutes"
+          studioName="Blizari"
+          uiTheme="dark"
           onBack={() => setScreen('landing')}
           onOpenStudio={() => setScreen('login')}
         />
@@ -232,7 +233,7 @@ function AppRoot() {
       <View style={styles.shell}>
         <MemberFaqScreen
           onBack={() => setScreen('landing')}
-          uiTheme={uiTheme}
+          uiTheme="dark"
         />
       </View>
     );
@@ -243,7 +244,7 @@ function AppRoot() {
       <View style={styles.shell}>
         <MemberAboutScreen
           onBack={() => setScreen('landing')}
-          uiTheme={uiTheme}
+          uiTheme="dark"
         />
       </View>
     );
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   boot: {
     alignItems: 'center',
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
     paddingTop: 96,
   },
   placeholderBrand: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
     fontSize: 14,
     letterSpacing: 2,
     textTransform: 'uppercase',
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   placeholderLink: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
     fontSize: 16,
   },
 });

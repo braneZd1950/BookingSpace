@@ -1,5 +1,9 @@
 import Service from '../../models/Service.js';
-import Tenant from '../../models/Tenant.js';
+import Tenant, {
+  DISCOVER_EXCLUDED_SLUGS,
+  DISCOVER_LISTED,
+  isDiscoverExcludedTenant,
+} from '../../models/Tenant.js';
 import TenantUser from '../../models/TenantUser.js';
 import User from '../../models/User.js';
 import { trackUsage } from '../../utils/analytics.js';
@@ -65,20 +69,28 @@ function publicService(service) {
 }
 
 const DISCOVER_CATEGORY_NICHES = {
-  fitness: ['fitness', 'pilates', 'yoga', 'powerplate'],
-  services: ['services'],
   playroom: ['playroom'],
+  beauty: ['services', 'beauty'],
+  wellness: ['wellness', 'spa'],
+  sport: ['sport', 'activities'],
+  health: ['health', 'physio'],
+  workshop: ['workshop', 'education'],
   generic: ['generic'],
 };
+
+/** Membership-first niches are private by default and omitted unless opted in. */
+const MEMBERSHIP_FIRST_NICHES = new Set(['fitness', 'pilates', 'yoga', 'powerplate']);
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function categoryForNiche(niche) {
-  if (DISCOVER_CATEGORY_NICHES.fitness.includes(niche)) return 'fitness';
-  if (niche === 'services') return 'services';
-  if (niche === 'playroom') return 'playroom';
+  const key = niche || 'generic';
+  if (MEMBERSHIP_FIRST_NICHES.has(key)) return 'sport';
+  for (const [categoryId, niches] of Object.entries(DISCOVER_CATEGORY_NICHES)) {
+    if (niches.includes(key)) return categoryId;
+  }
   return 'generic';
 }
 
@@ -92,6 +104,7 @@ function cityFromAddress(address) {
 function toDiscoverPlace(tenant) {
   const niche = tenant.niche || 'generic';
   const city = (tenant.city || '').trim() || cityFromAddress(tenant.address);
+  const discoverVisibility = tenant.discoverVisibility || 'private';
   return {
     id: String(tenant._id),
     categoryId: categoryForNiche(niche),
@@ -100,18 +113,24 @@ function toDiscoverPlace(tenant) {
     area: '',
     note: (tenant.description || '').trim().slice(0, 160)
       || (tenant.nicheCustom || '').trim()
-      || 'Studio na anyminutesu.',
+      || '',
     tags: [niche, tenant.nicheCustom, city].filter(Boolean),
     slug: tenant.slug,
     logoUrl: tenant.logoUrl || '',
     live: true,
     source: 'live',
+    discoverVisibility,
+    onlineBooking: discoverVisibility === 'public',
   };
 }
 
-/** Javni popis aktivnih studija za Otkrij (pretraga + kategorija). */
+/** Javni popis — samo aktivna poslovanja koja su odabrala Otkrij. */
 export async function discoverTenants({ q = '', category = 'all', limit = 60 } = {}) {
-  const filter = { active: true };
+  const filter = {
+    active: true,
+    discoverVisibility: { $in: DISCOVER_LISTED },
+    slug: { $nin: DISCOVER_EXCLUDED_SLUGS },
+  };
   const needle = String(q || '').trim();
   if (needle) {
     const rx = new RegExp(escapeRegex(needle), 'i');
@@ -127,25 +146,26 @@ export async function discoverTenants({ q = '', category = 'all', limit = 60 } =
   }
 
   const rows = await Tenant.find(filter)
-    .select('name slug niche nicheCustom description address city logoUrl')
+    .select('name slug niche nicheCustom description address city logoUrl discoverVisibility')
     .sort({ name: 1 })
     .limit(200)
     .lean();
 
-  const places = rows.map(toDiscoverPlace);
-  const counts = {
-    all: places.length,
-    fitness: 0,
-    services: 0,
-    playroom: 0,
-    generic: 0,
-  };
+  const places = rows
+    .map(toDiscoverPlace)
+    .filter((place) => !isDiscoverExcludedTenant(place));
+  const counts = { all: places.length };
   for (const place of places) {
     counts[place.categoryId] = (counts[place.categoryId] || 0) + 1;
   }
 
-  const filtered = category && category !== 'all'
-    ? places.filter((place) => place.categoryId === category)
+  const categoryAlias = {
+    fitness: 'sport',
+    services: 'beauty',
+  };
+  const resolvedCategory = categoryAlias[category] || category;
+  const filtered = resolvedCategory && resolvedCategory !== 'all'
+    ? places.filter((place) => place.categoryId === resolvedCategory)
     : places;
 
   return {
@@ -168,6 +188,7 @@ export function toTenant(tenant) {
     email: tenant.email || '',
     address: tenant.address || '',
     city: tenant.city || '',
+    mapsUrl: tenant.mapsUrl || '',
     oib: tenant.oib || '',
     timezone: tenant.timezone,
     logoUrl: tenant.logoUrl || '',
@@ -176,6 +197,7 @@ export function toTenant(tenant) {
     siteSettings: tenant.siteSettings,
     bookingSettings: tenant.bookingSettings,
     active: tenant.active,
+    discoverVisibility: tenant.discoverVisibility || 'private',
   };
 }
 
@@ -267,6 +289,7 @@ export async function createTenant(user, input) {
       city: input.city || '',
       oib: input.oib || '',
       timezone: input.timezone || 'Europe/Zagreb',
+      discoverVisibility: input.discoverVisibility || 'private',
       siteSettings: {
         template: input.template || 'generic',
         ...(input.layout ? { layout: input.layout } : {}),

@@ -109,6 +109,7 @@ export default function MemberHomePage() {
         phone={tenant.phone || ''}
         email={tenant.email || ''}
         address={tenant.address || ''}
+        mapsUrl={tenant.mapsUrl || ''}
         heroSrc={sources.heroSrc}
         logoSrc={sources.logoSrc}
         palette={palette}

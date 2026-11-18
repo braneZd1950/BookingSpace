@@ -110,10 +110,10 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
   }
 
   return (
-    <View style={[chrome.root, { backgroundColor: '#0E1614' }]}>
+    <View style={[chrome.root, { backgroundColor: '#0F172A' }]}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#163028', '#111A18', '#0E1614']}
+        colors={['#1E3A5F', '#15233B', '#0F172A']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -132,8 +132,8 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
           onPress={onBack}
           style={({ pressed }) => [chrome.back, pressed && styles.pressed]}
         >
-          <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
-          <Text style={[chrome.backLabel, { color: '#5EEAD4' }]}>Početna</Text>
+          <Ionicons name="chevron-back" size={18} color="#14B8A6" />
+          <Text style={[chrome.backLabel, { color: '#14B8A6' }]}>Početna</Text>
         </Pressable>
 
         <Text style={[chrome.studio, { color: 'rgba(94, 234, 212, 0.85)' }]}>
@@ -147,7 +147,7 @@ export default function MemberGalleryScreen({ tenant, onBack }: MemberGalleryScr
 
       {shots.length === 0 ? (
         <View style={[styles.empty, { maxWidth: stageWidth }]}>
-          <Ionicons name="images-outline" size={28} color="#5EEAD4" />
+          <Ionicons name="images-outline" size={28} color="#14B8A6" />
           <Text style={styles.emptyTitle}>Još nema fotografija</Text>
           <Text style={styles.emptyLead}>
             Studio još nije objavio galeriju. Provjerite kasnije.
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   dotOn: {
     width: 18,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
   },
   lightbox: {
     flex: 1,

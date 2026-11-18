@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { NICHES, TEMPLATES, CAPACITY_MODELS } from '../../models/Tenant.js';
+import {
+  DISCOVER_VISIBILITY,
+  NICHES,
+  TEMPLATES,
+  CAPACITY_MODELS,
+} from '../../models/Tenant.js';
 import { calendarDate, clockTime, email, objectId, timeZone } from '../fields.js';
 
 const workingHour = z.object({
@@ -47,6 +52,7 @@ export const createTenantSchema = z.object({
     city: z.string().trim().max(80).optional(),
     oib: z.union([z.literal(''), z.string().trim().regex(/^\d{11}$/, 'OIB mora imati 11 znamenki')]).optional(),
     timezone: timeZone.optional(),
+    discoverVisibility: z.enum(DISCOVER_VISIBILITY).optional(),
     template: z.enum(TEMPLATES).optional(),
     layout: z.enum(['banner', 'bar', 'sidebar']).optional(),
     paletteId: z.string().trim().max(40).optional(),
@@ -68,7 +74,19 @@ export const publicTenantSchema = z.object({
 export const discoverTenantsSchema = z.object({
   query: z.object({
     q: z.string().trim().max(80).optional().default(''),
-    category: z.enum(['all', 'fitness', 'services', 'playroom', 'generic']).optional().default('all'),
+    category: z.enum([
+      'all',
+      'playroom',
+      'wellness',
+      'beauty',
+      'sport',
+      'health',
+      'workshop',
+      'generic',
+      // legacy aliases still accepted from older clients
+      'fitness',
+      'services',
+    ]).optional().default('all'),
     limit: z.coerce.number().int().min(1).max(100).optional().default(60),
   }),
 });
@@ -84,9 +102,14 @@ export const updateTenantSchema = z.object({
     email: email.optional(),
     address: z.string().trim().max(200).optional(),
     city: z.string().trim().max(80).optional(),
+    mapsUrl: z.union([
+      z.literal(''),
+      z.string().trim().url().max(500),
+    ]).optional(),
     oib: z.union([z.literal(''), z.string().trim().regex(/^\d{11}$/, 'OIB mora imati 11 znamenki')]).optional(),
     timezone: timeZone.optional(),
     active: z.boolean().optional(),
+    discoverVisibility: z.enum(DISCOVER_VISIBILITY).optional(),
     bookingSettings: z.object({
       capacityModel: z.enum(CAPACITY_MODELS).optional(),
       workingHours: z.array(workingHour).max(7).optional(),

@@ -15,7 +15,7 @@ export const studioChromeStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   root: {
     flex: 1,
@@ -23,7 +23,7 @@ export const studioChromeStyles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   flex: { flex: 1, minHeight: 0 },
   stage: {
@@ -50,7 +50,7 @@ export const studioChromeStyles = StyleSheet.create({
   backLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 15,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     maxWidth: 260,
   },
   title: {

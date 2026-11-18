@@ -11,14 +11,14 @@ export const AUTH_GRADIENT_LOCATIONS = APP_GRADIENT_LOCATIONS;
 
 /** Shared shell styles for Login / Forgot / related auth screens. */
 export const authChromeStyles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#0E1614' },
+  boot: { flex: 1, backgroundColor: '#0F172A' },
   root: {
     flex: 1,
     width: '100%',
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   flex: { flex: 1, minHeight: 0 },
   stage: {
@@ -105,8 +105,8 @@ export const authChromeStyles = StyleSheet.create({
   submit: {
     minHeight: 56,
     marginTop: 6,
-    borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    borderRadius: 10,
+    backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -114,7 +114,7 @@ export const authChromeStyles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     letterSpacing: 0.15,
-    color: '#061210',
+    color: '#FFFFFF',
   },
   footer: {
     marginTop: 'auto',
@@ -127,7 +127,7 @@ export const authChromeStyles = StyleSheet.create({
   linkLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   linkMuted: {
     fontFamily: 'Outfit_400Regular',

@@ -15,7 +15,7 @@ export const MEMBER_HOME_NAV = [
   {
     id: 'discover',
     label: 'Otkrij',
-    note: 'Drugi studiji',
+    note: 'Usluge i mjesta',
     icon: 'compass-outline',
   },
   {

@@ -86,7 +86,7 @@ const EMAIL_PREFS: { key: PrefKey; label: string; note: string }[] = [
   { key: 'cancelEmail', label: 'Otkaz termina', note: 'E-pošta kad netko otkaže' },
   { key: 'memberEmail', label: 'Novi član', note: 'Obavijest o novom ili obnovljenom članu' },
   { key: 'weeklyDigest', label: 'Tjedni sažetak', note: 'Pregled popunjenosti jednom tjedno' },
-  { key: 'marketing', label: 'Novosti proizvoda', note: 'Rijetke obavijesti o anyminutesu' },
+  { key: 'marketing', label: 'Novosti proizvoda', note: 'Rijetke obavijesti o Blizariju' },
 ];
 
 const PUSH_PREFS: { key: PrefKey; label: string; note: string }[] = [
@@ -474,7 +474,7 @@ export default function StudioSettingsScreen({
                     >
                       <View style={[ui.checkbox, row.works && ui.checkboxOn]}>
                         {row.works ? (
-                          <Ionicons name="checkmark" size={14} color="#061210" />
+                          <Ionicons name="checkmark" size={14} color="#042F2E" />
                         ) : null}
                       </View>
                       <Text style={styles.hourLabel} numberOfLines={1}>
@@ -658,7 +658,7 @@ export default function StudioSettingsScreen({
               >
                 <View style={[ui.checkbox, showPasswords && ui.checkboxOn]}>
                   {showPasswords ? (
-                    <Ionicons name="checkmark" size={14} color="#061210" />
+                    <Ionicons name="checkmark" size={14} color="#042F2E" />
                   ) : null}
                 </View>
                 <Text style={styles.checkLabel}>Prikaži lozinke</Text>
@@ -748,7 +748,7 @@ export default function StudioSettingsScreen({
                 'Radno vrijeme i kontakt',
               ].map((item) => (
                 <View key={item} style={styles.bulletRow}>
-                  <Ionicons name="checkmark" size={16} color="#5EEAD4" />
+                  <Ionicons name="checkmark" size={16} color="#14B8A6" />
                   <Text style={styles.bulletText}>{item}</Text>
                 </View>
               ))}
@@ -847,7 +847,7 @@ function SaveButton({
       ]}
     >
       {saving ? (
-        <ActivityIndicator color="#061210" />
+        <ActivityIndicator color="#042F2E" />
       ) : (
         <Text style={ui.primaryLabel}>{label}</Text>
       )}
@@ -872,7 +872,7 @@ function PrefRow({
       style={({ pressed }) => [styles.prefRow, pressed && ui.pressed]}
     >
       <View style={[ui.checkbox, on && ui.checkboxOn]}>
-        {on ? <Ionicons name="checkmark" size={14} color="#061210" /> : null}
+        {on ? <Ionicons name="checkmark" size={14} color="#042F2E" /> : null}
       </View>
       <View style={styles.prefCopy}>
         <Text style={styles.checkLabel}>{label}</Text>
@@ -902,11 +902,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(232, 242, 239, 0.55)',
   },
-  tabLabelOn: { color: '#5EEAD4' },
+  tabLabelOn: { color: '#14B8A6' },
   notice: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 10,
   },
   error: {
@@ -1024,7 +1024,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(232, 242, 239, 0.6)',
   },
-  presetLabelOn: { color: '#5EEAD4' },
+  presetLabelOn: { color: '#14B8A6' },
   hint: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 12,
@@ -1084,8 +1084,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   checkboxOn: {
-    backgroundColor: '#5EEAD4',
-    borderColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
+    borderColor: '#14B8A6',
   },
   checkLabel: {
     fontFamily: 'Outfit_500Medium',
@@ -1101,7 +1101,7 @@ const styles = StyleSheet.create({
   bullet: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     lineHeight: 21,
   },
   bulletText: {
@@ -1144,14 +1144,14 @@ const styles = StyleSheet.create({
   planPillLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 11,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   primaryBtn: {
     alignSelf: 'flex-start',
     minHeight: 44,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
@@ -1159,7 +1159,7 @@ const styles = StyleSheet.create({
   primaryLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 14,
-    color: '#061210',
+    color: '#042F2E',
   },
   dangerBlock: {
     marginTop: 18,

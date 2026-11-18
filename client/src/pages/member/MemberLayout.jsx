@@ -43,13 +43,6 @@ const IconPlay = () => strokeIcon(
   <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" d="M8 6.2v11.6L18.5 12 8 6.2z" />,
 );
 
-const IconDiscover = () => strokeIcon(
-  <>
-    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
-    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" d="M14.8 9.2 13 13l-3.8 1.8L11 11l3.8-1.8z" />
-  </>,
-);
-
 const IconPrivacy = () => strokeIcon(
   <>
     <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" d="M12 3.5 19 6.5v5.2c0 4.2-2.9 7.3-7 8.8-4.1-1.5-7-4.6-7-8.8V6.5L12 3.5z" />
@@ -199,7 +192,6 @@ export default function MemberLayout() {
     home: IconHome,
     slots: IconSlots,
     online: IconPlay,
-    discover: IconDiscover,
     privacy: IconPrivacy,
     settings: IconSettings,
   };

@@ -29,7 +29,7 @@ type MemberChromeProps = {
 export default function MemberChrome({
   onBack,
   backLabel = 'Početna',
-  kicker = 'anyminutes',
+  kicker = 'Blizari',
   title,
   lead,
   uiTheme = 'dark',

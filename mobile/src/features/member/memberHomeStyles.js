@@ -6,7 +6,7 @@ export const memberHomeStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   root: {
     flex: 1,
@@ -14,7 +14,7 @@ export const memberHomeStyles = StyleSheet.create({
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   scroll: { flex: 1 },
   content: {
@@ -74,7 +74,7 @@ export const memberHomeStyles = StyleSheet.create({
   ctaPrimary: {
     minHeight: 52,
     borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -82,7 +82,7 @@ export const memberHomeStyles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 15,
     letterSpacing: 0.15,
-    color: '#061210',
+    color: '#042F2E',
   },
   notice: {
     borderWidth: StyleSheet.hairlineWidth,

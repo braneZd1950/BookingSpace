@@ -541,7 +541,7 @@ function SubmitButton({
       ]}
     >
       {submitting ? (
-        <ActivityIndicator color="#061210" />
+        <ActivityIndicator color="#042F2E" />
       ) : (
         <Text style={chrome.submitLabel}>{label}</Text>
       )}
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   intentTitle: {
     fontFamily: 'CormorantGaramond_600SemiBold',
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(94, 234, 212, 0.14)',
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   slugHint: {
     marginTop: -8,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     color: '#E8F2EF',
   },
   nicheNameSelected: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   nicheNote: {
     fontFamily: 'Outfit_400Regular',
@@ -645,13 +645,13 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   checkboxOn: {
-    backgroundColor: '#5EEAD4',
-    borderColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
+    borderColor: '#14B8A6',
   },
   checkboxMark: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#061210',
+    color: '#042F2E',
   },
   termsText: {
     flex: 1,

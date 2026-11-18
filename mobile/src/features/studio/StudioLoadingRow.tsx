@@ -9,7 +9,7 @@ type StudioLoadingRowProps = {
 export default function StudioLoadingRow({ hint }: StudioLoadingRowProps) {
   return (
     <View style={ui.loadingRow}>
-      <ActivityIndicator color="#5EEAD4" size="small" />
+      <ActivityIndicator color="#14B8A6" size="small" />
       <Text style={ui.hint}>{hint}</Text>
     </View>
   );

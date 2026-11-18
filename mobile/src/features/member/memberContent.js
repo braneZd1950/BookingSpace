@@ -1,8 +1,8 @@
 /** Isti FAQ kao web HomePage — za članski ekran u mobilnoj. */
 export const MEMBER_FAQS = [
   {
-    q: 'Moram li biti vješt s računalima da bih koristio anyminutes?',
-    a: 'Ne. anyminutes je napravljen da bude jednostavan. Ako se znate služiti telefonom i porukama, snaći ćete se bez problema.',
+    q: 'Moram li biti vješt s računalima da bih koristio Blizari?',
+    a: 'Ne. Blizari je napravljen da bude jednostavan. Ako se znate služiti telefonom i porukama, snaći ćete se bez problema.',
   },
   {
     q: 'Što je to „moja stranica” i „moj link”?',
@@ -14,18 +14,18 @@ export const MEMBER_FAQS = [
   },
   {
     q: 'Vidi li itko moje klijente ili ih može kontaktirati?',
-    a: 'Ne. anyminutes nije javni imenik. Vaša stranica i vaši klijenti služe samo vašem poslu i ostaju vaši.',
+    a: 'Ne. Blizari nije javni imenik. Vaša stranica i vaši klijenti služe samo vašem poslu i ostaju vaši.',
   },
   {
     q: 'Mogu li voditi i članarine, a ne samo pojedinačne termine?',
     a: 'Da. Uz termine i raspored na jednom mjestu možete voditi i članarine svojih klijenata.',
   },
   {
-    q: 'Je li anyminutes prikladan za moju vrstu posla?',
+    q: 'Je li Blizari prikladan za moju vrstu posla?',
     a: 'Koriste ga poslovi koji rade na termine — studiji za vježbanje i wellness, saloni ljepote, dječje igraonice i slično. Ako radite na dogovorene termine, prikladan je i za vas.',
   },
   {
-    q: 'Koliko košta anyminutes?',
+    q: 'Koliko košta Blizari?',
     a: 'Cjenik i model naplate potvrđujemo pri otvaranju studija ili na upit. Ne iznosimo fiksne cijene na ovoj stranici dok se uvjeti ne dogovore s vama.',
   },
   {
@@ -56,15 +56,15 @@ export const ABOUT_PROMISES = [
 export const ABOUT_SECTIONS = [
   {
     kicker: 'Kako je sve počelo',
-    title: 'AnyMinutes je počeo od jednog vrlo stvarnog problema.',
+    title: 'Blizari je počeo od jednog vrlo stvarnog problema.',
     paragraphs: [
       'Mnogi vlasnici malih poslova svoje termine i klijente još uvijek vode po papirima, bilježnicama i porukama. To oduzima vrijeme, stvara zbrku i lako se nešto izgubi.',
       'Gledajući to iz blizine, shvatio sam da može i jednostavnije. Htio sam napraviti alat koji je pregledan, osoban i lak za korištenje — takav da ga uključite i odmah znate što radite, bez mučenja i bez priručnika.',
     ],
   },
   {
-    kicker: 'Tko stoji iza AnyMinutesa',
-    title: 'Iza AnyMinutesa za sada stojim ja.',
+    kicker: 'Tko stoji iza Blizarija',
+    title: 'Iza Blizarija za sada stojim ja.',
     paragraphs: [
       'Nema velikog tima ni investitora — samo ideja da mali poslovi zaslužuju alat koji im olakšava dan, a ne dodaje posla. To mi daje slobodu da slušam izravno vas i da proizvod vodim u smjeru koji vama ima smisla.',
     ],
@@ -74,7 +74,7 @@ export const ABOUT_SECTIONS = [
     title: 'Zašto radim ovo',
     paragraphs: [
       'Vjerujem da mali poslovi — studiji, saloni, igraonice — nemaju vremena za složene programe. Vaše vrijeme pripada vašim klijentima, a ne administraciji.',
-      'Zato gradim AnyMinutes: da bude jednostavan, pregledan i da radi upravo ono što vam treba.',
+      'Zato gradim Blizari: da bude jednostavan, pregledan i da radi upravo ono što vam treba.',
     ],
   },
 ];

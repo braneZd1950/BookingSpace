@@ -7,6 +7,7 @@ import {
 } from '../../api/authApi.js';
 import { useLazyListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
+import BrandWordmark from '../../components/BrandWordmark.jsx';
 import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
 import PasswordField from '../../components/PasswordField.jsx';
 import { business, member } from '../../mock/data.js';
@@ -67,7 +68,9 @@ function LoginShell({ done = false, children }) {
       </div>
       <div className="login__layout">
         <aside className="login__spine" aria-hidden="true">
-          <p className="login__spine-mark">anyminutes</p>
+          <p className="login__spine-mark">
+            <BrandWordmark slot="spine" tone="dark" decorative />
+          </p>
         </aside>
         <div className="login__stage">{children}</div>
       </div>
@@ -135,7 +138,7 @@ export default function LoginPage() {
       email: result.user.email,
       role: result.user.role,
       detail: (result.user.role === 'ADMIN' || result.user.role === 'PLATFORM_STAFF')
-        ? 'Platforma anyminutes'
+        ? 'Platforma Blizari'
         : result.user.role === 'BUSINESS_OWNER'
           ? (trial?.session.detail || 'Račun studija je otvoren.')
           : (trial?.session.detail || 'Račun člana je otvoren.'),

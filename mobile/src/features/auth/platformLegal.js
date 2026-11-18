@@ -6,13 +6,13 @@ import {
 
 /** Identifikacija pružatelja — usklađeno s web legal.js. */
 export const legalEntity = {
-  productName: 'anyminutes',
-  tradeName: 'anyminutes',
-  email: 'kontakt@anyminutes.hr',
-  legalName: 'anyminutes',
+  productName: 'Blizari',
+  tradeName: 'Blizari',
+  email: 'kontakt@blizari.com',
+  legalName: 'Blizari',
   oib: '',
   address: 'Republika Hrvatska',
-  website: 'https://anyminutes.hr',
+  website: 'https://blizari.com',
   azopUrl: 'https://azop.hr',
   azopMail: 'azop@azop.hr',
   azopAddress: 'Selska cesta 136, 10000 Zagreb',

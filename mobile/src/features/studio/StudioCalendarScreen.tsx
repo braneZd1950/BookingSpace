@@ -182,14 +182,14 @@ export default function StudioCalendarScreen({
               onPress={() => setCursor(new Date(year, month - 1, 1))}
               style={({ pressed }) => [styles.navBtn, pressed && ui.pressed]}
             >
-              <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
+              <Ionicons name="chevron-back" size={18} color="#14B8A6" />
             </Pressable>
             <Text style={styles.monthTitle}>{monthLabel(cursor)}</Text>
             <Pressable
               onPress={() => setCursor(new Date(year, month + 1, 1))}
               style={({ pressed }) => [styles.navBtn, pressed && ui.pressed]}
             >
-              <Ionicons name="chevron-forward" size={18} color="#5EEAD4" />
+              <Ionicons name="chevron-forward" size={18} color="#14B8A6" />
             </Pressable>
           </View>
 
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     color: '#E8F2EF',
   },
   cellToday: {
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   cellDayActive: {
     color: '#F7FCFA',

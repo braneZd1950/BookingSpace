@@ -11,6 +11,7 @@ export function StudioHome() {
     phone: studio.phone || '',
     email: studio.email || '',
     address: studio.address || '',
+    mapsUrl: studio.mapsUrl || '',
     heroImageUrl: studio.heroImageUrl || '',
     logoUrl: studio.logoUrl || '',
   };
@@ -36,6 +37,7 @@ export function StudioHome() {
       phone={draft.phone}
       email={draft.email}
       address={draft.address}
+      mapsUrl={draft.mapsUrl || studio.mapsUrl || ''}
       heroSrc={sources.heroSrc}
       logoSrc={sources.logoSrc}
       palette={palette}

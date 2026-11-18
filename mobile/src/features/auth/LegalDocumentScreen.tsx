@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import { BRAND, DARK_SURFACE } from '../../lib/brandColors.js';
 import {
   LEGAL_DOCS,
   LEGAL_UPDATED,
@@ -56,7 +57,7 @@ export default function LegalDocumentScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#163028', '#111A18', '#0E1614']}
+        colors={DARK_SURFACE.gradient as [string, string, ...string[]]}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -77,7 +78,7 @@ export default function LegalDocumentScreen({
           hitSlop={10}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
         >
-          <Ionicons name="chevron-back" size={22} color="#5EEAD4" />
+          <Ionicons name="chevron-back" size={22} color={BRAND.teal} />
           <Text style={styles.backLabel}>Natrag</Text>
         </Pressable>
 
@@ -177,12 +178,12 @@ export default function LegalDocumentScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#0E1614' },
+  boot: { flex: 1, backgroundColor: BRAND.navy },
   root: {
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#0E1614',
+    backgroundColor: BRAND.navy,
   },
   flex: { flex: 1, minHeight: 0 },
   stage: {
@@ -204,12 +205,12 @@ const styles = StyleSheet.create({
   backLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 15,
-    color: '#5EEAD4',
+    color: BRAND.teal,
   },
   brand: {
     fontFamily: 'CormorantGaramond_500Medium',
     fontSize: 22,
-    color: '#F7FCFA',
+    color: BRAND.onDark,
     marginBottom: 8,
   },
   kicker: {
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#5EEAD4',
+    color: BRAND.teal,
     marginBottom: 10,
   },
   title: {
@@ -225,27 +226,27 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 40,
     letterSpacing: -0.5,
-    color: '#E8F2EF',
+    color: BRAND.onDark,
     marginBottom: 12,
   },
   lead: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 15,
     lineHeight: 23,
-    color: 'rgba(232, 242, 239, 0.72)',
+    color: 'rgba(248, 250, 252, 0.72)',
     marginBottom: 10,
   },
   basis: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 12,
     lineHeight: 18,
-    color: 'rgba(232, 242, 239, 0.45)',
+    color: 'rgba(148, 163, 184, 0.85)',
     marginBottom: 8,
   },
   meta: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 12,
-    color: 'rgba(94, 234, 212, 0.75)',
+    color: BRAND.tealBright,
     marginBottom: 18,
   },
   tabScroll: { marginHorizontal: -24, marginBottom: 18 },
@@ -255,46 +256,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.14)',
-    backgroundColor: 'rgba(10, 20, 18, 0.35)',
+    borderColor: 'rgba(148, 163, 184, 0.28)',
+    backgroundColor: 'rgba(30, 41, 59, 0.55)',
   },
   tabOn: {
-    borderColor: 'rgba(94, 234, 212, 0.55)',
-    backgroundColor: 'rgba(94, 234, 212, 0.12)',
+    borderColor: 'rgba(20, 184, 166, 0.55)',
+    backgroundColor: 'rgba(20, 184, 166, 0.12)',
   },
   tabLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.55)',
+    color: 'rgba(226, 232, 240, 0.55)',
   },
-  tabLabelOn: { color: '#5EEAD4' },
+  tabLabelOn: { color: BRAND.teal },
   aside: {
     gap: 6,
     padding: 14,
     marginBottom: 20,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.12)',
-    backgroundColor: 'rgba(10, 20, 18, 0.4)',
+    borderColor: 'rgba(37, 99, 235, 0.28)',
+    backgroundColor: 'rgba(30, 41, 59, 0.72)',
   },
   asideLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 11,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: 'rgba(94, 234, 212, 0.8)',
+    color: BRAND.blueBright,
   },
   asideBody: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
     lineHeight: 20,
-    color: 'rgba(232, 242, 239, 0.88)',
+    color: 'rgba(248, 250, 252, 0.9)',
   },
   asideNote: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.55)',
+    color: 'rgba(148, 163, 184, 0.95)',
   },
   clause: {
     flexDirection: 'row',
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   clauseIndex: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
-    color: 'rgba(94, 234, 212, 0.7)',
+    color: BRAND.tealBright,
     marginTop: 3,
     width: 28,
   },
@@ -313,41 +314,41 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 17,
     lineHeight: 24,
-    color: '#F7FCFA',
+    color: BRAND.onDark,
   },
   summaryBox: {
     gap: 4,
     padding: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(94, 234, 212, 0.08)',
+    backgroundColor: 'rgba(37, 99, 235, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(94, 234, 212, 0.18)',
+    borderColor: 'rgba(37, 99, 235, 0.28)',
   },
   summaryLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 11,
     letterSpacing: 0.7,
     textTransform: 'uppercase',
-    color: 'rgba(94, 234, 212, 0.85)',
+    color: BRAND.blueBright,
   },
   summaryText: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.78)',
+    color: 'rgba(226, 232, 240, 0.85)',
   },
   paragraph: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 14,
     lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.72)',
+    color: 'rgba(148, 163, 184, 0.95)',
   },
   bullets: { gap: 6 },
   bulletRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   bulletMark: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: BRAND.teal,
     lineHeight: 21,
   },
   bulletText: {
@@ -355,20 +356,20 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_400Regular',
     fontSize: 14,
     lineHeight: 21,
-    color: 'rgba(232, 242, 239, 0.72)',
+    color: 'rgba(148, 163, 184, 0.95)',
   },
   note: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.58)',
+    color: 'rgba(148, 163, 184, 0.85)',
     fontStyle: 'italic',
   },
   law: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 11,
     lineHeight: 16,
-    color: 'rgba(94, 234, 212, 0.55)',
+    color: 'rgba(45, 212, 191, 0.65)',
   },
   closeBtn: {
     alignSelf: 'flex-start',
@@ -377,14 +378,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.22)',
+    borderColor: 'rgba(37, 99, 235, 0.4)',
+    backgroundColor: BRAND.blue,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 14,
-    color: '#E8F2EF',
+    color: '#FFFFFF',
   },
   pressed: { opacity: 0.75 },
 });

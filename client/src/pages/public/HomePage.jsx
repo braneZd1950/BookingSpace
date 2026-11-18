@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import AppInstallButton from '../../components/AppInstallButton.jsx';
+import BrandWordmark from '../../components/BrandWordmark.jsx';
+import { BRAND } from '../../lib/brand.js';
+import { contactEmail } from '../../lib/contact.js';
 import { getHomePartners, SHOW_HOME_PARTNERS } from '../../lib/homePartners.js';
 import './HomePage.scss';
 
@@ -41,83 +43,193 @@ const clocks = [
   { time: '09:15', label: 'Ana', hour: 9, minute: 15 },
 ];
 
-const benefits = [
+const features = [
   {
-    title: 'Manje poruka',
-    text: 'Klijenti rezerviraju sami, pa ne morate odgovarati na svaku poruku o slobodnim terminima.',
+    id: 'site',
+    title: 'Vaša poslovna stranica',
+    text: 'Predstavite svoje poslovanje putem vlastite online stranice. Prikažite informacije, usluge, radno vrijeme i dostupne termine. Poveznicu podijelite sa svojim klijentima i omogućite im jednostavnu rezervaciju.',
   },
   {
-    title: 'Sve na jednom mjestu',
-    text: 'Termini, raspored, klijenti i članarine — sve vodite iz jednog pregleda, bez skakanja između aplikacija.',
+    id: 'booking',
+    title: 'Online rezervacije',
+    text: 'Omogućite klijentima da sami pregledaju dostupnost i rezerviraju termine putem vaše stranice. Rezervacije možete pregledavati, upravljati njima, mijenjati ih ili otkazivati iz svojeg poslovnog prostora.',
   },
   {
-    title: 'Rezervacije 0–24',
-    text: 'Vaša stranica prima rezervacije i dok spavate. Klijent rezervira kad njemu odgovara.',
+    id: 'calendar',
+    title: 'Raspored i kalendar',
+    text: 'Organizirajte svoje termine, aktivnosti i rezervacije kroz pregledan kalendar. Jednostavno pratite što vas očekuje, kada ste dostupni i kako izgleda vaš raspored.',
   },
   {
-    title: 'Jasan pregled dana',
-    text: 'U svakom trenutku znate tko dolazi, kada i koliko termina imate slobodno.',
+    id: 'members',
+    title: 'Klijenti, članovi i članarine',
+    text: 'Vodite evidenciju svojih klijenata i članova, pratite njihove članarine i status te lakše organizirajte njihovo korištenje svojih usluga.',
   },
   {
-    title: 'Vaša stranica, vaš link',
-    text: 'Dobivate vlastitu stranicu s vlastitim linkom koji dijelite točno kome želite.',
+    id: 'overview',
+    title: 'Pregled poslovanja',
+    text: 'Na jednom mjestu pratite osnovne informacije o rezervacijama, članovima i članarinama. Imajte bolji pregled svakodnevnog rada i lakše pratite što se događa u vašem poslovanju.',
   },
   {
-    title: 'Jednostavno za sve',
-    text: 'Bez tečaja i bez priručnika. Postavite jednom i koristite svaki dan.',
+    id: 'settings',
+    title: 'Postavke prilagođene vama',
+    text: 'Prilagodite stranicu i osnovne postavke svom načinu rada. Uredite podatke o poslovanju, kontakt, radno vrijeme, izgled stranice i druge dostupne mogućnosti prema svojim potrebama.',
+  },
+];
+
+function FeatureIcon({ id }) {
+  const common = {
+    className: 'home__offer-icon',
+    viewBox: '0 0 24 24',
+    'aria-hidden': 'true',
+    focusable: 'false',
+  };
+
+  if (id === 'booking') {
+    return (
+      <svg {...common}>
+        <rect x="4.5" y="5.5" width="15" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M8 3.9v3M16 3.9v3M4.5 10.2h15" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="m9.2 14.4 1.8 1.8 3.8-3.8" />
+      </svg>
+    );
+  }
+
+  if (id === 'calendar') {
+    return (
+      <svg {...common}>
+        <rect x="4.5" y="5.5" width="15" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M8 3.9v3M16 3.9v3M4.5 10.2h15M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01" />
+      </svg>
+    );
+  }
+
+  if (id === 'members') {
+    return (
+      <svg {...common}>
+        <circle cx="9" cy="9" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <circle cx="16.2" cy="9.6" r="2.1" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M4.8 18.2c.9-2.6 2.7-3.9 4.2-3.9s3.3 1.3 4.2 3.9M13.4 14.8c1.1-.5 2.4-.5 3.6.2 1.1.7 1.9 1.9 2.3 3.2" />
+      </svg>
+    );
+  }
+
+  if (id === 'overview') {
+    return (
+      <svg {...common}>
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M5 18.2V9.5M10.2 18.2V6.2M15.4 18.2v-5.2M20 18.2V8.4" />
+      </svg>
+    );
+  }
+
+  if (id === 'settings') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          d="M12 4.6v1.7M12 17.7v1.7M4.6 12h1.7M17.7 12h1.7M6.6 6.6l1.2 1.2M16.2 16.2l1.2 1.2M17.4 6.6l-1.2 1.2M7.8 16.2l-1.2 1.2"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <rect x="3.8" y="5" width="16.4" height="14" rx="2.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M3.8 9.2h16.4M8 5v4.2" />
+    </svg>
+  );
+}
+
+const industries = [
+  {
+    title: 'Fitness i sportske aktivnosti',
+    text: 'Grupni treninzi, teretane, fitness studiji i individualni treninzi.',
+  },
+  {
+    title: 'Dječje igraonice i proslave',
+    text: 'Rezervacije prostora, rođendana, proslava i posebnih događanja.',
+  },
+  {
+    title: 'Wellness i ljepota',
+    text: 'Masaže, wellness centri, kozmetički i frizerski saloni.',
+  },
+  {
+    title: 'Zdravlje i stručne usluge',
+    text: 'Ordinacije, terapeuti i druge djelatnosti koje rade s terminima i klijentima.',
   },
 ];
 
 const steps = [
   {
     n: '01',
-    title: 'Napravite svoju stranicu',
-    text: 'Upišite osnovne podatke o svom poslu, uslugama i radnom vremenu. Vaša stranica je spremna za nekoliko minuta.',
+    title: 'Napravite svoj račun',
+    text: 'Registrirajte se i unesite osnovne podatke o svom poslovanju.',
   },
   {
     n: '02',
-    title: 'Podijelite link s klijentima',
-    text: 'Pošaljite link klijentima ili ga stavite na društvene mreže. Jedan klik i oni su na vašoj stranici.',
+    title: 'Uredite svoju stranicu i usluge',
+    text: 'Dodajte usluge, radno vrijeme i informacije koje želite pokazati klijentima.',
   },
   {
     n: '03',
-    title: 'Primajte rezervacije',
-    text: 'Klijenti biraju termin, a vi sve vidite u svom pregledu. Vi se bavite poslom, raspored se slaže sam.',
+    title: 'Podijelite svoj link',
+    text: 'Pošaljite ga postojećim klijentima ili ga stavite na društvene mreže — dolaze izravno k vama.',
+  },
+  {
+    n: '04',
+    title: 'Vodite poslovanje iz jednog mjesta',
+    text: 'Pratite raspored, rezervacije, članove i osnovni pregled poslovanja u svom sučelju.',
   },
 ];
 
 const faqs = [
   {
-    q: 'Moram li biti vješt s računalima da bih koristio anyminutes?',
-    a: 'Ne. anyminutes je napravljen da bude jednostavan. Ako se znate služiti telefonom i porukama, snaći ćete se bez problema.',
+    q: 'Moram li imati tehničko znanje za korištenje Blizaria?',
+    a: 'Ne. Blizari je osmišljen tako da bude jednostavan, pregledan i razumljiv. Svoje poslovanje možete postaviti i koristiti bez posebnog tehničkog znanja.',
   },
   {
-    q: 'Što je to „moja stranica” i „moj link”?',
-    a: 'To je vaša osobna online stranica na kojoj klijenti rezerviraju termine. Dobivate i link te stranice koji jednostavno pošaljete klijentima ili podijelite na društvenim mrežama.',
+    q: 'Što dobivam registracijom?',
+    a: 'Dobivate vlastitu stranicu za svoje poslovanje i alate za organizaciju rasporeda, rezervacija, klijenata, članova i članarina, uz pregled poslovanja na jednom mjestu.',
   },
   {
-    q: 'Mogu li klijenti rezervirati bilo kada?',
-    a: 'Da. Vaša stranica prima rezervacije 24 sata dnevno unutar vašeg radnog vremena i kapaciteta — klijenti biraju termin kad njima odgovara, a vi sve vidite u pregledu.',
+    q: 'Što je moja online stranica?',
+    a: 'To je vaša vlastita stranica na kojoj klijenti mogu pronaći informacije o vašem poslovanju, pregledati usluge ili aktivnosti i rezervirati dostupne termine. Link na stranicu dijelite svojim klijentima gdje god želite. Vaša stranica nije dio javnog kataloga drugih poslovanja.',
   },
   {
-    q: 'Vidi li itko moje klijente ili ih može kontaktirati?',
-    a: 'Ne. anyminutes nije javni imenik. Vaša stranica i vaši klijenti služe samo vašem poslu i ostaju vaši.',
+    q: 'Je li Blizari samo aplikacija za rezervacije termina?',
+    a: 'Ne. Blizari je platforma za upravljanje uslužnim poslovanjem. Osim rezervacija, pomaže vam organizirati klijente, raspored, članove, članarine i druge dijelove svakodnevnog poslovanja. Rezervacije su jedan dio sustava.',
   },
   {
-    q: 'Mogu li voditi i članarine, a ne samo pojedinačne termine?',
-    a: 'Da. Uz termine i raspored na jednom mjestu možete voditi i članarine svojih klijenata.',
+    q: 'Mogu li klijenti rezervirati termine dok nisam dostupan?',
+    a: 'Da. Vaša stranica za rezervacije dostupna je online, pa klijenti mogu samostalno pregledati i rezervirati dostupne termine bez potrebe da vam šalju poruku ili čekaju vaš odgovor. Rezervacije se odvijaju prema vašim postavljenim pravilima, dostupnosti i kapacitetu.',
   },
   {
-    q: 'Je li anyminutes prikladan za moju vrstu posla?',
-    a: 'Koriste ga poslovi koji rade na termine — studiji za vježbanje i wellness, saloni ljepote, dječje igraonice i slično. Ako radite na dogovorene termine, prikladan je i za vas.',
+    q: 'Je li Blizari namijenjen samo fitness studijima?',
+    a: 'Nije. Blizari razvijam za različite vrste uslužnih poslovanja koja rade s terminima, rezervacijama, klijentima ili članovima. To uključuje fitness i treninge, wellness, salone, igraonice, različite usluge i druge djelatnosti.',
   },
   {
-    q: 'Koliko košta anyminutes?',
-    a: 'Cjenik i model naplate potvrđujemo pri otvaranju studija ili na upit. Ne iznosimo fiksne cijene na ovoj stranici dok se uvjeti ne dogovore s vama.',
+    q: 'Vide li drugi vlasnici poslovanja moje klijente ili podatke?',
+    a: 'Ne. Svako poslovanje ima svoj zaseban prostor. Blizari nije javni imenik ni tržište na kojem se vaši klijenti prikazuju drugim pružateljima usluga. Vaši klijenti i poslovni podaci nisu dostupni drugim poslovanjima.',
   },
   {
-    q: 'Postoji li besplatno probno razdoblje?',
-    a: 'Da. Novi studio kreće s probnim razdobljem (do 30 dana), pa možete isprobati raspored i rezervacije prije dugoročne odluke.',
+    q: 'Mogu li klijenti platiti online?',
+    a: 'Trenutačno Blizari ne podržava online kartično plaćanje. Rezervacije, evidenciju članarina i podatke o klijentima možete voditi kroz platformu, dok naplatu obavljate na način koji već koristite u svom poslovanju.',
+  },
+  {
+    q: 'Koliko košta korištenje Blizaria?',
+    a: 'Korištenje Blizaria tijekom pilot-faze je besplatno. O eventualnim budućim cijenama korisnici će biti pravovremeno obaviješteni.',
+  },
+  {
+    q: 'Moram li instalirati Blizari na računalo ili mobitel?',
+    a: 'Ne. Blizari koristite putem internetskog preglednika na računalu, tabletu ili mobitelu. Nije potrebna instalacija klasičnog programa.',
+  },
+  {
+    q: 'Mogu li promijeniti izgled i informacije svoje stranice nakon registracije?',
+    a: 'Da. Informacije o poslovanju, izgled stranice i dostupne postavke možete prilagođavati i nakon početnog postavljanja, ovisno o mogućnostima koje su dostupne u platformi.',
   },
 ];
 
@@ -179,22 +291,29 @@ export default function HomePage() {
           })}
         </div>
         <div className="home__hero-copy">
-          <p className="home__brand" id="home-brand">anyminutes</p>
-          <h1>Vaši termini. Vaši klijenti. Jedno mjesto.</h1>
+          <p className="home__brand" id="home-brand">
+            <BrandWordmark slot="home" tone="dark" />
+          </p>
+          <p className="home__slogan">{BRAND.sloganHr}</p>
+          <h1>Vi vodite posao. Blizari pomaže oko organizacije.</h1>
           <p className="home__lead">
-            Napravite vlastitu stranicu za rezervacije, podijelite link s klijentima
-            i vodite cijeli raspored bez stalnih poruka i dogovaranja. Jednostavno, od prvog dana.
+            Platforma za upravljanje uslužnim poslovanjem: vlastita stranica,
+            raspored, članovi, članarine i rezervacije — na jednom mjestu.
+          </p>
+          <p className="home__lead home__lead--tight">
+            Manje vremena na dogovaranje i administraciju. Više vremena za klijente
+            i posao koji radite.
           </p>
           <div className="home__actions">
             <Link className="home__cta" to="/register">
               Napravite svoju stranicu
             </Link>
             <a className="home__cta home__cta--ghost" href="#kako">
-              Pogledajte kako radi
+              Pogledajte kako funkcionira
             </a>
           </div>
           <p className="home__trust">
-            Postavljanje traje svega nekoliko minuta. Bez komplikacija.
+            Radi u pregledniku. Postavljanje traje svega nekoliko minuta.
           </p>
         </div>
 
@@ -222,54 +341,142 @@ export default function HomePage() {
       </section>
 
       <section className="home__block" aria-labelledby="home-problem">
-        <h2 id="home-problem">Poznato vam je ovo?</h2>
+        <h2 id="home-problem">Vaš dan je previše vrijedan za stalno dogovaranje</h2>
         <div className="home__prose">
+          <p>Poznajete li ovu svakodnevicu?</p>
           <p>
-            Dan vam je pun, a termini i klijenti još uvijek žive po papirima,
-            bilježnicama i porukama. Poruke stižu kasno navečer i u pauzama.
-            Netko otkaže u zadnji čas, a vi ručno tražite kome taj termin ponuditi.
+            Poruke stižu tijekom rada, navečer i vikendom. Jedan klijent pita za
+            slobodan termin, drugi želi promijeniti rezervaciju, a treći
+            provjerava članarinu.
           </p>
           <p>
-            Raspored vam je na papiru, u glavi i u tri različite aplikacije.
-            Teško je pratiti tko dolazi, tko još nije platio članarinu i koji je
-            termin slobodan — lako se nešto izgubi.
+            Raspored je u bilježnici, porukama i različitim aplikacijama. Morate
+            pamtiti tko dolazi, što je slobodno i tko je već rezervirao.
           </p>
           <p>
-            Umjesto da radite svoj posao, veći dio dana provodite dogovarajući se oko njega.
+            Umjesto da se posvetite klijentima i svom poslu, vrijeme trošite na
+            organizaciju.
           </p>
-        </div>
-      </section>
-
-      <section className="home__block" aria-labelledby="home-solution">
-        <h2 id="home-solution">anyminutes preuzima dogovaranje umjesto vas</h2>
-        <div className="home__prose">
-          <p>
-            S anyminutesom klijenti sami rezerviraju termin preko vaše stranice,
-            u bilo koje doba dana. Vi u svakom trenutku vidite tko dolazi i kada,
-            sve na jednom mjestu.
-          </p>
-          <p>
-            Nema više prebrojavanja poruka ni ručnog upisivanja termina.
-            Raspored se slaže sam, a vama ostaje više vremena za klijente i za posao.
-          </p>
-          <p>Jednostavno za vas i jednostavno za vaše klijente.</p>
+          <p className="home__prose-strong">Vrijeme je da to pojednostavimo.</p>
         </div>
       </section>
 
       <section
         id="prednosti"
-        className="home__block home__block--wide home__anchor"
-        aria-labelledby="home-benefits"
+        className="home__block home__block--wide home__anchor home__offer"
+        aria-labelledby="home-features"
       >
-        <h2 id="home-benefits">Zašto vlasnici biraju anyminutes</h2>
+        <h2 id="home-features">Što Blizari nudi danas</h2>
+        <p className="home__edge-lead">
+          Sve što vam treba za organizaciju poslovanja, klijenata i rezervacija —
+          na jednom mjestu.
+        </p>
+        <ul className="home__offer-grid">
+          {features.map((item) => (
+            <li key={item.id} className="home__offer-card">
+              <span className="home__offer-icon-wrap" aria-hidden="true">
+                <FeatureIcon id={item.id} />
+              </span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="home__offer-close">
+          <p className="home__offer-close-kicker">{BRAND.sloganHr}</p>
+          <p>Manje vremena na organizaciju. Više vremena za ono što je zaista važno.</p>
+        </div>
+      </section>
+
+      <section className="home__block home__block--wide" aria-labelledby="home-industries">
+        <h2 id="home-industries">Jedna platforma. Različite djelatnosti.</h2>
+        <p className="home__edge-lead">
+          Blizari nije napravljen samo za jednu vrstu usluge. Ako radite s
+          rasporedom, klijentima i rezervacijama, može vam pomoći da poslovanje
+          vodite preglednije.
+        </p>
         <ul className="home__edges">
-          {benefits.map((item) => (
+          {industries.map((item) => (
             <li key={item.title}>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </li>
           ))}
         </ul>
+        <div className="home__prose home__prose--after">
+          <p>
+            <strong>I slični poslovi.</strong>
+            {' '}
+            Važno je kako radite — s terminima, članovima i vlastitim klijentima —
+            a ne da vas stavljamo u javni katalog usluga.
+          </p>
+        </div>
+      </section>
+
+      <section className="home__block" aria-labelledby="home-page">
+        <h2 id="home-page">Vaše poslovanje dobiva vlastitu online stranicu</h2>
+        <div className="home__prose">
+          <p>
+            Ne trebate posebno graditi web-stranicu samo da bi klijenti znali kako
+            rezervirati.
+          </p>
+          <p>
+            U Blizariju na jednom mjestu predstavite poslovanje, usluge, radno
+            vrijeme i dostupne termine.
+          </p>
+          <p>
+            Dobivate vlastiti link koji dijelite putem WhatsAppa, Instagrama,
+            Facebooka, e-maila ili na postojećoj stranici.
+          </p>
+          <p>
+            Klijent otvara vašu stranicu i rezervira izravno kod vas — ne bira
+            između tuđih ponuda.
+          </p>
+        </div>
+        <p className="home__note">
+          Primjer adrese:
+          {' '}
+          <code className="home__code">/s/vase-poslovanje</code>
+        </p>
+        <p className="home__prose-strong">Vaša stranica. Vaše usluge. Vaši klijenti.</p>
+      </section>
+
+      <section className="home__split" aria-labelledby="home-clients">
+        <div>
+          <h2 id="home-clients">Jednostavno za vas. Jednostavno za vaše klijente.</h2>
+          <p>
+            Klijenti ne moraju čekati odgovor na poruku da vide što je dostupno.
+          </p>
+          <p className="home__split-extra">
+            Otvare vašu stranicu, pregledaju mogućnosti i odaberu termin koji im
+            odgovara. Vi u istom sustavu vidite tko dolazi i kako izgleda raspored.
+          </p>
+          <p>
+            Blizari povezuje ta dva iskustva bez nepotrebnog dopisivanja — uz
+            alate koje koristite za vođenje cijelog posla, ne samo rezervacije.
+          </p>
+        </div>
+        <div>
+          <h2 id="home-trust-title">Vaš posao i vaši klijenti ostaju vaši</h2>
+          <p>
+            Blizari nije javni imenik niti tržište na kojem se klijenti
+            preusmjeravaju drugim pružateljima usluga.
+          </p>
+          <p className="home__split-extra">
+            Ne natječete se s drugim poslovanjima unutar platforme. Svako
+            poslovanje ima vlastitu stranicu i vlastiti link. Vi odlučujete kome
+            ga dijelite.
+          </p>
+          <p>
+            Mi dajemo alate za organizaciju. Vi zadržavate odnos sa svojim
+            klijentima.
+          </p>
+          <p className="home__prose-strong">
+            Vi vodite posao. Mi pomažemo da ga lakše organizirate.
+          </p>
+        </div>
       </section>
 
       <section
@@ -277,7 +484,7 @@ export default function HomePage() {
         className="home__block home__block--wide home__anchor"
         aria-labelledby="home-how"
       >
-        <h2 id="home-how">U tri koraka do prvih rezervacija</h2>
+        <h2 id="home-how">Kako započeti?</h2>
         <ol className="home__steps">
           {steps.map((step) => (
             <li key={step.n}>
@@ -289,132 +496,51 @@ export default function HomePage() {
             </li>
           ))}
         </ol>
-      </section>
-
-      <section className="home__block" aria-labelledby="home-page">
-        <h2 id="home-page">Vlastita stranica koju dijelite samo sa svojim klijentima</h2>
-        <div className="home__prose">
-          <p>
-            Svaki posao kod nas dobiva svoju online stranicu i svoj link za rezervacije.
-            Na njoj su vaše usluge, vaše radno vrijeme i vaš način rada.
-          </p>
-          <p>
-            Taj link šaljete izravno svojim klijentima — u poruci, na društvenim mrežama
-            ili na posjetnici. Klijent ga otvori i odmah rezervira termin.
-          </p>
-          <p>
-            Stranica je vaša i služi samo vašem poslu. Klijenti ne lutaju među drugim
-            ponudama — dolaze točno k vama.
-          </p>
-        </div>
-        <p className="home__note">
-          Primjer adrese:
-          {' '}
-          <code className="home__code">/s/vas-studio</code>
-        </p>
-      </section>
-
-      <section className="home__block" aria-labelledby="home-ops">
-        <h2 id="home-ops">Termini, raspored i članarine na jednom mjestu</h2>
-        <div className="home__prose">
-          <p>
-            U anyminutesu na jednom mjestu vodite termine, svoj raspored, popis
-            klijenata i njihove članarine.
-          </p>
-          <p>
-            Vidite tko je rezervirao, koji su termini slobodni i kako vam izgleda tjedan.
-            Podatke o klijentima držite uredno, bez bilježnica i razbacanih poruka.
-          </p>
-          <p>
-            Sve je posloženo tako da brzo nađete ono što trebate i da manje vremena
-            trošite na administraciju.
-          </p>
-        </div>
-      </section>
-
-      <section className="home__split" aria-labelledby="home-clients">
-        <div>
-          <h2 id="home-clients">I vaši klijenti će biti zadovoljni</h2>
-          <p>
-            Vaši klijenti rezerviraju termin u nekoliko klikova, bez dopisivanja i
-            čekanja na odgovor. Jasno vide koji su termini slobodni i biraju onaj
-            koji im najbolje odgovara.
-          </p>
-          <p className="home__split-extra">
-            Rezerviraju kad njima odgovara — ujutro, navečer ili za vikend.
-            Jednostavno iskustvo znači da se rado vraćaju.
-          </p>
-          <Link className="home__text-link" to="/otkrij">
-            Otkrijte studije
-          </Link>
-        </div>
-        <div>
-          <h2 id="home-trust-title">Vaš posao i vaši klijenti ostaju vaši</h2>
-          <p>
-            anyminutes nije javni imenik u kojem klijenti pregledavaju i uspoređuju
-            razne poslove. Nema preusmjeravanja vaših klijenata drugima.
-          </p>
-          <p className="home__split-extra">
-            Vi dobivate vlastiti online prostor i vlastiti link, a mi vam dajemo
-            samo alate da sve vodite lakše. Vaša stranica, vaši klijenti i vaši
-            odnosi pripadaju vama — mi smo tu da vam vratimo vrijeme za posao.
-          </p>
-          <Link className="home__text-link" to="/register">
-            Napravite svoju stranicu
+        <div className="home__actions">
+          <Link className="home__cta" to="/register">
+            Napravite svoju Blizari stranicu
           </Link>
         </div>
       </section>
 
       <section className="home__block" aria-labelledby="home-story">
-        <h2 id="home-story">Jedna ideja da vođenje posla bude jednostavnije</h2>
+        <h2 id="home-story">Više vremena za posao koji volite</h2>
         <div className="home__prose">
           <p>
-            AnyMinutes je nastao od stvarnog problema malih poslova — studija,
-            salona i igraonica — kojima složeni programi samo dodaju posla.
-            Gradimo ga uz prve korisnike: jednostavan, pregledan i bez priručnika.
+            Blizari nastaje iz jednostavne ideje: vlasnici malih i srednjih
+            poslovanja ne bi trebali trošiti sate na ručno dogovaranje i
+            administraciju.
           </p>
           <p>
-            Cilj je vratiti vam vrijeme koje danas trošite na poruke, papire i
-            dogovaranje — da se možete vratiti klijentima.
+            Gradimo alat koji je jednostavan, prilagodljiv različitim
+            djelatnostima i dovoljno praktičan za svakodnevno vođenje posla —
+            onoliko koliko je danas stvarno dostupno i korisno.
+          </p>
+          <p className="home__prose-strong">
+            Manje administracije. Više reda. Više vremena za vaše klijente.
           </p>
         </div>
         <Link className="home__text-link" to="/o-nama">
-          Pročitajte više o nama
+          Upoznajte Blizari
         </Link>
       </section>
 
-      <section
-        id="aplikacija"
-        className="home__block home__anchor home__app"
-        aria-labelledby="home-app"
-      >
-        <h2 id="home-app">Termini i u džepu</h2>
-        <div className="home__prose">
-          <p>
-            Klijenti rezerviraju, otkazuju i prate članarinu u anyminutes
-            aplikaciji — isti račun kao na webu, bez poruka i dogovaranja.
-          </p>
-        </div>
-        <AppInstallButton className="home__cta home__cta--solid home__app-cta" />
-      </section>
-
       <section className="home__close" aria-labelledby="home-close">
-        <h2 id="home-close">Spremni za manje dogovaranja, a više posla?</h2>
+        <h2 id="home-close">Vaš posao zaslužuje jednostavniju organizaciju.</h2>
         <p>
-          Napravite svoju stranicu danas i pustite da rezervacije stižu same.
-          Postavljanje traje svega nekoliko minuta.
+          Napravite svoju stranicu i vodite raspored, članove i rezervacije na
+          jednom mjestu — u pregledniku, bez obećanja koja još nisu dio proizvoda.
         </p>
         <div className="home__actions home__actions--close">
           <Link className="home__cta home__cta--solid" to="/register">
-            Napravite svoju stranicu
+            Započnite s Blizarijem
           </Link>
-          <AppInstallButton
-            className="home__cta home__cta--line"
-            label="Preuzmite aplikaciju"
-          />
+          <Link className="home__cta home__cta--line" to="/kontakt">
+            Kontaktirajte nas
+          </Link>
         </div>
         <p className="home__trust home__trust--close">
-          Jednostavno za postaviti. Jednostavno za koristiti.
+          Postavite jednom. Koristite svaki dan.
         </p>
       </section>
 
@@ -424,6 +550,10 @@ export default function HomePage() {
         aria-labelledby="home-faq"
       >
         <h2 id="home-faq">Česta pitanja</h2>
+        <p className="home__faq-lead">
+          Odgovori na najčešća pitanja o Blizariju i načinu na koji vam može olakšati
+          vođenje poslovanja.
+        </p>
         <div className="home__faq">
           {faqs.map((item) => (
             <details key={item.q} className="home__faq-item">
@@ -431,6 +561,23 @@ export default function HomePage() {
               <p>{item.a}</p>
             </details>
           ))}
+        </div>
+        <div className="home__faq-close">
+          <p className="home__faq-close-kicker">{BRAND.sloganHr}</p>
+          <p>
+            Blizari — platforma za jednostavnije upravljanje uslužnim poslovanjem.
+            Stranica, raspored, klijenti, članovi i rezervacije na jednom mjestu.
+          </p>
+          <p>
+            Imate još pitanja?
+            {' '}
+            <Link to="/kontakt">Slobodno nam se javite.</Link>
+            {' '}
+            Ili pišite na
+            {' '}
+            <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            .
+          </p>
         </div>
       </section>
     </main>

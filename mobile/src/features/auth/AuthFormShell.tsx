@@ -76,7 +76,7 @@ export default function AuthFormShell({
       ) : null}
       <View style={chrome.brandRow}>
         <LiveClockMark size={28} />
-        <Text style={chrome.brand}>anyminutes</Text>
+        <Text style={chrome.brand}>Blizari</Text>
       </View>
       <Text
         style={[

@@ -231,10 +231,10 @@ export default function MemberBookScreen({
   }
 
   return (
-    <View style={[chrome.root, { backgroundColor: '#0E1614' }]}>
+    <View style={[chrome.root, { backgroundColor: '#0F172A' }]}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#163028', '#111A18', '#0E1614']}
+        colors={['#1E3A5F', '#15233B', '#0F172A']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -250,8 +250,8 @@ export default function MemberBookScreen({
           onPress={onBack}
           style={({ pressed }) => [chrome.back, pressed && styles.pressed]}
         >
-          <Ionicons name="chevron-back" size={18} color="#5EEAD4" />
-          <Text style={[chrome.backLabel, { color: '#5EEAD4' }]}>Početna</Text>
+          <Ionicons name="chevron-back" size={18} color="#14B8A6" />
+          <Text style={[chrome.backLabel, { color: '#14B8A6' }]}>Početna</Text>
         </Pressable>
 
         <Text style={styles.studio}>{tenant?.name || 'Studio'}</Text>
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   plan: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 16,
   },
   error: {
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   ok: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 10,
   },
   gate: {
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginTop: 10,
     marginBottom: 6,
   },
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayChipOn: {
-    borderColor: '#5EEAD4',
+    borderColor: '#14B8A6',
     backgroundColor: 'rgba(94, 234, 212, 0.12)',
   },
   dayChipClosed: { opacity: 0.4 },
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   trainerChipOn: {
-    borderColor: '#5EEAD4',
+    borderColor: '#14B8A6',
     backgroundColor: 'rgba(94, 234, 212, 0.12)',
   },
   trainerName: {
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slotChipOn: {
-    borderColor: '#5EEAD4',
+    borderColor: '#14B8A6',
     backgroundColor: 'rgba(94, 234, 212, 0.14)',
   },
   slotChipDisabled: { opacity: 0.38 },
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   cta: {
     minHeight: 52,
     borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
   ctaLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 15,
-    color: '#061210',
+    color: '#042F2E',
   },
   bookingRow: {
     flexDirection: 'row',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
   cancelLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 13,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   locked: {
     fontFamily: 'Outfit_400Regular',

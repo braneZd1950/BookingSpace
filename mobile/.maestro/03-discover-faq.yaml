@@ -7,7 +7,7 @@ tags:
     clearState: true
 - tapOn: "Nastavite bez prijave"
 - assertVisible:
-    text: ".*Otkrij.*|.*studio.*|.*pretraž.*"
+    text: ".*Otkrij.*|.*uslugu.*|.*mjesto.*|.*pretraž.*"
 - launchApp
 - tapOn: "Česta pitanja"
 - assertVisible:

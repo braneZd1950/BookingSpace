@@ -217,6 +217,7 @@ export default function MemberHomeScreen({
       <MemberDiscoverScreen
         slug={slug}
         studioName={studioName}
+        uiTheme={uiTheme}
         onBack={() => setPanel('home')}
         onOpenStudio={(next) => {
           setPanel('home');

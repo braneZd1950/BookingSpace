@@ -130,7 +130,7 @@ export function MaintenancePage() {
     <StatusPage
       code="Održavanje"
       title="Kratko smo na pauzi"
-      lead="Trenutačno radimo na sustavu, pa je AnyMinutes privremeno nedostupan. Rezervacije i prijave vraćaju se čim završimo. Hvala vam na strpljenju."
+      lead="Trenutačno radimo na sustavu, pa je Blizari privremeno nedostupan. Rezervacije i prijave vraćaju se čim završimo. Hvala vam na strpljenju."
       note="Sve vaše rezervacije i podaci ostaju sigurni i čekaju vas na istom mjestu."
       primaryLabel="Pokušajte ponovno"
       onPrimary={onRetry}
@@ -187,7 +187,7 @@ export function StudioMissingPage() {
         </p>
         <div className="status__actions">
           <Link className="status__cta" to="/">
-            Početna anyminutes
+            Početna Blizari
           </Link>
           <Link className="status__cta status__cta--ghost" to="/login">
             Prijava

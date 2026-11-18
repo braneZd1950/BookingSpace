@@ -52,7 +52,7 @@ export const nichePaletteIds = {
   powerplate: ['ember', 'navy', 'stone', 'ink', 'mandarin'],
   pilates: ['teal', 'pine', 'emerald', 'lavender', 'sand'],
   yoga: ['teal', 'pine', 'emerald', 'lavender', 'sand'],
-  services: ['wine', 'rose', 'plum', 'sand', 'lavender'],
+  services: ['lavender', 'wine', 'rose', 'plum', 'sand'],
   playroom: ['sky', 'apple', 'mandarin', 'honey', 'raspberry'],
   generic: ['stone', 'slate', 'navy', 'pine', 'sand'],
 };

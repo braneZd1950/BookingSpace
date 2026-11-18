@@ -1,11 +1,11 @@
-appId: hr.anyminutes.app
+appId: hr.Blizari.app
 tags:
   - smoke
   - landing
 ---
 - launchApp:
     clearState: true
-- assertVisible: "anyminutes"
+- assertVisible: "Blizari"
 - assertVisible:
     text: ".*termin.*|.*džepu.*|.*Vaš termin.*"
 - assertVisible: "Prijavite se"

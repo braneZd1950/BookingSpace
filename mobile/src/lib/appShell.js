@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
 import { USE_NATIVE_DRIVER } from './nativeDriver.js';
 
-/** Shared dark atelier surface — soft charcoal-teal, not pure black. */
-export const APP_BG = '#0E1614';
-export const APP_GRADIENT = ['#163028', '#111A18', '#0E1614'];
+import { DARK_SURFACE } from './brandColors.js';
+
+/** Shared dark Blizari surface — navy + blue depth. */
+export const APP_BG = DARK_SURFACE.bg;
+export const APP_GRADIENT = DARK_SURFACE.gradient;
 export const APP_GRADIENT_LOCATIONS = [0, 0.42, 1];
 
 export function useEnterAnimation(duration = 520) {

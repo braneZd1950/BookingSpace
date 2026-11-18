@@ -91,7 +91,7 @@ function buildDemoBookings(year, month, hours, members, capacity) {
     : demoNames;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const lightSlots = ['08:00', '09:00', '10:00', '11:00', '17:00', '18:00', '19:00'];
-  const weekSlots = hourSlots(hours.week?.from || '07:00', hours.week?.to || '21:00');
+  const weekSlots = hourSlots(hours.monday?.from || '07:00', hours.monday?.to || '21:00');
   const cap = Math.max(1, capacity);
   const items = [];
   let packedDay = 0;

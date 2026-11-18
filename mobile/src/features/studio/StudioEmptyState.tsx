@@ -23,7 +23,7 @@ export default function StudioEmptyState({
   return (
     <View style={ui.empty}>
       <View style={ui.emptyIcon}>
-        <Ionicons name={icon} size={22} color="#5EEAD4" />
+        <Ionicons name={icon} size={22} color="#14B8A6" />
       </View>
       <Text style={ui.emptyTitle}>{title}</Text>
       <Text style={ui.emptyBody}>{body}</Text>

@@ -3,19 +3,71 @@ import {
   zonedNow,
 } from './time.js';
 
+export const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
 export const fallbackHours = {
-  week: { works: true, from: '07:00', to: '21:00' },
+  monday: { works: true, from: '07:00', to: '21:00' },
+  tuesday: { works: true, from: '07:00', to: '21:00' },
+  wednesday: { works: true, from: '07:00', to: '21:00' },
+  thursday: { works: true, from: '07:00', to: '21:00' },
+  friday: { works: true, from: '07:00', to: '21:00' },
   saturday: { works: true, from: '09:00', to: '13:00' },
   sunday: { works: false, from: '09:00', to: '13:00' },
   holidays: { works: false, from: '09:00', to: '13:00' },
 };
 
 export const hourRows = [
-  ['week', 'Ponedjeljak–petak'],
+  ['monday', 'Ponedjeljak'],
+  ['tuesday', 'Utorak'],
+  ['wednesday', 'Srijeda'],
+  ['thursday', 'Četvrtak'],
+  ['friday', 'Petak'],
   ['saturday', 'Subota'],
   ['sunday', 'Nedjelja'],
   ['holidays', 'Blagdani'],
 ];
+
+const DAY_KEY_BY_INDEX = {
+  0: 'sunday',
+  1: 'monday',
+  2: 'tuesday',
+  3: 'wednesday',
+  4: 'thursday',
+  5: 'friday',
+  6: 'saturday',
+};
+
+/** Expand legacy `{ week }` shape into per-day hours. */
+export function normalizeHours(hours) {
+  const source = hours && typeof hours === 'object' ? hours : {};
+  const next = { ...fallbackHours };
+  for (const [key, value] of Object.entries(fallbackHours)) {
+    if (source[key]) next[key] = { ...value, ...source[key] };
+  }
+  if (source.week && !source.monday) {
+    for (const key of WEEKDAY_KEYS) {
+      next[key] = { ...fallbackHours[key], ...source.week };
+    }
+  }
+  return next;
+}
+
+/** Copy open/close times from the first open weekday onto other open weekdays. */
+export function copyWeekdayHours(hours) {
+  const source = normalizeHours(hours);
+  const donorKey = WEEKDAY_KEYS.find((key) => source[key]?.works) || 'monday';
+  const donor = source[donorKey];
+  const next = { ...source };
+  for (const key of WEEKDAY_KEYS) {
+    if (!next[key]?.works) continue;
+    next[key] = { ...next[key], from: donor.from, to: donor.to };
+  }
+  return next;
+}
+
+export function dayKeyFromDate(date) {
+  return DAY_KEY_BY_INDEX[date.getDay()] || 'monday';
+}
 
 export function upcomingDays(count, from = new Date()) {
   const start = new Date(from.getFullYear(), from.getMonth(), from.getDate());
@@ -88,18 +140,18 @@ export function formatCancellationWindow(minutes) {
 
 /** Convert studio UI hours into API bookingSettings.workingHours. */
 export function hoursPayload(hours) {
-  const source = { ...fallbackHours, ...hours };
+  const source = normalizeHours(hours);
   const row = (day, value) => (
     value.works
       ? { day, closed: false, open: value.from, close: value.to }
       : { day, closed: true }
   );
   return [
-    row(1, source.week),
-    row(2, source.week),
-    row(3, source.week),
-    row(4, source.week),
-    row(5, source.week),
+    row(1, source.monday),
+    row(2, source.tuesday),
+    row(3, source.wednesday),
+    row(4, source.thursday),
+    row(5, source.friday),
     row(6, source.saturday),
     row(0, source.sunday),
   ];

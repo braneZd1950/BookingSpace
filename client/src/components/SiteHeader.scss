@@ -18,11 +18,6 @@
   gap: 0.55rem;
   padding-bottom: 0.45rem;
   color: var(--on-brand);
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-weight: 520;
-  font-size: 1.05rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
   text-decoration: none;
 }
 
@@ -32,17 +27,8 @@
   gap: 0.55rem;
 }
 
-.site-header__logo {
-  display: none;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.45rem;
-  object-fit: cover;
-  flex: 0 0 auto;
-}
-
 .site-header__brand-text {
-  display: inline;
+  display: block;
 }
 
 .site-header__brand::after {
@@ -142,12 +128,9 @@
     flex: 0 0 auto;
   }
 
-  .site-header__logo {
-    display: block;
-  }
-
   .site-header__brand-text {
-    display: none;
+    display: block;
+    max-width: 7.5rem;
   }
 
   .site-header__brand::after {

@@ -3,14 +3,14 @@ import { CONSENT_VERSION } from './consent.js';
 
 /** Identifikacija pružatelja usluge / voditelja obrade (dopunite OIB i sjedište kad budu gotovi). */
 export const legalEntity = {
-  productName: 'anyminutes',
-  tradeName: 'anyminutes',
+  productName: 'Blizari',
+  tradeName: 'Blizari',
   email: contactEmail,
   /** Popunite nakon registracije obrta / društva. */
-  legalName: 'anyminutes',
+  legalName: 'Blizari',
   oib: '',
   address: 'Republika Hrvatska',
-  website: 'https://anyminutes.hr',
+  website: 'https://blizari.com',
   azopUrl: 'https://azop.hr',
   azopMail: 'azop@azop.hr',
   azopAddress: 'Selska cesta 136, 10000 Zagreb',

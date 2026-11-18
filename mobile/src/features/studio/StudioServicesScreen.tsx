@@ -245,7 +245,7 @@ export default function StudioServicesScreen({
       <Ionicons
         name={formOpen ? 'close' : 'add-outline'}
         size={20}
-        color="#061210"
+        color="#042F2E"
       />
     </Pressable>
   );
@@ -350,7 +350,7 @@ export default function StudioServicesScreen({
             >
               <View style={[ui.checkbox, membershipRequired && ui.checkboxOn]}>
                 {membershipRequired ? (
-                  <Ionicons name="checkmark" size={14} color="#061210" />
+                  <Ionicons name="checkmark" size={14} color="#042F2E" />
                 ) : null}
               </View>
               <Text style={ui.checkLabel}>Zahtijeva aktivnu članarinu</Text>
@@ -368,7 +368,7 @@ export default function StudioServicesScreen({
               ]}
             >
               {saving ? (
-                <ActivityIndicator color="#061210" size="small" />
+                <ActivityIndicator color="#042F2E" size="small" />
               ) : (
                 <Text style={ui.primaryLabel}>
                   {editingId ? 'Spremi izmjene' : 'Dodaj uslugu'}
@@ -414,7 +414,7 @@ export default function StudioServicesScreen({
 
       {loading ? (
         <View style={ui.loadingRow}>
-          <ActivityIndicator color="#5EEAD4" size="small" />
+          <ActivityIndicator color="#14B8A6" size="small" />
           <Text style={ui.hint}>Učitavamo usluge…</Text>
         </View>
       ) : null}
@@ -437,7 +437,7 @@ export default function StudioServicesScreen({
             return (
               <View key={item.id} style={[ui.row, !active && ui.rowMuted]}>
                 <View style={ui.avatar}>
-                  <Ionicons name="time-outline" size={18} color="#5EEAD4" />
+                  <Ionicons name="time-outline" size={18} color="#14B8A6" />
                 </View>
                 <View style={ui.rowCopy}>
                   <View style={ui.rowTitle}>
@@ -479,7 +479,7 @@ export default function StudioServicesScreen({
                     >
                       {busy ? (
                         <ActivityIndicator
-                          color={active ? '#FCA5A5' : '#5EEAD4'}
+                          color={active ? '#FCA5A5' : '#14B8A6'}
                           size="small"
                         />
                       ) : (

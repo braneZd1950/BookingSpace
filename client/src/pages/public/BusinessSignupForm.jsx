@@ -24,25 +24,130 @@ const LEGAL_TABS = [
   {
     id: 'privacy',
     index: '01',
+    icon: 'privacy',
     label: 'Privatnost',
     title: 'Politika privatnosti',
-    note: 'Tko obrađuje podatke, svrhe, prava klijenata i AZOP.',
+    note: 'Odgovornost poslovanja · podaci njegovih klijenata',
+    role: 'Voditelj obrade: vaše poslovanje.',
   },
   {
     id: 'terms',
     index: '02',
+    icon: 'terms',
     label: 'Uvjeti',
-    title: 'Uvjeti korištenja',
-    note: 'Rezervacije, članarine, odgovornost i mjerodavno pravo RH/EU.',
+    title: 'Uvjeti poslovanja i rezervacija',
+    note: 'Cijene, rezervacije, otkazivanja, članarine i povrati',
+    role: 'Odgovornost: vaše poslovanje.',
   },
   {
     id: 'cookies',
     index: '03',
+    icon: 'cookies',
     label: 'Kolačići',
-    title: 'Kolačići i sigurnost',
-    note: 'Nužna pohrana, sesija, privola i upravljanje u pregledniku.',
+    title: 'Politika kolačića',
+    note: 'Stvarno korišteni kolačići i tehnologije na njegovoj stranici',
+    role: 'Odgovornost ovisi o tome tko određuje svrhe i sredstva.',
   },
 ];
+
+const PLATFORM_LEGAL_DOCS = [
+  {
+    id: 'platform-privacy',
+    icon: 'privacy',
+    title: 'Politika privatnosti Blizarija',
+    note: 'Poslovni računi, korisnici platforme, sigurnost i naplata',
+    to: '/privatnost',
+  },
+  {
+    id: 'platform-terms',
+    icon: 'terms',
+    title: 'Uvjeti korištenja Blizarija',
+    note: 'Odnos platforme s poslovnim korisnicima i klijentima',
+    to: '/uvjeti',
+  },
+  {
+    id: 'platform-cookies',
+    icon: 'cookies',
+    title: 'Politika kolačića Blizarija',
+    note: 'Kolačići na glavnoj platformi i njezinim stranicama',
+    to: '/kolacici',
+  },
+  {
+    id: 'platform-dpa',
+    icon: 'dpa',
+    title: 'Ugovor o obradi podataka (DPA)',
+    note: 'Odnos Blizarija i poslovanja prema čl. 28. GDPR-a',
+    to: null,
+  },
+];
+
+function LegalDocIcon({ type }) {
+  const common = {
+    className: 'biz-legal-icon',
+    viewBox: '0 0 24 24',
+    'aria-hidden': 'true',
+    focusable: 'false',
+  };
+
+  if (type === 'terms') {
+    return (
+      <svg {...common}>
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M7 4.5h7.2L18 8.3V19.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-14a1 1 0 0 1 1-1Z"
+        />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M14 4.6V8.5h3.8M9 12h6M9 15.5h6" />
+      </svg>
+    );
+  }
+
+  if (type === 'cookies') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <circle cx="9.2" cy="10.2" r="1.05" fill="currentColor" />
+        <circle cx="13.6" cy="9.4" r="0.9" fill="currentColor" />
+        <circle cx="11.2" cy="14.2" r="1.05" fill="currentColor" />
+        <circle cx="15" cy="13.6" r="0.85" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  if (type === 'dpa') {
+    return (
+      <svg {...common}>
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8 7.5h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"
+        />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M9.5 11.2h5M9.5 14h3.5" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M10 5.5h4" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 3.8 5.8 6.4v4.3c0 4.1 2.7 7.1 6.2 8.5 3.5-1.4 6.2-4.4 6.2-8.5V6.4L12 3.8Z"
+      />
+      <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M9.4 12.1 11.1 13.8 14.7 10" />
+    </svg>
+  );
+}
 
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
@@ -70,8 +175,60 @@ const empty = {
   ...applyNicheDefaults(firstNiche.id),
 };
 
-function ColorPicks({ value, onChange, palettes, label }) {
+function NicheIcon({ id }) {
+  if (id === 'fitness') {
+    return (
+      <svg className="biz-niche__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          d="M4 9v6M7 7v10M10 10v4M14 10v4M17 7v10M20 9v6"
+        />
+      </svg>
+    );
+  }
+  if (id === 'services') {
+    return (
+      <svg className="biz-niche__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          d="M5.5 19c1.2-3.2 3.4-4.8 6.5-4.8S17.3 15.8 18.5 19"
+        />
+      </svg>
+    );
+  }
+  if (id === 'playroom') {
+    return (
+      <svg className="biz-niche__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="4" y="7" width="16" height="12" rx="2.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M8 7V5.5M16 7V5.5M4 12h16" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="biz-niche__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M12 8.5v7M8.5 12h7" />
+    </svg>
+  );
+}
+
+function ColorPicks({
+  value,
+  onChange,
+  palettes,
+  label,
+  businessName = '',
+  nicheName = '',
+}) {
   const active = palettes.find((item) => item.id === value) || palettes[0];
+  const previewName = businessName.trim() || 'Vaše poslovanje';
 
   return (
     <div className="biz-color-picks">
@@ -82,10 +239,36 @@ function ColorPicks({ value, onChange, palettes, label }) {
         </div>
         {active ? (
           <span className="biz-color-picks__chosen" style={{ color: active.theme.primaryColor }}>
+            <span
+              className="biz-color-picks__chosen-dot"
+              style={{ background: active.theme.primaryColor }}
+              aria-hidden="true"
+            />
             {active.name}
           </span>
         ) : null}
       </div>
+
+      {active ? (
+        <div
+          className="biz-color-picks__preview"
+          aria-label="Pregled boje na stranici"
+          style={{
+            background: active.theme.canvas,
+            color: active.theme.ink,
+            '--pick-primary': active.theme.primaryColor,
+            '--pick-soft': active.theme.secondaryColor,
+          }}
+        >
+          <span className="biz-color-picks__preview-kicker">
+            {nicheName || 'Vaša stranica'}
+          </span>
+          <strong>{previewName}</strong>
+          <span className="biz-color-picks__preview-cta" style={{ background: active.theme.primaryColor }}>
+            Odaberite termin
+          </span>
+        </div>
+      ) : null}
 
       <div className="biz-color-picks__grid" role="radiogroup" aria-label="Preporučene boje">
         {palettes.map((item) => {
@@ -97,28 +280,20 @@ function ColorPicks({ value, onChange, palettes, label }) {
               role="radio"
               aria-label={item.name}
               aria-checked={selected}
-              className={selected ? 'biz-color-pick is-selected' : 'biz-color-pick'}
+              title={item.name}
+              className={selected ? 'biz-swatch is-selected' : 'biz-swatch'}
               onClick={() => onChange(item.id)}
               style={{ '--pick-primary': item.theme.primaryColor }}
             >
               <span
-                className="biz-color-pick__stage"
-                style={{ background: item.theme.canvas }}
+                className="biz-swatch__dot"
+                style={{ background: item.theme.primaryColor }}
               >
-                <span
-                  className="biz-color-pick__band"
-                  style={{ background: item.theme.primaryColor }}
-                />
-                <span className="biz-color-pick__lines" aria-hidden="true">
-                  <span style={{ background: item.theme.ink }} />
-                  <span style={{ background: item.theme.secondaryColor }} />
-                  <span style={{ background: item.theme.primaryColor }} />
-                </span>
                 {selected ? (
-                  <span className="biz-color-pick__check" aria-hidden="true">✓</span>
+                  <span className="biz-swatch__check" aria-hidden="true">✓</span>
                 ) : null}
               </span>
-              <span className="biz-color-pick__name">{item.name}</span>
+              <span className="biz-swatch__name">{item.name}</span>
             </button>
           );
         })}
@@ -247,18 +422,17 @@ function ColorRail({ value, onChange, palettes, recommendedIds }) {
               ].filter(Boolean).join(' ')}
               onClick={() => onChange(item.id)}
               style={{ '--pick-primary': item.theme.primaryColor }}
+              title={item.name}
             >
               <span
-                className="biz-chip__stage"
-                style={{ background: item.theme.canvas }}
+                className="biz-swatch__dot biz-chip__dot"
+                style={{ background: item.theme.primaryColor }}
               >
-                <span
-                  className="biz-chip__band"
-                  style={{ background: item.theme.primaryColor }}
-                />
-                <span className="biz-chip__soft" style={{ background: item.theme.secondaryColor }} />
+                {value === item.id ? (
+                  <span className="biz-swatch__check" aria-hidden="true">✓</span>
+                ) : null}
               </span>
-              <span className="biz-chip__name">{item.name}</span>
+              <span className="biz-swatch__name">{item.name}</span>
               {isRecommended ? <span className="biz-chip__badge">Za vas</span> : null}
             </button>
           );
@@ -287,8 +461,13 @@ function LayoutSketch({ id, primary, soft, canvas }) {
     return (
       <span className="biz-sketch biz-sketch--side" style={tint} aria-hidden="true">
         <span className="biz-sketch__bar" />
-        <span className="biz-sketch__side" />
-        <span className="biz-sketch__main" />
+        <span className="biz-sketch__side">
+          <i /><i /><i />
+        </span>
+        <span className="biz-sketch__main">
+          <i className="biz-sketch__title" />
+          <i /><i className="biz-sketch__cta" />
+        </span>
       </span>
     );
   }
@@ -296,16 +475,28 @@ function LayoutSketch({ id, primary, soft, canvas }) {
     return (
       <span className="biz-sketch biz-sketch--bar" style={tint} aria-hidden="true">
         <span className="biz-sketch__bar" />
-        <span className="biz-sketch__main" />
-        <span className="biz-sketch__block" />
+        <span className="biz-sketch__main">
+          <i className="biz-sketch__title" />
+          <i /><i /><i className="biz-sketch__cta" />
+        </span>
+        <span className="biz-sketch__block">
+          <i /><i />
+        </span>
       </span>
     );
   }
   return (
     <span className="biz-sketch biz-sketch--banner" style={tint} aria-hidden="true">
-      <span className="biz-sketch__hero" />
-      <span className="biz-sketch__main" />
-      <span className="biz-sketch__block" />
+      <span className="biz-sketch__hero">
+        <i className="biz-sketch__title" />
+        <i className="biz-sketch__cta" />
+      </span>
+      <span className="biz-sketch__main">
+        <i /><i /><i />
+      </span>
+      <span className="biz-sketch__block">
+        <i /><i />
+      </span>
     </span>
   );
 }
@@ -417,15 +608,11 @@ export default function BusinessSignupForm({ className = '' }) {
 
   function pickTemplate(templateId) {
     const item = findTemplate(templateId);
-    const nicheKey = values.niche || item.niches[0] || 'generic';
-    const { recommendedIds: nextRecommended } = palettesForNiche(nicheKey);
     setValues((current) => ({
       ...current,
       template: item.id,
       layout: item.layout,
-      palette: nextRecommended.includes(current.palette)
-        ? current.palette
-        : (nextRecommended[0] || item.palette),
+      palette: item.palette,
       sections: { ...item.sections },
     }));
     setFormError('');
@@ -550,7 +737,7 @@ export default function BusinessSignupForm({ className = '' }) {
         return;
       }
       if (body?.code === 'INVALID_SLUG') {
-        setProblems({ businessName: 'Iz ovog naziva ne nastaje valjan slug. Promijenite naziv.' });
+        setProblems({ businessName: 'Iz ovog naziva ne nastaje valjana poveznica. Promijenite naziv.' });
         setStep(0);
         return;
       }
@@ -578,11 +765,11 @@ export default function BusinessSignupForm({ className = '' }) {
           </li>
           <li className={step === 1 ? 'is-active' : step > 1 ? 'is-done' : ''}>
             <span className="biz-form__step-no">02</span>
-            <span className="biz-form__step-label">Izgled</span>
+            <span className="biz-form__step-label">Izgled stranice</span>
           </li>
           <li className={step === 2 ? 'is-active' : ''}>
             <span className="biz-form__step-no">03</span>
-            <span className="biz-form__step-label">Pravila</span>
+            <span className="biz-form__step-label">Pravila i privatnost</span>
           </li>
         </ol>
         <div
@@ -599,6 +786,10 @@ export default function BusinessSignupForm({ className = '' }) {
 
       {step === 0 ? (
         <form className="biz-form__panel" onSubmit={goDesign} noValidate>
+          <header className="biz-form__section-head">
+            <h2 className="biz-form__section-title">Podaci o poslovanju</h2>
+          </header>
+
           <label>
             E-pošta
             <input
@@ -625,12 +816,13 @@ export default function BusinessSignupForm({ className = '' }) {
             />
             {slug ? (
               <span className="biz-form__slug">
-                Vaša poveznica
+                Poveznica za rezervacije
                 <strong>{studioHost(slug)}</strong>
               </span>
             ) : (
               <span className="biz-form__hint">
-                Iz naziva nastaje poveznica za rezervacije koju dijelite klijentima.
+                Naziv vašeg poslovanja koristit će se za izradu poveznice koju ćete
+                dijeliti sa svojim klijentima.
               </span>
             )}
             {problems.businessName ? (
@@ -639,10 +831,11 @@ export default function BusinessSignupForm({ className = '' }) {
           </label>
 
           <fieldset className="biz-niches">
-            <legend>Vrsta poslovanja (niša)</legend>
+            <legend>Vrsta poslovanja</legend>
             <p className="biz-form__hint">
-              Obavezno za partnere — studio/treninzi, pojedinačne usluge, igraonica ili
-              nešto drugo. Od toga ovise predložak, raspored i preporučene boje.
+              Odaberite djelatnost koja najbolje opisuje vaš posao. Na temelju
+              odabira prilagodit ćemo početni izgled stranice i preporučiti
+              odgovarajući raspored.
             </p>
             <div className="biz-niches__grid" role="radiogroup" aria-label="Vrsta poslovanja">
               {signupNiches.map((item) => (
@@ -654,7 +847,10 @@ export default function BusinessSignupForm({ className = '' }) {
                   className={values.niche === item.id ? 'biz-niche is-selected' : 'biz-niche'}
                   onClick={() => pickNiche(item.id)}
                 >
-                  <span className="biz-niche__name">{item.name}</span>
+                  <span className="biz-niche__top">
+                    <NicheIcon id={item.id} />
+                    <span className="biz-niche__name">{item.name}</span>
+                  </span>
                   <span className="biz-niche__note">{item.note}</span>
                 </button>
               ))}
@@ -663,7 +859,7 @@ export default function BusinessSignupForm({ className = '' }) {
 
             {values.niche === 'generic' ? (
               <label className="biz-niches__custom">
-                Vaša niša
+                Opišite svoje poslovanje
                 <input
                   name="nicheCustom"
                   autoComplete="off"
@@ -676,7 +872,8 @@ export default function BusinessSignupForm({ className = '' }) {
                   <span className="biz-form__error">{problems.nicheCustom}</span>
                 ) : (
                   <span className="biz-form__hint">
-                    Kratko opišite čime se bavite — spremamo to uz vaš račun.
+                    U nekoliko riječi opišite čime se bavite. Ovaj opis spremit ćemo
+                    uz podatke vašeg poslovanja.
                   </span>
                 )}
               </label>
@@ -687,14 +884,16 @@ export default function BusinessSignupForm({ className = '' }) {
                 value={values.palette}
                 onChange={(palette) => update('palette', palette)}
                 palettes={recommendedPalettes}
-                label={
-                  values.niche === 'generic'
-                    ? 'Odaberite početnu boju (kasnije možete promijeniti).'
-                    : `Pet preporuka za „${nicheMeta.name}”.`
-                }
+                businessName={values.businessName}
+                nicheName={nicheMeta.name}
+                label="Odaberite početnu boju koja najbolje odgovara vašem poslovanju. Izgled možete promijeniti u bilo kojem trenutku."
               />
             ) : null}
           </fieldset>
+
+          <header className="biz-form__section-head">
+            <h2 className="biz-form__section-title">Zaštitite svoj račun</h2>
+          </header>
 
           <PasswordField
             label="Lozinka"
@@ -733,11 +932,11 @@ export default function BusinessSignupForm({ className = '' }) {
             <span>
               Prihvaćam
               {' '}
-              <Link to="/privatnost" target="_blank" rel="noreferrer">pravila privatnosti</Link>
+              <Link to="/privatnost" target="_blank" rel="noreferrer">Obavijest o privatnosti</Link>
               {' '}
               i
               {' '}
-              <Link to="/uvjeti" target="_blank" rel="noreferrer">uvjete korištenja</Link>
+              <Link to="/uvjeti" target="_blank" rel="noreferrer">Uvjete korištenja</Link>
               .
             </span>
           </label>
@@ -760,14 +959,13 @@ export default function BusinessSignupForm({ className = '' }) {
           <div className="biz-form__atelier-main">
             <header className="biz-form__atelier-intro">
               <p className="biz-form__kicker">
-                Postavljanje · 2/3 · {nicheMeta.name}
+                Korak 02 · Izgled stranice · {nicheMeta.name}
               </p>
-              <h2 className="biz-form__atelier-title">Izgled stranice</h2>
+              <h2 className="biz-form__atelier-title">Uredite izgled svoje stranice</h2>
               <p className="biz-form__hint">
-                Odaberite predložak, raspored i boju za
-                {' '}
-                {values.businessName.trim() || 'vaš prostor'}
-                . Sve kasnije možete promijeniti.
+                Odaberite izgled koji najbolje odgovara vašem poslovanju. Odaberite
+                predložak, raspored i boju te odmah pogledajte kako će vaša stranica
+                izgledati klijentima. Sve možete promijeniti i kasnije.
               </p>
             </header>
 
@@ -775,14 +973,15 @@ export default function BusinessSignupForm({ className = '' }) {
               <div className="biz-form__block-title">
                 <h3>Predložak</h3>
                 <p className="biz-form__hint">
-                  Predložak određuje osnovni izgled vaše stranice. Preporučeni za
-                  {' '}
-                  „{nicheMeta.name}” su prvi.
+                  Odaberite stil koji najbolje odgovara vašoj djelatnosti.
+                  Preporučili smo vam predloške prema vrsti poslovanja, ali možete
+                  odabrati bilo koji.
                 </p>
               </div>
               <div className="biz-templates" role="radiogroup" aria-label="Predložak stranice">
                 {orderedTemplates.map((item) => {
                   const matched = item.niches.includes(values.niche);
+                  const itemPalette = findPalette(item.palette);
                   return (
                     <button
                       key={item.id}
@@ -793,13 +992,25 @@ export default function BusinessSignupForm({ className = '' }) {
                       onClick={() => pickTemplate(item.id)}
                     >
                       {matched ? (
-                        <span className="biz-template__tag">Preporučeno za vas</span>
+                        <span className="biz-template__tag">Preporučeno</span>
                       ) : null}
                       <LayoutSketch
                         id={item.layout}
-                        primary={chosen.theme.primaryColor}
-                        soft={chosen.theme.secondaryColor}
-                        canvas={chosen.theme.canvas}
+                        primary={
+                          values.template === item.id
+                            ? chosen.theme.primaryColor
+                            : itemPalette.theme.primaryColor
+                        }
+                        soft={
+                          values.template === item.id
+                            ? chosen.theme.secondaryColor
+                            : itemPalette.theme.secondaryColor
+                        }
+                        canvas={
+                          values.template === item.id
+                            ? chosen.theme.canvas
+                            : itemPalette.theme.canvas
+                        }
                       />
                       <span className="biz-template__name">{item.name}</span>
                       <span className="biz-template__note">{item.note}</span>
@@ -813,7 +1024,8 @@ export default function BusinessSignupForm({ className = '' }) {
               <div className="biz-form__block-title">
                 <h3>Raspored</h3>
                 <p className="biz-form__hint">
-                  Raspored određuje gdje stoje termini, sati i kontakt.
+                  Odaberite kako će informacije, radno vrijeme, usluge i termini biti
+                  raspoređeni na vašoj stranici.
                 </p>
               </div>
               <div className="biz-layouts" role="radiogroup" aria-label="Raspored stranice">
@@ -842,17 +1054,23 @@ export default function BusinessSignupForm({ className = '' }) {
             <div className="biz-form__block biz-form__block--colors">
               <div className="biz-form__block-head">
                 <div className="biz-form__block-title">
-                  <h3>Boja</h3>
+                  <h3>Boja stranice</h3>
                   <p className="biz-form__hint">
-                    Odabrano: {chosen.name}. Prve boje usklađene su s predloškom
-                    {' '}
-                    „{nicheMeta.name}”.
+                    Odaberite boju koja najbolje odgovara vašem poslovanju.
+                    Promjena boje odmah će se prikazati u pregledu stranice.
                   </p>
                 </div>
                 <span
                   className="biz-form__chosen-chip"
                   style={{ color: chosen.theme.primaryColor }}
                 >
+                  <span
+                    className="biz-color-picks__chosen-dot"
+                    style={{ background: chosen.theme.primaryColor }}
+                    aria-hidden="true"
+                  />
+                  Odabrana boja:
+                  {' '}
                   {chosen.name}
                 </span>
               </div>
@@ -863,36 +1081,16 @@ export default function BusinessSignupForm({ className = '' }) {
                 recommendedIds={recommendedIds}
               />
             </div>
-
-            <div className="biz-form__actions">
-              <button className="biz-form__back" type="button" onClick={() => setStep(0)}>
-                ← Podaci računa
-              </button>
-              <button
-                className="biz-form__skip"
-                type="button"
-                onClick={goLegal}
-              >
-                Preskoči za sada
-              </button>
-              <button className="biz-form__submit" type="submit">
-                Dalje
-              </button>
-            </div>
           </div>
 
-          <aside className="biz-form__atelier-stage" aria-label="Pregled stranice">
+          <aside className="biz-form__atelier-stage" aria-label="Pregled vaše stranice">
             <div className="biz-stage">
               <div className="biz-stage__mat" aria-hidden="true" />
               <div className="biz-stage__frame">
                 <div className="biz-stage__top">
-                  <span className="biz-stage__live">Uživo</span>
+                  <span className="biz-stage__live">Pregled za klijente</span>
                   <span className="biz-stage__url">
                     {studioHost(slug)}
-                    {' · '}
-                    {nicheMeta.name}
-                    {' · '}
-                    {layout.name}
                   </span>
                 </div>
 
@@ -929,9 +1127,10 @@ export default function BusinessSignupForm({ className = '' }) {
                         <span className="biz-preview__wash" aria-hidden="true" />
                       ) : null}
                       <p className="biz-preview__kicker">{nicheMeta.name}</p>
-                      <h4>{values.businessName.trim() || 'Vaš studio'}</h4>
+                      <h4>{values.businessName.trim() || 'Vaše poslovanje'}</h4>
                       <p className="biz-preview__lead">
-                        Rezervacije online — bez poruka, bez čekanja na odgovor.
+                        Rezervirajte svoj termin jednostavno i brzo – bez poruka i
+                        čekanja na odgovor.
                       </p>
                       <span
                         className="biz-preview__cta"
@@ -940,7 +1139,7 @@ export default function BusinessSignupForm({ className = '' }) {
                           color: chosen.theme.onPrimary,
                         }}
                       >
-                        Odaberite termin
+                        Odaberite uslugu i termin
                       </span>
                     </div>
 
@@ -981,9 +1180,25 @@ export default function BusinessSignupForm({ className = '' }) {
               </div>
             </div>
             <p className="biz-stage__caption">
-              Ovako klijenti vide vašu poveznicu — predložak, raspored i boja mijenjaju pregled odmah.
+              Ovako će vaša stranica izgledati kada je podijelite s klijentima.
             </p>
           </aside>
+
+          <div className="biz-form__actions biz-form__actions--atelier">
+            <button className="biz-form__back" type="button" onClick={() => setStep(0)}>
+              ← Natrag
+            </button>
+            <button
+              className="biz-form__skip"
+              type="button"
+              onClick={goLegal}
+            >
+              Preskoči za sada
+            </button>
+            <button className="biz-form__submit" type="submit">
+              Nastavi
+            </button>
+          </div>
         </form>
       ) : null}
 
@@ -992,34 +1207,60 @@ export default function BusinessSignupForm({ className = '' }) {
           <div className="biz-form__atelier-main">
             <div className="biz-form__block">
               <div className="biz-form__block-title">
-                <h3>Pravni predlošci</h3>
+                <p className="biz-legal-kicker">Pravila i privatnost</p>
+                <h3>Vaše poslovanje. Vaša pravila.</h3>
                 <p className="biz-form__hint">
-                  Odmah dobivate tekstove privatnosti, uvjeta i kolačića usklađene s tipičnim
-                  zahtjevima GDPR-a i hrvatskih propisa. Vi ste voditelj obrade; anyminutes je
-                  tehnička platforma. Predložak možete urediti sada ili kasnije u postavkama —
-                  nije formalni pravni savjet.
+                  Svako poslovanje ima svoje usluge, klijente i način rada. Zato vam Blizari
+                  omogućuje da postavite vlastite informacije o privatnosti, uvjete pružanja
+                  usluga i pravila rezervacija.
+                </p>
+                <p className="biz-form__hint">
+                  Dobit ćete prilagodljive predloške koje možete urediti prema stvarnom načinu
+                  poslovanja. Dokumente možete dopuniti i kasnije u postavkama.
+                </p>
+                <p className="biz-legal-callout">
+                  <strong>Važno:</strong>
+                  {' '}
+                  Vi ste odgovorni za usluge koje pružate svojim klijentima i za pravila koja
+                  određujete. Blizari pruža tehničku platformu za upravljanje poslovanjem i
+                  rezervacijama. Predlošci nisu gotovi pravno usklađeni dokumenti ni pravni savjet.
                 </p>
               </div>
 
-              <div className="biz-legal-tabs" role="tablist" aria-label="Pravni dokumenti">
-                {LEGAL_TABS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="tab"
-                    id={`biz-legal-tab-${item.id}`}
-                    aria-selected={legalTab === item.id}
-                    aria-controls={`biz-legal-panel-${item.id}`}
-                    className={legalTab === item.id ? 'is-active' : undefined}
-                    onClick={() => setLegalTab(item.id)}
-                  >
-                    <span className="biz-legal-tabs__no">{item.index}</span>
-                    <span className="biz-legal-tabs__copy">
-                      <strong>{item.label}</strong>
-                      <em>{item.note}</em>
-                    </span>
-                  </button>
-                ))}
+              <div className="biz-legal-section">
+                <h4 className="biz-legal-section__title">Dokumenti vašeg poslovanja</h4>
+                <p className="biz-form__hint">
+                  Objavljuju se na stranici vašeg poslovanja. Upišite stvarne podatke subjekta
+                  (naziv, adresa, OIB ako je primjenjivo) — sam naziv stranice nije dovoljan.
+                </p>
+
+                <div className="biz-legal-tabs" role="tablist" aria-label="Dokumenti poslovanja">
+                  {LEGAL_TABS.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="tab"
+                      id={`biz-legal-tab-${item.id}`}
+                      aria-selected={legalTab === item.id}
+                      aria-controls={`biz-legal-panel-${item.id}`}
+                      className={legalTab === item.id ? 'is-active' : undefined}
+                      onClick={() => setLegalTab(item.id)}
+                    >
+                      <span className="biz-legal-tabs__icon" aria-hidden="true">
+                        <LegalDocIcon type={item.icon} />
+                      </span>
+                      <span className="biz-legal-tabs__copy">
+                        <span className="biz-legal-tabs__index">{item.index}</span>
+                        <strong>
+                          {item.title}
+                          {' '}
+                          {values.businessName.trim() || 'vašeg poslovanja'}
+                        </strong>
+                        <em>{item.note}</em>
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div
@@ -1030,7 +1271,9 @@ export default function BusinessSignupForm({ className = '' }) {
               >
                 <div className="biz-legal-editor__head">
                   <div>
-                    <p className="biz-form__hint" style={{ margin: 0 }}>Predložak studija</p>
+                    <p className="biz-form__hint" style={{ margin: 0 }}>
+                      {activeLegalTab.role}
+                    </p>
                     <h4>{activeLegalTab.title}</h4>
                   </div>
                   <button className="biz-form__back" type="button" onClick={refillLegal}>
@@ -1047,6 +1290,81 @@ export default function BusinessSignupForm({ className = '' }) {
                   />
                 </label>
               </div>
+
+              <div className="biz-legal-relation" aria-label="Odnos poslovanja i Blizarija">
+                <h4 className="biz-legal-section__title">Odnos vašeg poslovanja i Blizarija</h4>
+                <div className="biz-legal-relation__grid">
+                  <article className="biz-legal-relation__card">
+                    <span className="biz-legal-tabs__icon" aria-hidden="true">
+                      <LegalDocIcon type="terms" />
+                    </span>
+                    <div>
+                      <strong>Vaše poslovanje</strong>
+                      <p>
+                        Samostalno pružate usluge, upravljate rezervacijama, određujete cijene
+                        i komunicirate sa svojim klijentima. Za obradu njihovih podataka u svrhu
+                        pružanja usluga odgovorni ste kao voditelj obrade.
+                      </p>
+                    </div>
+                  </article>
+                  <article className="biz-legal-relation__card">
+                    <span className="biz-legal-tabs__icon" aria-hidden="true">
+                      <LegalDocIcon type="privacy" />
+                    </span>
+                    <div>
+                      <strong>Blizari</strong>
+                      <p>
+                        Pruža tehničku platformu za predstavljanje usluga, primanje rezervacija
+                        i upravljanje poslovanjem. Kada obrađuje podatke vaših klijenata prema
+                        vašim uputama, djeluje kao izvršitelj obrade. Zasebno obrađuje podatke
+                        poslovnih korisnika radi računa, naplate i sigurnosti.
+                      </p>
+                    </div>
+                  </article>
+                </div>
+                <p className="biz-legal-relation__footnote">
+                  Vaši dokumenti uređuju odnos s vašim klijentima. Dokumenti Blizarija uređuju
+                  odnos s platformom.
+                </p>
+              </div>
+
+              <div className="biz-legal-section">
+                <h4 className="biz-legal-section__title">Dokumenti Blizarija</h4>
+                <p className="biz-form__hint">
+                  Objavljuju se na glavnoj platformi i odvojeni su od dokumenata vašeg poslovanja.
+                </p>
+                <ul className="biz-legal-platform">
+                  {PLATFORM_LEGAL_DOCS.map((item) => (
+                    <li key={item.id}>
+                      {item.to ? (
+                        <Link to={item.to} target="_blank" rel="noreferrer" className="biz-legal-platform__item">
+                          <span className="biz-legal-tabs__icon" aria-hidden="true">
+                            <LegalDocIcon type={item.icon} />
+                          </span>
+                          <span>
+                            <strong>{item.title}</strong>
+                            <em>{item.note}</em>
+                          </span>
+                        </Link>
+                      ) : (
+                        <div className="biz-legal-platform__item is-static">
+                          <span className="biz-legal-tabs__icon" aria-hidden="true">
+                            <LegalDocIcon type={item.icon} />
+                          </span>
+                          <span>
+                            <strong>{item.title}</strong>
+                            <em>
+                              {item.note}
+                              {' · '}
+                              bit će dostupan uz prihvaćanje ugovora o korištenju platforme.
+                            </em>
+                          </span>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             {formError ? <p className="biz-form__form-error">{formError}</p> : null}
@@ -1056,7 +1374,7 @@ export default function BusinessSignupForm({ className = '' }) {
                 Natrag
               </button>
               <button className="biz-form__submit" type="submit" disabled={isLoading}>
-                {isLoading ? 'Otvaramo rezervacijsku stranicu…' : 'Otvorite rezervacijsku stranicu'}
+                {isLoading ? 'Postavljamo vaše poslovanje…' : 'Postavite svoje poslovanje'}
               </button>
             </div>
           </div>
@@ -1076,11 +1394,15 @@ export default function BusinessSignupForm({ className = '' }) {
                 </div>
                 <article className="biz-legal-preview">
                   <p className="biz-legal-preview__kicker">
+                    <span className="biz-legal-preview__icon" aria-hidden="true">
+                      <LegalDocIcon type={activeLegalTab.icon} />
+                    </span>
                     {activeLegalTab.index}
                     {' · '}
                     {activeLegalTab.label}
                   </p>
-                  <h4>{values.businessName.trim() || 'Vaš studio'}</h4>
+                  <h4>{values.businessName.trim() || 'Vaše poslovanje'}</h4>
+                  <p className="biz-legal-preview__note">{activeLegalTab.note}</p>
                   <div className="biz-legal-preview__body">
                     {legalPreview.length > 0 ? (
                       legalPreview.map((line, index) => (
@@ -1101,7 +1423,7 @@ export default function BusinessSignupForm({ className = '' }) {
               </div>
             </div>
             <p className="biz-stage__caption">
-              Ovi tekstovi idu na vašu stranicu odmah. Pravila anyminutesa ostaju odvojena
+              Dokumenti poslovanja idu na vašu stranicu. Pravila Blizarija ostaju odvojena
               na platformi.
             </p>
           </aside>

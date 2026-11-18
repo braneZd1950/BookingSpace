@@ -336,6 +336,23 @@
   outline-offset: 1px;
 }
 
+.settings__hours-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings__count {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .settings__hours-block {
   display: grid;
   gap: 0.65rem;
@@ -380,10 +397,14 @@
   font-weight: 650;
 }
 
-.settings__check input {
+.settings__check > input[type='checkbox'] {
   width: 1.05rem;
   height: 1.05rem;
   padding: 0;
+}
+
+.settings__check .setup__switch {
+  flex: 0 0 auto;
 }
 
 .settings__hours-span {

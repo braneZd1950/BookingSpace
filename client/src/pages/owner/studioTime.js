@@ -1,5 +1,7 @@
 export {
   addDaysKey,
+  copyWeekdayHours,
+  dayKeyFromDate,
   dayOpen,
   fallbackHours,
   formatCancellationWindow,
@@ -7,24 +9,25 @@ export {
   hoursPayload,
   monthCells,
   monthLabel,
+  normalizeHours,
   sameDay,
   toDateKey,
   upcomingDays,
+  WEEKDAY_KEYS,
   withinCancellationWindow,
   zonedClock,
 } from '../../../../shared/studioTime.js';
 
-import { fallbackHours } from '../../../../shared/studioTime.js';
+import { dayKeyFromDate, fallbackHours, normalizeHours } from '../../../../shared/studioTime.js';
 
 export function studioHours(studio) {
-  return { ...fallbackHours, ...studio?.hours };
+  return normalizeHours(studio?.hours);
 }
 
 export function dayHours(date, hours) {
-  const day = date.getDay();
-  if (day === 0) return hours.sunday;
-  if (day === 6) return hours.saturday;
-  return hours.week;
+  const normalized = normalizeHours(hours);
+  const key = dayKeyFromDate(date);
+  return normalized[key] || fallbackHours[key] || fallbackHours.monday;
 }
 
 const weekday = new Intl.DateTimeFormat('hr-HR', { weekday: 'long' });

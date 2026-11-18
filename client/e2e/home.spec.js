@@ -4,7 +4,7 @@ test.describe('Public home', () => {
   test('shows brand and primary CTA paths', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('#home-brand')).toHaveText('anyminutes');
+    await expect(page.locator('#home-brand')).toHaveText('Blizari');
     await expect(page.getByRole('heading', { level: 1, name: /Vaši termini/i })).toBeVisible();
 
     await expect(page.getByRole('navigation', { name: 'Navigacija' }).getByRole('link', { name: 'Prijava' })).toBeVisible();

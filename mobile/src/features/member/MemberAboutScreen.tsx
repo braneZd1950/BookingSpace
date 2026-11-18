@@ -38,7 +38,7 @@ export default function MemberAboutScreen({
       {ABOUT_PROMISES.map((item) => (
         <View
           key={item.title}
-          style={[styles.promise, { borderColor: colors.border, backgroundColor: colors.card }]}
+          style={[styles.promise, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}
         >
           <Text style={[styles.promiseTitle, { color: colors.title }]}>{item.title}</Text>
           <Text style={[styles.body, { color: colors.muted }]}>{item.text}</Text>

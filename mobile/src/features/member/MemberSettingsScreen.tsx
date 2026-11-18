@@ -306,7 +306,7 @@ export default function MemberSettingsScreen({
           <Text style={[styles.backLabel, { color: colors.accent }]}>Početna</Text>
         </Pressable>
 
-        <Text style={[styles.studio, { color: colors.accent }]}>{tenantName || 'anyminutes'}</Text>
+        <Text style={[styles.studio, { color: colors.accent }]}>{tenantName || 'Blizari'}</Text>
         <Text style={[styles.kicker, { color: colors.accent }]}>Vaš račun</Text>
         <Text style={[styles.title, { color: colors.title }]}>Postavke</Text>
         <Text style={[styles.lead, { color: colors.muted }]}>
@@ -399,7 +399,7 @@ export default function MemberSettingsScreen({
               value={Boolean(prefs[item.key])}
               onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
               trackColor={{ false: '#24302C', true: '#2A6B5F' }}
-              thumbColor={prefs[item.key] ? '#5EEAD4' : '#9CA3AF'}
+              thumbColor={prefs[item.key] ? '#14B8A6' : '#9CA3AF'}
             />
           </View>
         ))}
@@ -482,9 +482,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
-  root: { flex: 1, backgroundColor: '#0E1614' },
+  root: { flex: 1, backgroundColor: '#0F172A' },
   content: {
     paddingHorizontal: 24,
     maxWidth: 440,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   backLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#5EEAD4',
+    color: '#14B8A6',
   },
   studio: {
     fontFamily: 'Outfit_500Medium',
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 8,
   },
   title: {
@@ -553,12 +553,12 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(0,0,0,0.12)',
   },
-  themeSwatchLight: { backgroundColor: '#F7FBFA' },
-  themeSwatchDark: { backgroundColor: '#0C1815' },
+  themeSwatchLight: { backgroundColor: '#E0F2FE' },
+  themeSwatchDark: { backgroundColor: '#0F172A' },
   themeSwatchSystem: {
-    backgroundColor: '#F7FBFA',
+    backgroundColor: '#E0F2FE',
     borderRightWidth: 14,
-    borderRightColor: '#0C1815',
+    borderRightColor: '#0F172A',
   },
   input: {
     minHeight: 48,
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   cta: {
     minHeight: 48,
     borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   ctaLabel: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 15,
-    color: '#061210',
+    color: '#042F2E',
   },
   ctaGhost: {
     minHeight: 48,

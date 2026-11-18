@@ -14,7 +14,7 @@ type AppBrandBarProps = {
 export default function AppBrandBar({
   onLogout,
   loggingOut = false,
-  accentColor = '#5EEAD4',
+  accentColor = '#14B8A6',
   brandColor = '#F7FCFA',
   marginBottom = 22,
 }: AppBrandBarProps) {
@@ -22,7 +22,7 @@ export default function AppBrandBar({
     <View style={[styles.topBar, { marginBottom }]}>
       <View style={styles.brandRow}>
         <LiveClockMark size={30} accentColor={accentColor} />
-        <Text style={[styles.brand, { color: brandColor }]}>anyminutes</Text>
+        <Text style={[styles.brand, { color: brandColor }]}>Blizari</Text>
       </View>
       <Pressable
         accessibilityRole="button"

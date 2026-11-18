@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import '../api/consentApi.js';
 import '../api/pushApi.js';
 import PublicLayout from '../components/PublicLayout.jsx';
@@ -14,7 +14,6 @@ import StudioLayout from '../pages/owner/StudioLayout.jsx';
 import TerminiPage from '../pages/owner/TerminiPage.jsx';
 import { StudioHome } from '../pages/owner/studioPages.jsx';
 import MemberBookPage from '../pages/member/MemberBookPage.jsx';
-import MemberDiscoverPage from '../pages/member/MemberDiscoverPage.jsx';
 import MemberHomePage from '../pages/member/MemberHomePage.jsx';
 import MemberLayout from '../pages/member/MemberLayout.jsx';
 import MemberOnlinePage from '../pages/member/MemberOnlinePage.jsx';
@@ -27,6 +26,8 @@ import {
   ONLINE_ENABLED,
 } from '../lib/studioFeatures.js';
 import ForgotPasswordPage from '../pages/public/ForgotPasswordPage.jsx';
+import DiscoverPage from '../pages/public/DiscoverPage.jsx';
+import FeaturesPage from '../pages/public/FeaturesPage.jsx';
 import HomePage from '../pages/public/HomePage.jsx';
 import LoginPage from '../pages/public/LoginPage.jsx';
 import AdminGate from '../pages/admin/AdminGate.jsx';
@@ -82,7 +83,7 @@ export default function App() {
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
           {ONLINE_ENABLED ? <Route path="online" element={<MemberOnlinePage />} /> : null}
-          <Route path="otkrij" element={<MemberDiscoverPage />} />
+          <Route path="otkrij" element={<Navigate to=".." replace />} />
           <Route path="privatnost" element={<StudioPolicyPage kind="privacy" />} />
           <Route path="uvjeti" element={<StudioPolicyPage kind="terms" />} />
           <Route path="kolacici" element={<StudioPolicyPage kind="cookies" />} />
@@ -102,7 +103,8 @@ export default function App() {
         </Route>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/otkrij" element={<MemberDiscoverPage />} />
+          <Route path="/mogucnosti" element={<FeaturesPage />} />
+          <Route path="/otkrij" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />

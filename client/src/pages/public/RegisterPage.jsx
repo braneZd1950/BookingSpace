@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGoogleAuthMutation } from '../../api/authApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
+import BrandWordmark from '../../components/BrandWordmark.jsx';
 import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { studioFromTenant } from '../owner/studioSync.js';
@@ -71,16 +72,16 @@ export default function RegisterPage() {
         }
       : path === 'partner'
         ? {
-            kicker: 'Partner',
-            title: 'Pokrenite svoj prostor.',
+            kicker: 'Vaše poslovanje',
+            title: 'Postavite svoje poslovanje.',
             lead:
-              'Naziv, niša i račun, zatim izgled stranice (predložak, raspored, boja). Sve kasnije možete promijeniti.',
+              'U nekoliko jednostavnih koraka otvorite svoju stranicu za rezervacije. Unesite podatke o poslovanju, odaberite djelatnost i prilagodite izgled stranice. Sve možete promijeniti i kasnije.',
           }
         : {
             kicker: 'Registracija',
             title: 'Kako se želite registrirati?',
             lead:
-              'Odaberite što vam odgovara. Klijenti rezerviraju termine kod partnera, a partneri nude svoje usluge.',
+              'Odaberite što vam odgovara. Klijenti rezerviraju termine kod partnera, a partneri postavljaju svoje poslovanje na Blizariju.',
           };
 
   const modeClass = path ? `register--${path}` : 'register--choose';
@@ -96,7 +97,9 @@ export default function RegisterPage() {
 
       <div className="register__layout">
         <aside className="register__spine" aria-hidden="true">
-          <p className="register__spine-mark">anyminutes</p>
+          <p className="register__spine-mark">
+            <BrandWordmark slot="spine" tone="dark" decorative />
+          </p>
         </aside>
 
         <div className="register__stage">
@@ -110,7 +113,7 @@ export default function RegisterPage() {
                   setError('');
                 }}
               >
-                ← Izbor uloge
+                ← Odabir uloge
               </button>
             ) : null}
             <p className="register__kicker">{intro.kicker}</p>
@@ -138,10 +141,10 @@ export default function RegisterPage() {
                 onClick={() => setPath('partner')}
               >
                 <span className="register__path-kicker">Partner</span>
-                <span className="register__path-title">Nudim svoje usluge</span>
+                <span className="register__path-title">Postavljam svoje poslovanje</span>
                 <span className="register__path-note">
-                  Studio, igraonica, salon ili wellness — odaberite vrstu posla i
-                  pokrenite vlastiti prostor.
+                  Otvorite svoju stranicu, odaberite djelatnost i vodite rezervacije
+                  sa svojim klijentima.
                 </span>
                 <span className="register__path-cta">Nastavi kao partner</span>
               </button>
@@ -154,14 +157,15 @@ export default function RegisterPage() {
                 <GoogleAuthButton
                   intent="register"
                   disabled={isLoading}
-                  label="brzi početak"
+                  label="Brzi početak"
                   onCredential={onGoogleCredential}
                   onError={(message) => setError(message)}
                 />
                 {error ? <p className="register__google-error">{error}</p> : null}
                 <p className="register__google-note">
-                  Nakon Googlea dovršite postavljanje — uključujući vrstu poslovanja — ili
-                  ispunite obrazac ispod.
+                  Nakon registracije putem Googlea dovršit ćete postavljanje
+                  poslovanja, uključujući odabir djelatnosti. Možete se
+                  registrirati i ispunjavanjem obrasca u nastavku.
                 </p>
               </div>
               <BusinessSignupForm className="register__desk" />

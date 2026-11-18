@@ -5,7 +5,7 @@ import { studioChromeStyles as chrome } from './studioChrome.js';
 export default function StudioBoot() {
   return (
     <View style={chrome.boot}>
-      <ActivityIndicator color="#5EEAD4" />
+      <ActivityIndicator color="#14B8A6" />
     </View>
   );
 }

@@ -77,7 +77,7 @@ export default function SessionSuccessScreen({
     <View style={styles.root}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#163028', '#111A18', '#0E1614']}
+        colors={['#1E3A5F', '#15233B', '#0F172A']}
         locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -106,7 +106,7 @@ export default function SessionSuccessScreen({
         >
           <View style={styles.brandRow}>
             <LiveClockMark size={28} />
-            <Text style={copy.brand}>anyminutes</Text>
+            <Text style={copy.brand}>Blizari</Text>
           </View>
           <Text style={copy.kicker}>{kicker}</Text>
           <Text style={[copy.title, styles.titleGap, compact && { fontSize: 34, lineHeight: 38 }]}>
@@ -146,14 +146,14 @@ export default function SessionSuccessScreen({
 }
 
 const styles = StyleSheet.create({
-  boot: { flex: 1, backgroundColor: '#0E1614' },
+  boot: { flex: 1, backgroundColor: '#0F172A' },
   root: {
     flex: 1,
     width: '100%',
     maxWidth: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#0E1614',
+    backgroundColor: '#0F172A',
   },
   stage: {
     flex: 1,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   ctaPrimary: {
     minHeight: 56,
     borderRadius: 6,
-    backgroundColor: '#5EEAD4',
+    backgroundColor: '#14B8A6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     letterSpacing: 0.15,
-    color: '#061210',
+    color: '#042F2E',
   },
   ctaGhost: {
     minHeight: 52,

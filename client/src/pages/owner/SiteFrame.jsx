@@ -77,6 +77,7 @@ function LiveFooter({
   phone,
   email,
   address,
+  mapsUrl = '',
   hours,
   sections,
   bookTo,
@@ -134,6 +135,13 @@ function LiveFooter({
               {sections.location && address ? (
                 <li>{address}</li>
               ) : null}
+              {sections.location && mapsUrl ? (
+                <li>
+                  <a href={mapsUrl} target="_blank" rel="noreferrer">
+                    Karta lokacije
+                  </a>
+                </li>
+              ) : null}
               {sections.contact && !phone && !email ? (
                 <li>Kontakt još nije upisan.</li>
               ) : null}
@@ -150,14 +158,14 @@ function LiveFooter({
           <div>
             <p className="site__foot-eyebrow">Pravila poslovanja</p>
             <p className="site__foot-rules-lead">
-              Pravila privatnosti, uvjeti korištenja i kolačići ovog studija —
-              odvojeno od pravila platforme anyminutes ispod.
+              Politika privatnosti, uvjeti poslovanja i kolačići ovog poslovanja —
+              odvojeno od pravila platforme Blizari ispod.
             </p>
           </div>
           <nav className="site__foot-legal" aria-label="Pravila poslovanja">
             <Link to={privacyTo}>Privatnost</Link>
             <span aria-hidden="true">·</span>
-            <Link to={termsTo}>Uvjeti korištenja</Link>
+            <Link to={termsTo}>Uvjeti i rezervacije</Link>
             <span aria-hidden="true">·</span>
             <Link to={cookiesTo}>Kolačići</Link>
           </nav>
@@ -187,6 +195,7 @@ export default function SiteFrame({
   phone,
   email,
   address,
+  mapsUrl = '',
   heroSrc,
   logoSrc,
   palette,
@@ -225,7 +234,7 @@ export default function SiteFrame({
         >
           <div className="site__hero-copy">
             {logo}
-            <p className="site__kicker">Studio</p>
+            <p className="site__kicker">Poslovanje</p>
             <h2>{name}</h2>
             {description ? <p>{description}</p> : null}
             {book}
@@ -235,7 +244,7 @@ export default function SiteFrame({
         {sections.about && description ? (
           <section className="site__band">
             <div className="site__band-copy">
-              <h3>O studiju</h3>
+              <h3>O poslovanju</h3>
               <p>{description}</p>
             </div>
             <div
@@ -263,6 +272,7 @@ export default function SiteFrame({
           phone={phone}
           email={email}
           address={address}
+          mapsUrl={mapsUrl}
           hours={hours}
           sections={sections}
           bookTo={bookTo}
@@ -298,12 +308,17 @@ export default function SiteFrame({
       <h3>Kontakt</h3>
       {sections.contact ? <p>{[phone, email].filter(Boolean).join(' · ') || 'Kontakt još nije upisan.'}</p> : null}
       {sections.location ? <p>{address || 'Lokacija još nije upisana.'}</p> : null}
+      {sections.location && mapsUrl ? (
+        <p>
+          <a href={mapsUrl} target="_blank" rel="noreferrer">Karta lokacije</a>
+        </p>
+      ) : null}
     </section>
   ) : null;
   const gallery = sections.gallery ? <GalleryBlock shots={shots} emptyCopy={!shots.length} /> : null;
   const about = sections.about && description ? (
     <section>
-      <h3>O studiju</h3>
+      <h3>O poslovanju</h3>
       <p>{description}</p>
     </section>
   ) : null;

@@ -1,11 +1,11 @@
 import { findPalette, studioPalettes } from '../../styles/studioPalette.js';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
-import { fallbackHours } from './studioTime.js';
+import { fallbackHours, normalizeHours } from './studioTime.js';
 
-function dayRow(workingHours, day) {
+function dayRow(workingHours, day, closedDefaults) {
   const row = (workingHours || []).find((item) => Number(item.day) === day);
   if (!row || row.closed || !row.open || !row.close) {
-    return { works: false, from: '09:00', to: '13:00' };
+    return { works: false, from: closedDefaults.from, to: closedDefaults.to };
   }
   return { works: true, from: row.open, to: row.close };
 }
@@ -13,12 +13,15 @@ function dayRow(workingHours, day) {
 /** Map API workingHours into the studio UI hours shape. */
 export function hoursFromWorking(workingHours) {
   if (!workingHours?.length) return null;
-  return {
-    ...fallbackHours,
-    week: dayRow(workingHours, 1),
-    saturday: dayRow(workingHours, 6),
-    sunday: dayRow(workingHours, 0),
-  };
+  return normalizeHours({
+    monday: dayRow(workingHours, 1, fallbackHours.monday),
+    tuesday: dayRow(workingHours, 2, fallbackHours.tuesday),
+    wednesday: dayRow(workingHours, 3, fallbackHours.wednesday),
+    thursday: dayRow(workingHours, 4, fallbackHours.thursday),
+    friday: dayRow(workingHours, 5, fallbackHours.friday),
+    saturday: dayRow(workingHours, 6, fallbackHours.saturday),
+    sunday: dayRow(workingHours, 0, fallbackHours.sunday),
+  });
 }
 
 export function paletteFromTenant(tenant) {
@@ -84,6 +87,7 @@ export function studioFromTenant(tenant, current = {}) {
     email: tenant.email || '',
     address: tenant.address || '',
     city: tenant.city || '',
+    mapsUrl: tenant.mapsUrl || tenant.siteSettings?.mapsUrl || '',
     oib: tenant.oib || '',
     timezone: tenant.timezone || current.timezone || 'Europe/Zagreb',
     heroImageUrl: tenant.heroImageUrl || '',

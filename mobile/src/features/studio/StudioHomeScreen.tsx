@@ -195,7 +195,7 @@ export default function StudioHomeScreen({
             onPress={() => onNavPress(item.id, item.label)}
             style={({ pressed }) => [styles.menuCard, pressed && ui.pressed]}
           >
-            <Ionicons name={item.icon as any} size={20} color="#5EEAD4" />
+            <Ionicons name={item.icon as any} size={20} color="#14B8A6" />
             <Text style={styles.menuLabel}>{item.label}</Text>
             <Text style={styles.menuNote}>{item.note}</Text>
           </Pressable>

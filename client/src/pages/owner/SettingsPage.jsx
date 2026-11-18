@@ -29,6 +29,7 @@ import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import CancelWindowSelect from './CancelWindowSelect.jsx';
 import TimeSelect from './TimeSelect.jsx';
 import {
+  copyWeekdayHours,
   fallbackHours,
   formatCancellationWindow,
   hourRows,
@@ -40,6 +41,7 @@ import './SettingsPage.scss';
 import { isEmail } from '../../lib/isEmail.js';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
+const DESCRIPTION_MAX = 500;
 const TOKEN_KEY = 'bookingspace.token';
 const SESSION_KEY = 'bookingspace.session';
 const PREFS_KEY = 'bookingspace.prefs';
@@ -55,8 +57,8 @@ const sections = [
 
 const LEGAL_DOCS = [
   { id: 'privacy', index: '01', label: 'Privatnost', title: 'Politika privatnosti' },
-  { id: 'terms', index: '02', label: 'Uvjeti', title: 'Uvjeti korištenja' },
-  { id: 'cookies', index: '03', label: 'Kolačići', title: 'Kolačići i sigurnost' },
+  { id: 'terms', index: '02', label: 'Uvjeti', title: 'Uvjeti poslovanja i rezervacija' },
+  { id: 'cookies', index: '03', label: 'Kolačići', title: 'Politika kolačića' },
 ];
 
 function studioLegalSource(studio, form = {}) {
@@ -110,6 +112,7 @@ function fromStudio(studio) {
     email: studio.email || '',
     address: studio.address || '',
     city: studio.city || '',
+    mapsUrl: studio.mapsUrl || '',
     oib: studio.oib || '',
     hours: studioHours(studio),
   };
@@ -306,15 +309,39 @@ export default function SettingsPage() {
     setMessage({ type: '', text: '' });
   }
 
+  function copyHoursAcrossWeekdays() {
+    setForm((current) => ({
+      ...current,
+      hours: copyWeekdayHours(current.hours),
+    }));
+    setMessage({ type: '', text: '' });
+  }
+
   async function saveBusiness(event) {
     event.preventDefault();
     if (!form.name.trim()) {
       note('error', 'Upišite naziv poslovanja.');
       return;
     }
+    if (form.description.trim().length > DESCRIPTION_MAX) {
+      note('error', `Opis može imati najviše ${DESCRIPTION_MAX} znakova.`);
+      return;
+    }
     if (form.email.trim() && !isEmail(form.email.trim())) {
       note('error', 'Upišite ispravnu e-poštu poslovanja.');
       return;
+    }
+    if (form.mapsUrl.trim()) {
+      try {
+        const url = new URL(form.mapsUrl.trim());
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          note('error', 'Upišite ispravnu Maps poveznicu (https://…).');
+          return;
+        }
+      } catch {
+        note('error', 'Upišite ispravnu Maps poveznicu (https://…).');
+        return;
+      }
     }
     const hoursWrong = hourRows.some(([key]) => {
       const row = form.hours[key] || fallbackHours[key];
@@ -335,12 +362,13 @@ export default function SettingsPage() {
         body: {
           name: form.name.trim(),
           ...filled({
-            description: form.description.trim(),
+            description: form.description.trim().slice(0, DESCRIPTION_MAX),
             phone: form.phone.trim(),
             email: form.email.trim(),
             address: form.address.trim(),
             city: form.city.trim(),
           }),
+          mapsUrl: form.mapsUrl.trim(),
           bookingSettings: {
             workingHours: hoursPayload(form.hours),
           },
@@ -371,11 +399,12 @@ export default function SettingsPage() {
       saveStudio({
         ...studio,
         name: form.name.trim(),
-        description: form.description.trim(),
+        description: form.description.trim().slice(0, DESCRIPTION_MAX),
         phone: form.phone.trim(),
         email: form.email.trim(),
         address: form.address.trim(),
         city: form.city.trim(),
+        mapsUrl: form.mapsUrl.trim(),
         hours: form.hours,
       });
       window.dispatchEvent(new Event('studio-changed'));
@@ -612,9 +641,15 @@ export default function SettingsPage() {
                 Kratki opis
                 <textarea
                   rows="4"
+                  maxLength={DESCRIPTION_MAX}
                   value={form.description}
-                  onChange={(event) => changeBusiness('description', event.target.value)}
+                  onChange={(event) => changeBusiness('description', event.target.value.slice(0, DESCRIPTION_MAX))}
                 />
+                <span className="settings__count">
+                  {form.description.length}
+                  /
+                  {DESCRIPTION_MAX}
+                </span>
               </label>
               <label>
                 Telefon
@@ -634,21 +669,44 @@ export default function SettingsPage() {
                 onAddress={(event) => changeBusiness('address', event.target.value)}
                 onCity={(event) => changeBusiness('city', event.target.value)}
               />
+              <label className="settings__full">
+                Google Maps poveznica
+                <input
+                  type="url"
+                  placeholder="https://maps.google.com/…"
+                  value={form.mapsUrl}
+                  onChange={(event) => changeBusiness('mapsUrl', event.target.value)}
+                />
+              </label>
             </div>
 
             <div className="settings__hours-block">
-              <h2>Radno vrijeme</h2>
+              <div className="settings__hours-head">
+                <h2>Radno vrijeme</h2>
+                <button className="settings__ghost" type="button" onClick={copyHoursAcrossWeekdays}>
+                  Kopiraj radno vrijeme
+                </button>
+              </div>
+              <p className="settings__hint">
+                Redovno radno vrijeme za prikaz klijentima. Raspored termina i dostupnost
+                rezervacija postavljate odvojeno.
+              </p>
               <div className="settings__hours">
                 {hourRows.map(([key, label]) => {
                   const row = form.hours[key] || fallbackHours[key];
                   return (
                     <div className="settings__hours-row" key={key}>
                       <label className="settings__check">
-                        <input
-                          type="checkbox"
-                          checked={row.works}
-                          onChange={(event) => changeHours(key, { works: event.target.checked })}
-                        />
+                        <span className="setup__switch">
+                          <input
+                            type="checkbox"
+                            role="switch"
+                            checked={row.works}
+                            aria-checked={row.works}
+                            onChange={(event) => changeHours(key, { works: event.target.checked })}
+                          />
+                          <span aria-hidden="true" />
+                        </span>
                         {label}
                       </label>
                       {row.works ? (
@@ -859,11 +917,13 @@ export default function SettingsPage() {
               </ul>
             </article>
             <form className="settings__sheet settings__legal" onSubmit={requestSaveLegal}>
-              <h2>Pravila studija</h2>
+              <h2>Pravila i privatnost poslovanja</h2>
               <p className="settings__lead">
-                Gotovi tekstovi (GDPR / RH) već su u bazi od registracije. Uredite ih samo ako
-                trebate — inače ostavite predložak. Vi ste voditelj obrade; anyminutes je
-                platforma. Nije formalni pravni savjet.
+                Ovdje uređujete dokumente vašeg poslovanja: privatnost, uvjete rezervacija i
+                kolačiće na vašoj stranici. Predlošci su polazište — prilagodite ih stvarnom
+                načinu rada i podacima subjekta. Za podatke svojih klijenata u pravilu ste
+                voditelj obrade; Blizari je izvršitelj kada obrađuje te podatke prema vašim
+                uputama. Nije formalni pravni savjet.
               </p>
               {legalUpdatedAt ? (
                 <p className="settings__fine">
@@ -891,7 +951,7 @@ export default function SettingsPage() {
 
               <div className="settings__actions settings__legal-tools">
                 <button className="settings__ghost" type="button" onClick={fillLegalTemplate}>
-                  Vrati gotovi predložak
+                  Vrati predložak
                 </button>
                 {studio.slug ? (
                   <Link
@@ -967,15 +1027,16 @@ export default function SettingsPage() {
               </div>
             ) : null}
             <article className="settings__sheet">
-              <h2>Pravila platforme</h2>
+              <h2>Dokumenti Blizarija</h2>
               <p className="settings__lead">
-                Odvojeno od studija — obostrana zaštita: vi pokrivate klijente studija,
-                anyminutes pokriva rad aplikacije.
+                Odvojeno od dokumenata vašeg poslovanja. Blizari zasebno obrađuje podatke
+                poslovnih korisnika radi računa, naplate i sigurnosti platforme. Vaši dokumenti
+                uređuju odnos s klijentima; ovi uređuju odnos s platformom.
               </p>
               <ul className="settings__links">
-                <li><Link to="/privatnost">Privatnost</Link></li>
-                <li><Link to="/uvjeti">Uvjeti korištenja</Link></li>
-                <li><Link to="/kolacici">Kolačići</Link></li>
+                <li><Link to="/privatnost">Politika privatnosti Blizarija</Link></li>
+                <li><Link to="/uvjeti">Uvjeti korištenja Blizarija</Link></li>
+                <li><Link to="/kolacici">Politika kolačića Blizarija</Link></li>
               </ul>
             </article>
           </div>

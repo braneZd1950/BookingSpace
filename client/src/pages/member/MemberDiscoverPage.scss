@@ -1,15 +1,15 @@
 .member-discover {
   /* Fiksne brand boje aplikacije — tekst/bg prate temu. */
-  --brand: #0e6b73;
+  --brand: #2563eb;
   --on-brand: #ffffff;
-  --brand-strong: #0a4f56;
-  --brand-soft: #dceff0;
-  --accent: #f2a33a;
-  --discover-brand: #0e6b73;
+  --brand-strong: #1d4ed8;
+  --brand-soft: #e0f2fe;
+  --accent: #14b8a6;
+  --discover-brand: #2563eb;
   --discover-soft: var(--brand-soft);
   --discover-ink: var(--fg);
   --discover-edge: color-mix(in srgb, var(--discover-brand) 16%, transparent);
-  --discover-accent: #f2a33a;
+  --discover-accent: #14b8a6;
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -543,6 +543,10 @@
   background: color-mix(in srgb, var(--discover-soft) 55%, var(--surface));
 }
 
+.member-discover__block--note {
+  margin-top: 0.35rem;
+}
+
 .member-discover__actions {
   display: flex;
   flex-wrap: wrap;
@@ -621,13 +625,13 @@
 }
 
 :root[data-theme='dark'] .member-discover {
-  --brand: #5ecdd5;
-  --on-brand: #ffffff;
-  --brand-strong: #9fe0e5;
-  --brand-soft: #123a3e;
-  --accent: #f5bc66;
-  --discover-brand: #5ecdd5;
-  --discover-soft: #123a3e;
+  --brand: #14b8a6;
+  --on-brand: #042f2e;
+  --brand-strong: #5eead4;
+  --brand-soft: #134e4a;
+  --accent: #60a5fa;
+  --discover-brand: #14b8a6;
+  --discover-soft: #134e4a;
   --discover-ink: var(--fg);
   color: var(--fg);
 }
@@ -638,13 +642,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .member-discover {
-    --brand: #5ecdd5;
-    --on-brand: #ffffff;
-    --brand-strong: #9fe0e5;
-    --brand-soft: #123a3e;
-    --accent: #f5bc66;
-    --discover-brand: #5ecdd5;
-    --discover-soft: #123a3e;
+    --brand: #14b8a6;
+    --on-brand: #042f2e;
+    --brand-strong: #5eead4;
+    --brand-soft: #134e4a;
+    --accent: #60a5fa;
+    --discover-brand: #14b8a6;
+    --discover-soft: #134e4a;
     --discover-ink: var(--fg);
     color: var(--fg);
   }

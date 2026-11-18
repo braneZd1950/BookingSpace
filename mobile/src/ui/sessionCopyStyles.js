@@ -14,7 +14,7 @@ export const sessionCopyStyles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
-    color: '#5EEAD4',
+    color: '#14B8A6',
     marginBottom: 10,
   },
   title: {

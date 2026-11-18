@@ -20,5 +20,16 @@ Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-stat
 | 12 | Brand **anyminutes** u UI-u | Repo može još zvati BookingSpace |
 | 13 | Mobile = Expo/RN u `mobile/`, web ostaje primarni | Isti API; docs prve, kod od faze M1 — [mobile/docs](../mobile/docs/README.md) |
 | 14 | Online iza flaga | `ONLINE_ENABLED = false` dok ne kažemo |
+| 15 | Otkrij = opt-in sloj | SaaS (privatno) i javno otkrivanje odvojeno; vlasnik bira |
+| 16 | Tri razine vidljivosti | `private` · `public` · `public_contact` na tenantu |
+
+### Otkrij — vidljivost (ADR 15–16)
+
+- **private** (zadano): nije u `/otkrij`; pristup poveznicom ili članstvom (fitness / članarine).
+- **public**: prikaz u Otkrij + online rezervacije na stranici poslovanja.
+- **public_contact**: prikaz u Otkrij radi pregleda; rezervaciju dogovara vlasnik.
+- Demo / seed slugovi (`demo-fitness`, …) nikad u javnom katalogu.
+- Mock primjeri samo lokalno; produkcijski Otkrij = živi opt-in zapisi.
+- Budući filtri (grad, udaljenost, termini, foto, recenzije) grade se na ovom modelu.
 
 Detalji konteksta za svaku odluku žive u povijesti gita; ova tablica je dovoljna za svakodnevni rad.

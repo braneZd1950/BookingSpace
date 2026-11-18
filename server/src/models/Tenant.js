@@ -23,6 +23,26 @@ export const CAPACITY_MODELS = ['PER_SLOT', 'CONCURRENT'];
 export const BILLING_STATUSES = ['TRIAL', 'PAID', 'UNPAID', 'PAST_DUE', 'EXPIRED'];
 export const BILLING_PLANS = ['pilot', 'standard'];
 
+/** Otkrij: opt-in javna vidljivost (nije obavezna za SaaS klijente). */
+export const DISCOVER_VISIBILITY = ['private', 'public', 'public_contact'];
+export const DISCOVER_LISTED = ['public', 'public_contact'];
+/** Seed / lokalni test slugovi — nikad u javnom Otkrij. */
+export const DISCOVER_EXCLUDED_SLUGS = ['demo-fitness', 'demostudio', 'demo-studio'];
+
+/** Slug/name patterns for e2e, seed and probe tenants — never public. */
+export const DISCOVER_EXCLUDED_PATTERN = /^(demo|e2e|deep-studio|test|full-studio)/i;
+
+export function isDiscoverExcludedTenant({ slug = '', name = '' } = {}) {
+  const s = String(slug || '').trim().toLowerCase();
+  const n = String(name || '').trim();
+  if (!s && !n) return false;
+  if (DISCOVER_EXCLUDED_SLUGS.includes(s)) return true;
+  if (DISCOVER_EXCLUDED_PATTERN.test(s)) return true;
+  if (/^(demo\s*studio|demo\s*fitness|deep\s*studio|e2e\b)/i.test(n)) return true;
+  if (/demostudio/i.test(n.replace(/\s+/g, ''))) return true;
+  return false;
+}
+
 const themeSchema = new Schema(
   {
     primaryColor: { type: String, trim: true },
@@ -171,6 +191,8 @@ const tenantSchema = new Schema(
     address: { type: String, trim: true },
     /** Grad — za Otkrij pretragu i javni prikaz. */
     city: { type: String, trim: true, maxlength: 80, default: '' },
+    /** Opcionalna Google Maps / karte poveznica lokacije. */
+    mapsUrl: { type: String, trim: true, maxlength: 500, default: '' },
     /** OIB obrta / društva — za račune i kasniju naplatu karticom. */
     oib: { type: String, trim: true, maxlength: 11, default: '' },
     timezone: {
@@ -193,6 +215,17 @@ const tenantSchema = new Schema(
     active: {
       type: Boolean,
       default: true,
+    },
+    /**
+     * private — samo poveznica / članovi
+     * public — Otkrij + online rezervacije
+     * public_contact — Otkrij bez naglaska na online rezervacije
+     */
+    discoverVisibility: {
+      type: String,
+      enum: DISCOVER_VISIBILITY,
+      default: 'private',
+      index: true,
     },
     billing: {
       status: {

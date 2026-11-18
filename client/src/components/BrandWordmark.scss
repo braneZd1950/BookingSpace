@@ -1,0 +1,78 @@
+.brand-wordmark {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Hero: large lockup, brand-first */
+.brand-wordmark--home {
+  width: min(17.5rem, 88vw);
+  height: auto;
+}
+
+/* Header chrome: compact next to optional mark */
+.brand-wordmark--header {
+  width: 6.75rem;
+  height: auto;
+}
+
+/* Footer: mid lockup beside ribbon mark */
+.brand-wordmark--footer {
+  width: clamp(7.5rem, 22vw, 10.5rem);
+  height: auto;
+}
+
+/* Login / register vertical spine */
+.brand-wordmark--spine {
+  width: clamp(7.5rem, 14vh, 10rem);
+  height: auto;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+}
+
+/* About / legal page hero brand */
+.brand-wordmark--page {
+  width: min(14rem, 72vw);
+  height: auto;
+}
+
+/* Consent / compact chrome */
+.brand-wordmark--banner {
+  width: 7.25rem;
+  height: auto;
+}
+
+/* Soft background watermark */
+.brand-wordmark--watermark {
+  width: clamp(18rem, 58vw, 40rem);
+  height: auto;
+  opacity: 0.11;
+}
+
+@media (max-width: 720px) {
+  .brand-wordmark--home {
+    width: min(14.5rem, 86vw);
+  }
+
+  .brand-wordmark--header {
+    width: 5.75rem;
+  }
+
+  .brand-wordmark--spine {
+    width: clamp(6.75rem, 42vw, 8.75rem);
+    transform: none;
+  }
+
+  .brand-wordmark--page {
+    width: min(12rem, 78vw);
+  }
+
+  .brand-wordmark--watermark {
+    width: clamp(14rem, 78vw, 28rem);
+  }
+}

@@ -24,7 +24,7 @@ export default function PlatformLegalStrip({
           </nav>
         ) : null}
         <nav className="platform-legal-strip__nav" aria-label="Pravila platforme">
-          <span className="platform-legal-strip__kicker">anyminutes</span>
+          <span className="platform-legal-strip__kicker">Blizari</span>
           <Link to="/o-nama">O nama</Link>
           <span aria-hidden="true">·</span>
           <Link to="/privatnost">Privatnost</Link>

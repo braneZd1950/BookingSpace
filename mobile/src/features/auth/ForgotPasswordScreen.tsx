@@ -106,7 +106,7 @@ export default function ForgotPasswordScreen({
             ]}
           >
             {submitting ? (
-              <ActivityIndicator color="#061210" />
+              <ActivityIndicator color="#042F2E" />
             ) : (
               <Text style={chrome.submitLabel}>Pošaljite link</Text>
             )}

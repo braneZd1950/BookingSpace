@@ -37,8 +37,8 @@ function loadGisScript() {
 
 function titleFor(intent) {
   return intent === 'register'
-    ? 'Registrirajte se s Googleom'
-    : 'Prijavite se s Googleom';
+    ? 'Registrirajte se putem Googlea'
+    : 'Prijavite se putem Googlea';
 }
 
 /**
