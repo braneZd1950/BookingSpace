@@ -1,4 +1,11 @@
 import mongoose from 'mongoose';
+import {
+  DISCOVER_EXCLUDED_PATTERN,
+  DISCOVER_EXCLUDED_SLUGS,
+  DISCOVER_LISTED,
+  DISCOVER_VISIBILITY_VALUES,
+  isDiscoverExcludedTenant,
+} from '../../../shared/discoverVisibility.js';
 
 const { Schema } = mongoose;
 
@@ -24,24 +31,13 @@ export const BILLING_STATUSES = ['TRIAL', 'PAID', 'UNPAID', 'PAST_DUE', 'EXPIRED
 export const BILLING_PLANS = ['pilot', 'standard'];
 
 /** Otkrij: opt-in javna vidljivost (nije obavezna za SaaS klijente). */
-export const DISCOVER_VISIBILITY = ['private', 'public', 'public_contact'];
-export const DISCOVER_LISTED = ['public', 'public_contact'];
-/** Seed / lokalni test slugovi — nikad u javnom Otkrij. */
-export const DISCOVER_EXCLUDED_SLUGS = ['demo-fitness', 'demostudio', 'demo-studio'];
-
-/** Slug/name patterns for e2e, seed and probe tenants — never public. */
-export const DISCOVER_EXCLUDED_PATTERN = /^(demo|e2e|deep-studio|test|full-studio)/i;
-
-export function isDiscoverExcludedTenant({ slug = '', name = '' } = {}) {
-  const s = String(slug || '').trim().toLowerCase();
-  const n = String(name || '').trim();
-  if (!s && !n) return false;
-  if (DISCOVER_EXCLUDED_SLUGS.includes(s)) return true;
-  if (DISCOVER_EXCLUDED_PATTERN.test(s)) return true;
-  if (/^(demo\s*studio|demo\s*fitness|deep\s*studio|e2e\b)/i.test(n)) return true;
-  if (/demostudio/i.test(n.replace(/\s+/g, ''))) return true;
-  return false;
-}
+export const DISCOVER_VISIBILITY = [...DISCOVER_VISIBILITY_VALUES];
+export {
+  DISCOVER_EXCLUDED_PATTERN,
+  DISCOVER_EXCLUDED_SLUGS,
+  DISCOVER_LISTED,
+  isDiscoverExcludedTenant,
+};
 
 const themeSchema = new Schema(
   {

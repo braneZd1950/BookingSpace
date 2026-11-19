@@ -3,11 +3,14 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useDiscoverTenantsQuery } from '../../api/tenantApi.js';
 import {
-  DISCOVER_MOCK_ENABLED,
+  countsFromPlaces,
   discoverCategories,
-  discoverPlaces,
   filterDiscoverPlaces,
   placesForCategory,
+} from '../../lib/discoverCategories.js';
+import {
+  DISCOVER_MOCK_ENABLED,
+  discoverPlaces,
 } from '../../mock/discoverPlaces.js';
 import { signupNiches } from '../owner/siteTemplates.js';
 import './MemberDiscoverPage.scss';
@@ -38,21 +41,6 @@ function mergePlaces(livePlaces, mockPlaces) {
     bySlug.set(place.slug || `live:${place.id}`, place);
   }
   return [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name, 'hr'));
-}
-
-function countsFromPlaces(places) {
-  const counts = {
-    all: places.length,
-    fitness: 0,
-    services: 0,
-    playroom: 0,
-    generic: 0,
-  };
-  for (const place of places) {
-    const key = place.categoryId || 'generic';
-    counts[key] = (counts[key] || 0) + 1;
-  }
-  return counts;
 }
 
 export default function MemberDiscoverPage() {

@@ -2,54 +2,13 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDiscoverTenantsQuery } from '../../api/tenantApi.js';
 import {
-  allowsOnlineBookingFromDiscover,
-  DISCOVER_VISIBILITY,
-  isDiscoverExcludedTenant,
-  isListedOnDiscover,
-} from '../../lib/discoverVisibility.js';
-import {
+  countsFromPlaces,
   discoverCategories,
   placesForCategory,
-  toPublicDiscoverCategory,
-} from '../../mock/discoverPlaces.js';
+} from '../../lib/discoverCategories.js';
+import { normalizeDiscoverPlace } from '../../lib/discoverNormalize.js';
+import { DISCOVER_VISIBILITY } from '../../lib/discoverVisibility.js';
 import '../member/MemberDiscoverPage.scss';
-
-function normalizePlace(place) {
-  const slug = String(place.slug || '').trim();
-  if (!slug || !place.live) return null;
-  if (isDiscoverExcludedTenant({ slug, name: place.name })) return null;
-
-  // Until the API always sends discoverVisibility, treat missing as private.
-  const visibility = place.discoverVisibility || DISCOVER_VISIBILITY.PRIVATE;
-  if (!isListedOnDiscover(visibility)) return null;
-
-  const categoryId = toPublicDiscoverCategory(place.categoryId || place.niche);
-  if (!categoryId) return null;
-
-  return {
-    ...place,
-    categoryId,
-    name: place.name,
-    city: place.city || '',
-    area: place.area || '',
-    note: place.note || '',
-    tags: place.tags || [],
-    slug,
-    live: true,
-    discoverVisibility: visibility,
-    onlineBooking: allowsOnlineBookingFromDiscover(visibility),
-  };
-}
-
-function countsFromPlaces(places) {
-  const counts = { all: places.length };
-  for (const category of discoverCategories) counts[category.id] = 0;
-  for (const place of places) {
-    const key = place.categoryId || 'generic';
-    counts[key] = (counts[key] || 0) + 1;
-  }
-  return counts;
-}
 
 export default function DiscoverPage() {
   const [query, setQuery] = useState('');
@@ -70,7 +29,7 @@ export default function DiscoverPage() {
   const allPlaces = useMemo(() => {
     const livePlaces = discoverData?.places || [];
     return livePlaces
-      .map((place) => normalizePlace({
+      .map((place) => normalizeDiscoverPlace({
         ...place,
         categoryId: place.categoryId || place.niche,
         live: true,

@@ -15,9 +15,10 @@ MARK = ROOT / "mobile" / "assets" / "blizari-mark.png"
 OUT_MOBILE = ROOT / "mobile" / "assets"
 OUT_CLIENT = ROOT / "client" / "public" / "icons"
 
-# Fraction of canvas used by the mark (centered). ~0.62 keeps clear margin
-# inside the ~0.66 Android safe zone.
-CONTENT_RATIO = 0.58
+# Fraction of canvas used by the mark (centered).
+# Keep well under Android's ~0.66 safe zone so the B reads like a logo glyph
+# (Facebook-style), not a cropped circle.
+CONTENT_RATIO = 0.38
 
 
 def trim_alpha(im: Image.Image, threshold: int = 12) -> Image.Image:
