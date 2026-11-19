@@ -1,70 +1,70 @@
-/** Public Otkrij categories — single source for web + mobile. */
+/** Public Otkrij categories — single source for web, mobile and API. */
 
-export const discoverCategories = [
-  {
-    id: 'playroom',
-    label: 'Igraonice',
-    name: 'Igraonice i rođendani',
-    note: 'Igraonice, termini rođendana, paketi i prostori.',
-  },
-  {
-    id: 'wellness',
-    label: 'Wellness',
-    name: 'Wellness i spa',
-    note: 'Saune, spa, masaže i wellness paketi.',
-  },
-  {
-    id: 'beauty',
-    label: 'Beauty',
-    name: 'Beauty i njega',
-    note: 'Saloni, tretmani i individualne usluge.',
-  },
-  {
-    id: 'sport',
-    label: 'Sport',
-    name: 'Sport i aktivnosti',
-    note: 'Aktivnosti koje žele biti javno pronađene.',
-  },
-  {
-    id: 'health',
-    label: 'Zdravlje',
-    name: 'Zdravlje',
-    note: 'Terapije i usluge s terminima.',
-  },
-  {
-    id: 'workshop',
-    label: 'Radionice',
-    name: 'Radionice i edukacije',
-    note: 'Radionice, tečajevi i edukativni termini.',
-  },
-  {
-    id: 'generic',
-    label: 'Ostalo',
-    name: 'Ostale usluge',
-    note: 'Ostala poslovanja s javnom vidljivošću.',
-  },
+/** [id, shortLabel, name, note] */
+const CATEGORY_ROWS = [
+  ['playroom', 'Igraonice', 'Igraonice i rođendani', 'Igraonice, termini rođendana, paketi i prostori.'],
+  ['wellness', 'Wellness', 'Wellness i spa', 'Saune, spa, masaže i wellness paketi.'],
+  ['beauty', 'Beauty', 'Beauty i njega', 'Saloni, tretmani i individualne usluge.'],
+  ['sport', 'Sport', 'Sport i aktivnosti', 'Aktivnosti koje žele biti javno pronađene.'],
+  ['health', 'Zdravlje', 'Zdravlje', 'Terapije i usluge s terminima.'],
+  ['workshop', 'Radionice', 'Radionice i edukacije', 'Radionice, tečajevi i edukativni termini.'],
+  ['generic', 'Ostalo', 'Ostale usluge', 'Ostala poslovanja s javnom vidljivošću.'],
 ];
+
+export const discoverCategories = CATEGORY_ROWS.map(([id, label, name, note]) => ({
+  id,
+  label,
+  name,
+  note,
+}));
 
 export const discoverCategoryTabs = [
   { id: 'all', label: 'Sve' },
   ...discoverCategories.map(({ id, label }) => ({ id, label })),
 ];
 
+/**
+ * Niche / legacy ids → public Otkrij category.
+ * Used by API discoverTenants and client/mobile normalize.
+ */
+export const DISCOVER_CATEGORY_NICHES = Object.freeze({
+  playroom: ['playroom'],
+  beauty: ['services', 'beauty'],
+  wellness: ['wellness', 'spa'],
+  sport: ['sport', 'activities'],
+  health: ['health', 'physio'],
+  workshop: ['workshop', 'education', 'radionica'],
+  generic: ['generic'],
+});
+
+export const MEMBERSHIP_FIRST_NICHES = Object.freeze([
+  'fitness',
+  'pilates',
+  'yoga',
+  'powerplate',
+]);
+
+const MEMBERSHIP_FIRST = new Set(MEMBERSHIP_FIRST_NICHES);
+
+const NICHE_TO_CATEGORY = (() => {
+  const map = new Map();
+  for (const [categoryId, niches] of Object.entries(DISCOVER_CATEGORY_NICHES)) {
+    for (const niche of niches) map.set(niche, categoryId);
+  }
+  for (const niche of MEMBERSHIP_FIRST_NICHES) map.set(niche, 'sport');
+  return map;
+})();
+
 /** Map API niche / categoryId into public Otkrij categories. */
 export function toPublicDiscoverCategory(categoryId) {
   const key = String(categoryId || 'generic');
-  if (key === 'playroom') return 'playroom';
-  if (key === 'wellness' || key === 'spa') return 'wellness';
-  if (key === 'beauty' || key === 'services') return 'beauty';
-  if (key === 'sport' || key === 'activities') return 'sport';
-  if (key === 'health' || key === 'physio') return 'health';
-  if (key === 'workshop' || key === 'education' || key === 'radionica') return 'workshop';
-  if (key === 'fitness' || key === 'pilates' || key === 'yoga' || key === 'powerplate') {
-    // Membership-first niches only appear if API already opted them into discover.
-    return 'sport';
-  }
-  if (key === 'generic') return 'generic';
-  return 'generic';
+  if (MEMBERSHIP_FIRST.has(key)) return 'sport';
+  return NICHE_TO_CATEGORY.get(key) || 'generic';
+}
+
+/** Alias for server discoverTenants (same rules as toPublicDiscoverCategory). */
+export function categoryForNiche(niche) {
+  return toPublicDiscoverCategory(niche);
 }
 
 export function categoryLabel(categoryId) {
@@ -102,4 +102,10 @@ export function countsFromPlaces(places, categories = discoverCategories) {
     counts[key] = (counts[key] || 0) + 1;
   }
   return counts;
+}
+
+/** Resolve filter tab id (legacy fitness/services → public buckets). */
+export function resolveDiscoverCategoryFilter(category = 'all') {
+  if (!category || category === 'all') return 'all';
+  return toPublicDiscoverCategory(category);
 }

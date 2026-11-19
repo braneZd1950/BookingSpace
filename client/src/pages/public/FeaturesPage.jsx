@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
-import StrokeIcon from '../../components/marketing/StrokeIcon.jsx';
+import MarketingIconCards from '../../components/marketing/MarketingIconCards.jsx';
 import { BRAND } from '../../lib/brand.js';
 import './FeaturesPage.scss';
 
@@ -56,19 +56,14 @@ export default function FeaturesPage() {
           </p>
         </header>
 
-        <ul className="features__grid">
-          {pillars.map((item) => (
-            <li key={item.id} className="features__card">
-              <span className="features__icon-wrap" aria-hidden="true">
-                <StrokeIcon id={item.id} className="features__icon" />
-              </span>
-              <div>
-                <h2>{item.title}</h2>
-                <p>{item.text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <MarketingIconCards
+          items={pillars}
+          listClassName="features__grid"
+          cardClassName="features__card"
+          iconWrapClassName="features__icon-wrap"
+          iconClassName="features__icon"
+          titleTag="h2"
+        />
 
         <section className="features__close" aria-labelledby="features-close">
           <p className="features__close-kicker">{BRAND.sloganHr}</p>

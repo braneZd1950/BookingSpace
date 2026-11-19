@@ -2,6 +2,13 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDiscoverTenantsQuery } from '../../api/tenantApi.js';
 import {
+  DiscoverAtmosphere,
+  DiscoverCategoryTabs,
+  DiscoverEmptyState,
+  DiscoverPlaceSections,
+  DiscoverSearchForm,
+} from '../../components/discover/DiscoverListingParts.jsx';
+import {
   countsFromPlaces,
   discoverCategories,
   placesForCategory,
@@ -63,10 +70,7 @@ export default function DiscoverPage() {
 
   return (
     <main className="member-discover">
-      <div className="member-discover__atmosphere" aria-hidden="true">
-        <span className="member-discover__wash" />
-        <span className="member-discover__grain" />
-      </div>
+      <DiscoverAtmosphere />
 
       <div className="member-discover__stage">
         <header className="member-discover__head">
@@ -81,118 +85,38 @@ export default function DiscoverPage() {
           </div>
         </header>
 
-        <form
-          className="member-discover__search"
-          role="search"
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <label>
-            <span className="visually-hidden">Pretraživanje</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Pronađite poslovanje, uslugu, aktivnost ili grad."
-              autoComplete="off"
-            />
-          </label>
-          {searching ? (
-            <p className="member-discover__search-note">Tražimo dostupna mjesta…</p>
-          ) : null}
-          {!searching && isError ? (
-            <p className="member-discover__search-note">
-              Trenutačno ne možemo učitati popis. Pokušajte ponovno uskoro.
-            </p>
-          ) : null}
-        </form>
-
-        <div
-          className="member-discover__niches-nav"
-          role="tablist"
-          aria-label="Kategorije"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={nicheFilter === 'all'}
-            className={nicheFilter === 'all' ? 'is-on' : undefined}
-            onClick={() => setNicheFilter('all')}
-          >
-            Sve
-            {nicheCounts.all > 0 ? <span>{nicheCounts.all}</span> : null}
-          </button>
-          {discoverCategories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              role="tab"
-              aria-selected={nicheFilter === category.id}
-              className={nicheFilter === category.id ? 'is-on' : undefined}
-              onClick={() => setNicheFilter(category.id)}
-            >
-              {category.name}
-              {nicheCounts[category.id] > 0 ? (
-                <span>{nicheCounts[category.id]}</span>
+        <DiscoverSearchForm
+          query={query}
+          onQueryChange={setQuery}
+          label="Pretraživanje"
+          placeholder="Pronađite poslovanje, uslugu, aktivnost ili grad."
+          status={(
+            <>
+              {searching ? (
+                <p className="member-discover__search-note">Tražimo dostupna mjesta…</p>
               ) : null}
-            </button>
-          ))}
-        </div>
+              {!searching && isError ? (
+                <p className="member-discover__search-note">
+                  Trenutačno ne možemo učitati popis. Pokušajte ponovno uskoro.
+                </p>
+              ) : null}
+            </>
+          )}
+        />
+
+        <DiscoverCategoryTabs
+          nicheFilter={nicheFilter}
+          onFilterChange={setNicheFilter}
+          nicheCounts={nicheCounts}
+        />
 
         {shownSections.length === 0 ? (
-          <section className="member-discover__block">
-            <p className="member-discover__empty">
-              {deferredQuery
-                ? `Nema rezultata za „${deferredQuery}”. Pokušajte drugi pojam.`
-                : 'Još nema javno vidljivih poslovanja. Vlasnici koji žele nove klijente mogu uključiti prikaz u Otkrij.'}
-            </p>
-          </section>
+          <DiscoverEmptyState
+            deferredQuery={deferredQuery}
+            fallback="Još nema javno vidljivih poslovanja. Vlasnici koji žele nove klijente mogu uključiti prikaz u Otkrij."
+          />
         ) : (
-          shownSections.map((category, offset) => (
-            <section key={category.id} className="member-discover__block">
-              <header className="member-discover__panel-head">
-                <span className="member-discover__index" aria-hidden="true">
-                  {String(offset + 1).padStart(2, '0')}
-                </span>
-                <div>
-                  <h2>{category.name}</h2>
-                  <p>{category.note}</p>
-                </div>
-                <p className="member-discover__count">
-                  <strong>{category.places.length}</strong>
-                  <span>
-                    {category.places.length === 1 ? 'mjesto' : 'mjesta'}
-                  </span>
-                </p>
-              </header>
-              <ul className="member-discover__places">
-                {category.places.map((place) => (
-                  <li key={place.id || place.slug}>
-                    <div>
-                      <div className="member-discover__place-title">
-                        <strong>{place.name}</strong>
-                      </div>
-                      <p className="member-discover__place-meta">
-                        {[place.city, place.area].filter(Boolean).join(' · ') || 'Hrvatska'}
-                      </p>
-                      {place.note ? (
-                        <p className="member-discover__place-note">{place.note}</p>
-                      ) : null}
-                      {place.tags?.length ? (
-                        <p className="member-discover__tags">
-                          {place.tags.map((tag) => (
-                            <span key={tag}>{tag}</span>
-                          ))}
-                        </p>
-                      ) : null}
-                    </div>
-                    <Link to={`/s/${place.slug}`}>
-                      {place.onlineBooking ? 'Otvori' : 'Pogledaj'}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
+          <DiscoverPlaceSections sections={shownSections} />
         )}
 
         <section className="member-discover__block">

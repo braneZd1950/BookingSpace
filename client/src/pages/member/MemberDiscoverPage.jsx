@@ -3,6 +3,13 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useDiscoverTenantsQuery } from '../../api/tenantApi.js';
 import {
+  DiscoverAtmosphere,
+  DiscoverCategoryTabs,
+  DiscoverEmptyState,
+  DiscoverPlaceSections,
+  DiscoverSearchForm,
+} from '../../components/discover/DiscoverListingParts.jsx';
+import {
   countsFromPlaces,
   discoverCategories,
   filterDiscoverPlaces,
@@ -131,10 +138,7 @@ export default function MemberDiscoverPage() {
 
   return (
     <main className="member-discover">
-      <div className="member-discover__atmosphere" aria-hidden="true">
-        <span className="member-discover__wash" />
-        <span className="member-discover__grain" />
-      </div>
+      <DiscoverAtmosphere />
 
       <div className="member-discover__stage">
         <header className="member-discover__head">
@@ -155,127 +159,58 @@ export default function MemberDiscoverPage() {
           ) : null}
         </header>
 
-        <form
-          className="member-discover__search"
-          role="search"
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <label>
-            <span className="visually-hidden">Traži studio, grad ili vrstu</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Traži ime, grad, wellness, igraonica…"
-              autoComplete="off"
-            />
-          </label>
-          <p className="member-discover__search-note">
-            {isLoading || isFetching
-              ? 'Tražimo studije…'
-              : isError
-                ? 'Backend trenutno nije dostupan — prikazujemo lokalni razvojni popis.'
-                : (
-                  <>
-                    {allPlaces.length}
-                    {' '}
-                    rezultata
-                    {liveCount ? ` · ${liveCount} uživo` : ''}
-                    {mockCount && DISCOVER_MOCK_ENABLED ? ` · ${mockCount} primjer` : ''}
-                    {isFetching ? ' · osvježavanje…' : ''}
-                  </>
-                )}
-          </p>
-        </form>
+        <DiscoverSearchForm
+          query={query}
+          onQueryChange={setQuery}
+          label="Traži studio, grad ili vrstu"
+          placeholder="Traži ime, grad, wellness, igraonica…"
+          status={(
+            <p className="member-discover__search-note">
+              {isLoading || isFetching
+                ? 'Tražimo studije…'
+                : isError
+                  ? 'Backend trenutno nije dostupan — prikazujemo lokalni razvojni popis.'
+                  : (
+                    <>
+                      {allPlaces.length}
+                      {' '}
+                      rezultata
+                      {liveCount ? ` · ${liveCount} uživo` : ''}
+                      {mockCount && DISCOVER_MOCK_ENABLED ? ` · ${mockCount} primjer` : ''}
+                      {isFetching ? ' · osvježavanje…' : ''}
+                    </>
+                  )}
+            </p>
+          )}
+        />
 
-        <div
-          className="member-discover__niches-nav"
-          role="tablist"
-          aria-label="Niše poslovanja"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={nicheFilter === 'all'}
-            className={nicheFilter === 'all' ? 'is-on' : undefined}
-            onClick={() => setNicheFilter('all')}
-          >
-            Sve
-            <span>{nicheCounts.all}</span>
-          </button>
-          {discoverCategories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              role="tab"
-              aria-selected={nicheFilter === category.id}
-              className={nicheFilter === category.id ? 'is-on' : undefined}
-              onClick={() => setNicheFilter(category.id)}
-            >
-              {category.name}
-              <span>{nicheCounts[category.id] || 0}</span>
-            </button>
-          ))}
-        </div>
+        <DiscoverCategoryTabs
+          nicheFilter={nicheFilter}
+          onFilterChange={setNicheFilter}
+          nicheCounts={nicheCounts}
+          ariaLabel="Niše poslovanja"
+          alwaysShowCount
+        />
 
         {shownSections.length === 0 ? (
-          <section className="member-discover__block">
-            <p className="member-discover__empty">
-              {deferredQuery
-                ? `Nema rezultata za „${deferredQuery}”. Pokušajte drugi pojam.`
-                : 'Još nema studija za prikaz u ovoj kategoriji.'}
-            </p>
-          </section>
+          <DiscoverEmptyState
+            deferredQuery={deferredQuery}
+            fallback="Još nema studija za prikaz u ovoj kategoriji."
+          />
         ) : (
-          shownSections.map((category, offset) => (
-            <section key={category.id} className="member-discover__block">
-              <header className="member-discover__panel-head">
-                <span className="member-discover__index" aria-hidden="true">
-                  {String(offset + 1).padStart(2, '0')}
-                </span>
-                <div>
-                  <p className="member-discover__kicker">Kategorija</p>
-                  <h2>{category.name}</h2>
-                  <p>{category.note}</p>
-                </div>
-                <p className="member-discover__count">
-                  <strong>{category.places.length}</strong>
-                  <span>mjesta</span>
-                </p>
-              </header>
-              <ul className="member-discover__places">
-                {category.places.map((place) => (
-                  <li
-                    key={place.id}
-                    className={categoryHere(category.id, currentNiche) ? 'is-related' : undefined}
-                  >
-                    <div>
-                      <div className="member-discover__place-title">
-                        <strong>{place.name}</strong>
-                        {!place.live ? <em>Primjer</em> : null}
-                      </div>
-                      <p className="member-discover__place-meta">
-                        {[place.city, place.area].filter(Boolean).join(' · ') || 'Hrvatska'}
-                      </p>
-                      <p className="member-discover__place-note">{place.note}</p>
-                      {place.tags?.length ? (
-                        <p className="member-discover__tags">
-                          {place.tags.map((tag) => (
-                            <span key={tag}>{tag}</span>
-                          ))}
-                        </p>
-                      ) : null}
-                    </div>
-                    {place.live && place.slug ? (
-                      <Link to={`/s/${place.slug}`}>Otvori</Link>
-                    ) : (
-                      <span className="member-discover__soon">Uskoro</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
+          <DiscoverPlaceSections
+            sections={shownSections}
+            showKicker
+            alwaysShowNote
+            isRelatedCategory={(categoryId) => categoryHere(categoryId, currentNiche)}
+            renderAction={(place) => (
+              place.live && place.slug ? (
+                <Link to={`/s/${place.slug}`}>Otvori</Link>
+              ) : (
+                <span className="member-discover__soon">Uskoro</span>
+              )
+            )}
+          />
         )}
 
         {otherStudios.length > 0 ? (

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
-import StrokeIcon from '../../components/marketing/StrokeIcon.jsx';
+import MarketingIconCards from '../../components/marketing/MarketingIconCards.jsx';
+import { HOME_FAQS } from '../../content/homeFaqs.js';
 import { BRAND } from '../../lib/brand.js';
 import { contactEmail } from '../../lib/contact.js';
 import { getHomePartners, SHOW_HOME_PARTNERS } from '../../lib/homePartners.js';
@@ -125,53 +126,6 @@ const steps = [
     n: '04',
     title: 'Vodite poslovanje iz jednog mjesta',
     text: 'Pratite raspored, rezervacije, članove i osnovni pregled poslovanja u svom sučelju.',
-  },
-];
-
-const faqs = [
-  {
-    q: 'Moram li imati tehničko znanje za korištenje Blizaria?',
-    a: 'Ne. Blizari je osmišljen tako da bude jednostavan, pregledan i razumljiv. Svoje poslovanje možete postaviti i koristiti bez posebnog tehničkog znanja.',
-  },
-  {
-    q: 'Što dobivam registracijom?',
-    a: 'Dobivate vlastitu stranicu za svoje poslovanje i alate za organizaciju rasporeda, rezervacija, klijenata, članova i članarina, uz pregled poslovanja na jednom mjestu.',
-  },
-  {
-    q: 'Što je moja online stranica?',
-    a: 'To je vaša vlastita stranica na kojoj klijenti mogu pronaći informacije o vašem poslovanju, pregledati usluge ili aktivnosti i rezervirati dostupne termine. Link na stranicu dijelite svojim klijentima gdje god želite. Vaša stranica nije dio javnog kataloga drugih poslovanja.',
-  },
-  {
-    q: 'Je li Blizari samo aplikacija za rezervacije termina?',
-    a: 'Ne. Blizari je platforma za upravljanje uslužnim poslovanjem. Osim rezervacija, pomaže vam organizirati klijente, raspored, članove, članarine i druge dijelove svakodnevnog poslovanja. Rezervacije su jedan dio sustava.',
-  },
-  {
-    q: 'Mogu li klijenti rezervirati termine dok nisam dostupan?',
-    a: 'Da. Vaša stranica za rezervacije dostupna je online, pa klijenti mogu samostalno pregledati i rezervirati dostupne termine bez potrebe da vam šalju poruku ili čekaju vaš odgovor. Rezervacije se odvijaju prema vašim postavljenim pravilima, dostupnosti i kapacitetu.',
-  },
-  {
-    q: 'Je li Blizari namijenjen samo fitness studijima?',
-    a: 'Nije. Blizari razvijam za različite vrste uslužnih poslovanja koja rade s terminima, rezervacijama, klijentima ili članovima. To uključuje fitness i treninge, wellness, salone, igraonice, različite usluge i druge djelatnosti.',
-  },
-  {
-    q: 'Vide li drugi vlasnici poslovanja moje klijente ili podatke?',
-    a: 'Ne. Svako poslovanje ima svoj zaseban prostor. Blizari nije javni imenik ni tržište na kojem se vaši klijenti prikazuju drugim pružateljima usluga. Vaši klijenti i poslovni podaci nisu dostupni drugim poslovanjima.',
-  },
-  {
-    q: 'Mogu li klijenti platiti online?',
-    a: 'Trenutačno Blizari ne podržava online kartično plaćanje. Rezervacije, evidenciju članarina i podatke o klijentima možete voditi kroz platformu, dok naplatu obavljate na način koji već koristite u svom poslovanju.',
-  },
-  {
-    q: 'Koliko košta korištenje Blizaria?',
-    a: 'Korištenje Blizaria tijekom pilot-faze je besplatno. O eventualnim budućim cijenama korisnici će biti pravovremeno obaviješteni.',
-  },
-  {
-    q: 'Moram li instalirati Blizari na računalo ili mobitel?',
-    a: 'Ne. Blizari koristite putem internetskog preglednika na računalu, tabletu ili mobitelu. Nije potrebna instalacija klasičnog programa.',
-  },
-  {
-    q: 'Mogu li promijeniti izgled i informacije svoje stranice nakon registracije?',
-    a: 'Da. Informacije o poslovanju, izgled stranice i dostupne postavke možete prilagođavati i nakon početnog postavljanja, ovisno o mogućnostima koje su dostupne u platformi.',
   },
 ];
 
@@ -313,22 +267,14 @@ export default function HomePage() {
           Sve što vam treba za organizaciju poslovanja, klijenata i rezervacija —
           na jednom mjestu.
         </p>
-        <ul className="home__offer-grid">
-          {features.map((item) => (
-            <li key={item.id} className="home__offer-card">
-              <span className="home__offer-icon-wrap" aria-hidden="true">
-                <StrokeIcon
-                  id={FEATURE_ICON_IDS[item.id] || item.id}
-                  className="home__offer-icon"
-                />
-              </span>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <MarketingIconCards
+          items={features}
+          listClassName="home__offer-grid"
+          cardClassName="home__offer-card"
+          iconWrapClassName="home__offer-icon-wrap"
+          iconClassName="home__offer-icon"
+          iconIdFor={(id) => FEATURE_ICON_IDS[id] || id}
+        />
         <div className="home__offer-close">
           <p className="home__offer-close-kicker">{BRAND.sloganHr}</p>
           <p>Manje vremena na organizaciju. Više vremena za ono što je zaista važno.</p>
@@ -500,7 +446,7 @@ export default function HomePage() {
           vođenje poslovanja.
         </p>
         <div className="home__faq">
-          {faqs.map((item) => (
+          {HOME_FAQS.map((item) => (
             <details key={item.q} className="home__faq-item">
               <summary>{item.q}</summary>
               <p>{item.a}</p>

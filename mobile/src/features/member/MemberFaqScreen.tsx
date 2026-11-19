@@ -129,9 +129,9 @@ export default function MemberFaqScreen({
         const open = openIndex === index;
         return (
           <FaqItem
-            key={item.q}
-            question={item.q}
-            answer={item.a}
+            key={item.question}
+            question={item.question}
+            answer={item.answer}
             open={open}
             colors={colors}
             onToggle={() => setOpenIndex(open ? null : index)}

@@ -1,3 +1,8 @@
+import {
+  categoryForNiche,
+  countsFromPlaces,
+  resolveDiscoverCategoryFilter,
+} from '../../../../shared/discoverCategories.js';
 import Service from '../../models/Service.js';
 import Tenant, {
   DISCOVER_EXCLUDED_SLUGS,
@@ -68,30 +73,8 @@ function publicService(service) {
   };
 }
 
-const DISCOVER_CATEGORY_NICHES = {
-  playroom: ['playroom'],
-  beauty: ['services', 'beauty'],
-  wellness: ['wellness', 'spa'],
-  sport: ['sport', 'activities'],
-  health: ['health', 'physio'],
-  workshop: ['workshop', 'education'],
-  generic: ['generic'],
-};
-
-/** Membership-first niches are private by default and omitted unless opted in. */
-const MEMBERSHIP_FIRST_NICHES = new Set(['fitness', 'pilates', 'yoga', 'powerplate']);
-
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function categoryForNiche(niche) {
-  const key = niche || 'generic';
-  if (MEMBERSHIP_FIRST_NICHES.has(key)) return 'sport';
-  for (const [categoryId, niches] of Object.entries(DISCOVER_CATEGORY_NICHES)) {
-    if (niches.includes(key)) return categoryId;
-  }
-  return 'generic';
 }
 
 function cityFromAddress(address) {
@@ -154,17 +137,10 @@ export async function discoverTenants({ q = '', category = 'all', limit = 60 } =
   const places = rows
     .map(toDiscoverPlace)
     .filter((place) => !isDiscoverExcludedTenant(place));
-  const counts = { all: places.length };
-  for (const place of places) {
-    counts[place.categoryId] = (counts[place.categoryId] || 0) + 1;
-  }
+  const counts = countsFromPlaces(places);
 
-  const categoryAlias = {
-    fitness: 'sport',
-    services: 'beauty',
-  };
-  const resolvedCategory = categoryAlias[category] || category;
-  const filtered = resolvedCategory && resolvedCategory !== 'all'
+  const resolvedCategory = resolveDiscoverCategoryFilter(category);
+  const filtered = resolvedCategory !== 'all'
     ? places.filter((place) => place.categoryId === resolvedCategory)
     : places;
 
