@@ -5,7 +5,7 @@ import { hoursLine, MEMBER_FAQS } from '../src/features/member/memberContent.js'
 describe('mobile memberContent', () => {
   test('exposes FAQ copy', () => {
     assert.ok(MEMBER_FAQS.length >= 5);
-    assert.ok(MEMBER_FAQS.every((item) => item.q && item.a));
+    assert.ok(MEMBER_FAQS.every((item) => item.question && item.answer));
   });
 
   test('formats hours lines', () => {

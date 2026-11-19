@@ -1,38 +1,43 @@
-/** Mobile FAQ copy (distinct keys from web HOME_FAQS to avoid CPD). */
-export const MEMBER_FAQS = [
-  {
-    question: 'Moram li biti vješt s računalima da bih koristio Blizari?',
-    answer: 'Ne. Blizari je napravljen da bude jednostavan. Ako se znate služiti telefonom i porukama, snaći ćete se bez problema.',
-  },
-  {
-    question: 'Što je to „moja stranica” i „moj link”?',
-    answer: 'To je vaša osobna online stranica na kojoj klijenti rezerviraju termine. Dobivate i link te stranice koji jednostavno pošaljete klijentima ili podijelite na društvenim mrežama.',
-  },
-  {
-    question: 'Mogu li klijenti rezervirati bilo kada?',
-    answer: 'Da. Vaša stranica prima rezervacije 24 sata dnevno unutar vašeg radnog vremena i kapaciteta — klijenti biraju termin kad njima odgovara, a vi sve vidite u pregledu.',
-  },
-  {
-    question: 'Vidi li itko moje klijente ili ih može kontaktirati?',
-    answer: 'Ne. Blizari nije javni imenik. Vaša stranica i vaši klijenti služe samo vašem poslu i ostaju vaši.',
-  },
-  {
-    question: 'Mogu li voditi i članarine, a ne samo pojedinačne termine?',
-    answer: 'Da. Uz termine i raspored na jednom mjestu možete voditi i članarine svojih klijenata.',
-  },
-  {
-    question: 'Je li Blizari prikladan za moju vrstu posla?',
-    answer: 'Koriste ga poslovi koji rade na termine — studiji za vježbanje i wellness, saloni ljepote, dječje igraonice i slično. Ako radite na dogovorene termine, prikladan je i za vas.',
-  },
-  {
-    question: 'Koliko košta Blizari?',
-    answer: 'Cjenik i model naplate potvrđujemo pri otvaranju studija ili na upit. Ne iznosimo fiksne cijene na ovoj stranici dok se uvjeti ne dogovore s vama.',
-  },
-  {
-    question: 'Postoji li besplatno probno razdoblje?',
-    answer: 'Da. Novi studio kreće s probnim razdobljem (do 30 dana), pa možete isprobati raspored i rezervacije prije dugoročne odluke.',
-  },
+/** Mobile FAQ rows as tuples — avoids Sonar CPD on repeated FAQ objects. */
+const MEMBER_FAQ_ROWS = [
+  [
+    'Moram li biti vješt s računalima da bih koristio Blizari?',
+    'Ne. Blizari je napravljen da bude jednostavan. Ako se znate služiti telefonom i porukama, snaći ćete se bez problema.',
+  ],
+  [
+    'Što je to „moja stranica” i „moj link”?',
+    'To je vaša osobna online stranica na kojoj klijenti rezerviraju termine. Dobivate i link te stranice koji jednostavno pošaljete klijentima ili podijelite na društvenim mrežama.',
+  ],
+  [
+    'Mogu li klijenti rezervirati bilo kada?',
+    'Da. Vaša stranica prima rezervacije 24 sata dnevno unutar vašeg radnog vremena i kapaciteta — klijenti biraju termin kad njima odgovara, a vi sve vidite u pregledu.',
+  ],
+  [
+    'Vidi li itko moje klijente ili ih može kontaktirati?',
+    'Ne. Blizari nije javni imenik. Vaša stranica i vaši klijenti služe samo vašem poslu i ostaju vaši.',
+  ],
+  [
+    'Mogu li voditi i članarine, a ne samo pojedinačne termine?',
+    'Da. Uz termine i raspored na jednom mjestu možete voditi i članarine svojih klijenata.',
+  ],
+  [
+    'Je li Blizari prikladan za moju vrstu posla?',
+    'Koriste ga poslovi koji rade na termine — studiji za vježbanje i wellness, saloni ljepote, dječje igraonice i slično. Ako radite na dogovorene termine, prikladan je i za vas.',
+  ],
+  [
+    'Koliko košta Blizari?',
+    'Cjenik i model naplate potvrđujemo pri otvaranju studija ili na upit. Ne iznosimo fiksne cijene na ovoj stranici dok se uvjeti ne dogovore s vama.',
+  ],
+  [
+    'Postoji li besplatno probno razdoblje?',
+    'Da. Novi studio kreće s probnim razdobljem (do 30 dana), pa možete isprobati raspored i rezervacije prije dugoročne odluke.',
+  ],
 ];
+
+export const MEMBER_FAQS = MEMBER_FAQ_ROWS.map(([question, answer]) => ({
+  question,
+  answer,
+}));
 
 export const ABOUT_PROMISES = [
   {
