@@ -29,8 +29,11 @@ function eachDateKey(dateFrom, dateTo) {
     throw new HttpError(400, 'Date range too large', { code: 'RANGE_TOO_LARGE' });
   }
   const keys = [];
-  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+  let cursor = new Date(start);
+  const last = end.getTime();
+  while (cursor.getTime() <= last) {
     keys.push(toDateKey(cursor));
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1, 12, 0, 0, 0);
   }
   return keys;
 }

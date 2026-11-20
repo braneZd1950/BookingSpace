@@ -35,6 +35,17 @@ const VIEW_OPTIONS = [
   { id: 'month', label: 'Mjesec' },
 ];
 
+function bookingCountLabel(count) {
+  if (count === 1) return '1 rezervacija';
+  if (count >= 2 && count <= 4) return `${count} rezervacije`;
+  return `${count} rezervacija`;
+}
+
+function slotCountLabel(count) {
+  if (count === 1) return '1 terminu';
+  return `${count} termina`;
+}
+
 const demoNames = [
   'Ivan Horvat',
   'Ana Kovač',
@@ -769,7 +780,7 @@ export default function CalendarPage() {
                 <p>
                   {dayBookings.length === 0
                     ? 'Nema rezervacija ovog dana.'
-                    : `${dayBookings.length} ${dayBookings.length === 1 ? 'rezervacija' : 'rezervacija'} u ${daySlots.length} ${daySlots.length === 1 ? 'terminu' : 'termina'}`}
+                    : `${bookingCountLabel(dayBookings.length)} u ${slotCountLabel(daySlots.length)}`}
                 </p>
               </div>
               <p className="cal__meta">
