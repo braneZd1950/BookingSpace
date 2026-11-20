@@ -4,7 +4,7 @@ import './SiteFooter.scss';
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
-      <PlatformFooter credit="anyminutes" />
+      <PlatformFooter />
     </footer>
   );
 }

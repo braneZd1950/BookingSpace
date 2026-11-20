@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { BLIZARI_LEGAL } from '../../../shared/memberAccountSettings.js';
 import { usePrivacyConsent } from '../hooks/usePrivacyConsent.js';
 import './PrivacyConsentPanel.scss';
 
@@ -9,11 +9,11 @@ export default function PrivacyConsentPanel({ compact = false }) {
     <article className={compact ? 'privacy-consent is-compact' : 'privacy-consent'}>
       <h2>Privola za obradu podataka</h2>
       <p>
-        Za rezervacije i članstvo potrebna je privola usklađena s GDPR-om i
-        pravilima platforme (verzija
+        Ovo je privola potrebna za rezervacije i članstvo (verzija
         {' '}
         {version}
-        ). Bez nje možete samo pregledavati sadržaj.
+        ). Nije ista kao marketinška privola — povlačenje novosti ne blokira
+        osnovne rezervacije, ali povlačenje ove privole može ograničiti rezervacije.
       </p>
 
       <div className={`privacy-consent__status${accepted ? ' is-on' : ''}`}>
@@ -35,9 +35,9 @@ export default function PrivacyConsentPanel({ compact = false }) {
             Prihvatite privolu
           </button>
         )}
-        <Link to="/privatnost">Privatnost</Link>
-        <Link to="/uvjeti">Uvjeti</Link>
-        <Link to="/kolacici">Kolačići</Link>
+        <a href={BLIZARI_LEGAL.privacy} target="_blank" rel="noreferrer">
+          Obavijest o privatnosti
+        </a>
       </div>
     </article>
   );

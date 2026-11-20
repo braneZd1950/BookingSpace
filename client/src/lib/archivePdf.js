@@ -197,7 +197,7 @@ function drawCoverHeader(doc, {
   doc.setFont('ArchiveSans', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...C.brand);
-  doc.text('AnyMinutes', MARGIN, y);
+  doc.text('Blizari', MARGIN, y);
 
   doc.setFont('ArchiveSans', 'normal');
   doc.setFontSize(8);
@@ -443,7 +443,7 @@ function drawAttestation(doc, startY, generatedAt, generatedBy) {
   doc.setFontSize(8);
   doc.setTextColor(...C.muted);
   const text = IS_LIVE
-    ? 'Ovaj dokument izrađen je iz živih podataka AnyMinutes platforme u trenutku generiranja. Namijenjen je tiskanju ili lokalnoj pohrani izvan baze podataka. Nije elektronički potpisan; vjerodostojnost proizlazi iz pristupa ovlaštene osobe i vremenske oznake dokumenta.'
+    ? 'Ovaj dokument izrađen je iz živih podataka Blizari platforme u trenutku generiranja. Namijenjen je tiskanju ili lokalnoj pohrani izvan baze podataka. Nije elektronički potpisan; vjerodostojnost proizlazi iz pristupa ovlaštene osobe i vremenske oznake dokumenta.'
     : 'Ovaj dokument koristi finalni produkcijski predložak. Vizual, tipografija i struktura jednaki su službenoj arhivi. U ovom okruženju ispis služi za provjeru izgleda i sadržaja; klasifikacija ostaje „predprodukcijski ispis” dok se ne generira na produkcijskom buildu.';
   const lines = doc.splitTextToSize(text, w - MARGIN * 2);
   doc.text(lines, MARGIN, y);
@@ -545,7 +545,7 @@ function drawFooters(doc, documentId, generatedAt) {
     doc.setFont('ArchiveSans', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(...C.muted);
-    doc.text('AnyMinutes  ·  arhivski ispis  ·  povjerljivo', MARGIN, h - 8);
+    doc.text('Blizari  ·  arhivski ispis  ·  povjerljivo', MARGIN, h - 8);
     doc.text(
       `${documentId}  ·  ${generatedAt}  ·  ${i} / ${pageCount}`,
       w - MARGIN,
@@ -574,10 +574,10 @@ export async function downloadArchivePdf(options) {
 
   doc.setProperties({
     title: options.title,
-    subject: 'AnyMinutes arhivski ispis',
+    subject: 'Blizari arhivski ispis',
     author: authorLine(options.generatedBy),
-    keywords: 'arhiv, ispis, administracija, anyminutes, pecat',
-    creator: 'AnyMinutes',
+    keywords: 'arhiv, ispis, administracija, blizari, pecat',
+    creator: 'Blizari',
   });
 
   let y = drawCoverHeader(doc, {

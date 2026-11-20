@@ -11,6 +11,8 @@ export {
   sameDay,
   toDateKey,
   upcomingDays,
+  weekDates,
+  weekStart,
   withinCancellationWindow,
   zonedClock,
 } from '../../../../shared/studioTime.js';

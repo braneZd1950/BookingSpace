@@ -67,6 +67,38 @@ const authApi = api.injectEndpoints({
         body,
       }),
     }),
+    confirmEmailChange: build.mutation({
+      query: (body) => ({
+        url: '/auth/email/confirm',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Me'],
+    }),
+    resendEmailChange: build.mutation({
+      query: () => ({
+        url: '/auth/email/resend',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Me'],
+    }),
+    logoutAll: build.mutation({
+      query: () => ({
+        url: '/auth/logout-all',
+        method: 'POST',
+      }),
+    }),
+    exportMyData: build.query({
+      query: () => '/auth/me/export',
+    }),
+    deleteMyAccount: build.mutation({
+      query: (body) => ({
+        url: '/auth/me/delete',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Me'],
+    }),
   }),
 });
 
@@ -81,4 +113,9 @@ export const {
   useChangePasswordMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useConfirmEmailChangeMutation,
+  useResendEmailChangeMutation,
+  useLogoutAllMutation,
+  useLazyExportMyDataQuery,
+  useDeleteMyAccountMutation,
 } = authApi;

@@ -16,6 +16,23 @@ export function monthRange(from = new Date()) {
   };
 }
 
+/** Inclusive local calendar window for the last N days (including today). */
+export function rollingDaysRange(days = 30, from = new Date()) {
+  const n = Math.max(1, Number(days) || 30);
+  const pad = (value) => String(value).padStart(2, '0');
+  const end = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const start = new Date(end);
+  start.setDate(start.getDate() - (n - 1));
+  const toKey = (date) => (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  );
+  return {
+    dateFrom: toKey(start),
+    dateTo: toKey(end),
+    days: n,
+  };
+}
+
 export function dateKeyToLocalDate(date) {
   const [y, m, d] = String(date || '').split('-').map(Number);
   return new Date(y, m - 1, d);

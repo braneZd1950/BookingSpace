@@ -1,11 +1,17 @@
 import { Link, useOutletContext } from 'react-router-dom';
+import { useListServicesQuery } from '../../api/serviceApi.js';
 import { GALLERY_ENABLED } from '../../lib/studioFeatures.js';
 import { findLayout } from './layouts.js';
 import SiteFrame, { frameSources } from './SiteFrame.jsx';
 import { studioHost } from './siteTemplates.js';
 
+const REAL_ID = /^[a-f\d]{24}$/i;
+
 export function StudioHome() {
   const { studio, palette } = useOutletContext();
+  const tenantId = String(studio.id || '');
+  const ready = REAL_ID.test(tenantId);
+  const { data: serviceData } = useListServicesQuery(tenantId, { skip: !ready });
   const draft = {
     description: studio.description || '',
     phone: studio.phone || '',
@@ -17,6 +23,14 @@ export function StudioHome() {
   };
   const sources = frameSources(draft, '', '');
   const host = studioHost(studio.slug);
+  const services = (serviceData?.services || []).filter((item) => item.active !== false);
+  const addressParts = String(studio.address || '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const city = String(studio.city || '').trim()
+    || addressParts[addressParts.length - 1]
+    || '';
 
   if (!studio.guideDone) {
     return (
@@ -54,6 +68,10 @@ export function StudioHome() {
       }}
       galleryImages={GALLERY_ENABLED ? (studio.siteSettings?.gallery || []) : []}
       hours={studio.hours}
+      services={services}
+      niche={studio.niche || ''}
+      nicheCustom={studio.nicheCustom || ''}
+      city={city}
       layout={findLayout(studio.layout).id}
       bookTo="/stranica/termini"
       slug={studio.slug}

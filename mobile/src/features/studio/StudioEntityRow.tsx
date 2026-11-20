@@ -1,5 +1,13 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { studioUiStyles as ui } from './studioUiStyles.js';
 
 type StudioEntityRowProps = {
@@ -11,6 +19,8 @@ type StudioEntityRowProps = {
   meta: string;
   extra?: ReactNode;
   actions?: ReactNode;
+  onPress?: () => void;
+  showChevron?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -24,11 +34,13 @@ export default function StudioEntityRow({
   meta,
   extra,
   actions,
+  onPress,
+  showChevron = Boolean(onPress),
   style,
 }: StudioEntityRowProps) {
   const initial = name.trim().slice(0, 1).toUpperCase() || initialFallback;
-  return (
-    <View style={[ui.row, muted && ui.rowMuted, style]}>
+  const body = (
+    <>
       <View style={ui.avatar}>
         <Text style={ui.avatarText}>{initial}</Text>
       </View>
@@ -47,6 +59,37 @@ export default function StudioEntityRow({
         {extra}
         {actions ? <View style={ui.actions}>{actions}</View> : null}
       </View>
+      {showChevron ? (
+        <Ionicons
+          name="chevron-forward"
+          size={16}
+          color="rgba(232, 242, 239, 0.4)"
+          style={entityRowStyles.chevron}
+        />
+      ) : null}
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        style={({ pressed }) => [
+          ui.row,
+          muted && ui.rowMuted,
+          pressed && ui.pressed,
+          style,
+        ]}
+      >
+        {body}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={[ui.row, muted && ui.rowMuted, style]}>
+      {body}
     </View>
   );
 }
@@ -82,6 +125,8 @@ export const entityRowStyles = StyleSheet.create({
     fontFamily: 'Outfit_400Regular',
     fontSize: 12,
     color: 'rgba(232, 242, 239, 0.45)',
-    paddingVertical: 6,
+  },
+  chevron: {
+    marginTop: 10,
   },
 });

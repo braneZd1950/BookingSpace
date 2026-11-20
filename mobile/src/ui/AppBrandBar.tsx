@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import BrandMark from './BrandMark';
 import LiveClockMark from './LiveClockMark';
 
 type AppBrandBarProps = {
@@ -10,7 +11,7 @@ type AppBrandBarProps = {
   marginBottom?: number;
 };
 
-/** Brand + live clock logo + logout control for studio / member home tops. */
+/** B mark + Blizari left; live clock + logout right. */
 export default function AppBrandBar({
   onLogout,
   loggingOut = false,
@@ -21,23 +22,26 @@ export default function AppBrandBar({
   return (
     <View style={[styles.topBar, { marginBottom }]}>
       <View style={styles.brandRow}>
-        <LiveClockMark size={30} accentColor={accentColor} />
+        <BrandMark size={28} />
         <Text style={[styles.brand, { color: brandColor }]}>Blizari</Text>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Odjava"
-        onPress={onLogout}
-        disabled={loggingOut}
-        hitSlop={10}
-        style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
-      >
-        {loggingOut ? (
-          <ActivityIndicator color={accentColor} size="small" />
-        ) : (
-          <Ionicons name="power-outline" size={22} color={accentColor} />
-        )}
-      </Pressable>
+      <View style={styles.rightRow}>
+        <LiveClockMark size={56} accentColor={accentColor} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Odjava"
+          onPress={onLogout}
+          disabled={loggingOut}
+          hitSlop={10}
+          style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
+        >
+          {loggingOut ? (
+            <ActivityIndicator color={accentColor} size="small" />
+          ) : (
+            <Ionicons name="power-outline" size={22} color={accentColor} />
+          )}
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -47,12 +51,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flexShrink: 1,
+  },
+  rightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 0,
   },
   brand: {
     fontFamily: 'CormorantGaramond_600SemiBold',

@@ -3,6 +3,7 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -30,6 +31,8 @@ type GradientScrollShellProps = {
   paddingTop?: number;
   paddingBottom?: number;
   contentMinHeight?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 };
 
 /**
@@ -47,11 +50,14 @@ export default function GradientScrollShell({
   paddingTop,
   paddingBottom,
   contentMinHeight = true,
+  refreshing = false,
+  onRefresh,
 }: GradientScrollShellProps) {
   const { height } = useWindowDimensions();
   const compact = height < 740;
   const top = paddingTop ?? (compact ? 48 : 64);
   const bottom = paddingBottom ?? (compact ? 28 : 40);
+  const canRefresh = typeof onRefresh === 'function';
 
   const scroll = (
     <ScrollView
@@ -66,7 +72,17 @@ export default function GradientScrollShell({
       ]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-      bounces={false}
+      bounces={canRefresh}
+      refreshControl={
+        canRefresh ? (
+          <RefreshControl
+            refreshing={Boolean(refreshing)}
+            onRefresh={onRefresh}
+            tintColor="#14B8A6"
+            colors={['#14B8A6']}
+          />
+        ) : undefined
+      }
     >
       <Animated.View style={enterStyle(enter)}>{children}</Animated.View>
       {footer}

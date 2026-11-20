@@ -3,4 +3,5 @@ export {
   daysLeft,
   daysLeftInMonth,
   monthRange,
+  rollingDaysRange,
 } from '../../../shared/dateRange.js';

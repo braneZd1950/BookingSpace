@@ -9,6 +9,7 @@ import {
   listPlatformActivity,
   listPlatformStudios,
   listPlatformUsers,
+  summarizeStudioAnalytics,
   summarizeUsage,
   trackUsage,
 } from '../../utils/analytics.js';
@@ -66,7 +67,7 @@ export async function platformHandler(req, res) {
 
 export async function studioHandler(req, res) {
   await requireMember(req.user, req.input.params.tenantId, MANAGE_ROLES);
-  const summary = await summarizeUsage({
+  const summary = await summarizeStudioAnalytics({
     tenantId: req.input.params.tenantId,
     days: req.input.query.days,
   });

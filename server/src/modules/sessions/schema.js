@@ -12,3 +12,14 @@ export const availabilitySchema = z.object({
     to: clockTime.optional(),
   }),
 });
+
+export const occupancySchema = z.object({
+  params: z.object({
+    tenantId: objectId,
+  }),
+  query: z.object({
+    dateFrom: calendarDate,
+    dateTo: calendarDate,
+    serviceId: objectId.optional(),
+  }),
+});

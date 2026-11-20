@@ -8,16 +8,17 @@ import CalendarPage from '../pages/owner/CalendarPage.jsx';
 import LaunchPlanPage from '../pages/owner/LaunchPlanPage.jsx';
 import MembersPage from '../pages/owner/MembersPage.jsx';
 import OnlinePage from '../pages/owner/OnlinePage.jsx';
+import ServicesPage from '../pages/owner/ServicesPage.jsx';
 import SetupPage from '../pages/owner/SetupPage.jsx';
 import SettingsPage from '../pages/owner/SettingsPage.jsx';
 import StudioLayout from '../pages/owner/StudioLayout.jsx';
 import TerminiPage from '../pages/owner/TerminiPage.jsx';
 import { StudioHome } from '../pages/owner/studioPages.jsx';
 import MemberBookPage from '../pages/member/MemberBookPage.jsx';
+import MemberCalendarPage from '../pages/member/MemberCalendarPage.jsx';
 import MemberHomePage from '../pages/member/MemberHomePage.jsx';
 import MemberLayout from '../pages/member/MemberLayout.jsx';
-import MemberOnlinePage from '../pages/member/MemberOnlinePage.jsx';
-import MemberSettingsPage from '../pages/member/MemberSettingsPage.jsx';
+import MemberOnlinePage from '../pages/member/MemberOnlinePage.jsx';import MemberSettingsPage from '../pages/member/MemberSettingsPage.jsx';
 import StudioPolicyPage from '../pages/member/StudioPolicyPage.jsx';
 import UsageTracker from '../components/UsageTracker.jsx';
 import StudioAnalyticsPage from '../pages/owner/StudioAnalyticsPage.jsx';
@@ -45,6 +46,7 @@ import {
 import PlatformAnalyticsPage from '../pages/public/PlatformAnalyticsPage.jsx';
 import AboutPage from '../pages/public/AboutPage.jsx';
 import RegisterPage from '../pages/public/RegisterPage.jsx';
+import ConfirmEmailPage from '../pages/public/ConfirmEmailPage.jsx';
 import ResetPasswordPage from '../pages/public/ResetPasswordPage.jsx';
 import {
   ErrorPage,
@@ -82,6 +84,7 @@ export default function App() {
         <Route path="/s/:slug" element={<MemberLayout />}>
           <Route index element={<MemberHomePage />} />
           <Route path="termini" element={<MemberBookPage />} />
+          <Route path="kalendar" element={<MemberCalendarPage />} />
           {ONLINE_ENABLED ? <Route path="online" element={<MemberOnlinePage />} /> : null}
           <Route path="otkrij" element={<Navigate to=".." replace />} />
           <Route path="privatnost" element={<StudioPolicyPage kind="privacy" />} />
@@ -96,6 +99,7 @@ export default function App() {
           {ONLINE_ENABLED ? <Route path="online" element={<OnlinePage />} /> : null}
           <Route path="kalendar" element={<CalendarPage />} />
           <Route path="clanovi" element={<MembersPage />} />
+          <Route path="usluge" element={<ServicesPage />} />
           <Route path="analitika" element={<StudioAnalyticsPage />} />
           {LAUNCH_PLAN_ENABLED ? <Route path="plan" element={<LaunchPlanPage />} /> : null}
           <Route path="postavke" element={<SettingsPage />} />
@@ -108,6 +112,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />
+          <Route path="/potvrda-emaila" element={<ConfirmEmailPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={<AdminGate />}>
             <Route index element={<AdminHomePage />} />

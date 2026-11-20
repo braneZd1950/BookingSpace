@@ -86,6 +86,7 @@ export function buildMemberInsights(memberships, bookings) {
     endingSoonCount: endingSoon.length,
     packageHotCount: packageHot.length,
     noVisitCount: noVisit.length,
+    withVisitCount: withVisit,
     regularity: active.length > 0 ? Math.round((withVisit / active.length) * 100) : 0,
     endingSoon: endingSoon.slice(0, 6),
     packageHot: packageHot.slice(0, 6),

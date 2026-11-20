@@ -47,7 +47,8 @@ export default function LiveClockMark({
   const [{ minuteDeg, hourDeg, secondDeg }, setAngles] = useState(() => clockAngles());
   const markPulse = useRef(new Animated.Value(0.55)).current;
   const compact = size < 56;
-  const showSeconds = size >= 64;
+  /** Always show a second hand so the mark reads as a real live clock. */
+  const showSeconds = true;
 
   useEffect(() => {
     const sync = () => {
@@ -56,7 +57,8 @@ export default function LiveClockMark({
       setAngles(clockAngles(next));
     };
     sync();
-    const id = setInterval(sync, 1000);
+    // Local device clock — sub-second tick keeps the second hand moving smoothly.
+    const id = setInterval(sync, 250);
     return () => clearInterval(id);
   }, []);
 

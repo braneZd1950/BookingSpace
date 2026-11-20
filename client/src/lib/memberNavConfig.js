@@ -5,6 +5,7 @@
 export const MEMBER_NAV_CORE = [
   { key: 'home', label: 'Početna', segment: '' },
   { key: 'slots', label: 'Termini', segment: 'termini' },
+  { key: 'calendar', label: 'Kalendar', segment: 'kalendar' },
   { key: 'privacy', label: 'Privatnost', segment: 'privatnost' },
   { key: 'settings', label: 'Postavke', segment: 'postavke', requiresAuth: true },
 ];

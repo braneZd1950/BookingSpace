@@ -39,6 +39,14 @@ const IconSlots = () => strokeIcon(
   </>,
 );
 
+const IconCalendar = () => strokeIcon(
+  <>
+    <rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M8 3v4M16 3v4M4 10h16" />
+    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
+  </>,
+);
+
 const IconPlay = () => strokeIcon(
   <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" d="M8 6.2v11.6L18.5 12 8 6.2z" />,
 );
@@ -191,6 +199,7 @@ export default function MemberLayout() {
   const memberIcons = {
     home: IconHome,
     slots: IconSlots,
+    calendar: IconCalendar,
     online: IconPlay,
     privacy: IconPrivacy,
     settings: IconSettings,

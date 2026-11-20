@@ -29,7 +29,12 @@ export {
   changePassword,
   forgotPassword,
   resetPassword,
+  confirmEmailChange,
+  resendEmailChange,
   logout,
+  logoutAll,
+  exportMyData,
+  deleteMyAccount,
 } from './auth.js';
 
 export {
@@ -46,6 +51,7 @@ export {
   createService,
   updateService,
   getAvailability,
+  getTenantOccupancy,
 } from './services.js';
 
 export { getStudioAnalytics } from './analytics.js';

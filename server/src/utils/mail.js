@@ -345,6 +345,56 @@ export async function sendPasswordResetEmail({
   return sendMail({ to, subject, text, html });
 }
 
+export async function sendEmailChangeConfirmEmail({
+  to,
+  memberName,
+  confirmUrl,
+}) {
+  const subject = 'Potvrda nove e-pošte — Blizari';
+  const text = [
+    `Pozdrav ${memberName},`,
+    '',
+    'Zatražena je promjena e-pošte na Blizari računu.',
+    'Link vrijedi 60 minuta.',
+    '',
+    'Potvrdite novu adresu:',
+    confirmUrl,
+    '',
+    'Ako niste tražili promjenu, zanemarite ovu poruku.',
+  ].join('\n');
+
+  const safeName = escapeHtml(memberName);
+  const safeUrl = escapeAttr(confirmUrl);
+  const safeUrlText = escapeHtml(confirmUrl);
+
+  const html = renderEmailShell({
+    brandTitle: 'Blizari',
+    eyebrow: 'Promjena e-pošte',
+    footerLabel: 'Blizari · sigurnost računa',
+    bodyHtml: `
+            ${greeting(safeName)}
+            ${bodyParagraph(`Zatražena je promjena e-pošte na vašem Blizari računu.
+              Link vrijedi <strong style="color:#0b3d4a">60 minuta</strong>.`, { marginBottom: 22 })}
+            ${ctaButton(safeUrl, 'Potvrdite novu e-poštu')}
+            ${detailCard(`
+              <tr>
+                <td style="padding:18px 20px">
+                  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6a7880;font-weight:700">
+                    Ako gumb ne radi
+                  </p>
+                  <p style="margin:0;font-size:13px;line-height:1.5;word-break:break-all">
+                    <a href="${safeUrl}" style="color:#0e6b73;font-weight:700;text-decoration:underline">${safeUrlText}</a>
+                  </p>
+                </td>
+              </tr>
+            `)}
+            ${mutedNote('Ako niste tražili promjenu, zanemarite poruku.')}
+`,
+  });
+
+  return sendMail({ to, subject, text, html });
+}
+
 export async function sendSubscriptionWarningEmail({
   to,
   contactName,

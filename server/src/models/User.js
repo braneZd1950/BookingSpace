@@ -42,6 +42,24 @@ const userSchema = new Schema(
       default: 'CUSTOMER',
       required: true,
     },
+    /** Set when email is confirmed (register with password, Google, or change confirm). */
+    emailVerifiedAt: {
+      type: Date,
+    },
+    pendingEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      select: false,
+    },
+    emailChangeTokenHash: {
+      type: String,
+      select: false,
+    },
+    emailChangeExpires: {
+      type: Date,
+      select: false,
+    },
     passwordResetTokenHash: {
       type: String,
       select: false,
@@ -56,6 +74,8 @@ const userSchema = new Schema(
       memberEmail: { type: Boolean, default: true },
       weeklyDigest: { type: Boolean, default: false },
       marketing: { type: Boolean, default: false },
+      marketingStudio: { type: Boolean, default: false },
+      marketingPlatform: { type: Boolean, default: false },
       bookingPush: { type: Boolean, default: true },
       cancelPush: { type: Boolean, default: true },
       memberPush: { type: Boolean, default: true },
@@ -74,6 +94,11 @@ const userSchema = new Schema(
       acceptedAt: { type: Date },
       withdrawnAt: { type: Date },
       source: { type: String, trim: true, maxlength: 40 },
+    },
+    /** Soft-delete timestamp — login rejected when set. */
+    deletedAt: {
+      type: Date,
+      default: null,
     },
     /** Bump on logout / password change to invalidate existing JWTs. */
     tokenVersion: {

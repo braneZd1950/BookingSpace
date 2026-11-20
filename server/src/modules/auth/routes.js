@@ -3,18 +3,25 @@ import { requireAuth } from '../../middleware/auth.js';
 import { createRateLimiter } from '../../middleware/rateLimit.js';
 import { validate } from '../../middleware/validate.js';
 import {
+  confirmEmail,
+  deleteMe,
+  exportMe,
   forgotPassword,
   googleAuth,
   login,
   logout,
+  logoutAll,
   me,
   register,
+  resendEmail,
   resetPassword,
   updatePassword,
   updateProfile,
 } from './controller.js';
 import {
   changePasswordSchema,
+  confirmEmailChangeSchema,
+  deleteAccountSchema,
   forgotPasswordSchema,
   googleAuthSchema,
   loginSchema,
@@ -41,8 +48,13 @@ router.post('/login', authLimiter, validate(loginSchema), login);
 router.post('/google', authLimiter, validate(googleAuthSchema), googleAuth);
 router.post('/forgot-password', forgotLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', authLimiter, validate(resetPasswordSchema), resetPassword);
+router.post('/email/confirm', authLimiter, validate(confirmEmailChangeSchema), confirmEmail);
+router.post('/email/resend', requireAuth, authLimiter, resendEmail);
 router.post('/logout', requireAuth, logout);
+router.post('/logout-all', requireAuth, logoutAll);
 router.get('/me', requireAuth, me);
+router.get('/me/export', requireAuth, exportMe);
+router.post('/me/delete', requireAuth, authLimiter, validate(deleteAccountSchema), deleteMe);
 router.patch('/me', requireAuth, validate(updateMeSchema), updateProfile);
 router.patch('/password', requireAuth, authLimiter, validate(changePasswordSchema), updatePassword);
 

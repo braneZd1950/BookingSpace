@@ -4,6 +4,16 @@ import SiteFrame, { frameSources } from '../owner/SiteFrame.jsx';
 import { hoursFromWorking, paletteFromTenant, sectionsFromTenant } from './publicSite.js';
 import './MemberHomePage.scss';
 
+function cityFromTenant(tenant) {
+  const direct = String(tenant?.city || '').trim();
+  if (direct) return direct;
+  const parts = String(tenant?.address || '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts[parts.length - 1] || '';
+}
+
 const untilDay = new Intl.DateTimeFormat('hr-HR', {
   day: 'numeric',
   month: 'long',
@@ -116,6 +126,10 @@ export default function MemberHomePage() {
         sections={sections}
         galleryImages={GALLERY_ENABLED ? (tenant.siteSettings?.gallery || []) : []}
         hours={hours}
+        services={tenant.services || []}
+        niche={tenant.niche || ''}
+        nicheCustom={tenant.nicheCustom || ''}
+        city={cityFromTenant(tenant)}
         bookTo={bookTo}
         slug={slug}
         legalBase={`/s/${slug}`}

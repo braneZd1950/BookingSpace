@@ -50,6 +50,38 @@ export function resetPassword(body) {
   return http.post('/auth/reset-password', body, { auth: false });
 }
 
+/** POST /auth/email/confirm */
+export function confirmEmailChange(body) {
+  return http.post('/auth/email/confirm', body, { auth: false });
+}
+
+/** POST /auth/email/resend */
+export function resendEmailChange() {
+  return http.post('/auth/email/resend', {});
+}
+
+/** POST /auth/logout-all */
+export async function logoutAll() {
+  try {
+    await http.post('/auth/logout-all', {});
+  } catch {
+    /* lokalni logout i dalje ide */
+  }
+  await clearToken();
+}
+
+/** GET /auth/me/export */
+export function exportMyData() {
+  return http.get('/auth/me/export');
+}
+
+/** POST /auth/me/delete */
+export async function deleteMyAccount(body) {
+  const data = await http.post('/auth/me/delete', body);
+  await clearToken();
+  return data;
+}
+
 /**
  * Odjava: pokušaj server revoke, uvijek obriši lokalni token.
  * POST /auth/logout

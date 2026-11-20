@@ -84,6 +84,12 @@ const IconPeople = () => strokeIcon(
   </>,
 );
 
+const IconServices = () => strokeIcon(
+  <>
+    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M6 7.5h12M6 12h12M6 16.5h8" />
+  </>,
+);
+
 const IconChart = () => strokeIcon(
   <>
     <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4.5 19.5h15" />
@@ -127,6 +133,7 @@ const ICONS = {
   payments: IconTill,
   calendar: IconCalendar,
   members: IconPeople,
+  services: IconServices,
   analytics: IconChart,
   plan: IconPlan,
   settings: IconGear,

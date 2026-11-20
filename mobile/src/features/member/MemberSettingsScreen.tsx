@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Switch,
   Text,
@@ -15,10 +18,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import {
   changePassword,
+  deleteMyAccount,
+  exportMyData,
   getMe,
+  logoutAll,
+  recordConsentWait,
+  resendEmailChange,
   updateMe,
-} from '../../api/auth.js';
-import { recordConsent } from '../../api/consent.js';
+} from './memberSettingsApi.js';
 import { setToken } from '../../api/token.js';
 import { CONSENT_VERSION, hasValidConsent } from '../../lib/consent.js';
 import {
@@ -26,6 +33,24 @@ import {
   normalizeUiTheme,
   syncUiTheme,
 } from '../../lib/uiTheme.js';
+import {
+  ACCOUNT_SETTINGS_SECTIONS,
+  LEGAL_LINKS,
+  OPERATIONAL_NOTIFY_OPTIONS,
+  PROMOTIONAL_NOTIFY_OPTIONS,
+  emailStatusLabel,
+  mergeMemberNotifyPrefs,
+} from '../../../../shared/memberAccountSettings.js';
+import { BRAND } from '../../lib/brandColors.js';
+import { type LegalDocId } from '../auth/LegalDocumentScreen';
+import { findLegalDoc, LEGAL_UPDATED } from '../auth/platformLegal.js';
+import StudioTopCurtain from '../studio/StudioTopCurtain';
+
+const LEGAL_DOC_BY_LINK: Record<string, LegalDocId> = {
+  privacy: 'privatnost',
+  terms: 'uvjeti',
+  cookies: 'kolacici',
+};
 
 type MemberSettingsScreenProps = {
   tenantName?: string;
@@ -35,43 +60,15 @@ type MemberSettingsScreenProps = {
   onThemeChange?: (theme: string) => void;
 };
 
+type SectionId = (typeof ACCOUNT_SETTINGS_SECTIONS)[number]['id'];
+
 const THEME_OPTIONS = [
   { value: 'light', label: 'Svijetla', hint: 'Uvijek svijetlo' },
   { value: 'dark', label: 'Tamna', hint: 'Uvijek tamno' },
   {
     value: 'system',
-    label: 'Prema sustavu',
+    label: 'Prema uređaju',
     hint: 'Prati postavku telefona ili računala',
-  },
-];
-
-const DEFAULT_PREFS = {
-  bookingEmail: true,
-  cancelEmail: true,
-  marketing: false,
-  reminderPush: false,
-};
-
-const NOTIFY_OPTIONS = [
-  {
-    key: 'bookingEmail' as const,
-    label: 'Potvrda rezervacije',
-    hint: 'E-pošta kad rezervirate termin',
-  },
-  {
-    key: 'cancelEmail' as const,
-    label: 'Otkazivanje',
-    hint: 'E-pošta kad se termin otkaže',
-  },
-  {
-    key: 'marketing' as const,
-    label: 'Novosti',
-    hint: 'Povremene obavijesti studija i platforme',
-  },
-  {
-    key: 'reminderPush' as const,
-    label: 'Podsjetnik',
-    hint: 'Push prije početka termina (uskoro)',
   },
 ];
 
@@ -87,27 +84,52 @@ export default function MemberSettingsScreen({
   const colors = colorsForTheme(uiTheme);
 
   const [loading, setLoading] = useState(true);
-  const [account, setAccount] = useState({ name: '', email: '', phone: '' });
-  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const [userMeta, setUserMeta] = useState<{
+    email?: string;
+    emailVerified?: boolean;
+    pendingEmail?: string | null;
+    hasPassword?: boolean;
+  }>({});
+  const [account, setAccount] = useState({ name: '', phone: '' });
+  const [emailDraft, setEmailDraft] = useState('');
+  const [prefs, setPrefs] = useState(mergeMemberNotifyPrefs());
   const [theme, setTheme] = useState(normalizeUiTheme(uiTheme));
   const [password, setPassword] = useState({
     currentPassword: '',
     newPassword: '',
     again: '',
   });
+  const [deleteConfirm, setDeleteConfirm] = useState('');
   const [consentOk, setConsentOk] = useState(false);
-  const [savingAccount, setSavingAccount] = useState(false);
-  const [savingPrefs, setSavingPrefs] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
-  const [savingConsent, setSavingConsent] = useState(false);
-  const [notes, setNotes] = useState({
-    account: '',
-    theme: '',
-    prefs: '',
-    password: '',
-    consent: '',
-  });
-  const [errors, setErrors] = useState({ account: '', password: '' });
+  const [consentInfo, setConsentInfo] = useState<{ version?: string; acceptedAt?: string }>({});
+  const [busy, setBusy] = useState('');
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [section, setSection] = useState<SectionId>('osobni');
+  const [legalDoc, setLegalDoc] = useState<LegalDocId | null>(null);
+  const activeSection = ACCOUNT_SETTINGS_SECTIONS.find((item) => item.id === section)
+    || ACCOUNT_SETTINGS_SECTIONS[0];
+  const legalDocument = legalDoc ? findLegalDoc(legalDoc) : null;
+  const legalSections = legalDocument
+    ? ((legalDocument.sections?.() as Array<{
+      id?: string;
+      title: string;
+      summary?: string;
+      paragraphs?: string[];
+      bullets?: string[];
+      note?: string;
+      law?: string;
+    }>) || [])
+    : [];
+
+  function openLegalLink(linkId: string, href: string) {
+    const docId = LEGAL_DOC_BY_LINK[linkId];
+    if (docId) {
+      setLegalDoc(docId);
+      return;
+    }
+    void Linking.openURL(href);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -118,12 +140,21 @@ export default function MemberSettingsScreen({
         if (cancelled || !user) return;
         setAccount({
           name: user.name || '',
-          email: user.email || '',
           phone: user.phone || '',
         });
-        setPrefs({ ...DEFAULT_PREFS, ...(user.notificationPrefs || {}) });
+        setUserMeta({
+          email: user.email,
+          emailVerified: Boolean(user.emailVerified),
+          pendingEmail: user.pendingEmail || null,
+          hasPassword: user.hasPassword !== false,
+        });
+        setPrefs(mergeMemberNotifyPrefs(user.notificationPrefs));
         setTheme(normalizeUiTheme(user.uiTheme || uiTheme));
         setConsentOk(hasValidConsent(user));
+        setConsentInfo({
+          version: user.privacyConsent?.version,
+          acceptedAt: user.privacyConsent?.acceptedAt,
+        });
       } catch {
         /* ignore */
       } finally {
@@ -135,142 +166,237 @@ export default function MemberSettingsScreen({
     };
   }, [uiTheme]);
 
+  function note(key: string, text: string) {
+    setNotes((current) => ({ ...current, [key]: text }));
+  }
+
+  function fail(key: string, text: string) {
+    setErrors((current) => ({ ...current, [key]: text }));
+  }
+
   async function saveUiTheme(nextRaw: string) {
     const next = normalizeUiTheme(nextRaw);
     setTheme(next);
     syncUiTheme(next);
     onThemeChange?.(next);
-    setNotes((current) => ({ ...current, theme: '' }));
+    note('theme', '');
     try {
       await updateMe({ uiTheme: next });
-      setNotes((current) => ({
-        ...current,
-        theme: next === 'dark'
+      note(
+        'theme',
+        next === 'dark'
           ? 'Tamna tema je spremljena na račun.'
           : next === 'light'
             ? 'Svijetla tema je spremljena na račun.'
             : 'Tema uređaja je spremljena na račun.',
-      }));
+      );
     } catch {
-      setNotes((current) => ({
-        ...current,
-        theme: 'Tema ostaje lokalno — nije spremljena na račun.',
-      }));
+      note('theme', 'Tema ostaje lokalno — nije spremljena na račun.');
     }
   }
 
   async function saveAccount() {
-    setErrors((current) => ({ ...current, account: '' }));
-    setNotes((current) => ({ ...current, account: '' }));
+    fail('account', '');
+    note('account', '');
     const name = account.name.trim();
-    const email = account.email.trim().toLowerCase();
-    if (!name || !email) {
-      setErrors((current) => ({ ...current, account: 'Ime i e-pošta su obavezni.' }));
+    if (!name) {
+      fail('account', 'Ime i prezime su obavezni.');
       return;
     }
-    setSavingAccount(true);
+    setBusy('account');
     try {
       await updateMe({
         name,
-        email,
         phone: account.phone.trim() || undefined,
       });
-      setNotes((current) => ({ ...current, account: 'Račun je spremljen.' }));
+      note('account', 'Osobni podaci su spremljeni.');
     } catch (err) {
-      setErrors((current) => ({
-        ...current,
-        account: err instanceof Error ? err.message : 'Račun nije spremljen.',
-      }));
+      fail('account', err instanceof Error ? err.message : 'Podaci nisu spremljeni.');
     } finally {
-      setSavingAccount(false);
+      setBusy('');
+    }
+  }
+
+  async function requestEmailChange() {
+    fail('email', '');
+    note('email', '');
+    const email = emailDraft.trim().toLowerCase();
+    if (!email || email === userMeta.email) {
+      fail('email', 'Unesite novu e-poštu različitu od trenutne.');
+      return;
+    }
+    setBusy('email');
+    try {
+      const result = await updateMe({ email });
+      const pending = result?.user?.pendingEmail || email;
+      setUserMeta((current) => ({ ...current, pendingEmail: pending }));
+      setEmailDraft('');
+      note('email', `Poslali smo potvrdu na ${pending}.`);
+    } catch (err) {
+      fail('email', err instanceof Error ? err.message : 'E-pošta nije ažurirana.');
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function onResendEmail() {
+    fail('email', '');
+    note('email', '');
+    setBusy('email');
+    try {
+      const result = await resendEmailChange();
+      note('email', `Ponovno smo poslali potvrdu na ${result.pendingEmail}.`);
+    } catch {
+      fail('email', 'Ponovno slanje nije uspjelo.');
+    } finally {
+      setBusy('');
     }
   }
 
   async function savePrefs() {
-    setNotes((current) => ({ ...current, prefs: '' }));
-    setSavingPrefs(true);
+    note('prefs', '');
+    setBusy('prefs');
     try {
       await updateMe({
         notificationPrefs: {
           bookingEmail: Boolean(prefs.bookingEmail),
           cancelEmail: Boolean(prefs.cancelEmail),
-          marketing: Boolean(prefs.marketing),
-          reminderPush: Boolean(prefs.reminderPush),
+          marketingStudio: Boolean(prefs.marketingStudio),
+          marketingPlatform: Boolean(prefs.marketingPlatform),
+          marketing: Boolean(prefs.marketingStudio),
         },
       });
-      setNotes((current) => ({ ...current, prefs: 'Obavijesti su spremljene.' }));
+      note('prefs', 'Obavijesti su spremljene.');
     } catch {
-      setNotes((current) => ({ ...current, prefs: 'Obavijesti nisu spremljene.' }));
+      note('prefs', 'Obavijesti nisu spremljene.');
     } finally {
-      setSavingPrefs(false);
+      setBusy('');
     }
   }
 
   async function savePassword() {
-    setErrors((current) => ({ ...current, password: '' }));
-    setNotes((current) => ({ ...current, password: '' }));
+    fail('password', '');
+    note('password', '');
     if (password.newPassword.length < 8) {
-      setErrors((current) => ({
-        ...current,
-        password: 'Nova lozinka mora imati barem 8 znakova.',
-      }));
+      fail('password', 'Nova lozinka mora imati barem 8 znakova.');
       return;
     }
     if (password.newPassword !== password.again) {
-      setErrors((current) => ({
-        ...current,
-        password: 'Nova lozinka i ponavljanje se ne podudaraju.',
-      }));
+      fail('password', 'Nova lozinka i ponavljanje se ne podudaraju.');
       return;
     }
-    setSavingPassword(true);
+    setBusy('password');
     try {
       const result = await changePassword({
         currentPassword: password.currentPassword,
         newPassword: password.newPassword,
       });
-      if (result?.token) {
-        await setToken(result.token);
-      } else {
-        setNotes((current) => ({
-          ...current,
-          password: 'Lozinka je promijenjena — prijavite se ponovo.',
-        }));
-        setPassword({ currentPassword: '', newPassword: '', again: '' });
-        onLogout?.();
-        return;
-      }
+      if (result?.token) await setToken(result.token);
       setPassword({ currentPassword: '', newPassword: '', again: '' });
-      setNotes((current) => ({ ...current, password: 'Lozinka je promijenjena.' }));
+      note('password', 'Lozinka je promijenjena.');
     } catch (err) {
-      setErrors((current) => ({
-        ...current,
-        password: err instanceof Error ? err.message : 'Lozinka nije promijenjena.',
-      }));
+      fail('password', err instanceof Error ? err.message : 'Lozinka nije promijenjena.');
     } finally {
-      setSavingPassword(false);
+      setBusy('');
+    }
+  }
+
+  async function onLogoutAll() {
+    setBusy('logout');
+    try {
+      await logoutAll();
+    } catch {
+      /* local still */
+    } finally {
+      setBusy('');
+      onLogout?.();
     }
   }
 
   async function acceptConsent() {
-    setSavingConsent(true);
-    setNotes((current) => ({ ...current, consent: '' }));
+    setBusy('consent');
+    note('consent', '');
     try {
-      await recordConsent({
+      await recordConsentWait({
         action: 'accept',
         version: CONSENT_VERSION,
-        source: 'member-settings',
+        source: 'settings',
       });
       setConsentOk(true);
-      setNotes((current) => ({ ...current, consent: 'Privola je spremljena.' }));
+      setConsentInfo({ version: CONSENT_VERSION, acceptedAt: new Date().toISOString() });
+      note('consent', 'Privola je spremljena.');
     } catch (err) {
-      setNotes((current) => ({
-        ...current,
-        consent: err instanceof Error ? err.message : 'Privola nije spremljena.',
-      }));
+      note('consent', err instanceof Error ? err.message : 'Privola nije spremljena.');
     } finally {
-      setSavingConsent(false);
+      setBusy('');
     }
+  }
+
+  async function withdrawConsent() {
+    setBusy('consent');
+    note('consent', '');
+    try {
+      await recordConsentWait({
+        action: 'withdraw',
+        version: CONSENT_VERSION,
+        source: 'settings',
+      });
+      setConsentOk(false);
+      note('consent', 'Privola je povučena.');
+    } catch (err) {
+      note('consent', err instanceof Error ? err.message : 'Privola nije povučena.');
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function onExport() {
+    note('privacy', '');
+    setBusy('export');
+    try {
+      const payload = await exportMyData();
+      await Share.share({
+        message: JSON.stringify(payload, null, 2),
+        title: 'Blizari — izvoz podataka',
+      });
+      note('privacy', 'Izvoz je spreman za dijeljenje.');
+    } catch {
+      note('privacy', 'Izvoz nije uspio.');
+    } finally {
+      setBusy('');
+    }
+  }
+
+  function onDeleteAccount() {
+    Alert.alert(
+      'Brisanje računa',
+      'Račun će se deaktivirati i osobni podaci anonimizirati.',
+      [
+        { text: 'Odustani', style: 'cancel' },
+        {
+          text: 'Obriši',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              fail('delete', '');
+              note('delete', '');
+              setBusy('delete');
+              try {
+                const body = userMeta.hasPassword === false
+                  ? { confirm: deleteConfirm }
+                  : { password: deleteConfirm };
+                await deleteMyAccount(body);
+                onLogout?.();
+              } catch (err) {
+                fail('delete', err instanceof Error ? err.message : 'Račun nije obrisan.');
+              } finally {
+                setBusy('');
+              }
+            })();
+          },
+        },
+      ],
+    );
   }
 
   if (loading) {
@@ -306,173 +432,378 @@ export default function MemberSettingsScreen({
           <Text style={[styles.backLabel, { color: colors.accent }]}>Početna</Text>
         </Pressable>
 
-        <Text style={[styles.studio, { color: colors.accent }]}>{tenantName || 'Blizari'}</Text>
-        <Text style={[styles.kicker, { color: colors.accent }]}>Vaš račun</Text>
+        <Text style={[styles.studio, { color: colors.accent }]}>{tenantName || 'Studio'}</Text>
+        <Text style={[styles.kicker, { color: colors.accent }]}>Blizari račun</Text>
         <Text style={[styles.title, { color: colors.title }]}>Postavke</Text>
         <Text style={[styles.lead, { color: colors.muted }]}>
-          Tema, kontakt i obavijesti spremaju se na vaš račun i vrijede na svim uređajima.
+          Opće postavke pripadaju vašem Blizari računu i sinkroniziraju se između uređaja.
         </Text>
 
-        <Text style={[styles.section, { color: colors.title }]}>01 · Tema</Text>
-        <View style={styles.themeList}>
-          {THEME_OPTIONS.map((option) => {
-            const on = theme === option.value;
+        <View style={styles.sectionNav} accessibilityRole="tablist">
+          {ACCOUNT_SETTINGS_SECTIONS.map((item) => {
+            const on = item.id === section;
             return (
               <Pressable
-                key={option.value}
-                onPress={() => {
-                  void saveUiTheme(option.value);
-                }}
+                key={item.id}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: on }}
+                onPress={() => setSection(item.id)}
                 style={({ pressed }) => [
-                  styles.themeOption,
+                  styles.sectionTab,
                   {
                     borderColor: on ? colors.accent : colors.border,
-                    backgroundColor: colors.card,
+                    backgroundColor: on
+                      ? `${colors.accent}22`
+                      : colors.card,
                   },
                   pressed && styles.pressed,
                 ]}
               >
-                <View
+                <Text
                   style={[
-                    styles.themeSwatch,
-                    option.value === 'light' && styles.themeSwatchLight,
-                    option.value === 'dark' && styles.themeSwatchDark,
-                    option.value === 'system' && styles.themeSwatchSystem,
+                    styles.sectionTabLabel,
+                    { color: on ? colors.accent : colors.title },
                   ]}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.prefLabel, { color: colors.title }]}>{option.label}</Text>
-                  <Text style={[styles.prefHint, { color: colors.muted }]}>{option.hint}</Text>
-                </View>
+                  numberOfLines={2}
+                >
+                  {item.label}
+                </Text>
               </Pressable>
             );
           })}
         </View>
-        {notes.theme ? <Text style={[styles.note, { color: colors.accent }]}>{notes.theme}</Text> : null}
 
-        <Text style={[styles.section, { color: colors.title }]}>02 · Račun</Text>
-        <TextInput
-          value={account.name}
-          onChangeText={(value) => setAccount((current) => ({ ...current, name: value }))}
-          placeholder="Ime"
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        <TextInput
-          value={account.email}
-          onChangeText={(value) => setAccount((current) => ({ ...current, email: value }))}
-          placeholder="E-pošta"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        <TextInput
-          value={account.phone}
-          onChangeText={(value) => setAccount((current) => ({ ...current, phone: value }))}
-          placeholder="Telefon"
-          keyboardType="phone-pad"
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        {errors.account ? <Text style={styles.error}>{errors.account}</Text> : null}
-        {notes.account ? <Text style={[styles.note, { color: colors.accent }]}>{notes.account}</Text> : null}
-        <Pressable
-          accessibilityRole="button"
-          disabled={savingAccount}
-          onPress={saveAccount}
-          style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
-        >
-          <Text style={styles.ctaLabel}>
-            {savingAccount ? 'Spremamo…' : 'Spremi račun'}
-          </Text>
-        </Pressable>
+        <Text style={[styles.section, { color: colors.title }]}>{activeSection.label}</Text>
 
-        <Text style={[styles.section, { color: colors.title }]}>03 · Obavijesti</Text>
-        {NOTIFY_OPTIONS.map((item) => (
-          <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
-              <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
-            </View>
-            <Switch
-              value={Boolean(prefs[item.key])}
-              onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
-              trackColor={{ false: '#24302C', true: '#2A6B5F' }}
-              thumbColor={prefs[item.key] ? '#14B8A6' : '#9CA3AF'}
+        {section === 'osobni' ? (
+          <>
+            <TextInput
+              value={account.name}
+              onChangeText={(value) => setAccount((current) => ({ ...current, name: value }))}
+              placeholder="Ime i prezime"
+              placeholderTextColor="rgba(148, 163, 184, 0.55)"
+              style={[styles.input, { borderColor: colors.border, color: colors.title }]}
             />
-          </View>
-        ))}
-        {notes.prefs ? <Text style={[styles.note, { color: colors.accent }]}>{notes.prefs}</Text> : null}
-        <Pressable
-          accessibilityRole="button"
-          disabled={savingPrefs}
-          onPress={savePrefs}
-          style={({ pressed }) => [styles.ctaGhost, pressed && styles.pressed]}
-        >
-          <Text style={styles.ctaGhostLabel}>
-            {savingPrefs ? 'Spremamo…' : 'Spremi obavijesti'}
-          </Text>
-        </Pressable>
-
-        <Text style={[styles.section, { color: colors.title }]}>04 · Lozinka</Text>
-        <TextInput
-          value={password.currentPassword}
-          onChangeText={(value) => setPassword((current) => ({ ...current, currentPassword: value }))}
-          placeholder="Trenutna lozinka"
-          secureTextEntry
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        <TextInput
-          value={password.newPassword}
-          onChangeText={(value) => setPassword((current) => ({ ...current, newPassword: value }))}
-          placeholder="Nova lozinka"
-          secureTextEntry
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        <TextInput
-          value={password.again}
-          onChangeText={(value) => setPassword((current) => ({ ...current, again: value }))}
-          placeholder="Ponovite novu lozinku"
-          secureTextEntry
-          placeholderTextColor="rgba(232, 242, 239, 0.35)"
-          style={styles.input}
-        />
-        {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
-        {notes.password ? <Text style={[styles.note, { color: colors.accent }]}>{notes.password}</Text> : null}
-        <Pressable
-          accessibilityRole="button"
-          disabled={savingPassword}
-          onPress={savePassword}
-          style={({ pressed }) => [styles.ctaGhost, pressed && styles.pressed]}
-        >
-          <Text style={styles.ctaGhostLabel}>
-            {savingPassword ? 'Spremamo…' : 'Promijeni lozinku'}
-          </Text>
-        </Pressable>
-
-        <Text style={[styles.section, { color: colors.title }]}>05 · Privola</Text>
-        <Text style={[styles.prefHint, { color: colors.muted }]}>
-          {consentOk
-            ? 'Privola za rezervacije je aktivna.'
-            : 'Za rezervacije i otkaze potrebna je privola.'}
-        </Text>
-        {notes.consent ? <Text style={[styles.note, { color: colors.accent }]}>{notes.consent}</Text> : null}
-        {!consentOk ? (
-          <Pressable
-            accessibilityRole="button"
-            disabled={savingConsent}
-            onPress={acceptConsent}
-            style={({ pressed }) => [styles.ctaGhost, pressed && styles.pressed]}
-          >
-            <Text style={styles.ctaGhostLabel}>
-              {savingConsent ? 'Spremamo…' : 'Prihvatite privolu'}
+            <TextInput
+              value={account.phone}
+              onChangeText={(value) => setAccount((current) => ({ ...current, phone: value }))}
+              placeholder="Telefon"
+              keyboardType="phone-pad"
+              placeholderTextColor="rgba(148, 163, 184, 0.55)"
+              style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+            />
+            <Text style={[styles.prefHint, { color: colors.muted }]}>
+              {userMeta.email || '—'}
+              {'\n'}
+              {emailStatusLabel(userMeta)}
             </Text>
-          </Pressable>
+            {errors.account ? <Text style={styles.error}>{errors.account}</Text> : null}
+            {notes.account ? <Text style={[styles.note, { color: colors.accent }]}>{notes.account}</Text> : null}
+            <Pressable
+              disabled={busy === 'account'}
+              onPress={() => { void saveAccount(); }}
+              style={({ pressed }) => [styles.cta, { backgroundColor: colors.ctaBg }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.ctaLabel, { color: colors.ctaText }]}>
+                {busy === 'account' ? 'Spremamo…' : 'Spremi podatke'}
+              </Text>
+            </Pressable>
+
+            <Text style={[styles.section, { color: colors.title }]}>Promjena e-pošte</Text>
+            <TextInput
+              value={emailDraft}
+              onChangeText={setEmailDraft}
+              placeholder="Nova e-pošta"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholderTextColor="rgba(148, 163, 184, 0.55)"
+              style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+            />
+            {errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
+            {notes.email ? <Text style={[styles.note, { color: colors.accent }]}>{notes.email}</Text> : null}
+            <Pressable
+              disabled={busy === 'email'}
+              onPress={() => { void requestEmailChange(); }}
+              style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                {busy === 'email' ? 'Šaljemo…' : 'Pošalji potvrdu'}
+              </Text>
+            </Pressable>
+            {userMeta.pendingEmail ? (
+              <Pressable
+                disabled={busy === 'email'}
+                onPress={() => { void onResendEmail(); }}
+                style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+              >
+                <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>Pošalji ponovno</Text>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
+
+        {section === 'izgled' ? (
+          <>
+            <View style={styles.themeList}>
+              {THEME_OPTIONS.map((option) => {
+                const on = theme === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => { void saveUiTheme(option.value); }}
+                    style={({ pressed }) => [
+                      styles.themeOption,
+                      {
+                        borderColor: on ? colors.accent : colors.border,
+                        backgroundColor: colors.card,
+                      },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.prefLabel, { color: colors.title }]}>{option.label}</Text>
+                      <Text style={[styles.prefHint, { color: colors.muted }]}>{option.hint}</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {notes.theme ? <Text style={[styles.note, { color: colors.accent }]}>{notes.theme}</Text> : null}
+          </>
+        ) : null}
+
+        {section === 'obavijesti' ? (
+          <>
+            <Text style={[styles.prefHint, { color: colors.muted, marginBottom: 8 }]}>
+              Operativne (e-pošta). Push još nije dostupan za klijente.
+            </Text>
+            {OPERATIONAL_NOTIFY_OPTIONS.map((item) => (
+              <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
+                  <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
+                </View>
+                <Switch
+                  value={Boolean((prefs as any)[item.key])}
+                  onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
+                  trackColor={{ false: '#334155', true: 'rgba(37, 99, 235, 0.55)' }}
+                  thumbColor={(prefs as any)[item.key] ? BRAND.blueBright : '#94A3B8'}
+                />
+              </View>
+            ))}
+            <Text style={[styles.prefHint, { color: colors.muted, marginTop: 12, marginBottom: 8 }]}>
+              Promotivne (nisu unaprijed uključene).
+            </Text>
+            {PROMOTIONAL_NOTIFY_OPTIONS.map((item) => (
+              <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
+                  <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
+                </View>
+                <Switch
+                  value={Boolean((prefs as any)[item.key])}
+                  onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
+                  trackColor={{ false: '#334155', true: 'rgba(37, 99, 235, 0.55)' }}
+                  thumbColor={(prefs as any)[item.key] ? BRAND.blueBright : '#94A3B8'}
+                />
+              </View>
+            ))}
+            {notes.prefs ? <Text style={[styles.note, { color: colors.accent }]}>{notes.prefs}</Text> : null}
+            <Pressable
+              disabled={busy === 'prefs'}
+              onPress={() => { void savePrefs(); }}
+              style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                {busy === 'prefs' ? 'Spremamo…' : 'Spremi obavijesti'}
+              </Text>
+            </Pressable>
+          </>
+        ) : null}
+
+        {section === 'sigurnost' ? (
+          <>
+            {userMeta.hasPassword === false ? (
+              <Text style={[styles.prefHint, { color: colors.muted }]}>
+                Ovaj račun koristi Google prijavu — lozinka se ne postavlja ovdje.
+              </Text>
+            ) : (
+              <>
+                <TextInput
+                  value={password.currentPassword}
+                  onChangeText={(value) => setPassword((current) => ({ ...current, currentPassword: value }))}
+                  placeholder="Trenutna lozinka"
+                  secureTextEntry
+                  placeholderTextColor="rgba(148, 163, 184, 0.55)"
+                  style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+                />
+                <TextInput
+                  value={password.newPassword}
+                  onChangeText={(value) => setPassword((current) => ({ ...current, newPassword: value }))}
+                  placeholder="Nova lozinka"
+                  secureTextEntry
+                  placeholderTextColor="rgba(148, 163, 184, 0.55)"
+                  style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+                />
+                <TextInput
+                  value={password.again}
+                  onChangeText={(value) => setPassword((current) => ({ ...current, again: value }))}
+                  placeholder="Ponovite novu lozinku"
+                  secureTextEntry
+                  placeholderTextColor="rgba(148, 163, 184, 0.55)"
+                  style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+                />
+                {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
+                {notes.password ? <Text style={[styles.note, { color: colors.accent }]}>{notes.password}</Text> : null}
+                <Pressable
+                  disabled={busy === 'password'}
+                  onPress={() => { void savePassword(); }}
+                  style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+                >
+                  <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                    {busy === 'password' ? 'Spremamo…' : 'Promijeni lozinku'}
+                  </Text>
+                </Pressable>
+              </>
+            )}
+            <Pressable
+              disabled={busy === 'logout'}
+              onPress={() => { void onLogoutAll(); }}
+              style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                {busy === 'logout' ? 'Odjavljujemo…' : 'Odjava sa svih uređaja'}
+              </Text>
+            </Pressable>
+          </>
+        ) : null}
+
+        {section === 'privatnost' ? (
+          <>
+            <Text style={[styles.prefHint, { color: colors.muted }]}>
+              {consentOk
+                ? `Privola aktivna${consentInfo.version ? ` · v${consentInfo.version}` : ''}${
+                  consentInfo.acceptedAt
+                    ? ` · ${new Date(consentInfo.acceptedAt).toLocaleString('hr-HR')}`
+                    : ''
+                }`
+                : 'Privola nije aktivna — potrebna za rezervacije.'}
+            </Text>
+            {notes.consent ? <Text style={[styles.note, { color: colors.accent }]}>{notes.consent}</Text> : null}
+            {consentOk ? (
+              <Pressable
+                disabled={busy === 'consent'}
+                onPress={() => { void withdrawConsent(); }}
+                style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+              >
+                <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>Povucite privolu</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                disabled={busy === 'consent'}
+                onPress={() => { void acceptConsent(); }}
+                style={({ pressed }) => [styles.cta, { backgroundColor: colors.ctaBg }, pressed && styles.pressed]}
+              >
+                <Text style={[styles.ctaLabel, { color: colors.ctaText }]}>
+                  {busy === 'consent' ? 'Spremamo…' : 'Prihvatite privolu'}
+                </Text>
+              </Pressable>
+            )}
+            <Pressable
+              disabled={busy === 'export'}
+              onPress={() => { void onExport(); }}
+              style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                {busy === 'export' ? 'Pripremamo…' : 'Izvezi osobne podatke'}
+              </Text>
+            </Pressable>
+            {notes.privacy ? <Text style={[styles.note, { color: colors.accent }]}>{notes.privacy}</Text> : null}
+
+            <Text style={[styles.prefHint, { color: colors.muted, marginTop: 12 }]}>
+              Brisanje računa
+            </Text>
+            <TextInput
+              value={deleteConfirm}
+              onChangeText={setDeleteConfirm}
+              placeholder={userMeta.hasPassword === false ? 'Upišite DELETE' : 'Lozinka za potvrdu'}
+              secureTextEntry={userMeta.hasPassword !== false}
+              placeholderTextColor="rgba(148, 163, 184, 0.55)"
+              style={[styles.input, { borderColor: colors.border, color: colors.title }]}
+            />
+            {errors.delete ? <Text style={styles.error}>{errors.delete}</Text> : null}
+            <Pressable
+              disabled={busy === 'delete'}
+              onPress={onDeleteAccount}
+              style={({ pressed }) => [styles.dangerBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.dangerLabel}>
+                {busy === 'delete' ? 'Brišemo…' : 'Obriši račun'}
+              </Text>
+            </Pressable>
+          </>
+        ) : null}
+
+        {section === 'pravno' ? (
+          <>
+            {LEGAL_LINKS.map((item) => {
+              const inApp = Boolean(LEGAL_DOC_BY_LINK[item.id]);
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => openLegalLink(item.id, item.href)}
+                  style={({ pressed }) => [styles.legalRow, { borderColor: colors.border }, pressed && styles.pressed]}
+                >
+                  <Text style={[styles.legalLabel, { color: colors.accent }]}>{item.label}</Text>
+                  <Ionicons
+                    name={inApp ? 'chevron-forward' : 'mail-outline'}
+                    size={16}
+                    color={colors.muted}
+                  />
+                </Pressable>
+              );
+            })}
+          </>
         ) : null}
       </ScrollView>
+
+      <StudioTopCurtain
+        open={legalDoc !== null}
+        onClose={() => setLegalDoc(null)}
+        kicker="Blizari"
+        title={legalDocument?.title || 'Pravne informacije'}
+        subtitle={legalDocument?.lead || undefined}
+      >
+        {legalDocument ? (
+          <View style={styles.legalDoc}>
+            <Text style={styles.legalMeta}>Na snazi od {LEGAL_UPDATED}</Text>
+            {legalDocument.basis ? (
+              <Text style={styles.legalBasis}>{legalDocument.basis}</Text>
+            ) : null}
+            {legalSections.map((clause, index) => (
+              <View key={clause.id || clause.title} style={styles.legalClause}>
+                <Text style={styles.legalClauseIndex}>
+                  {String(index + 1).padStart(2, '0')}
+                </Text>
+                <Text style={styles.legalClauseTitle}>{clause.title}</Text>
+                {clause.summary ? (
+                  <Text style={styles.legalParagraph}>{clause.summary}</Text>
+                ) : null}
+                {(clause.paragraphs || []).map((text) => (
+                  <Text key={text} style={styles.legalParagraph}>{text}</Text>
+                ))}
+                {(clause.bullets || []).map((item) => (
+                  <Text key={item} style={styles.legalParagraph}>• {item}</Text>
+                ))}
+                {clause.note ? (
+                  <Text style={styles.legalParagraph}>{clause.note}</Text>
+                ) : null}
+                {clause.law ? <Text style={styles.legalLaw}>{clause.law}</Text> : null}
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </StudioTopCurtain>
     </View>
   );
 }
@@ -482,9 +813,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0F172A',
   },
-  root: { flex: 1, backgroundColor: '#0F172A' },
+  root: { flex: 1 },
   content: {
     paddingHorizontal: 24,
     maxWidth: 440,
@@ -501,12 +831,10 @@ const styles = StyleSheet.create({
   backLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#14B8A6',
   },
   studio: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 12,
-    color: 'rgba(94, 234, 212, 0.85)',
     marginBottom: 6,
   },
   kicker: {
@@ -514,27 +842,45 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#14B8A6',
     marginBottom: 8,
   },
   title: {
     fontFamily: 'CormorantGaramond_500Medium',
     fontSize: 36,
     lineHeight: 40,
-    color: '#E8F2EF',
     marginBottom: 8,
   },
   lead: {
     fontFamily: 'Outfit_400Regular',
     fontSize: 15,
     lineHeight: 22,
-    color: 'rgba(232, 242, 239, 0.68)',
     marginBottom: 18,
+  },
+  sectionNav: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  sectionTab: {
+    flexGrow: 1,
+    flexBasis: '46%',
+    minHeight: 44,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+  },
+  sectionTabLabel: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 13,
+    lineHeight: 18,
   },
   section: {
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 14,
-    marginTop: 18,
+    marginTop: 14,
     marginBottom: 10,
   },
   themeList: { gap: 8, marginBottom: 8 },
@@ -543,29 +889,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 12,
-  },
-  themeSwatch: {
-    width: 28,
-    height: 28,
-    borderRadius: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(0,0,0,0.12)',
-  },
-  themeSwatchLight: { backgroundColor: '#E0F2FE' },
-  themeSwatchDark: { backgroundColor: '#0F172A' },
-  themeSwatchSystem: {
-    backgroundColor: '#E0F2FE',
-    borderRightWidth: 14,
-    borderRightColor: '#0F172A',
   },
   input: {
     minHeight: 48,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(232, 242, 239, 0.24)',
+    borderRadius: 8,
     paddingHorizontal: 14,
-    color: '#F7FCFA',
     fontFamily: 'Outfit_400Regular',
     fontSize: 15,
     marginBottom: 10,
@@ -576,7 +908,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(232, 242, 239, 0.12)',
   },
   prefLabel: {
     fontFamily: 'Outfit_500Medium',
@@ -600,23 +931,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cta: {
-    minHeight: 48,
-    borderRadius: 6,
-    backgroundColor: '#14B8A6',
+    minHeight: 44,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   ctaLabel: {
     fontFamily: 'Outfit_600SemiBold',
-    fontSize: 15,
-    color: '#042F2E',
+    fontSize: 14,
   },
   ctaGhost: {
-    minHeight: 48,
-    borderRadius: 6,
+    minHeight: 44,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(232, 242, 239, 0.28)',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
@@ -624,7 +952,79 @@ const styles = StyleSheet.create({
   ctaGhostLabel: {
     fontFamily: 'Outfit_500Medium',
     fontSize: 14,
-    color: '#E8F2EF',
+  },
+  dangerBtn: {
+    minHeight: 44,
+    borderRadius: 8,
+    backgroundColor: '#B91C1C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  dangerLabel: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  legalLabel: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 14,
+    flex: 1,
+  },
+  legalDoc: {
+    gap: 12,
+    paddingBottom: 8,
+  },
+  legalMeta: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 12,
+    color: BRAND.teal,
+  },
+  legalBasis: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 12,
+    lineHeight: 18,
+    color: 'rgba(148, 163, 184, 0.95)',
+  },
+  legalClause: {
+    gap: 6,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(148, 163, 184, 0.22)',
+  },
+  legalClauseIndex: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.8,
+    color: BRAND.teal,
+  },
+  legalClauseTitle: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 15,
+    color: BRAND.onDark,
+  },
+  legalParagraph: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(148, 163, 184, 0.95)',
+  },
+  legalLaw: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 12,
+    lineHeight: 18,
+    color: BRAND.teal,
   },
   pressed: { opacity: 0.82 },
 });

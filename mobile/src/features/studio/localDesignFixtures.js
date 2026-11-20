@@ -139,13 +139,37 @@ export function localDesignServices() {
  */
 export function localDesignAnalytics() {
   if (!isLocalDesignMode()) {
-    return { days: 30, counts: {}, series: [] };
+    return {
+      days: 30,
+      counts: {},
+      series: [],
+      bookingsByStatus: {},
+      bookingsTotal: 0,
+      bookingsSeries: [],
+      comparison: {},
+      period: null,
+    };
   }
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const pad = (value) => String(value).padStart(2, '0');
-  const thisMonth = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
-  const lastMonth = `${prev.getFullYear()}-${pad(prev.getMonth() + 1)}`;
+  const toKey = (date) => (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  );
+  const bookingsSeries = [];
+  for (let i = 29; i >= 0; i -= 1) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const total = i % 4 === 0 ? 3 : i % 3 === 0 ? 2 : i % 5 === 0 ? 1 : 0;
+    bookingsSeries.push({
+      date: toKey(d),
+      total,
+      CONFIRMED: total > 0 ? 1 : 0,
+      COMPLETED: Math.max(0, total - 1),
+      CANCELLED: 0,
+      NO_SHOW: 0,
+    });
+  }
+  const dateFrom = bookingsSeries[0].date;
+  const dateTo = bookingsSeries[bookingsSeries.length - 1].date;
   return {
     days: 30,
     counts: {
@@ -157,21 +181,36 @@ export function localDesignAnalytics() {
       booking_completed: 29,
       booking_no_show: 3,
     },
-    series: [
-      {
-        date: `${lastMonth}-15`,
-        page_view: 48,
-        booking_created: 14,
-        booking_cancelled: 2,
-        member_created: 1,
-      },
-      {
-        date: `${thisMonth}-08`,
-        page_view: 80,
-        booking_created: 27,
-        booking_cancelled: 3,
-        member_created: 1,
-      },
-    ],
+    series: bookingsSeries.map((row) => ({
+      date: row.date,
+      page_view: row.total * 3,
+      booking_created: row.total,
+      booking_cancelled: 0,
+      booking_completed: row.COMPLETED,
+      member_created: 0,
+    })),
+    bookingsByStatus: {
+      CONFIRMED: 4,
+      COMPLETED: 29,
+      CANCELLED: 5,
+      NO_SHOW: 3,
+    },
+    bookingsTotal: 41,
+    bookingsSeries,
+    comparison: {
+      page_view: { current: 128, previous: 110, deltaPct: 16 },
+      member_created: { current: 2, previous: 1, deltaPct: 100 },
+      bookingsTotal: { current: 41, previous: 36, deltaPct: 14 },
+      COMPLETED: { current: 29, previous: 24, deltaPct: 21 },
+      CANCELLED: { current: 5, previous: 7, deltaPct: -29 },
+      NO_SHOW: { current: 3, previous: 2, deltaPct: 50 },
+    },
+    period: {
+      days: 30,
+      dateFrom,
+      dateTo,
+      previousFrom: dateFrom,
+      previousTo: dateTo,
+    },
   };
 }

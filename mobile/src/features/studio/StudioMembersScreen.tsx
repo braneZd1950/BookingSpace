@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Animated,
   Pressable,
   Text,
   TextInput,
@@ -33,6 +32,7 @@ import StudioListHead from './StudioListHead';
 import StudioLoadingRow from './StudioLoadingRow';
 import StudioPresetRow from './StudioPresetRow';
 import StudioScreenShell from './StudioScreenShell';
+import StudioTopCurtain from './StudioTopCurtain';
 import { formatShortDate, memberCountLabel } from './studioFormat.js';
 import {
   errorCode,
@@ -48,7 +48,6 @@ import {
   validateInviteContact,
 } from './studioMembersHelpers.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
-import { useStudioFormReveal } from './useStudioFormReveal.js';
 import { daysLeftInMonth, monthRange } from '../../../../shared/dateRange.js';
 
 type StudioMembersScreenProps = {
@@ -100,14 +99,6 @@ export default function StudioMembersScreen({
   studioName,
   onBack,
 }: StudioMembersScreenProps) {
-  const {
-    formOpen,
-    formVisible,
-    openForm: revealOpen,
-    closeForm: revealClose,
-    formRevealStyle,
-  } = useStudioFormReveal();
-
   const [section, setSection] = useState<SectionId>('members');
   const [filter, setFilter] = useState<FilterId>('active');
   const [query, setQuery] = useState('');
@@ -121,6 +112,9 @@ export default function StudioMembersScreen({
   const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
   const [busyId, setBusyId] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+  const [detailMember, setDetailMember] = useState<MemberRow | null>(null);
+  const [detailStaff, setDetailStaff] = useState<StaffRow | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
@@ -251,24 +245,28 @@ export default function StudioMembersScreen({
     setFormError('');
   }
 
+  function closeDetails() {
+    setDetailMember(null);
+    setDetailStaff(null);
+  }
+
   function openForm() {
-    revealOpen(() => {
-      setFormError('');
-      setNotice('');
-      setActionError('');
-    });
+    closeDetails();
+    setFormError('');
+    setNotice('');
+    setActionError('');
+    setFormOpen(true);
   }
 
   function closeForm(after?: () => void) {
-    revealClose(() => {
-      if (section === 'team') resetStaffForm();
-      else resetMemberForm();
-      after?.();
-    });
+    setFormOpen(false);
+    if (section === 'team') resetStaffForm();
+    else resetMemberForm();
+    after?.();
   }
 
   function toggleForm() {
-    if (formOpen || formVisible) {
+    if (formOpen) {
       closeForm();
       return;
     }
@@ -277,7 +275,8 @@ export default function StudioMembersScreen({
 
   function switchSection(next: SectionId) {
     if (next === section) return;
-    if (formVisible) {
+    closeDetails();
+    if (formOpen) {
       closeForm(() => {
         setSection(next);
         setActionError('');
@@ -410,6 +409,7 @@ export default function StudioMembersScreen({
         method: 'CASH',
       });
       setNotice(`Članarina za ${item.user?.name || 'člana'} je obnovljena.`);
+      closeDetails();
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -431,6 +431,7 @@ export default function StudioMembersScreen({
     try {
       await suspendMembership(item.id);
       setNotice(`${item.user?.name || 'Član'} je uklonjen/a.`);
+      closeDetails();
       await load();
     } catch (failure: unknown) {
       const code = errorCode(failure);
@@ -451,6 +452,7 @@ export default function StudioMembersScreen({
     try {
       await suspendStaff(tenantId, item.id);
       setNotice(`${item.name || 'Trener'} je uklonjen/a iz tima.`);
+      closeDetails();
       await load();
     } catch (failure: unknown) {
       if (errorCode(failure) === 'CANNOT_REMOVE_SELF') {
@@ -462,6 +464,13 @@ export default function StudioMembersScreen({
       setBusyId('');
     }
   }
+
+  const detailMemberFresh = detailMember
+    ? memberships.find((item) => item.id === detailMember.id) || detailMember
+    : null;
+  const detailStaffFresh = detailStaff
+    ? staff.find((item) => item.id === detailStaff.id) || detailStaff
+    : null;
 
   const lead =
     section === 'team'
@@ -575,84 +584,9 @@ export default function StudioMembersScreen({
       {error ? <Text style={ui.error}>{error}</Text> : null}
       {actionError ? <Text style={ui.error}>{actionError}</Text> : null}
 
-      {formVisible ? (
-        <View style={ui.formShell}>
-          <Animated.View style={[ui.form, formRevealStyle]}>
-            {section === 'members' ? (
-              <>
-                <Text style={ui.sectionLabel}>Novi član</Text>
-                <Text style={ui.formHint}>
-                  Novom članu šaljemo e-poštu s privremenom lozinkom za prijavu.
-                </Text>
-                <StudioContactFields
-                  name={name}
-                  email={email}
-                  phone={phone}
-                  onChangeName={setName}
-                  onChangeEmail={setEmail}
-                  onChangePhone={setPhone}
-                  editable={!saving}
-                />
-                <StudioPresetRow
-                  label="Treninga u paketu"
-                  values={SESSION_PRESETS}
-                  selected={sessions}
-                  onSelect={setSessions}
-                  disabled={saving}
-                />
-                <TextInput
-                  style={ui.input}
-                  value={sessions}
-                  onChangeText={setSessions}
-                  placeholder="Broj treninga"
-                  placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                  keyboardType="number-pad"
-                  editable={!saving}
-                />
-                <StudioFormSubmit
-                  label="Dodaj člana"
-                  accessibilityLabel="Spremi člana"
-                  onPress={onAddMember}
-                  saving={saving}
-                  error={formError}
-                />
-              </>
-            ) : (
-              <>
-                <Text style={ui.sectionLabel}>Novi trener</Text>
-                <Text style={ui.formHint}>
-                  Članovi ga mogu izabrati pri rezervaciji. Novom računu
-                  lozinka ide na e-poštu.
-                </Text>
-                <StudioContactFields
-                  name={name}
-                  email={email}
-                  phone={phone}
-                  onChangeName={setName}
-                  onChangeEmail={setEmail}
-                  onChangePhone={setPhone}
-                  editable={!saving}
-                />
-                <TextInput
-                  style={ui.input}
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="Uloga / naziv"
-                  placeholderTextColor="rgba(232, 242, 239, 0.28)"
-                  editable={!saving}
-                />
-                <StudioFormSubmit
-                  label="Dodaj trenera"
-                  accessibilityLabel="Spremi trenera"
-                  onPress={onAddStaff}
-                  saving={saving}
-                  error={formError}
-                />
-              </>
-            )}
-          </Animated.View>
-        </View>
-      ) : null}
+      <Text style={ui.hint}>
+        Dodirnite osobu za detalje. Dodavanje se otvara zastorom s vrha.
+      </Text>
 
       {section === 'members' ? (
         <>
@@ -694,8 +628,8 @@ export default function StudioMembersScreen({
                   ? 'Pokušajte drugi pojam ili promijenite filter.'
                   : 'Dodajte prvog člana da počnete pratiti članarine i termine.'
               }
-              actionLabel={!query && !formVisible ? 'Dodajte člana' : undefined}
-              onAction={!query && !formVisible ? openForm : undefined}
+              actionLabel={!query && !formOpen ? 'Dodajte člana' : undefined}
+              onAction={!query && !formOpen ? openForm : undefined}
             />
           ) : null}
 
@@ -704,14 +638,6 @@ export default function StudioMembersScreen({
               {visibleMembers.map((item) => {
                 const displayName = item.user?.name || 'Član';
                 const active = item.status === 'ACTIVE';
-                const ratio = sessionsRatio(item);
-                const expiry = active ? expiryLabel(item.validUntil) : null;
-                const soon = isEndingSoon(item.validUntil);
-                const busy = busyId === item.id;
-                const canRenew =
-                  item.status === 'ACTIVE'
-                  || item.status === 'EXPIRED'
-                  || item.status === 'SUSPENDED';
                 return (
                   <StudioEntityRow
                     key={item.id}
@@ -720,72 +646,12 @@ export default function StudioMembersScreen({
                     badge={statusLabel(item.status)}
                     badgeOk={active}
                     muted={!active}
-                    meta={`${item.user?.email || 'Bez e-pošte'}${item.user?.phone ? ` · ${item.user.phone}` : ''}`}
-                    extra={(
-                      <>
-                        <Text style={rowStyles.rowPlan} numberOfLines={1}>
-                          {item.planName || 'Plan'}
-                          {' · '}
-                          {sessionsLabel(item)}
-                        </Text>
-                        <View style={rowStyles.barTrack}>
-                          <View
-                            style={[
-                              rowStyles.barFill,
-                              { width: `${Math.round(ratio * 100)}%` },
-                              ratio >= 0.85 && item.sessionsIncluded != null
-                                ? rowStyles.barHot
-                                : null,
-                            ]}
-                          />
-                        </View>
-                        <Text style={ui.rowDates}>
-                          {formatShortDate(item.validFrom)}
-                          {' – '}
-                          {formatShortDate(item.validUntil)}
-                          {expiry ? (
-                            <Text style={soon ? rowStyles.expirySoon : rowStyles.expiry}>
-                              {` · ${expiry}`}
-                            </Text>
-                          ) : null}
-                        </Text>
-                      </>
-                    )}
-                    actions={(
-                      <>
-                        {canRenew ? (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel="Obnovite članarinu"
-                            onPress={() => {
-                              void onRenew(item);
-                            }}
-                            disabled={Boolean(busyId)}
-                            style={({ pressed }) => [
-                              ui.actionBtn,
-                              pressed && ui.pressed,
-                            ]}
-                          >
-                            {busy ? (
-                              <ActivityIndicator color="#14B8A6" size="small" />
-                            ) : (
-                              <Text style={ui.actionLabel}>Obnovite</Text>
-                            )}
-                          </Pressable>
-                        ) : null}
-                        {active ? (
-                          <StudioDangerAction
-                            accessibilityLabel="Uklonite člana"
-                            onPress={() => {
-                              void onRemoveMember(item);
-                            }}
-                            disabled={Boolean(busyId)}
-                            busy={busy}
-                            spinnerColor="#14B8A6"
-                          />
-                        ) : null}
-                      </>
-                    )}
+                    meta={`${item.planName || 'Plan'} · ${sessionsLabel(item)}`}
+                    onPress={() => {
+                      setFormOpen(false);
+                      setDetailStaff(null);
+                      setDetailMember(item);
+                    }}
                   />
                 );
               })}
@@ -808,8 +674,8 @@ export default function StudioMembersScreen({
               icon="fitness-outline"
               title="Još nema tima"
               body="Dodajte trenera da članovi mogu birati kod koga rezerviraju termin."
-              actionLabel={!formVisible ? 'Dodajte trenera' : undefined}
-              onAction={!formVisible ? openForm : undefined}
+              actionLabel={!formOpen ? 'Dodajte trenera' : undefined}
+              onAction={!formOpen ? openForm : undefined}
             />
           ) : null}
 
@@ -817,7 +683,6 @@ export default function StudioMembersScreen({
             <View style={ui.list}>
               {activeStaff.map((item) => {
                 const displayName = item.name || 'Trener';
-                const busy = busyId === item.id;
                 const isOwner = item.role === 'BUSINESS_OWNER';
                 return (
                   <StudioEntityRow
@@ -825,23 +690,12 @@ export default function StudioMembersScreen({
                     name={displayName}
                     initialFallback="T"
                     badge={item.title || (isOwner ? 'Vlasnik' : 'Trener')}
-                    meta={`${item.email || 'Bez e-pošte'}${item.phone ? ` · ${item.phone}` : ''} · ${isOwner ? 'Vlasnik' : 'Trener'}`}
-                    actions={
-                      item.role === 'STAFF' ? (
-                        <StudioDangerAction
-                          accessibilityLabel="Uklonite trenera"
-                          onPress={() => {
-                            void onRemoveStaff(item);
-                          }}
-                          disabled={Boolean(busyId)}
-                          busy={busy}
-                        />
-                      ) : (
-                        <Text style={rowStyles.teamNote}>
-                          Uvijek dostupan za rezervacije
-                        </Text>
-                      )
-                    }
+                    meta={item.email || 'Bez e-pošte'}
+                    onPress={() => {
+                      setFormOpen(false);
+                      setDetailMember(null);
+                      setDetailStaff(item);
+                    }}
                   />
                 );
               })}
@@ -849,6 +703,205 @@ export default function StudioMembersScreen({
           ) : null}
         </>
       )}
+
+      <StudioTopCurtain
+        open={formOpen}
+        onClose={() => closeForm()}
+        kicker={section === 'team' ? 'Tim' : 'Članovi'}
+        title={section === 'team' ? 'Novi trener' : 'Novi član'}
+        subtitle={
+          section === 'team'
+            ? 'Članovi ga biraju pri rezervaciji. Lozinka ide na e-poštu.'
+            : 'Šaljemo e-poštu s privremenom lozinkom za prijavu.'
+        }
+      >
+        <StudioContactFields
+          name={name}
+          email={email}
+          phone={phone}
+          onChangeName={setName}
+          onChangeEmail={setEmail}
+          onChangePhone={setPhone}
+          editable={!saving}
+        />
+        {section === 'members' ? (
+          <>
+            <StudioPresetRow
+              label="Treninga u paketu"
+              values={SESSION_PRESETS}
+              selected={sessions}
+              onSelect={setSessions}
+              disabled={saving}
+            />
+            <TextInput
+              style={ui.input}
+              value={sessions}
+              onChangeText={setSessions}
+              placeholder="Broj treninga"
+              placeholderTextColor="rgba(232, 242, 239, 0.28)"
+              keyboardType="number-pad"
+              editable={!saving}
+            />
+            <StudioFormSubmit
+              label="Dodaj člana"
+              accessibilityLabel="Spremi člana"
+              onPress={onAddMember}
+              saving={saving}
+              error={formError}
+            />
+          </>
+        ) : (
+          <>
+            <TextInput
+              style={ui.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Uloga / naziv"
+              placeholderTextColor="rgba(232, 242, 239, 0.28)"
+              editable={!saving}
+            />
+            <StudioFormSubmit
+              label="Dodaj trenera"
+              accessibilityLabel="Spremi trenera"
+              onPress={onAddStaff}
+              saving={saving}
+              error={formError}
+            />
+          </>
+        )}
+      </StudioTopCurtain>
+
+      <StudioTopCurtain
+        open={Boolean(detailMemberFresh)}
+        onClose={closeDetails}
+        kicker="Član"
+        title={detailMemberFresh?.user?.name || 'Član'}
+        subtitle={statusLabel(detailMemberFresh?.status)}
+        footer={detailMemberFresh ? (
+          <View style={ui.actions}>
+            {(
+              detailMemberFresh.status === 'ACTIVE'
+              || detailMemberFresh.status === 'EXPIRED'
+              || detailMemberFresh.status === 'SUSPENDED'
+            ) ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Obnovite članarinu"
+                onPress={() => {
+                  void onRenew(detailMemberFresh);
+                }}
+                disabled={Boolean(busyId)}
+                style={({ pressed }) => [ui.actionBtn, pressed && ui.pressed]}
+              >
+                {busyId === detailMemberFresh.id ? (
+                  <ActivityIndicator color="#14B8A6" size="small" />
+                ) : (
+                  <Text style={ui.actionLabel}>Obnovite</Text>
+                )}
+              </Pressable>
+            ) : null}
+            {detailMemberFresh.status === 'ACTIVE' ? (
+              <StudioDangerAction
+                accessibilityLabel="Uklonite člana"
+                onPress={() => {
+                  void onRemoveMember(detailMemberFresh);
+                }}
+                disabled={Boolean(busyId)}
+                busy={busyId === detailMemberFresh.id}
+                spinnerColor="#14B8A6"
+              />
+            ) : null}
+          </View>
+        ) : null}
+      >
+        {detailMemberFresh ? (
+          <>
+            <Text style={ui.rowMeta}>
+              {detailMemberFresh.user?.email || 'Bez e-pošte'}
+              {detailMemberFresh.user?.phone
+                ? ` · ${detailMemberFresh.user.phone}`
+                : ''}
+            </Text>
+            <Text style={rowStyles.rowPlan}>
+              {detailMemberFresh.planName || 'Plan'}
+              {' · '}
+              {sessionsLabel(detailMemberFresh)}
+            </Text>
+            <View style={rowStyles.barTrack}>
+              <View
+                style={[
+                  rowStyles.barFill,
+                  {
+                    width: `${Math.round(sessionsRatio(detailMemberFresh) * 100)}%`,
+                  },
+                  sessionsRatio(detailMemberFresh) >= 0.85
+                    && detailMemberFresh.sessionsIncluded != null
+                    ? rowStyles.barHot
+                    : null,
+                ]}
+              />
+            </View>
+            <Text style={ui.rowDates}>
+              {formatShortDate(detailMemberFresh.validFrom)}
+              {' – '}
+              {formatShortDate(detailMemberFresh.validUntil)}
+              {detailMemberFresh.status === 'ACTIVE'
+                && expiryLabel(detailMemberFresh.validUntil) ? (
+                  <Text
+                    style={
+                      isEndingSoon(detailMemberFresh.validUntil)
+                        ? rowStyles.expirySoon
+                        : rowStyles.expiry
+                    }
+                  >
+                    {` · ${expiryLabel(detailMemberFresh.validUntil)}`}
+                  </Text>
+                ) : null}
+            </Text>
+          </>
+        ) : null}
+      </StudioTopCurtain>
+
+      <StudioTopCurtain
+        open={Boolean(detailStaffFresh)}
+        onClose={closeDetails}
+        kicker="Tim"
+        title={detailStaffFresh?.name || 'Trener'}
+        subtitle={
+          detailStaffFresh?.title
+          || (detailStaffFresh?.role === 'BUSINESS_OWNER' ? 'Vlasnik' : 'Trener')
+        }
+        footer={
+          detailStaffFresh?.role === 'STAFF' ? (
+            <StudioDangerAction
+              accessibilityLabel="Uklonite trenera"
+              onPress={() => {
+                void onRemoveStaff(detailStaffFresh);
+              }}
+              disabled={Boolean(busyId)}
+              busy={busyId === detailStaffFresh.id}
+            />
+          ) : detailStaffFresh ? (
+            <Text style={rowStyles.teamNote}>
+              Uvijek dostupan za rezervacije
+            </Text>
+          ) : null
+        }
+      >
+        {detailStaffFresh ? (
+          <>
+            <Text style={ui.rowMeta}>
+              {detailStaffFresh.email || 'Bez e-pošte'}
+            </Text>
+            {detailStaffFresh.phone ? (
+              <Text style={ui.rowDates}>{detailStaffFresh.phone}</Text>
+            ) : null}
+            <Text style={ui.rowDates}>
+              {detailStaffFresh.role === 'BUSINESS_OWNER' ? 'Vlasnik' : 'Trener'}
+            </Text>
+          </>
+        ) : null}
+      </StudioTopCurtain>
     </StudioScreenShell>
   );
 }

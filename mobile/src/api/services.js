@@ -22,3 +22,14 @@ export function getAvailability(tenantId, serviceId, date) {
     { params: { date } },
   );
 }
+
+/** GET /tenants/:tenantId/occupancy?dateFrom=&dateTo= — public, no PII */
+export function getTenantOccupancy(tenantId, { dateFrom, dateTo, serviceId } = {}) {
+  return http.get(`/tenants/${tenantId}/occupancy`, {
+    params: {
+      dateFrom,
+      dateTo,
+      ...(serviceId ? { serviceId } : {}),
+    },
+  });
+}

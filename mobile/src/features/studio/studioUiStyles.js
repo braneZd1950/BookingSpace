@@ -501,4 +501,23 @@ export const studioUiStyles = StyleSheet.create({
     color: 'rgba(232, 242, 239, 0.48)',
     marginTop: -2,
   },
+  footerNote: {
+    marginTop: 22,
+    gap: 12,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(232, 242, 239, 0.12)',
+  },
+  textLinkBtn: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  textLinkLabel: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 14,
+    color: '#14B8A6',
+  },
 });

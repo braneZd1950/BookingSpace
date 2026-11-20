@@ -144,7 +144,7 @@ export default function MemberDiscoverPage() {
         <header className="member-discover__head">
           <div>
             <p className="member-discover__eyebrow">Otkrij</p>
-            <h1>Što još nudi anyminutes</h1>
+            <h1>Što još nudi Blizari</h1>
             <p className="member-discover__lede">
               {tenant?.name
                 ? `${tenant.name} je jedan studio. Traži druge po imenu, gradu ili vrsti poslovanja.`
@@ -249,7 +249,7 @@ export default function MemberDiscoverPage() {
               <h2>Nije marketplace</h2>
               <p>
                 Pretraga čita aktivne studije s poslužitelja. Primjeri su samo za development.
-                Svaki studio dijeli svoj link — anyminutes ne šalje članove konkurenciji u katalogu.
+                Svaki studio dijeli svoj link — Blizari ne šalje članove konkurenciji u katalogu.
               </p>
             </div>
           </header>
@@ -260,7 +260,7 @@ export default function MemberDiscoverPage() {
               </Link>
             ) : null}
             <Link className="member-discover__primary" to="/">
-              Početna anyminutes
+              Početna Blizari
             </Link>
           </div>
         </section>

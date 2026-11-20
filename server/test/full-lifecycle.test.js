@@ -301,11 +301,16 @@ describe('full lifecycle API', () => {
     const tenantRes = await request('/api/tenants', {
       method: 'POST',
       token: ownerToken,
-      body: { name: `Full Studio ${stamp}`, niche: 'fitness' },
+      // Avoid discover-excluded slug prefixes (demo|e2e|full-studio|…).
+      body: { name: `Lifecycle Gym ${stamp}`, niche: 'fitness' },
     });
     assert.equal(tenantRes.status, 201);
     const tenant = tenantRes.body.tenant;
     created.tenantIds.push(tenant.id);
+    assert.ok(
+      !/^(demo|e2e|deep-studio|test|full-studio)/i.test(tenant.slug || ''),
+      `discover-safe slug expected, got ${tenant.slug}`,
+    );
 
     const hours = await request(`/api/tenants/${tenant.id}`, {
       method: 'PATCH',

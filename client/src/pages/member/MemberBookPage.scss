@@ -707,10 +707,254 @@
   }
 }
 
+.member-book__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1.1rem;
+}
+
+.member-book__steps button {
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--book-edge);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--surface) 88%, var(--book-soft));
+  color: color-mix(in srgb, var(--book-ink) 70%, var(--bg));
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.member-book__steps button span {
+  display: inline-block;
+  margin-right: 0.35rem;
+  color: var(--book-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.member-book__steps button.is-active {
+  border-color: color-mix(in srgb, var(--book-brand) 45%, transparent);
+  background: color-mix(in srgb, var(--book-brand) 14%, var(--surface));
+  color: var(--book-brand);
+}
+
+.member-book__steps button.is-done:not(.is-active) {
+  color: var(--book-ink);
+}
+
+.member-book__steps button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.member-book__services {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.member-book__services button {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--book-edge);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--surface) 90%, var(--book-soft));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.member-book__services button.is-on {
+  border-color: color-mix(in srgb, var(--book-brand) 45%, transparent);
+  background: color-mix(in srgb, var(--book-brand) 12%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--book-brand) 18%, transparent);
+}
+
+.member-book__services strong {
+  font-size: 1.02rem;
+  font-weight: 780;
+}
+
+.member-book__services span {
+  color: color-mix(in srgb, var(--book-ink) 68%, var(--bg));
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.member-book__facts {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+}
+
+.member-book__facts > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 34%) 1fr;
+  gap: 0.5rem 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--book-edge);
+  border-radius: 0.15rem;
+  background: color-mix(in srgb, var(--surface) 90%, var(--book-soft));
+}
+
+.member-book__facts dt {
+  color: color-mix(in srgb, var(--book-ink) 62%, var(--bg));
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.member-book__facts dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.member-book__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0.35rem;
+}
+
+.member-book__ghost {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--book-edge);
+  border-radius: 0.2rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.member-book__gate--inline {
+  margin-top: 0.5rem;
+}
+
+.member-book__gate--inline h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.member-book__days button.is-empty {
+  opacity: 0.72;
+}
+
+.member-book__days button.is-free .member-book__day-meta {
+  color: var(--book-brand);
+}
+
+.member-book__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.85rem;
+}
+
+.member-book__filters button {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--book-edge);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--surface) 88%, var(--book-soft));
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.member-book__filters button.is-on {
+  border-color: color-mix(in srgb, var(--book-brand) 45%, transparent);
+  background: color-mix(in srgb, var(--book-brand) 14%, var(--surface));
+  color: var(--book-brand);
+}
+
+.member-book__status-chip {
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--book-ink) 64%, var(--bg));
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.member-book__done .member-book__facts {
+  margin-bottom: 1.1rem;
+}
+
+.member-book__sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+  width: min(62rem, calc(100% - 2.4rem));
+  margin: 1rem auto 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--book-edge);
+  border-bottom: 0;
+  border-radius: 0.25rem 0.25rem 0 0;
+  background: color-mix(in srgb, var(--surface) 92%, var(--book-soft));
+  box-shadow: 0 -10px 28px color-mix(in srgb, var(--book-ink) 8%, transparent);
+}
+
+.member-book__sticky strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.member-book__sticky span {
+  color: color-mix(in srgb, var(--book-ink) 68%, var(--bg));
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.member-book__sticky .member-book__cta {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 7.5rem;
+}
+
 @media (max-width: 720px) {
+  .member-book {
+    padding-bottom: 5.5rem;
+  }
+
   .member-book__layout {
     grid-template-columns: 1fr;
     gap: 1.2rem;
+  }
+
+  .member-book__sticky {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .member-book__facts > div {
+    grid-template-columns: 1fr;
+  }
+
+  .member-book__nav {
+    justify-content: stretch;
+  }
+
+  .member-book__nav .member-book__cta,
+  .member-book__nav .member-book__ghost {
+    flex: 1 1 auto;
   }
 
   .member-book__rail {
@@ -752,6 +996,8 @@
   --book-ink: var(--fg);
   --book-canvas: var(--bg);
   --book-soft: color-mix(in srgb, var(--book-brand) 26%, var(--surface));
+  --book-muted: color-mix(in srgb, var(--fg) 78%, transparent);
+  --book-edge: color-mix(in srgb, var(--book-brand) 28%, transparent);
   color: var(--fg);
   background:
     linear-gradient(
@@ -762,7 +1008,7 @@
     );
 }
 
-:root[data-theme='dark'] .member-book :is(h1, h2, h3, strong) {
+:root[data-theme='dark'] .member-book :is(h1, h2, h3, strong, dd) {
   color: var(--fg);
 }
 
@@ -776,8 +1022,60 @@
 :root[data-theme='dark'] .member-book .member-book__trainers-label,
 :root[data-theme='dark'] .member-book .member-book__hint,
 :root[data-theme='dark'] .member-book .member-book__confirm p,
-:root[data-theme='dark'] .member-book .member-book__trust span:not(.member-book__trust-num) {
-  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+:root[data-theme='dark'] .member-book .member-book__trust span:not(.member-book__trust-num),
+:root[data-theme='dark'] .member-book .member-book__services span,
+:root[data-theme='dark'] .member-book .member-book__facts dt,
+:root[data-theme='dark'] .member-book .member-book__sticky span,
+:root[data-theme='dark'] .member-book .member-book__status-chip,
+:root[data-theme='dark'] .member-book .member-book__list span,
+:root[data-theme='dark'] .member-book .member-book__locked,
+:root[data-theme='dark'] .member-book .member-book__gate > p,
+:root[data-theme='dark'] .member-book .member-book__contact {
+  color: var(--book-muted);
+}
+
+:root[data-theme='dark'] .member-book .member-book__kicker,
+:root[data-theme='dark'] .member-book .member-book__studio,
+:root[data-theme='dark'] .member-book .member-book__rail-mark {
+  color: color-mix(in srgb, var(--book-brand) 55%, #fff);
+}
+
+:root[data-theme='dark'] .member-book .member-book__steps button,
+:root[data-theme='dark'] .member-book .member-book__filters button,
+:root[data-theme='dark'] .member-book .member-book__ghost,
+:root[data-theme='dark'] .member-book .member-book__services button,
+:root[data-theme='dark'] .member-book .member-book__days button,
+:root[data-theme='dark'] .member-book .member-book__slots button,
+:root[data-theme='dark'] .member-book .member-book__trainer-list button {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--surface) 88%, var(--book-soft));
+  border-color: var(--book-edge);
+}
+
+:root[data-theme='dark'] .member-book .member-book__steps button:disabled {
+  color: var(--book-muted);
+  opacity: 0.72;
+}
+
+:root[data-theme='dark'] .member-book .member-book__steps button span {
+  color: color-mix(in srgb, var(--book-brand) 55%, #fff);
+}
+
+:root[data-theme='dark'] .member-book .member-book__steps button.is-active,
+:root[data-theme='dark'] .member-book .member-book__filters button.is-on {
+  color: color-mix(in srgb, var(--book-brand) 42%, #fff);
+  background: color-mix(in srgb, var(--book-brand) 22%, var(--surface));
+}
+
+:root[data-theme='dark'] .member-book .member-book__services button.is-on,
+:root[data-theme='dark'] .member-book .member-book__facts > div {
+  background: color-mix(in srgb, var(--book-brand) 16%, var(--surface));
+  border-color: color-mix(in srgb, var(--book-brand) 32%, transparent);
+}
+
+:root[data-theme='dark'] .member-book .member-book__sticky {
+  background: color-mix(in srgb, var(--surface) 94%, var(--book-soft));
+  border-color: var(--book-edge);
 }
 
 :root[data-theme='dark'] .member-book .member-book__days button.is-on,
@@ -800,10 +1098,12 @@
     --book-ink: var(--fg);
     --book-canvas: var(--bg);
     --book-soft: color-mix(in srgb, var(--book-brand) 26%, var(--surface));
+    --book-muted: color-mix(in srgb, var(--fg) 78%, transparent);
+    --book-edge: color-mix(in srgb, var(--book-brand) 28%, transparent);
     color: var(--fg);
   }
 
-  :root:not([data-theme='light']) .member-book :is(h1, h2, h3, strong) {
+  :root:not([data-theme='light']) .member-book :is(h1, h2, h3, strong, dd) {
     color: var(--fg);
   }
 
@@ -815,8 +1115,55 @@
   :root:not([data-theme='light']) .member-book .member-book__day-name,
   :root:not([data-theme='light']) .member-book .member-book__day-meta,
   :root:not([data-theme='light']) .member-book .member-book__hint,
-  :root:not([data-theme='light']) .member-book .member-book__confirm p {
-    color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  :root:not([data-theme='light']) .member-book .member-book__confirm p,
+  :root:not([data-theme='light']) .member-book .member-book__services span,
+  :root:not([data-theme='light']) .member-book .member-book__facts dt,
+  :root:not([data-theme='light']) .member-book .member-book__sticky span,
+  :root:not([data-theme='light']) .member-book .member-book__status-chip,
+  :root:not([data-theme='light']) .member-book .member-book__list span,
+  :root:not([data-theme='light']) .member-book .member-book__locked,
+  :root:not([data-theme='light']) .member-book .member-book__gate > p,
+  :root:not([data-theme='light']) .member-book .member-book__contact {
+    color: var(--book-muted);
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__kicker,
+  :root:not([data-theme='light']) .member-book .member-book__studio,
+  :root:not([data-theme='light']) .member-book .member-book__rail-mark {
+    color: color-mix(in srgb, var(--book-brand) 55%, #fff);
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__steps button,
+  :root:not([data-theme='light']) .member-book .member-book__filters button,
+  :root:not([data-theme='light']) .member-book .member-book__ghost,
+  :root:not([data-theme='light']) .member-book .member-book__services button,
+  :root:not([data-theme='light']) .member-book .member-book__days button,
+  :root:not([data-theme='light']) .member-book .member-book__slots button,
+  :root:not([data-theme='light']) .member-book .member-book__trainer-list button {
+    color: var(--fg);
+    background: color-mix(in srgb, var(--surface) 88%, var(--book-soft));
+    border-color: var(--book-edge);
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__steps button:disabled {
+    color: var(--book-muted);
+    opacity: 0.72;
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__steps button span {
+    color: color-mix(in srgb, var(--book-brand) 55%, #fff);
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__steps button.is-active,
+  :root:not([data-theme='light']) .member-book .member-book__filters button.is-on {
+    color: color-mix(in srgb, var(--book-brand) 42%, #fff);
+    background: color-mix(in srgb, var(--book-brand) 22%, var(--surface));
+  }
+
+  :root:not([data-theme='light']) .member-book .member-book__services button.is-on,
+  :root:not([data-theme='light']) .member-book .member-book__facts > div {
+    background: color-mix(in srgb, var(--book-brand) 16%, var(--surface));
+    border-color: color-mix(in srgb, var(--book-brand) 32%, transparent);
   }
 
   :root:not([data-theme='light']) .member-book .member-book__days button.is-on,

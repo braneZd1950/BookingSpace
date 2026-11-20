@@ -35,7 +35,7 @@ export default function AdminGate() {
       <main className="analytics">
         <h1>Nema pristupa</h1>
         <p className="analytics__lead">
-          Ova zona je za voditelje i djelatnike anyminutesa.
+          Ova zona je za voditelje i djelatnike Blizarija.
         </p>
         <Link to="/">Početna</Link>
       </main>

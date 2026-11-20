@@ -10,6 +10,7 @@ export const STUDIO_NAV_ALL = [
   { key: 'payments', to: '/stranica/placanja', label: 'Blagajna', flag: 'payments' },
   { key: 'calendar', to: '/stranica/kalendar', label: 'Kalendar' },
   { key: 'members', to: '/stranica/clanovi', label: 'Članovi' },
+  { key: 'services', to: '/stranica/usluge', label: 'Usluge' },
   { key: 'analytics', to: '/stranica/analitika', label: 'Analitika' },
   { key: 'plan', to: '/stranica/plan', label: 'Plan', flag: 'plan' },
   { key: 'settings', to: '/stranica/postavke', label: 'Postavke' },
@@ -21,6 +22,7 @@ export const STUDIO_NAV_PILOT_KEYS = [
   'slots',
   'calendar',
   'members',
+  'services',
   'analytics',
   'settings',
 ];

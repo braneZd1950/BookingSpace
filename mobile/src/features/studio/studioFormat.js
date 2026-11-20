@@ -35,6 +35,23 @@ export function serviceCountLabel(count) {
   });
 }
 
+/** Capacity copy for service cards, e.g. „1 osoba” / „Do 12 osoba”. */
+export function serviceCapacityLabel(capacity) {
+  const n = Number(capacity);
+  if (!Number.isFinite(n) || n < 1) return '';
+  if (n === 1) return '1 osoba';
+  return `Do ${n} osoba`;
+}
+
+/** Billing mode from existing service fields (no new model). */
+export function serviceBillingLabel(service) {
+  if (!service) return '';
+  if (service.membershipRequired) return 'Članarina';
+  const price = Number(service.price);
+  if (Number.isFinite(price) && price > 0) return 'Jednokratno plaćanje';
+  return '';
+}
+
 export function memberCountLabel(count) {
   return hrCountLabel(count, {
     zero: 'Nema članova',

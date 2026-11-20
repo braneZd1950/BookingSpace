@@ -21,7 +21,7 @@ export const STUDIO_HOME_NAV = [
   {
     id: 'services',
     label: 'Usluge',
-    note: 'Ponuda i trajanja',
+    note: 'Ponuda za klijente',
     icon: 'list-outline',
   },
   {

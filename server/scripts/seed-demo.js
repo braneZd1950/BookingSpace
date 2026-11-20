@@ -48,10 +48,11 @@ const DEMO = {
     name: 'Demo Fitness',
     slug: 'demo-fitness',
     niche: 'fitness',
-    description: 'Demo fitness studio za lokalno testiranje rezervacija i članarina.',
+    description: 'Demo fitness studio za treninge, grupne programe i članarine.',
     phone: '+385 23 555 010',
     email: 'studio@demo-fitness.hr',
     address: 'Ulica Ivana Meštrovića 1, Zadar',
+    city: 'Zadar',
     timezone: 'Europe/Zagreb',
   },
   /** Unsplash placeholderi samo za lokalni dizajn / seed — ne produkcija. */
@@ -179,6 +180,7 @@ async function upsertStudio(owner) {
       phone: DEMO.studio.phone,
       email: DEMO.studio.email,
       address: DEMO.studio.address,
+      city: DEMO.studio.city,
       timezone: DEMO.studio.timezone,
       ownerId: owner._id,
       active: true,
@@ -202,23 +204,66 @@ async function upsertStudio(owner) {
   return tenant;
 }
 
+const DEMO_SERVICES = [
+  {
+    name: 'Individualni trening',
+    description: 'Trening jedan na jedan',
+    durationMinutes: 60,
+    capacity: 1,
+    price: 35,
+  },
+  {
+    name: 'Grupni trening',
+    description: 'Trening u manjoj grupi',
+    durationMinutes: 45,
+    capacity: 6,
+    price: 12,
+  },
+  {
+    name: 'Pilates',
+    description: 'Vježbe i pokret',
+    durationMinutes: 50,
+    capacity: 8,
+    price: 15,
+  },
+  {
+    name: 'Samostalni trening',
+    description: 'Trening prema vlastitom planu',
+    durationMinutes: 60,
+    capacity: 12,
+    price: 8,
+  },
+];
+
 async function upsertService(tenantId) {
-  let service = await Service.findOne({ tenantId, name: 'Grupni trening' });
-  if (!service) {
-    service = await Service.create({
-      tenantId,
-      name: 'Grupni trening',
-      description: 'Fitness grupni termin, 60 minuta.',
-      durationMinutes: 60,
-      slotIntervalMinutes: 60,
-      capacity: 12,
-      cancellationWindowMinutes: 60,
-      price: 12,
-      membershipRequired: true,
-      active: true,
-    });
+  let primary = null;
+  for (const item of DEMO_SERVICES) {
+    let service = await Service.findOne({ tenantId, name: item.name });
+    if (!service) {
+      service = await Service.create({
+        tenantId,
+        name: item.name,
+        description: item.description,
+        durationMinutes: item.durationMinutes,
+        slotIntervalMinutes: item.durationMinutes,
+        capacity: item.capacity,
+        cancellationWindowMinutes: 60,
+        price: item.price,
+        membershipRequired: true,
+        active: true,
+      });
+    } else {
+      service.description = item.description;
+      service.durationMinutes = item.durationMinutes;
+      service.slotIntervalMinutes = item.durationMinutes;
+      service.capacity = item.capacity;
+      service.price = item.price;
+      service.active = true;
+      await service.save();
+    }
+    if (item.name === 'Grupni trening') primary = service;
   }
-  return service;
+  return primary || Service.findOne({ tenantId, active: true });
 }
 
 async function upsertPlan(tenantId, serviceId) {

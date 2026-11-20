@@ -125,6 +125,7 @@ export async function summarizeUsage({ tenantId = null, days = 30 } = {}) {
       booking_created: 0,
       booking_cancelled: 0,
       booking_completed: 0,
+      booking_no_show: 0,
       member_created: 0,
       register_success: 0,
       tenant_created: 0,
@@ -143,6 +144,167 @@ export async function summarizeUsage({ tenantId = null, days = 30 } = {}) {
     counts: countsFromMap(counts),
     series: [...daysMap.values()],
     topPaths: topPaths.map((row) => ({ path: row._id, count: row.count })),
+  };
+}
+
+function calendarWindow(days) {
+  const keys = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    keys.push(dayKey(d));
+  }
+  return {
+    dateFrom: keys[0],
+    dateTo: keys[keys.length - 1],
+    keys,
+  };
+}
+
+async function countUsageTypes({ tenantId, from, to }) {
+  const match = {
+    createdAt: { $gte: from, $lt: to },
+  };
+  if (tenantId) match.tenantId = tenantId;
+  const rows = await UsageEvent.aggregate([
+    { $match: match },
+    { $group: { _id: '$type', count: { $sum: 1 } } },
+  ]);
+  return Object.fromEntries(rows.map((row) => [row._id, row.count]));
+}
+
+/**
+ * Studio analytics: usage events + exclusive Booking status totals + daily booking series
+ * + previous-period comparison. All scoped to one tenant.
+ */
+function emptyStatusCounts() {
+  return {
+    CONFIRMED: 0,
+    CANCELLED: 0,
+    COMPLETED: 0,
+    NO_SHOW: 0,
+  };
+}
+
+function statusCountsFromRows(rows) {
+  const counts = emptyStatusCounts();
+  for (const row of rows) {
+    if (row._id in counts) counts[row._id] = row.count;
+  }
+  return counts;
+}
+
+function previousCalendarWindow(days) {
+  const keys = [];
+  for (let i = days * 2 - 1; i >= days; i -= 1) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    keys.push(dayKey(d));
+  }
+  return {
+    dateFrom: keys[0],
+    dateTo: keys[keys.length - 1],
+    keys,
+  };
+}
+
+export async function summarizeStudioAnalytics({ tenantId, days = 30 } = {}) {
+  const usage = await summarizeUsage({ tenantId, days });
+  const window = calendarWindow(days);
+  const prevWindow = previousCalendarWindow(days);
+  const since = new Date(usage.since);
+  const previousFrom = new Date(since.getTime() - days * 24 * 60 * 60 * 1000);
+  const oid = new mongoose.Types.ObjectId(String(tenantId));
+
+  const bookingMatch = {
+    tenantId: oid,
+    date: { $gte: window.dateFrom, $lte: window.dateTo },
+  };
+  const previousBookingMatch = {
+    tenantId: oid,
+    date: { $gte: prevWindow.dateFrom, $lte: prevWindow.dateTo },
+  };
+
+  const [statusRows, dayStatusRows, previousStatusRows, previousCounts] = await Promise.all([
+    Booking.aggregate([
+      { $match: bookingMatch },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]),
+    Booking.aggregate([
+      { $match: bookingMatch },
+      {
+        $group: {
+          _id: { date: '$date', status: '$status' },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+    Booking.aggregate([
+      { $match: previousBookingMatch },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]),
+    countUsageTypes({ tenantId, from: previousFrom, to: since }),
+  ]);
+
+  const bookingsByStatus = statusCountsFromRows(statusRows);
+  const previousBookingsByStatus = statusCountsFromRows(previousStatusRows);
+  const bookingsTotal = Object.values(bookingsByStatus).reduce((sum, n) => sum + n, 0);
+  const previousBookingsTotal = Object.values(previousBookingsByStatus)
+    .reduce((sum, n) => sum + n, 0);
+
+  const bookingsSeriesMap = new Map(
+    window.keys.map((date) => [date, {
+      date,
+      total: 0,
+      ...emptyStatusCounts(),
+    }]),
+  );
+  for (const row of dayStatusRows) {
+    const bucket = bookingsSeriesMap.get(row._id.date);
+    if (!bucket) continue;
+    if (row._id.status in bucket) {
+      bucket[row._id.status] = row.count;
+      bucket.total += row.count;
+    }
+  }
+
+  const compareKeys = [
+    'page_view',
+    'member_created',
+    'booking_created',
+    'booking_cancelled',
+    'booking_completed',
+    'booking_no_show',
+  ];
+  const comparison = Object.fromEntries(
+    compareKeys.map((key) => [
+      key,
+      metric(usage.counts?.[key], previousCounts[key]),
+    ]),
+  );
+  comparison.bookingsTotal = metric(bookingsTotal, previousBookingsTotal);
+  for (const status of Object.keys(bookingsByStatus)) {
+    comparison[status] = metric(
+      bookingsByStatus[status],
+      previousBookingsByStatus[status],
+    );
+  }
+
+  return {
+    ...usage,
+    period: {
+      days,
+      dateFrom: window.dateFrom,
+      dateTo: window.dateTo,
+      previousFrom: prevWindow.dateFrom,
+      previousTo: prevWindow.dateTo,
+    },
+    bookingsByStatus,
+    bookingsTotal,
+    bookingsSeries: [...bookingsSeriesMap.values()],
+    comparison,
   };
 }
 

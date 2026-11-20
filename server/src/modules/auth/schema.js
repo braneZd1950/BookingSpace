@@ -33,6 +33,8 @@ const notificationPrefsSchema = z.object({
   memberEmail: z.boolean().optional(),
   weeklyDigest: z.boolean().optional(),
   marketing: z.boolean().optional(),
+  marketingStudio: z.boolean().optional(),
+  marketingPlatform: z.boolean().optional(),
   bookingPush: z.boolean().optional(),
   cancelPush: z.boolean().optional(),
   memberPush: z.boolean().optional(),
@@ -75,4 +77,20 @@ export const resetPasswordSchema = z.object({
     token: z.string().trim().min(20).max(200),
     password,
   }),
+});
+
+export const confirmEmailChangeSchema = z.object({
+  body: z.object({
+    token: z.string().trim().min(20).max(200),
+  }),
+});
+
+export const deleteAccountSchema = z.object({
+  body: z.object({
+    password: z.string().min(1).max(72).optional(),
+    confirm: z.string().trim().optional(),
+  }).refine(
+    (body) => Boolean(body.password) || String(body.confirm || '').toUpperCase() === 'DELETE',
+    'Password or DELETE confirmation required',
+  ),
 });

@@ -4,6 +4,12 @@ export const MEMBER_HOME_NAV = [
     id: 'book',
     label: 'Termini',
     note: 'Rezervacija i otkaz',
+    icon: 'time-outline',
+  },
+  {
+    id: 'calendar',
+    label: 'Kalendar',
+    note: 'Zauzetost po danima',
     icon: 'calendar-outline',
   },
   {

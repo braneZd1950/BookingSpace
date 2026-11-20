@@ -16,6 +16,7 @@ import pushRoutes from './push/routes.js';
 import { serviceCollectionRoutes, serviceItemRoutes } from './services/routes.js';
 import onlineRoutes from './online/routes.js';
 import sessionRoutes from './sessions/routes.js';
+import occupancyRoutes from './sessions/occupancyRoutes.js';
 import staffRoutes from './staff/routes.js';
 import tenantRoutes from './tenants/routes.js';
 
@@ -27,6 +28,7 @@ api.use('/auth', authRoutes);
 api.use('/consent', consentRoutes);
 api.use('/push', pushRoutes);
 api.use('/tenants/:tenantId/services/:serviceId/availability', sessionRoutes);
+api.use('/tenants/:tenantId/occupancy', occupancyRoutes);
 api.use('/tenants/:tenantId/services', serviceCollectionRoutes);
 api.use('/tenants/:tenantId/bookings', tenantBookingRoutes);
 api.use('/tenants/:tenantId/membership-plans', planCollectionRoutes);

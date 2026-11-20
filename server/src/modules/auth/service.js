@@ -4,10 +4,15 @@ import User from '../../models/User.js';
 import env from '../../config/env.js';
 import { trackUsage } from '../../utils/analytics.js';
 import { HttpError } from '../../utils/httpError.js';
-import { sendPasswordResetEmail } from '../../utils/mail.js';
+import {
+  sendEmailChangeConfirmEmail,
+  sendPasswordResetEmail,
+} from '../../utils/mail.js';
 import { mergeNotificationPrefs } from '../../utils/notificationPrefs.js';
 import { signAccessToken } from '../../utils/token.js';
 import { setConsentForUser, toPrivacyConsent } from '../consent/service.js';
+import Booking from '../../models/Booking.js';
+import Membership from '../../models/Membership.js';
 
 const BCRYPT_ROUNDS = 12;
 const RESET_TTL_MS = 60 * 60 * 1000;
@@ -18,8 +23,15 @@ function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-export function toPublicUser(user) {
+function assertNotDeleted(user) {
+  if (user?.deletedAt) {
+    throw new HttpError(401, 'Account is deleted', { code: 'ACCOUNT_DELETED' });
+  }
+}
+
+export function toPublicUser(user, { hasPassword } = {}) {
   const theme = user.uiTheme;
+  const pending = user.pendingEmail || null;
   return {
     id: user._id,
     name: user.name,
@@ -27,6 +39,11 @@ export function toPublicUser(user) {
     phone: user.phone || null,
     role: user.role,
     createdAt: user.createdAt,
+    emailVerified: Boolean(user.emailVerifiedAt),
+    emailVerifiedAt: user.emailVerifiedAt || null,
+    pendingEmail: pending,
+    hasPassword: hasPassword == null ? undefined : Boolean(hasPassword),
+    hasGoogle: Boolean(user.googleId),
     uiTheme: theme === 'light' || theme === 'dark' ? theme : 'system',
     notificationPrefs: mergeNotificationPrefs(user.notificationPrefs),
     privacyConsent: toPrivacyConsent(user.privacyConsent),
@@ -43,6 +60,7 @@ export async function registerUser(input) {
       phone: input.phone,
       passwordHash,
       role: input.role,
+      emailVerifiedAt: new Date(),
     });
 
     trackUsage({
@@ -66,6 +84,10 @@ export async function registerUser(input) {
 
 export async function loginUser(input) {
   const user = await User.findOne({ email: { $eq: String(input.email) } }).select('+passwordHash');
+
+  if (user?.deletedAt) {
+    throw new HttpError(401, 'Invalid email or password', { code: 'INVALID_CREDENTIALS' });
+  }
 
   if (user && !user.passwordHash) {
     throw new HttpError(401, 'Ovaj račun koristi Google prijavu.', {
@@ -136,8 +158,12 @@ async function linkGoogleToExistingEmail({ googleId, email, name }) {
       code: 'GOOGLE_MISMATCH',
     });
   }
+  if (user.deletedAt) {
+    throw new HttpError(401, 'Account is deleted', { code: 'ACCOUNT_DELETED' });
+  }
   user.googleId = googleId;
   if (!user.name) user.name = name;
+  if (!user.emailVerifiedAt) user.emailVerifiedAt = new Date();
   await user.save();
   return user;
 }
@@ -145,7 +171,13 @@ async function linkGoogleToExistingEmail({ googleId, email, name }) {
 async function createGoogleUser({ googleId, email, name, intent }) {
   const role = intent === 'register' ? 'BUSINESS_OWNER' : 'CUSTOMER';
   try {
-    return await User.create({ name, email, googleId, role });
+    return await User.create({
+      name,
+      email,
+      googleId,
+      role,
+      emailVerifiedAt: new Date(),
+    });
   } catch (error) {
     if (error?.code === 11000) {
       throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
@@ -174,6 +206,12 @@ export async function loginWithGoogle(input) {
     created = true;
   }
 
+  assertNotDeleted(user);
+  if (!user.emailVerifiedAt) {
+    user.emailVerifiedAt = new Date();
+    await user.save();
+  }
+
   trackUsage({
     type: created ? 'register_success' : 'login_success',
     userId: user._id,
@@ -188,14 +226,48 @@ export async function loginWithGoogle(input) {
   };
 }
 
-export async function updateMe(user, input) {
-  if (input.email && input.email !== user.email) {
-    const taken = await User.exists({
-      email: { $eq: String(input.email) },
-      _id: { $ne: user._id },
+async function startEmailChange(user, nextEmail) {
+  const email = String(nextEmail).trim().toLowerCase();
+  if (!email || email === user.email) return null;
+
+  const taken = await User.exists({
+    email: { $eq: email },
+    _id: { $ne: user._id },
+  });
+  if (taken) throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
+
+  const fresh = await User.findById(user._id)
+    .select('+pendingEmail +emailChangeTokenHash +emailChangeExpires');
+  if (!fresh) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+
+  const token = randomBytes(32).toString('hex');
+  fresh.pendingEmail = email;
+  fresh.emailChangeTokenHash = hashResetToken(token);
+  fresh.emailChangeExpires = new Date(Date.now() + RESET_TTL_MS);
+  await fresh.save();
+
+  const origin = env.clientOrigin.replace(/\/$/, '');
+  const confirmUrl = `${origin}/potvrda-emaila?token=${encodeURIComponent(token)}`;
+  try {
+    await sendEmailChangeConfirmEmail({
+      to: email,
+      memberName: fresh.name,
+      confirmUrl,
     });
-    if (taken) throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
-    user.email = String(input.email);
+  } catch (error) {
+    console.error('[mail] Potvrda e-pošte nije poslana:', error?.message || error);
+  }
+
+  user.pendingEmail = email;
+  return email;
+}
+
+export async function updateMe(user, input) {
+  assertNotDeleted(user);
+  let emailChangeStarted = false;
+  if (input.email && input.email !== user.email) {
+    await startEmailChange(user, input.email);
+    emailChangeStarted = true;
   }
   if (input.name) user.name = input.name;
   if (input.phone !== undefined) user.phone = input.phone || undefined;
@@ -211,7 +283,153 @@ export async function updateMe(user, input) {
     return toPublicUser(user);
   }
   await user.save();
-  return toPublicUser(user);
+  const publicUser = toPublicUser(user);
+  if (emailChangeStarted) {
+    publicUser.pendingEmail = String(input.email).trim().toLowerCase();
+    publicUser.emailChangePending = true;
+  }
+  return publicUser;
+}
+
+export async function confirmEmailChange(input) {
+  const tokenHash = hashResetToken(input.token);
+  const user = await User.findOne({
+    emailChangeTokenHash: tokenHash,
+    emailChangeExpires: { $gt: new Date() },
+  }).select('+pendingEmail +emailChangeTokenHash +emailChangeExpires');
+
+  if (!user || !user.pendingEmail) {
+    throw new HttpError(400, 'Email confirm link is invalid or expired', {
+      code: 'EMAIL_CONFIRM_INVALID',
+    });
+  }
+
+  const taken = await User.exists({
+    email: { $eq: user.pendingEmail },
+    _id: { $ne: user._id },
+  });
+  if (taken) {
+    throw new HttpError(409, 'Email already registered', { code: 'EMAIL_TAKEN' });
+  }
+
+  user.email = user.pendingEmail;
+  user.emailVerifiedAt = new Date();
+  user.pendingEmail = undefined;
+  user.emailChangeTokenHash = undefined;
+  user.emailChangeExpires = undefined;
+  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
+  await user.save();
+
+  return {
+    ok: true,
+    user: toPublicUser(user),
+    token: signAccessToken(user),
+  };
+}
+
+export async function resendEmailChange(user) {
+  const fresh = await User.findById(user._id)
+    .select('+pendingEmail +emailChangeTokenHash +emailChangeExpires');
+  if (!fresh?.pendingEmail) {
+    throw new HttpError(400, 'No pending email change', { code: 'NO_PENDING_EMAIL' });
+  }
+  await startEmailChange(fresh, fresh.pendingEmail);
+  return { ok: true, pendingEmail: fresh.pendingEmail };
+}
+
+export async function exportMyData(user) {
+  assertNotDeleted(user);
+  const [memberships, bookings] = await Promise.all([
+    Membership.find({ userId: user._id })
+      .select('tenantId status validFrom validUntil sessionsIncluded sessionsUsed membershipPlanId createdAt')
+      .lean(),
+    Booking.find({ userId: user._id })
+      .select('tenantId serviceId date startTime endTime status createdAt')
+      .sort({ date: -1 })
+      .limit(200)
+      .lean(),
+  ]);
+
+  return {
+    exportedAt: new Date().toISOString(),
+    account: {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      phone: user.phone || null,
+      role: user.role,
+      createdAt: user.createdAt,
+      emailVerifiedAt: user.emailVerifiedAt || null,
+      uiTheme: user.uiTheme || 'system',
+      notificationPrefs: mergeNotificationPrefs(user.notificationPrefs),
+      privacyConsent: toPrivacyConsent(user.privacyConsent),
+    },
+    memberships: memberships.map((item) => ({
+      tenantId: String(item.tenantId),
+      status: item.status,
+      membershipPlanId: item.membershipPlanId ? String(item.membershipPlanId) : null,
+      validFrom: item.validFrom || null,
+      validUntil: item.validUntil || null,
+      sessionsIncluded: item.sessionsIncluded ?? null,
+      sessionsUsed: item.sessionsUsed ?? null,
+      createdAt: item.createdAt,
+    })),
+    bookings: bookings.map((item) => ({
+      tenantId: String(item.tenantId),
+      serviceId: item.serviceId ? String(item.serviceId) : null,
+      date: item.date,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      status: item.status,
+      createdAt: item.createdAt,
+    })),
+  };
+}
+
+export async function deleteMyAccount(user, input = {}) {
+  assertNotDeleted(user);
+  const fresh = await User.findById(user._id).select('+passwordHash');
+  if (!fresh) throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+
+  if (fresh.passwordHash) {
+    const passwordOk = await bcrypt.compare(
+      String(input.password || ''),
+      fresh.passwordHash || dummyHash,
+    );
+    if (!passwordOk) {
+      throw new HttpError(401, 'Current password is incorrect', {
+        code: 'INVALID_CREDENTIALS',
+      });
+    }
+  } else if (String(input.confirm || '').toUpperCase() !== 'DELETE') {
+    throw new HttpError(400, 'Type DELETE to confirm account deletion', {
+      code: 'DELETE_CONFIRM_REQUIRED',
+    });
+  }
+
+  const stamp = Date.now();
+  fresh.name = 'Deleted user';
+  fresh.email = `deleted+${fresh._id}.${stamp}@invalid.blizari.local`;
+  fresh.phone = undefined;
+  fresh.deletedAt = new Date();
+  fresh.tokenVersion = Number(fresh.tokenVersion || 0) + 1;
+  fresh.notificationPrefs = mergeNotificationPrefs({
+    bookingEmail: false,
+    cancelEmail: false,
+    memberEmail: false,
+    marketing: false,
+    marketingStudio: false,
+    marketingPlatform: false,
+  });
+  fresh.set('googleId', undefined);
+  fresh.set('passwordHash', undefined);
+  fresh.set('pendingEmail', undefined);
+  fresh.set('emailChangeTokenHash', undefined);
+  fresh.set('emailChangeExpires', undefined);
+  fresh.set('passwordResetTokenHash', undefined);
+  fresh.set('passwordResetExpires', undefined);
+  await fresh.save();
+  return { ok: true };
 }
 
 export async function changePassword(user, input) {

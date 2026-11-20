@@ -1,10 +1,15 @@
+import User from '../../models/User.js';
 import { isPlatformAdmin, isPlatformSuperAdmin } from '../../utils/analytics.js';
 import {
   changePassword,
+  confirmEmailChange,
+  deleteMyAccount,
+  exportMyData,
   loginUser,
   loginWithGoogle,
   registerUser,
   requestPasswordReset,
+  resendEmailChange,
   resetPasswordWithToken,
   revokeAccessTokens,
   toPublicUser,
@@ -31,9 +36,17 @@ export async function logout(req, res) {
   res.status(204).send();
 }
 
-export function me(req, res) {
+export async function logoutAll(req, res) {
+  await revokeAccessTokens(req.user);
+  res.status(204).send();
+}
+
+export async function me(req, res) {
+  const fresh = await User.findById(req.user._id)
+    .select('+passwordHash +pendingEmail');
+  const user = fresh || req.user;
   res.json({
-    user: toPublicUser(req.user),
+    user: toPublicUser(user, { hasPassword: Boolean(fresh?.passwordHash) }),
     platformAdmin: isPlatformAdmin(req.user),
     platformSuperAdmin: isPlatformSuperAdmin(req.user),
   });
@@ -56,5 +69,25 @@ export async function forgotPassword(req, res) {
 
 export async function resetPassword(req, res) {
   const result = await resetPasswordWithToken(req.input.body);
+  res.json(result);
+}
+
+export async function confirmEmail(req, res) {
+  const result = await confirmEmailChange(req.input.body);
+  res.json(result);
+}
+
+export async function resendEmail(req, res) {
+  const result = await resendEmailChange(req.user);
+  res.json(result);
+}
+
+export async function exportMe(req, res) {
+  const payload = await exportMyData(req.user);
+  res.json(payload);
+}
+
+export async function deleteMe(req, res) {
+  const result = await deleteMyAccount(req.user, req.input.body);
   res.json(result);
 }

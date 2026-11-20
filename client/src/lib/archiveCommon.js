@@ -45,12 +45,12 @@ export function archiveCell(value, empty = '') {
   return String(value);
 }
 
-/** Base file name without extension: anyminutes-{stem}-{stamp}[-provjera] */
+/** Base file name without extension: blizari-{stem}-{stamp}[-provjera] */
 export function archiveFileBase(options, stampFile = stampNow().file) {
   const stem = slugifyArchive(options.fileStem || options.title);
   return IS_LIVE
-    ? `anyminutes-${stem}-${stampFile}`
-    : `anyminutes-${stem}-${stampFile}-provjera`;
+    ? `blizari-${stem}-${stampFile}`
+    : `blizari-${stem}-${stampFile}-provjera`;
 }
 
 export function triggerArchiveDownload(blob, fileName) {

@@ -57,6 +57,12 @@ const sectionFields = [
     note: 'Opis vašeg poslovanja i usluga.',
   },
   {
+    key: 'services',
+    icon: 'services',
+    label: 'Usluge i aktivnosti',
+    note: 'Popis onoga što klijenti mogu rezervirati ili koristiti.',
+  },
+  {
     key: 'contact',
     icon: 'contact',
     label: 'Kontakt',
@@ -147,6 +153,14 @@ function SetupSectionIcon({ type }) {
         <rect x="4.5" y="5.5" width="15" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
         <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M8 3.8v3.2M16 3.8v3.2M4.5 10h15" />
         <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M8.2 13.5h3M8.2 16.2h7.2" />
+      </svg>
+    );
+  }
+
+  if (type === 'services') {
+    return (
+      <svg {...common}>
+        <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" d="M6 7.5h12M6 12h12M6 16.5h8" />
       </svg>
     );
   }
@@ -335,14 +349,13 @@ export default function SetupPage() {
   }
 
   function changeSection(key, value) {
-    if (key === 'schedule' || key === 'services') return;
+    if (key === 'schedule') return;
     setDraft((current) => ({
       ...current,
       sections: {
         ...current.sections,
         [key]: value,
         schedule: true,
-        services: true,
       },
     }));
   }
@@ -473,7 +486,7 @@ export default function SetupPage() {
           <p className="setup__host" aria-label="Adresa stranice">{hostname}</p>
           <h1>Dobrodošli, {studio.name}.</h1>
           <p className="setup__lead">
-            Ovo je vaša poddomena na anyminutesu. Sad birate predložak i raspored
+            Ovo je vaša poddomena na Blizariju. Sad birate predložak i raspored
             (header, stupac, traka) — boja, tekst i slike dolaze u sljedećim koracima.
           </p>
           <ol className="guide__path">

@@ -13,7 +13,7 @@ export async function requireAuth(req, res, next) {
   try {
     const payload = verifyAccessToken(match[1]);
     const user = await User.findById(payload.sub);
-    if (!user) {
+    if (!user || user.deletedAt) {
       next(new HttpError(401, 'Unauthorized'));
       return;
     }
@@ -40,7 +40,11 @@ export async function optionalAuth(req, res, next) {
   try {
     const payload = verifyAccessToken(match[1]);
     const user = await User.findById(payload.sub);
-    if (user && Number(payload.v || 0) === Number(user.tokenVersion || 0)) {
+    if (
+      user
+      && !user.deletedAt
+      && Number(payload.v || 0) === Number(user.tokenVersion || 0)
+    ) {
       req.user = user;
     }
     next();

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import {
   useCancelBookingMutation,
   useCreateBookingMutation,
@@ -16,11 +16,30 @@ import {
 } from '../../lib/bookingErrors.js';
 import { dateKeyToLocalDate } from '../../lib/dateRange.js';
 import {
+  isLocalBookingFixtureId,
+  isLocalBookingMock,
+  localBookingList,
+  localBookingServices,
+  localBookingSlots,
+  localBookingTrainers,
+  localBookingWorkingHours,
+} from '../../lib/localBookingFixtures.js';
+import {
   firstOpenKey,
   formatBookingDay,
   sessionsLabel,
   slotNote,
 } from '../../../../shared/memberBookLabels.js';
+import {
+  BOOKING_STEP_LABELS,
+  bookingStatusDisplay,
+  filterMemberBookings,
+  formatServicePrice,
+  nextStep,
+  prevStep,
+  resolveBookingSteps,
+  serviceNeedsMembership,
+} from '../../../../shared/memberBookFlow.js';
 import {
   dayOpen,
   formatCancellationWindow,
@@ -49,20 +68,9 @@ function canCancelBooking(booking, windowMinutes, timeZone) {
   );
 }
 
-function policyMark(minutes) {
-  const value = Number(minutes);
-  if (!Number.isFinite(value) || value < 0) return '—';
-  if (value < 60) return `${value} min`;
-  const hours = value / 60;
-  if (Number.isInteger(hours)) return `${hours} h`;
-  return `${Math.floor(hours)} h ${value % 60} min`;
-}
-
 function themeStyle(palette) {
   const theme = palette?.theme;
   if (!theme) return undefined;
-  // Match paletteSurfaceVars: in dark mode ink/canvas follow global tokens so
-  // inline studio light-ink does not beat dark CSS rules.
   const dark = typeof document !== 'undefined'
     && (document.documentElement.getAttribute('data-theme') === 'dark'
       || (document.documentElement.getAttribute('data-theme') !== 'light'
@@ -77,8 +85,16 @@ function themeStyle(palette) {
   };
 }
 
+function windowForBooking(booking, services, fallback) {
+  const service = (services || []).find(
+    (item) => String(item.id) === String(booking.serviceId),
+  );
+  return Number(service?.cancellationWindowMinutes ?? fallback) || fallback;
+}
+
 export default function MemberBookPage() {
   const { slug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     tenant: tenantFromLayout,
     membership,
@@ -94,36 +110,56 @@ export default function MemberBookPage() {
   });
   const tenant = publicData?.tenant || tenantFromLayout;
   const tenantId = String(tenant.id);
-  const services = tenant.services || [];
-  const trainers = useMemo(() => tenant.trainers || [], [tenant.trainers]);
-  const service = services.find((item) => item.active !== false) || services[0] || null;
-  const serviceId = service ? String(service.id) : '';
-  const cancelWindow = Number(service?.cancellationWindowMinutes ?? 60) || 60;
-  const cancelWindowLabel = formatCancellationWindow(cancelWindow);
+  const localMock = isLocalBookingMock();
+  const services = useMemo(() => {
+    const live = (tenant.services || []).filter((item) => item.active !== false);
+    if (live.length) return live;
+    return localMock ? localBookingServices() : [];
+  }, [tenant.services, localMock]);
+  const trainers = useMemo(() => {
+    const live = tenant.trainers || [];
+    if (live.length) return live;
+    return localMock ? localBookingTrainers() : [];
+  }, [tenant.trainers, localMock]);
+  const steps = useMemo(() => resolveBookingSteps({ trainers }), [trainers]);
   const timeZone = tenant.timezone || 'Europe/Zagreb';
-  const workingHours = tenant.bookingSettings?.workingHours || [];
+  const workingHours = useMemo(() => {
+    const live = tenant.bookingSettings?.workingHours || [];
+    if (live.length) return live;
+    return localMock ? localBookingWorkingHours() : [];
+  }, [tenant.bookingSettings?.workingHours, localMock]);
   const days = useMemo(() => upcomingDays(14), []);
+  const todayKey = toDateKey(new Date());
+
+  const queryServiceId = searchParams.get('serviceId') || '';
+  const [serviceId, setServiceId] = useState('');
+  const [step, setStep] = useState('service');
   const [date, setDate] = useState(() => firstOpenKey(days, workingHours));
   const [staffId, setStaffId] = useState('');
   const [slotTime, setSlotTime] = useState('');
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
   const [busyId, setBusyId] = useState('');
-  const [policyFlash, setPolicyFlash] = useState(false);
+  const [dayHints, setDayHints] = useState({});
+  const [bookingFilter, setBookingFilter] = useState('upcoming');
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
   const daysRef = useRef(null);
-  const lastWindowRef = useRef(cancelWindow);
 
   useDefaultStaffId(trainers, setStaffId);
 
-  useEffect(() => {
-    if (lastWindowRef.current === cancelWindow) return;
-    lastWindowRef.current = cancelWindow;
-    setPolicyFlash(true);
-    const timer = window.setTimeout(() => setPolicyFlash(false), 1600);
-    return () => window.clearTimeout(timer);
-  }, [cancelWindow]);
+  const usingFixtureService = isLocalBookingFixtureId(serviceId);
+  const service = services.find((item) => String(item.id) === String(serviceId)) || null;
+  const cancelWindow = Number(service?.cancellationWindowMinutes ?? 60) || 60;
+  const cancelWindowLabel = formatCancellationWindow(cancelWindow);
+  const needsMembership = serviceNeedsMembership(service);
+  const membershipOk = !needsMembership || isMember;
+  const canFetchSlots = loggedIn
+    && membershipOk
+    && Boolean(serviceId)
+    && consentOk
+    && !usingFixtureService
+    && (step === 'date' || step === 'slot' || step === 'review' || step === 'done');
 
-  const canFetchSlots = loggedIn && isMember && Boolean(serviceId) && consentOk;
   const { currentData: availability, isFetching: loadingSlots } = useGetAvailabilityQuery(
     { tenantId, serviceId, date },
     { skip: !canFetchSlots },
@@ -136,65 +172,231 @@ export default function MemberBookPage() {
 
   const selectedDate = useMemo(() => dateKeyToLocalDate(date), [date]);
   const open = dayOpen(workingHours, selectedDate);
-  // currentData avoids showing yesterday's slots while today's request is in flight
-  const slots = availability?.slots || [];
+  const slots = useMemo(() => {
+    const live = availability?.slots || [];
+    if (!localMock) return live;
+    if (usingFixtureService && open) return localBookingSlots(date, service);
+    if (
+      !loadingSlots
+      && live.length === 0
+      && serviceId
+      && open
+      && (step === 'date' || step === 'slot' || step === 'review')
+    ) {
+      return localBookingSlots(date, service);
+    }
+    return live;
+  }, [
+    availability?.slots,
+    localMock,
+    usingFixtureService,
+    open,
+    date,
+    service,
+    loadingSlots,
+    serviceId,
+    step,
+  ]);
   const bookableSlots = slots.filter((item) => item.status === 'AVAILABLE');
   const selectedSlot = bookableSlots.find((item) => item.startTime === slotTime) || null;
+  const selectedStaff = trainers.find((item) => String(item.id) === String(staffId)) || null;
+  const stepIndex = Math.max(0, steps.indexOf(step));
 
-  const myBookings = (bookingData?.bookings || [])
-    .filter((item) => String(item.tenantId) === tenantId && item.status === 'CONFIRMED')
-    .sort((a, b) => {
-      const byDate = a.date.localeCompare(b.date);
-      return byDate !== 0 ? byDate : a.startTime.localeCompare(b.startTime);
+  const myBookings = useMemo(() => {
+    const live = bookingData?.bookings || [];
+    const source = live.length || !localMock
+      ? live
+      : localBookingList(tenantId);
+    return filterMemberBookings(source, {
+      tenantId,
+      filter: bookingFilter,
+      todayKey,
     });
-  const dayBookings = myBookings.filter((item) => item.date === date);
+  }, [bookingData, tenantId, bookingFilter, todayKey, localMock]);
+
+  // Prefill service from URL or single-service studios
+  useEffect(() => {
+    if (!services.length) {
+      setServiceId('');
+      return;
+    }
+    const fromQuery = queryServiceId
+      && services.some((item) => String(item.id) === String(queryServiceId))
+      ? String(queryServiceId)
+      : '';
+    setServiceId((current) => {
+      if (current && services.some((item) => String(item.id) === current)) return current;
+      if (fromQuery) return fromQuery;
+      if (services.length === 1) return String(services[0].id);
+      return '';
+    });
+    if (fromQuery || services.length === 1) {
+      setStep((current) => (current === 'done' ? current : 'info'));
+    }
+  }, [services, queryServiceId]);
 
   useEffect(() => {
     setSlotTime('');
     setOk('');
-  }, [date]);
+  }, [date, serviceId]);
+
+  useEffect(() => {
+    if (!canFetchSlots || loadingSlots || !availability) return;
+    setDayHints((current) => ({
+      ...current,
+      [date]: bookableSlots.length > 0 ? 'available' : 'empty',
+    }));
+  }, [availability, bookableSlots.length, canFetchSlots, date, loadingSlots]);
+
+  useEffect(() => {
+    if (!localMock || !serviceId || !open) return;
+    if (canFetchSlots && (loadingSlots || availability)) return;
+    setDayHints((current) => ({
+      ...current,
+      [date]: bookableSlots.length > 0 ? 'available' : 'empty',
+    }));
+  }, [
+    localMock,
+    serviceId,
+    open,
+    canFetchSlots,
+    loadingSlots,
+    availability,
+    date,
+    bookableSlots.length,
+  ]);
+
+  useEffect(() => {
+    if (!workingHours.length) return;
+    const selected = dateKeyToLocalDate(date);
+    if (selected && dayOpen(workingHours, selected)) return;
+    const next = firstOpenKey(days, workingHours);
+    if (next && next !== date) setDate(next);
+  }, [workingHours, days, date]);
 
   useEffect(() => {
     const node = daysRef.current;
     if (!node) return undefined;
-
     function onWheel(event) {
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       const maxScroll = node.scrollWidth - node.clientWidth;
       if (maxScroll <= 0) return;
-
       const next = Math.min(maxScroll, Math.max(0, node.scrollLeft + event.deltaY));
       if (next === node.scrollLeft) return;
-
       event.preventDefault();
       node.scrollLeft = next;
     }
-
     node.addEventListener('wheel', onWheel, { passive: false });
     return () => node.removeEventListener('wheel', onWheel);
-  }, [canFetchSlots]);
+  }, [step]);
+
+  function go(next) {
+    setError('');
+    setOk('');
+    if (next !== 'service' && !serviceId && services[0]) {
+      setServiceId(String(services[0].id));
+    }
+    setStep(next);
+  }
+
+  function jumpToStep(id) {
+    go(id);
+  }
+
+  function selectService(id) {
+    setServiceId(String(id));
+    setSlotTime('');
+    setConfirmedBooking(null);
+    if (searchParams.get('serviceId') !== String(id)) {
+      const next = new URLSearchParams(searchParams);
+      next.set('serviceId', String(id));
+      setSearchParams(next, { replace: true });
+    }
+    go('info');
+  }
+
+  function goBack() {
+    if (step === 'done') {
+      go('service');
+      setConfirmedBooking(null);
+      setSlotTime('');
+      return;
+    }
+    go(prevStep(steps, step));
+  }
+
+  function goForward() {
+    if (step === 'service' && !serviceId) {
+      setError('Odaberite uslugu.');
+      return;
+    }
+    if (step === 'info' && needsMembership && !isMember) {
+      setError('Za ovu uslugu potrebna je aktivna članarina.');
+      return;
+    }
+    if (step === 'staff' && trainers.length > 1 && !staffId) {
+      setError('Odaberite djelatnika.');
+      return;
+    }
+    if (step === 'date' && !open) {
+      setError('Odaberite otvoren dan.');
+      return;
+    }
+    if (step === 'slot' && !slotTime) {
+      setError('Odaberite slobodan termin.');
+      return;
+    }
+    go(nextStep(steps, step));
+  }
 
   async function onBook(event) {
     event.preventDefault();
     setError('');
     setOk('');
     if (trainers.length > 0 && !staffId) {
-      setError('Odaberite trenera.');
+      setError('Odaberite djelatnika.');
+      go('staff');
       return;
     }
     if (!slotTime) {
       setError('Odaberite sat.');
+      go('slot');
+      return;
+    }
+    const slotsAreMock = localMock && (
+      usingFixtureService
+      || (!(availability?.slots || []).length && slots.length > 0)
+    );
+    if (slotsAreMock) {
+      setConfirmedBooking({
+        serviceName: service?.name,
+        date,
+        startTime: slotTime,
+        endTime: selectedSlot?.endTime,
+        staff: selectedStaff ? { name: selectedStaff.name } : null,
+      });
+      setOk('Lokalni mock — rezervacija nije spremljena u bazu.');
+      setSlotTime('');
+      go('done');
       return;
     }
     try {
-      await createBooking({
+      const result = await createBooking({
         serviceId,
         date,
         startTime: slotTime,
         ...(staffId ? { staffId } : {}),
       }).unwrap();
+      setConfirmedBooking(result?.booking || {
+        serviceName: service?.name,
+        date,
+        startTime: slotTime,
+        endTime: selectedSlot?.endTime,
+        staff: selectedStaff ? { name: selectedStaff.name } : null,
+      });
       setOk('Termin je rezerviran.');
       setSlotTime('');
+      go('done');
     } catch (failure) {
       setError(messageForCreateBookingError(failure, 'member'));
     }
@@ -204,13 +406,22 @@ export default function MemberBookPage() {
     setError('');
     setOk('');
     setBusyId(bookingId);
+    if (localMock && isLocalBookingFixtureId(bookingId)) {
+      setOk('Lokalni mock — otkazivanje nije spremljeno u bazu.');
+      setBusyId('');
+      return;
+    }
     try {
       await cancelBooking(bookingId).unwrap();
       setOk('Rezervacija je otkazana. Termin vam se ne broji kao iskorišten.');
     } catch (failure) {
+      const item = (bookingData?.bookings || []).find((row) => row.id === bookingId);
+      const label = formatCancellationWindow(
+        windowForBooking(item || {}, services, cancelWindow),
+      );
       setError(messageForCancelBookingError(failure, {
         audience: 'member',
-        cancelWindowLabel,
+        cancelWindowLabel: label,
       }));
     } finally {
       setBusyId('');
@@ -218,6 +429,12 @@ export default function MemberBookPage() {
   }
 
   const railStatus = isMember ? sessionsLabel(membership) : 'Termini';
+  const showSticky = Boolean(
+    service
+    && step !== 'service'
+    && step !== 'done'
+    && (date || slotTime || selectedStaff),
+  );
 
   return (
     <main className="member-book" style={themeStyle(palette)}>
@@ -235,11 +452,9 @@ export default function MemberBookPage() {
         <div className="member-book__stage">
           <header className="member-book__hero">
             <p className="member-book__studio">{tenant.name}</p>
-            <h1>Termini</h1>
+            <h1>Rezervacija</h1>
             <p className="member-book__lead">
-              {service
-                ? `${service.name} · ${service.durationMinutes} min`
-                : 'Studio još nema objavljenu uslugu za rezervaciju.'}
+              Odaberite uslugu i slobodan termin. Koraci se prilagođavaju ponudi studija.
             </p>
             {isMember ? (
               <p className="member-book__plan">
@@ -251,61 +466,22 @@ export default function MemberBookPage() {
           </header>
 
           {error ? <p className="member-book__error" role="alert">{error}</p> : null}
-          {ok ? <p className="member-book__ok" role="status">{ok}</p> : null}
-
-          <ol className="member-book__trust" aria-label="Zašto rezervirati ovdje">
-            <li>
-              <span className="member-book__trust-num" aria-hidden="true">01</span>
-              <span>
-                Rezervacija izravno kod
-                {' '}
-                {tenant.name}
-                {' '}
-                — ne u marketplace katalogu
-              </span>
-            </li>
-            <li>
-              <span className="member-book__trust-num" aria-hidden="true">02</span>
-              <span>Potvrda na e-poštu nakon rezervacije ili otkaza</span>
-            </li>
-            <li>
-              <span className="member-book__trust-num" aria-hidden="true">03</span>
-              <span>Članarina i uplata dogovaraju se sa studijom; ovdje vodite termine</span>
-            </li>
-          </ol>
+          {ok && step !== 'done' ? <p className="member-book__ok" role="status">{ok}</p> : null}
 
           {!loggedIn ? (
             <section className="member-book__gate">
               <p className="member-book__kicker">Pristup</p>
               <h2>Prijava je potrebna</h2>
-              <p>Prijavite se da vidite slobodne sate i rezervirate termin.</p>
-              <Link className="member-book__cta" to="/login">
-                Prijava
-              </Link>
+              <p>Prijavite se da rezervirate termin i pratite svoje rezervacije.</p>
+              <Link className="member-book__cta" to="/login">Prijava</Link>
             </section>
           ) : null}
 
-          {loggedIn && !isMember ? (
-            <section className="member-book__gate">
-              <p className="member-book__kicker">Članstvo</p>
-              <h2>Članarina je potrebna</h2>
-              <p>
-                Pregled termina je dostupan članovima s aktivnom članarinom.
-                Obratite se studiju da vam je aktiviraju.
-              </p>
-              {(tenant.phone || tenant.email) ? (
-                <p className="member-book__contact">
-                  {[tenant.phone, tenant.email].filter(Boolean).join(' · ')}
-                </p>
-              ) : null}
-            </section>
-          ) : null}
-
-          {loggedIn && isMember && !consentOk ? (
+          {loggedIn && !consentOk ? (
             <ConsentGate title="Privola je potrebna za rezervacije" />
           ) : null}
 
-          {loggedIn && isMember && consentOk && !service ? (
+          {loggedIn && consentOk && !services.length ? (
             <section className="member-book__gate">
               <p className="member-book__kicker">Usluga</p>
               <h2>Nema usluge</h2>
@@ -313,114 +489,277 @@ export default function MemberBookPage() {
             </section>
           ) : null}
 
-          {canFetchSlots ? (
-            <div className="member-book__flow">
-              <aside
-                className={policyFlash ? 'member-book__policy is-updated' : 'member-book__policy'}
-                aria-label="Uvjeti otkazivanja"
-                aria-live="polite"
-              >
-                <div className="member-book__policy-head">
-                  <div>
-                    <p className="member-book__kicker">Pravila</p>
-                    <h2>Uvjeti otkazivanja</h2>
+          {loggedIn && consentOk && services.length > 0 ? (
+            <>
+              <nav className="member-book__steps" aria-label="Koraci rezervacije">
+                {steps.filter((id) => id !== 'done').map((id, index) => {
+                  const active = id === step;
+                  const done = steps.indexOf(step) > index;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      className={[
+                        active ? 'is-active' : '',
+                        done ? 'is-done' : '',
+                      ].filter(Boolean).join(' ') || undefined}
+                      aria-current={active ? 'step' : undefined}
+                      onClick={() => jumpToStep(id)}
+                    >
+                      <span>{String(index + 1).padStart(2, '0')}</span>
+                      {BOOKING_STEP_LABELS[id]}
+                    </button>
+                  );
+                })}
+              </nav>
+              {localMock && (
+                services.some((item) => isLocalBookingFixtureId(item.id))
+                || slots.some((slot) => slot.status === 'AVAILABLE' && !availability?.slots?.length)
+              ) ? (
+                <p className="member-book__hint" role="note">
+                  Lokalni mock podaci — samo za localhost testiranje, ne spremaju se u bazu.
+                </p>
+              ) : null}
+
+              {step === 'service' ? (
+                <section className="member-book__pick" aria-label="Odabir usluge">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>Usluga</h2>
+                    <p>Odaberite što želite rezervirati.</p>
+                  </header>
+                  <div className="member-book__services">
+                    {services.map((item) => {
+                      const id = String(item.id);
+                      const on = serviceId === id;
+                      const price = formatServicePrice(item.price);
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className={on ? 'is-on' : undefined}
+                          onClick={() => selectService(id)}
+                        >
+                          <strong>{item.name}</strong>
+                          <span>
+                            {item.durationMinutes || '—'}
+                            {' '}
+                            min
+                            {item.capacity > 1 ? ` · do ${item.capacity} mjesta` : ''}
+                            {price ? ` · ${price}` : ''}
+                            {item.membershipRequired ? ' · članarina' : ''}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <span className="member-book__policy-mark" key={cancelWindow}>
-                    {policyMark(cancelWindow)}
-                  </span>
-                </div>
-                <p>
-                  Termin možete otkazati najkasnije
-                  {' '}
-                  <strong key={`label-${cancelWindow}`}>{cancelWindowLabel}</strong>
-                  .
-                  U tom roku rezervacija se briše i termin se
-                  {' '}
-                  <strong>ne broji kao iskorišten</strong>
-                  .
-                </p>
-                <p>
-                  Ako otkažete kasnije ili ne dođete, studio zadržava termin kao iskorišten
-                  prema svojim pravilima.
-                </p>
-              </aside>
+                </section>
+              ) : null}
 
-              <section className="member-book__pick" aria-label="Odabir dana">
-                <header className="member-book__section-head">
-                  <p className="member-book__kicker">Korak 01</p>
-                  <h2>Dan</h2>
-                  <p>Sljedeća dva tjedna</p>
-                </header>
-                <div ref={daysRef} className="member-book__days" role="listbox" aria-label="Dani">
-                  {days.map((item) => {
-                    const key = toDateKey(item);
-                    const works = dayOpen(workingHours, item);
-                    const selected = key === date;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        role="option"
-                        aria-selected={selected}
-                        disabled={!works}
-                        className={[
-                          selected ? 'is-on' : '',
-                          !works ? 'is-closed' : '',
-                        ].filter(Boolean).join(' ') || undefined}
-                        onClick={() => setDate(key)}
-                      >
-                        <span className="member-book__day-name">{shortDay(item)}</span>
-                        <strong>{item.getDate()}.</strong>
-                        <span className="member-book__day-meta">
-                          {works ? 'Otvoreno' : 'Zatvoreno'}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <form className="member-book__pick" onSubmit={onBook}>
-                <header className="member-book__section-head">
-                  <p className="member-book__kicker">Korak 02</p>
-                  <h2>{formatDay(selectedDate)}</h2>
-                  <p>
-                    {!open
-                      ? 'Studio je zatvoren ovog dana.'
-                      : loadingSlots
-                        ? 'Učitavamo slobodne sate…'
-                        : bookableSlots.length > 0
-                          ? 'Odaberite slobodan sat.'
-                          : 'Nema slobodnih sati za ovaj dan.'}
-                  </p>
-                </header>
-
-                {open && trainers.length > 0 ? (
-                  <div className="member-book__trainers" role="group" aria-label="Trener">
-                    <p className="member-book__trainers-label">Kod koga rezervirate</p>
-                    <div className="member-book__trainer-list">
-                      {trainers.map((trainer) => {
-                        const id = String(trainer.id);
-                        const on = staffId === id;
-                        return (
-                          <button
-                            key={id}
-                            type="button"
-                            aria-pressed={on}
-                            className={on ? 'is-on' : undefined}
-                            onClick={() => setStaffId(id)}
-                          >
-                            <strong>{trainer.name}</strong>
-                            <span>{trainer.title || 'Trener'}</span>
-                          </button>
-                        );
-                      })}
+              {step === 'info' && service ? (
+                <section className="member-book__pick" aria-label="Detalji usluge">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>{service.name}</h2>
+                    <p>Provjerite trajanje, kapacitet i pravila prije nastavka.</p>
+                  </header>
+                  <dl className="member-book__facts">
+                    <div>
+                      <dt>Trajanje</dt>
+                      <dd>
+                        {service.durationMinutes || '—'}
+                        {' '}
+                        min
+                      </dd>
                     </div>
-                  </div>
-                ) : null}
+                    {formatServicePrice(service.price) ? (
+                      <div>
+                        <dt>Cijena</dt>
+                        <dd>{formatServicePrice(service.price)}</dd>
+                      </div>
+                    ) : null}
+                    {service.capacity ? (
+                      <div>
+                        <dt>Kapacitet</dt>
+                        <dd>
+                          {service.capacity === 1
+                            ? '1 mjesto'
+                            : `Do ${service.capacity} mjesta`}
+                        </dd>
+                      </div>
+                    ) : null}
+                    {isMember && needsMembership ? (
+                      <div>
+                        <dt>Paket / članarina</dt>
+                        <dd>{sessionsLabel(membership) || 'Aktivna'}</dd>
+                      </div>
+                    ) : null}
+                    <div>
+                      <dt>Otkazivanje</dt>
+                      <dd>
+                        Najkasnije
+                        {' '}
+                        {cancelWindowLabel}
+                      </dd>
+                    </div>
+                  </dl>
+                  {needsMembership && !isMember ? (
+                    <div className="member-book__gate member-book__gate--inline">
+                      <h3>Članarina je potrebna</h3>
+                      <p>
+                        Ova usluga zahtijeva aktivnu članarinu. Obratite se studiju da vam je aktiviraju.
+                      </p>
+                      {(tenant.phone || tenant.email) ? (
+                        <p className="member-book__contact">
+                          {[tenant.phone, tenant.email].filter(Boolean).join(' · ')}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="member-book__nav">
+                      {services.length > 1 ? (
+                        <button type="button" className="member-book__ghost" onClick={goBack}>
+                          Natrag
+                        </button>
+                      ) : null}
+                      <button type="button" className="member-book__cta" onClick={goForward}>
+                        Nastavi
+                      </button>
+                    </div>
+                  )}
+                </section>
+              ) : null}
 
-                {open ? (
-                  <>
+              {step === 'staff' ? (
+                <section className="member-book__pick" aria-label="Odabir djelatnika">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>Djelatnik</h2>
+                    <p>Odaberite kod koga rezervirate.</p>
+                  </header>
+                  <div className="member-book__trainer-list">
+                    {trainers.map((trainer) => {
+                      const id = String(trainer.id);
+                      const on = staffId === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          aria-pressed={on}
+                          className={on ? 'is-on' : undefined}
+                          onClick={() => setStaffId(id)}
+                        >
+                          <strong>{trainer.name}</strong>
+                          <span>{trainer.title || 'Djelatnik'}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="member-book__nav">
+                    <button type="button" className="member-book__ghost" onClick={goBack}>
+                      Natrag
+                    </button>
+                    <button type="button" className="member-book__cta" onClick={goForward}>
+                      Nastavi
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+
+              {step === 'date' ? (
+                <section className="member-book__pick" aria-label="Odabir datuma">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>Datum</h2>
+                    <p>Sljedeća dva tjedna · vremenska zona {timeZone.replace('_', ' ')}</p>
+                  </header>
+                  <div ref={daysRef} className="member-book__days" role="listbox" aria-label="Dani">
+                    {days.map((item) => {
+                      const key = toDateKey(item);
+                      const works = dayOpen(workingHours, item);
+                      const selected = key === date;
+                      const hint = dayHints[key];
+                      const meta = !works
+                        ? 'Zatvoreno'
+                        : hint === 'empty'
+                          ? 'Bez termina'
+                          : hint === 'available'
+                            ? 'Dostupno'
+                            : 'Otvoreno';
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          disabled={!works}
+                          className={[
+                            selected ? 'is-on' : '',
+                            !works ? 'is-closed' : '',
+                            hint === 'empty' ? 'is-empty' : '',
+                            hint === 'available' ? 'is-free' : '',
+                          ].filter(Boolean).join(' ') || undefined}
+                          onClick={() => setDate(key)}
+                        >
+                          <span className="member-book__day-name">{shortDay(item)}</span>
+                          <strong>{item.getDate()}.</strong>
+                          <span className="member-book__day-meta">{meta}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="member-book__nav">
+                    <button type="button" className="member-book__ghost" onClick={goBack}>
+                      Natrag
+                    </button>
+                    <button
+                      type="button"
+                      className="member-book__cta"
+                      disabled={!open}
+                      onClick={goForward}
+                    >
+                      Nastavi
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+
+              {step === 'slot' ? (
+                <section className="member-book__pick" aria-label="Odabir termina">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>{formatDay(selectedDate)}</h2>
+                    <p>
+                      {!open
+                        ? 'Studio je zatvoren ovog dana.'
+                        : loadingSlots
+                          ? 'Učitavamo slobodne termine…'
+                          : bookableSlots.length > 0
+                            ? 'Odaberite slobodan termin.'
+                            : 'Nema slobodnih termina za ovaj dan.'}
+                    </p>
+                  </header>
+                  {open ? (
                     <div className="member-book__slots" role="group" aria-label="Termini">
                       {slots.map((slot) => {
                         const free = slot.status === 'AVAILABLE';
@@ -444,67 +783,214 @@ export default function MemberBookPage() {
                         );
                       })}
                     </div>
+                  ) : null}
+                  <div className="member-book__nav">
+                    <button type="button" className="member-book__ghost" onClick={goBack}>
+                      Natrag
+                    </button>
+                    <button
+                      type="button"
+                      className="member-book__cta"
+                      disabled={!selectedSlot}
+                      onClick={goForward}
+                    >
+                      Nastavi
+                    </button>
+                  </div>
+                </section>
+              ) : null}
 
-                    <div className={`member-book__confirm${selectedSlot ? ' is-ready' : ''}`}>
-                      <p>
-                        {selectedSlot
-                          ? `${formatDay(selectedDate)} · ${selectedSlot.startTime}${
-                            staffId
-                              ? ` · ${trainers.find((item) => String(item.id) === staffId)?.name || ''}`
-                              : ''
-                          }`
-                          : 'Odaberite sat za potvrdu rezervacije.'}
-                      </p>
-                      <button
-                        className="member-book__cta"
-                        type="submit"
-                        disabled={booking || !selectedSlot}
-                      >
-                        {booking ? 'Rezerviramo…' : 'Rezerviraj termin'}
-                      </button>
+              {step === 'review' ? (
+                <form className="member-book__pick" onSubmit={onBook} aria-label="Pregled rezervacije">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">
+                      Korak
+                      {' '}
+                      {String(stepIndex + 1).padStart(2, '0')}
+                    </p>
+                    <h2>Pregled</h2>
+                    <p>Potvrdite odabir. Dostupnost se ponovno provjerava pri potvrdi.</p>
+                  </header>
+                  <dl className="member-book__facts">
+                    <div>
+                      <dt>Usluga</dt>
+                      <dd>{service?.name || '—'}</dd>
                     </div>
-                  </>
-                ) : null}
-              </form>
+                    <div>
+                      <dt>Datum</dt>
+                      <dd>{formatDay(selectedDate)}</dd>
+                    </div>
+                    <div>
+                      <dt>Vrijeme</dt>
+                      <dd>
+                        {selectedSlot
+                          ? `${selectedSlot.startTime} – ${selectedSlot.endTime || ''}`
+                          : '—'}
+                      </dd>
+                    </div>
+                    {selectedStaff ? (
+                      <div>
+                        <dt>Djelatnik</dt>
+                        <dd>{selectedStaff.name}</dd>
+                      </div>
+                    ) : null}
+                    {formatServicePrice(service?.price) ? (
+                      <div>
+                        <dt>Cijena</dt>
+                        <dd>{formatServicePrice(service.price)}</dd>
+                      </div>
+                    ) : null}
+                    {isMember && needsMembership ? (
+                      <div>
+                        <dt>Članarina</dt>
+                        <dd>{sessionsLabel(membership)}</dd>
+                      </div>
+                    ) : null}
+                    <div>
+                      <dt>Otkazivanje</dt>
+                      <dd>
+                        Najkasnije
+                        {' '}
+                        {cancelWindowLabel}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="member-book__nav">
+                    <button type="button" className="member-book__ghost" onClick={goBack}>
+                      Natrag
+                    </button>
+                    <button
+                      className="member-book__cta"
+                      type="submit"
+                      disabled={booking || !selectedSlot}
+                    >
+                      {booking ? 'Rezerviramo…' : 'Potvrdi rezervaciju'}
+                    </button>
+                  </div>
+                </form>
+              ) : null}
 
-              <section className="member-book__bookings">
-                <header className="member-book__section-head">
-                  <p className="member-book__kicker">Pregled</p>
-                  <h2>Vaše rezervacije</h2>
-                  <p>
-                    {dayBookings.length > 0
-                      ? `${dayBookings.length} za odabrani dan · otkaz unutar roka vraća termin`
-                      : `Otkaz najkasnije ${cancelWindowLabel} · inače se termin broji`}
-                  </p>
-                </header>
-                {loadingBookings ? <p className="member-book__hint">Učitavamo…</p> : null}
-                {!loadingBookings && myBookings.length === 0 ? (
-                  <p className="member-book__hint">Još nemate rezervacija u ovom studiju.</p>
-                ) : null}
-                {myBookings.length > 0 ? (
-                  <ul className="member-book__list">
-                    {myBookings.map((item) => {
-                      const allowed = canCancelBooking(item, cancelWindow, timeZone);
-                      return (
-                        <li key={item.id} className={item.date === date ? 'is-day' : undefined}>
-                          <div>
-                            <strong>
-                              {formatBookingDay(item.date)}
-                              {' · '}
-                              {item.startTime}
-                              –
-                              {item.endTime}
-                            </strong>
-                            <span>
-                              {item.serviceName || 'Termin'}
-                              {item.staff?.name ? ` · ${item.staff.name}` : ''}
-                              {' · '}
-                              {allowed
-                                ? 'Možete otkazati bez gubitka termina'
-                                : 'Rok za otkaz je istekao'}
-                            </span>
-                          </div>
-                          {allowed ? (
+              {step === 'done' ? (
+                <section className="member-book__pick member-book__done" aria-label="Potvrda">
+                  <header className="member-book__section-head">
+                    <p className="member-book__kicker">Gotovo</p>
+                    <h2>Rezervacija je potvrđena</h2>
+                    <p>Potvrdu ćete dobiti i na e-poštu.</p>
+                  </header>
+                  <dl className="member-book__facts">
+                    <div>
+                      <dt>Usluga</dt>
+                      <dd>{confirmedBooking?.serviceName || service?.name || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Datum</dt>
+                      <dd>
+                        {confirmedBooking?.date
+                          ? formatBookingDay(confirmedBooking.date)
+                          : formatDay(selectedDate)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Vrijeme</dt>
+                      <dd>
+                        {confirmedBooking?.startTime || selectedSlot?.startTime || '—'}
+                        {confirmedBooking?.endTime
+                          ? ` – ${confirmedBooking.endTime}`
+                          : ''}
+                      </dd>
+                    </div>
+                    {confirmedBooking?.staff?.name || selectedStaff?.name ? (
+                      <div>
+                        <dt>Djelatnik</dt>
+                        <dd>
+                          {confirmedBooking?.staff?.name || selectedStaff?.name}
+                        </dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                  <div className="member-book__nav">
+                    <button
+                      type="button"
+                      className="member-book__cta"
+                      onClick={() => {
+                        setConfirmedBooking(null);
+                        setSlotTime('');
+                        go(services.length > 1 ? 'service' : 'info');
+                      }}
+                    >
+                      Nova rezervacija
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+            </>
+          ) : null}
+
+          {loggedIn ? (
+            <section className="member-book__bookings">
+              <header className="member-book__section-head">
+                <p className="member-book__kicker">Pregled</p>
+                <h2>Moje rezervacije</h2>
+                <p>Odvojeno od rezerviranja — filtrirajte nadolazeće, prošle ili otkazane.</p>
+              </header>
+              <div className="member-book__filters" role="tablist" aria-label="Filter rezervacija">
+                {[
+                  { id: 'upcoming', label: 'Nadolazeće' },
+                  { id: 'past', label: 'Prošle' },
+                  { id: 'cancelled', label: 'Otkazane' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={bookingFilter === item.id}
+                    className={bookingFilter === item.id ? 'is-on' : undefined}
+                    onClick={() => setBookingFilter(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              {loadingBookings ? <p className="member-book__hint">Učitavamo…</p> : null}
+              {!loadingBookings && myBookings.length === 0 ? (
+                <p className="member-book__hint">
+                  {bookingFilter === 'upcoming'
+                    ? 'Nema nadolazećih rezervacija.'
+                    : bookingFilter === 'past'
+                      ? 'Nema prošlih rezervacija.'
+                      : 'Nema otkazanih rezervacija.'}
+                </p>
+              ) : null}
+              {myBookings.length > 0 ? (
+                <ul className="member-book__list">
+                  {myBookings.map((item) => {
+                    const windowMinutes = windowForBooking(item, services, cancelWindow);
+                    const allowed = item.status === 'CONFIRMED'
+                      && canCancelBooking(item, windowMinutes, timeZone);
+                    return (
+                      <li key={item.id}>
+                        <div>
+                          <strong>
+                            {formatBookingDay(item.date)}
+                            {' · '}
+                            {item.startTime}
+                            –
+                            {item.endTime}
+                          </strong>
+                          <span>
+                            {item.serviceName || 'Termin'}
+                            {item.staff?.name ? ` · ${item.staff.name}` : ''}
+                            {' · '}
+                            {bookingStatusDisplay(item, services)}
+                            {item.status === 'CONFIRMED'
+                              ? allowed
+                                ? ' · možete otkazati'
+                                : ' · rok za otkaz istekao'
+                              : ''}
+                          </span>
+                        </div>
+                        {item.status === 'CONFIRMED' ? (
+                          allowed ? (
                             <button
                               type="button"
                               className="member-book__cancel"
@@ -514,18 +1000,53 @@ export default function MemberBookPage() {
                               {busyId === item.id ? 'Otkazujemo…' : 'Otkaži'}
                             </button>
                           ) : (
-                            <span className="member-book__locked">Zaključano</span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
-              </section>
-            </div>
+                            <span className="member-book__locked">Isteklo</span>
+                          )
+                        ) : (
+                          <span className="member-book__status-chip">
+                            {bookingStatusDisplay(item, services)}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+            </section>
           ) : null}
         </div>
       </div>
+
+      {showSticky ? (
+        <div className="member-book__sticky" aria-live="polite">
+          <div>
+            <strong>{service?.name}</strong>
+            <span>
+              {[
+                date ? formatBookingDay(date) : null,
+                slotTime || null,
+                selectedStaff?.name || null,
+              ].filter(Boolean).join(' · ') || 'Odabir u tijeku'}
+            </span>
+          </div>
+          {step === 'review' ? (
+            <button
+              type="button"
+              className="member-book__cta"
+              disabled={booking || !selectedSlot}
+              onClick={(event) => {
+                void onBook(event);
+              }}
+            >
+              {booking ? 'Rezerviramo…' : 'Potvrdi'}
+            </button>
+          ) : step !== 'done' ? (
+            <button type="button" className="member-book__cta" onClick={goForward}>
+              Dalje
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </main>
   );
 }

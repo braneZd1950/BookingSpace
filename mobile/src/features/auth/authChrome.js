@@ -43,8 +43,15 @@ export const authChromeStyles = StyleSheet.create({
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 18,
+  },
+  brandLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
   },
   brand: {
     fontFamily: 'CormorantGaramond_600SemiBold',

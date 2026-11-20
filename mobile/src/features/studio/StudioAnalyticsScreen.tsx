@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Linking,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { getStudioAnalytics } from '../../api/analytics.js';
 import { listTenantBookings } from '../../api/bookings.js';
 import { listMemberships } from '../../api/memberships.js';
+import { legalEntity } from '../auth/platformLegal.js';
 import {
   isLocalDesignMode,
   localDesignAnalytics,
@@ -14,15 +18,13 @@ import {
 } from './localDesignFixtures.js';
 import StudioBoot from './StudioBoot';
 import StudioScreenShell from './StudioScreenShell';
-import { formatShortDate } from './studioFormat.js';
 import { studioUiStyles as ui } from './studioUiStyles.js';
-import { monthRange } from '../../../../shared/dateRange.js';
+import { rollingDaysRange } from '../../../../shared/dateRange.js';
 import {
   buildMemberInsights,
-  formatMonthHr,
   memberName,
-  seriesByMonth,
 } from '../../../../shared/memberInsights.js';
+
 type StudioAnalyticsScreenProps = {
   tenantId?: string;
   studioName?: string;
@@ -45,18 +47,74 @@ type BookingRow = {
   status?: string;
 };
 
-const LABELS: { key: string; label: string }[] = [
-  { key: 'page_view', label: 'Posjeti' },
-  { key: 'login_success', label: 'Prijave' },
-  { key: 'member_created', label: 'Dodani članovi' },
-  { key: 'booking_created', label: 'Rezervacije' },
-  { key: 'booking_cancelled', label: 'Otkazi' },
-  { key: 'booking_completed', label: 'Završeni' },
-  { key: 'booking_no_show', label: 'Nedolasci' },
+type BookingSeriesRow = {
+  date: string;
+  total: number;
+};
+
+type AnalyticsPayload = {
+  days?: number;
+  counts?: Record<string, number>;
+  bookingsByStatus?: Record<string, number>;
+  bookingsTotal?: number;
+  bookingsSeries?: BookingSeriesRow[];
+  comparison?: Record<string, { current?: number; previous?: number; deltaPct?: number | null }>;
+  period?: {
+    dateFrom?: string;
+    dateTo?: string;
+    previousFrom?: string;
+    previousTo?: string;
+  };
+};
+
+const PERIOD_OPTIONS = [
+  { days: 7, label: '7 d' },
+  { days: 30, label: '30 d' },
+  { days: 90, label: '90 d' },
 ];
 
+function resolveWebAnalyticsUrl() {
+  const fromEnv = String(
+    (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_WEB_URL) || '',
+  ).trim();
+  const base = (fromEnv || legalEntity.website || '').replace(/\/$/, '');
+  if (!base || /localhost|127\.0\.0\.1/i.test(base)) return '';
+  return `${base}/stranica/analitika`;
+}
+
+function formatPeriodShort(dateFrom?: string, dateTo?: string) {
+  if (!dateFrom || !dateTo) return '';
+  try {
+    const [y1, m1, d1] = dateFrom.split('-').map(Number);
+    const [y2, m2, d2] = dateTo.split('-').map(Number);
+    const start = new Date(y1, m1 - 1, d1);
+    const end = new Date(y2, m2 - 1, d2);
+    return new Intl.DateTimeFormat('hr-HR', {
+      day: 'numeric',
+      month: 'short',
+    }).formatRange(start, end);
+  } catch {
+    return `${dateFrom} – ${dateTo}`;
+  }
+}
+
+function DeltaText({ metric }: { metric?: { deltaPct?: number | null } | null }) {
+  if (!metric || metric.deltaPct == null) {
+    return <Text style={styles.deltaFlat}>—</Text>;
+  }
+  const value = metric.deltaPct;
+  const sign = value > 0 ? '+' : '';
+  return (
+    <Text style={value > 0 ? styles.deltaUp : value < 0 ? styles.deltaDown : styles.deltaFlat}>
+      {sign}
+      {value}
+      %
+    </Text>
+  );
+}
+
 /**
- * Analitika studija — brojke (30 dana) + uvidi članarina.
+ * Mobilna analitika — sažetak, mini grafikon, članarine i upozorenja.
  */
 export default function StudioAnalyticsScreen({
   tenantId,
@@ -67,24 +125,36 @@ export default function StudioAnalyticsScreen({
   const [error, setError] = useState('');
   const [usingLocalFixtures, setUsingLocalFixtures] = useState(false);
   const [days, setDays] = useState(30);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [series, setSeries] = useState<Array<Record<string, unknown>>>([]);
+  const [payload, setPayload] = useState<AnalyticsPayload>({});
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
+  const webAnalyticsUrl = useMemo(() => resolveWebAnalyticsUrl(), []);
 
-  const months = useMemo(() => seriesByMonth(series), [series]);
   const insights = useMemo(
     () => buildMemberInsights(memberships, bookings),
     [memberships, bookings],
   );
 
+  const bookingsSeries = payload.bookingsSeries || [];
+  const bookingsTotal = Number(payload.bookingsTotal) || 0;
+  const status = payload.bookingsByStatus || {};
+  const comparison = payload.comparison || {};
+  const maxBookings = Math.max(1, ...bookingsSeries.map((row) => Number(row.total) || 0));
+  const chartSample = useMemo(() => {
+    if (bookingsSeries.length <= 14) return bookingsSeries;
+    const step = Math.ceil(bookingsSeries.length / 14);
+    return bookingsSeries.filter((_, index) => (
+      index === 0
+      || index === bookingsSeries.length - 1
+      || index % step === 0
+    ));
+  }, [bookingsSeries]);
+
   const load = useCallback(async () => {
     if (isLocalDesignMode()) {
-      const demo = localDesignAnalytics();
+      const demo = localDesignAnalytics() as AnalyticsPayload;
       setUsingLocalFixtures(true);
-      setDays(demo.days);
-      setCounts(demo.counts);
-      setSeries(demo.series);
+      setPayload(demo);
       setMemberships(localDesignMembers() as MembershipRow[]);
       setBookings([
         { userId: 'local-design-user-1', status: 'CONFIRMED' },
@@ -104,10 +174,10 @@ export default function StudioAnalyticsScreen({
 
     setLoading(true);
     setError('');
-    const range = monthRange();
+    const range = rollingDaysRange(days);
     try {
       const [analytics, membersData, bookingData] = await Promise.all([
-        getStudioAnalytics(tenantId, 30),
+        getStudioAnalytics(tenantId, days),
         listMemberships(tenantId),
         listTenantBookings(tenantId, {
           dateFrom: range.dateFrom,
@@ -115,36 +185,64 @@ export default function StudioAnalyticsScreen({
           limit: 500,
         }),
       ]);
-      setDays(Number(analytics?.days) || 30);
-      setCounts(analytics?.counts || {});
-      setSeries(Array.isArray(analytics?.series) ? analytics.series : []);
+      setPayload((analytics || {}) as AnalyticsPayload);
       setMemberships(
         Array.isArray(membersData?.memberships) ? membersData.memberships : [],
       );
       setBookings(Array.isArray(bookingData?.bookings) ? bookingData.bookings : []);
     } catch {
       setError('Analitika nije dostupna. Pokušajte ponovno.');
-      setCounts({});
-      setSeries([]);
+      setPayload({});
       setMemberships([]);
       setBookings([]);
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, days]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  const openWebApp = useCallback(async () => {
+    if (!webAnalyticsUrl) return;
+    try {
+      await Linking.openURL(webAnalyticsUrl);
+    } catch {
+      setError('Web aplikacija nije dostupna na ovom uređaju.');
+    }
+  }, [webAnalyticsUrl]);
+
   if (loading) return <StudioBoot />;
+
+  const periodLabel = formatPeriodShort(
+    payload.period?.dateFrom,
+    payload.period?.dateTo,
+  ) || `Zadnjih ${days} dana`;
+
+  const alertItems = [
+    ...insights.packageHot.map(({ item, used, total }) => ({
+      id: `pkg-${item.id}`,
+      name: memberName(item),
+      detail: `Paket ${used}/${total} treninga iskorišteno`,
+      tone: 'warn' as const,
+    })),
+    ...insights.endingSoon.map(({ item, left }) => ({
+      id: `end-${item.id}`,
+      name: memberName(item),
+      detail: left === 0
+        ? 'Članarina istječe danas'
+        : `Članarina istječe za ${left} d`,
+      tone: 'warn' as const,
+    })),
+  ];
 
   return (
     <StudioScreenShell
       studioName={studioName}
       onBack={onBack}
       title="Analitika"
-      lead={`Samo vaš studio — zadnjih ${days} dana. Drugi studiji i platforma ne vide ove brojke.`}
+      lead="Ova analitika prikazuje podatke vašeg poslovanja i dostupna je samo ovlaštenim korisnicima."
     >
       {usingLocalFixtures ? (
         <Text style={ui.fixtureBanner}>
@@ -153,48 +251,79 @@ export default function StudioAnalyticsScreen({
       ) : null}
       {error ? <Text style={ui.error}>{error}</Text> : null}
 
-      <Text style={ui.sectionLabel}>Pregled</Text>
-      <View style={styles.statsGrid}>
-        {LABELS.map((item) => (
-          <View key={item.key} style={[ui.stat, styles.statTile]}>
-            <Text style={ui.statLabel}>{item.label}</Text>
-            <Text style={ui.statValue}>{counts[item.key] || 0}</Text>
-          </View>
+      <View style={styles.periodRow}>
+        {PERIOD_OPTIONS.map((option) => (
+          <Pressable
+            key={option.days}
+            onPress={() => setDays(option.days)}
+            style={({ pressed }) => [
+              styles.periodChip,
+              days === option.days && styles.periodChipActive,
+              pressed && ui.pressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.periodChipLabel,
+                days === option.days && styles.periodChipLabelActive,
+              ]}
+            >
+              {option.label}
+            </Text>
+          </Pressable>
         ))}
       </View>
+      <Text style={styles.periodMeta}>{periodLabel}</Text>
 
-          <View style={styles.blockHead}>
-      <Text style={ui.sectionLabel}>Vrijeme</Text>
-            <Text style={styles.blockTitle}>Po mjesecima</Text>
-            <Text style={styles.blockLead}>
-              Posjeti, rezervacije, otkazi i novi članovi.
-            </Text>
-          </View>
-          {months.length === 0 ? (
-            <Text style={styles.empty}>Još nema podataka za ovo razdoblje.</Text>
-          ) : (
-            <View style={styles.monthList}>
-              {months.map((row) => (
-                <View key={row.month} style={styles.monthRow}>
-                  <Text style={styles.monthName}>{formatMonthHr(row.month)}</Text>
-                  <Text style={styles.monthMeta}>
-                    {row.page_view} posjeta · {row.booking_created} rez. ·{' '}
-                    {row.booking_cancelled} otk. · {row.member_created} član.
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
+      <Text style={ui.sectionLabel}>Sažetak</Text>
+      <View style={styles.statsGrid}>
+        <View style={[ui.stat, styles.statTile]}>
+          <Text style={ui.statLabel}>Rezervacije</Text>
+          <Text style={ui.statValue}>{bookingsTotal}</Text>
+          <DeltaText metric={comparison.bookingsTotal} />
+        </View>
+        <View style={[ui.stat, styles.statTile]}>
+          <Text style={ui.statLabel}>Završeni</Text>
+          <Text style={ui.statValue}>{status.COMPLETED || 0}</Text>
+          <DeltaText metric={comparison.COMPLETED} />
+        </View>
+        <View style={[ui.stat, styles.statTile]}>
+          <Text style={ui.statLabel}>Otkazi</Text>
+          <Text style={ui.statValue}>{status.CANCELLED || 0}</Text>
+          <DeltaText metric={comparison.CANCELLED} />
+        </View>
+        <View style={[ui.stat, styles.statTile]}>
+          <Text style={ui.statLabel}>Nedolasci</Text>
+          <Text style={ui.statValue}>{status.NO_SHOW || 0}</Text>
+          <DeltaText metric={comparison.NO_SHOW} />
+        </View>
+      </View>
 
-          <View style={styles.blockHead}>
-      <Text style={ui.sectionLabel}>Članovi</Text>
-            <Text style={styles.blockTitle}>Stanje članarina</Text>
-            <Text style={styles.blockLead}>
-              Redovitost, pred istekom i paketi skoro potrošeni.
-            </Text>
-          </View>
+      <View style={styles.blockHead}>
+        <Text style={ui.sectionLabel}>Trend</Text>
+        <Text style={styles.blockTitle}>Rezervacije kroz vrijeme</Text>
+      </View>
+      {bookingsTotal === 0 ? (
+        <Text style={styles.empty}>Još nema dovoljno podataka za grafikon.</Text>
+      ) : (
+        <View style={styles.miniChart}>
+          {chartSample.map((row) => {
+            const value = Number(row.total) || 0;
+            const height = Math.max(value ? 6 : 2, (value / maxBookings) * 72);
+            return (
+              <View key={row.date} style={styles.miniCol}>
+                <View style={[styles.miniBar, { height }]} />
+              </View>
+            );
+          })}
+        </View>
+      )}
 
-          <View style={styles.memberStats}>
+      <View style={styles.blockHead}>
+        <Text style={ui.sectionLabel}>Članarine</Text>
+        <Text style={styles.blockTitle}>Stanje članova</Text>
+      </View>
+      <View style={styles.memberStats}>
         <View style={[ui.stat, styles.statTile]}>
           <Text style={ui.statLabel}>Aktivni</Text>
           <Text style={ui.statValue}>{insights.activeCount}</Text>
@@ -202,6 +331,23 @@ export default function StudioAnalyticsScreen({
         <View style={[ui.stat, styles.statTile]}>
           <Text style={ui.statLabel}>Redovitost</Text>
           <Text style={ui.statValue}>{insights.regularity}%</Text>
+          <Text style={styles.statHint}>
+            {insights.withVisitCount}
+            {' '}
+            od
+            {' '}
+            {insights.activeCount}
+          </Text>
+        </View>
+        <View
+          style={[
+            ui.stat,
+            styles.statTile,
+            insights.packageHotCount > 0 && ui.statWarn,
+          ]}
+        >
+          <Text style={ui.statLabel}>Paketi pri kraju</Text>
+          <Text style={ui.statValue}>{insights.packageHotCount}</Text>
         </View>
         <View
           style={[
@@ -213,96 +359,98 @@ export default function StudioAnalyticsScreen({
           <Text style={ui.statLabel}>Pred istekom</Text>
           <Text style={ui.statValue}>{insights.endingSoonCount}</Text>
         </View>
-        <View
-          style={[
-            ui.stat,
-            styles.statTile,
-            insights.packageHotCount > 0 && ui.statWarn,
-          ]}
-        >
-          <Text style={ui.statLabel}>Paket skoro</Text>
-          <Text style={ui.statValue}>{insights.packageHotCount}</Text>
-        </View>
-        <View style={[ui.statWide, styles.statTileWide]}>
-          <Text style={ui.statLabel}>Bez dolaska (mjesec)</Text>
-          <Text style={ui.statValue}>{insights.noVisitCount}</Text>
-        </View>
-          </View>
+      </View>
 
-          {insights.activeCount === 0 ? (
-            <Text style={styles.empty}>
-              Još nema aktivnih članova. Dodajte ih u sekciji Članovi.
-            </Text>
-          ) : (
-            <>
-              <Text style={styles.listTitle}>Pred istekom (7 dana)</Text>
-              {insights.endingSoon.length === 0 ? (
-                <Text style={styles.empty}>Nitko ne ističe uskoro.</Text>
-              ) : (
-                insights.endingSoon.map(({ item, left }) => (
-                  <View key={item.id} style={styles.insightRow}>
-                    <View style={styles.insightCopy}>
-                      <Text style={styles.insightName}>{memberName(item)}</Text>
-                      <Text style={styles.insightMeta}>
-                        do {formatShortDate(item.validUntil)}
-                      </Text>
-                    </View>
-                    <Text style={styles.insightWarn}>
-                      {left === 0 ? 'Danas' : `Još ${left} d`}
-                    </Text>
-                  </View>
-                ))
-              )}
-
-              <Text style={styles.listTitle}>Paket skoro potrošen</Text>
-              {insights.packageHot.length === 0 ? (
-                <Text style={styles.empty}>Nema paketa blizu limitu.</Text>
-              ) : (
-                insights.packageHot.map(({ item, used, total }) => (
-                  <View key={item.id} style={styles.insightRow}>
-                    <View style={styles.insightCopy}>
-                      <Text style={styles.insightName}>{memberName(item)}</Text>
-                      <Text style={styles.insightMeta}>
-                        {item.planName || 'Plan'}
-                      </Text>
-                    </View>
-                    <Text style={styles.insightValue}>
-                      {used}/{total}
-                    </Text>
-                  </View>
-                ))
-              )}
-
-              <Text style={styles.listTitle}>Bez dolaska ovaj mjesec</Text>
-              {insights.noVisit.length === 0 ? (
-                <Text style={styles.empty}>
-                  Svi aktivni imaju barem jedan dolazak.
+      <View style={styles.blockHead}>
+        <Text style={ui.sectionLabel}>Pažnja</Text>
+        <Text style={styles.blockTitle}>Potrebna pažnja</Text>
+      </View>
+      {alertItems.length === 0 && insights.noVisitCount === 0 ? (
+        <Text style={styles.empty}>Nema upozorenja za ovo razdoblje.</Text>
+      ) : (
+        <>
+          {alertItems.map((item) => (
+            <View key={item.id} style={styles.insightRow}>
+              <View style={styles.insightCopy}>
+                <Text style={styles.insightName}>{item.name}</Text>
+                <Text style={styles.insightMeta}>{item.detail}</Text>
+              </View>
+              <Text style={styles.insightWarn}>!</Text>
+            </View>
+          ))}
+          {insights.noVisitCount > 0 ? (
+            <View style={styles.insightRow}>
+              <View style={styles.insightCopy}>
+                <Text style={styles.insightName}>
+                  {insights.noVisitCount}
+                  {' '}
+                  {insights.noVisitCount === 1 ? 'član bez dolaska' : 'članova bez dolaska'}
                 </Text>
-              ) : (
-                insights.noVisit.map((item) => (
-                  <View key={item.id} style={styles.insightRow}>
-                    <View style={styles.insightCopy}>
-                      <Text style={styles.insightName}>{memberName(item)}</Text>
-                      <Text style={styles.insightMeta}>
-                        {item.user?.email || 'Bez e-pošte'}
-                      </Text>
-                    </View>
-                    <Text style={styles.insightValue}>0</Text>
-                  </View>
-                ))
-              )}
-            </>
-          )}
+                <Text style={styles.insightMeta}>
+                  Tijekom odabranog razdoblja
+                </Text>
+              </View>
+              <Text style={styles.insightValue}>{insights.noVisitCount}</Text>
+            </View>
+          ) : null}
+        </>
+      )}
 
-          <Text style={styles.fine}>
-            Redovitost = udio aktivnih članova s barem jednom rezervacijom u
-            tekućem mjesecu.
-          </Text>
+      <View style={ui.footerNote}>
+        <Text style={ui.hint}>
+          Detaljne grafikone, usporedbu razdoblja i popise članova otvorite u web aplikaciji.
+        </Text>
+        {webAnalyticsUrl ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Otvori detaljnu analitiku na webu"
+            onPress={() => {
+              void openWebApp();
+            }}
+            style={({ pressed }) => [ui.textLinkBtn, pressed && ui.pressed]}
+          >
+            <Text style={ui.textLinkLabel}>Detaljna analitika na webu</Text>
+            <Ionicons name="open-outline" size={16} color="#14B8A6" />
+          </Pressable>
+        ) : null}
+      </View>
     </StudioScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
+  periodRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 6,
+  },
+  periodChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(232, 242, 239, 0.18)',
+    backgroundColor: 'rgba(15, 28, 26, 0.45)',
+  },
+  periodChipActive: {
+    borderColor: 'rgba(20, 184, 166, 0.55)',
+    backgroundColor: 'rgba(20, 184, 166, 0.16)',
+  },
+  periodChipLabel: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 13,
+    color: 'rgba(232, 242, 239, 0.7)',
+  },
+  periodChipLabelActive: {
+    color: '#5EEAD4',
+  },
+  periodMeta: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 12,
+    color: 'rgba(232, 242, 239, 0.45)',
+    marginBottom: 16,
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -310,16 +458,34 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   statTile: {
-    width: '31%',
-    flexGrow: 1,
-    minWidth: '30%',
-    flex: undefined,
-  },
-  statTileWide: {
-    width: '48%',
+    width: '47%',
     flexGrow: 1,
     minWidth: '46%',
     flex: undefined,
+  },
+  statHint: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 11,
+    color: 'rgba(232, 242, 239, 0.45)',
+    marginTop: 2,
+  },
+  deltaUp: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 11,
+    color: '#5EEAD4',
+    marginTop: 2,
+  },
+  deltaDown: {
+    fontFamily: 'Outfit_600SemiBold',
+    fontSize: 11,
+    color: 'rgba(251, 191, 36, 0.95)',
+    marginTop: 2,
+  },
+  deltaFlat: {
+    fontFamily: 'Outfit_400Regular',
+    fontSize: 11,
+    color: 'rgba(232, 242, 239, 0.35)',
+    marginTop: 2,
   },
   blockHead: {
     marginBottom: 10,
@@ -331,45 +497,30 @@ const styles = StyleSheet.create({
     marginTop: -4,
     marginBottom: 4,
   },
-  blockLead: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-    color: 'rgba(232, 242, 239, 0.55)',
-  },
-  monthList: {
-    marginBottom: 22,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(232, 242, 239, 0.12)',
-  },
-  monthRow: {
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(232, 242, 239, 0.12)',
+  miniChart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: 4,
+    height: 84,
+    marginBottom: 22,
+    paddingHorizontal: 2,
   },
-  monthName: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 15,
-    color: '#F7FCFA',
+  miniCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
-  monthMeta: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 13,
-    color: 'rgba(232, 242, 239, 0.55)',
+  miniBar: {
+    width: '100%',
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    backgroundColor: '#14B8A6',
   },
   memberStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     marginBottom: 16,
-  },
-  listTitle: {
-    fontFamily: 'Outfit_600SemiBold',
-    fontSize: 14,
-    color: '#E8F2EF',
-    marginTop: 8,
-    marginBottom: 6,
   },
   insightRow: {
     flexDirection: 'row',
@@ -410,12 +561,5 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: 'rgba(232, 242, 239, 0.5)',
     marginBottom: 10,
-  },
-  fine: {
-    fontFamily: 'Outfit_400Regular',
-    fontSize: 12,
-    lineHeight: 18,
-    color: 'rgba(232, 242, 239, 0.4)',
-    marginTop: 16,
   },
 });

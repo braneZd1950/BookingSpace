@@ -20,6 +20,8 @@ type StudioScreenShellProps = {
   children: ReactNode;
   keyboardShouldPersistTaps?: 'handled' | 'always' | 'never';
   hideFooter?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 };
 
 /**
@@ -35,6 +37,8 @@ export default function StudioScreenShell({
   children,
   keyboardShouldPersistTaps,
   hideFooter = false,
+  refreshing = false,
+  onRefresh,
 }: StudioScreenShellProps) {
   const { height } = useWindowDimensions();
   const compact = height < 740;
@@ -47,6 +51,8 @@ export default function StudioScreenShell({
       stageStyle={chrome.stage}
       enter={enter}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
       footer={
         hideFooter ? null : (
           <View style={ui.footer}>

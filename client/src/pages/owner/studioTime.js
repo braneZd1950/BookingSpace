@@ -13,6 +13,8 @@ export {
   sameDay,
   toDateKey,
   upcomingDays,
+  weekDates,
+  weekStart,
   WEEKDAY_KEYS,
   withinCancellationWindow,
   zonedClock,

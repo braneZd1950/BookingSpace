@@ -6,6 +6,7 @@ import { useListServicesQuery } from '../../api/serviceApi.js';
 import {
   DEFAULT_CAPACITY,
   dayPeak,
+  groupDaySlots,
   loadLabel,
   occupancyLevel,
 } from '../../../../shared/calendarOccupancy.js';
@@ -16,11 +17,23 @@ import {
   monthLabel,
   sameDay,
   studioHours,
+  toDateKey,
+  weekDates,
+  weekStart,
 } from './studioTime.js';
 import './CalendarPage.scss';
 
 const REAL_ID = /^[a-f\d]{24}$/i;
 const weekLabels = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
+const MONTH_NAMES = [
+  'Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj',
+  'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac',
+];
+const VIEW_OPTIONS = [
+  { id: 'day', label: 'Dan' },
+  { id: 'week', label: 'Tjedan' },
+  { id: 'month', label: 'Mjesec' },
+];
 
 const demoNames = [
   'Ivan Horvat',
@@ -47,10 +60,6 @@ const loadLegend = [
 
 function pad(value) {
   return String(value).padStart(2, '0');
-}
-
-function toKey(date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function statusLabel(status) {
@@ -85,14 +94,16 @@ function enrichBookings(bookings, memberships) {
     }));
 }
 
-function buildDemoBookings(year, month, hours, members, capacity) {
+function buildDemoBookings(year, month, hours, members, capacity, services) {
   const names = members.length > 0
     ? members.map((item) => item.user?.name || 'Član')
     : demoNames;
+  const servicePool = services.length > 0
+    ? services
+    : [{ id: 'demo-svc', name: 'Termin', capacity }];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const lightSlots = ['08:00', '09:00', '10:00', '11:00', '17:00', '18:00', '19:00'];
   const weekSlots = hourSlots(hours.monday?.from || '07:00', hours.monday?.to || '21:00');
-  const cap = Math.max(1, capacity);
   const items = [];
   let packedDay = 0;
 
@@ -105,6 +116,8 @@ function buildDemoBookings(year, month, hours, members, capacity) {
   for (let day = 1; day <= daysInMonth; day += 1) {
     const date = new Date(year, month, day);
     if (!dayHours(date, hours).works) continue;
+    const service = servicePool[day % servicePool.length];
+    const cap = Math.max(1, Number(service.capacity) || capacity);
 
     if (day === packedDay) {
       weekSlots.forEach((start, index) => {
@@ -114,12 +127,15 @@ function buildDemoBookings(year, month, hours, members, capacity) {
         for (let seat = 0; seat < seats; seat += 1) {
           items.push({
             id: `demo-full-${year}-${month}-${day}-${start}-${seat}`,
-            date: toKey(date),
+            date: toDateKey(date),
             startTime: start,
             endTime,
             status: 'CONFIRMED',
             memberName: names[(index + seat) % names.length],
             capacity: cap,
+            serviceId: service.id,
+            serviceName: service.name || 'Termin',
+            serviceCapacity: cap,
             demo: true,
             packed: true,
             groupFull: seats === cap,
@@ -137,12 +153,15 @@ function buildDemoBookings(year, month, hours, members, capacity) {
       const hour = Number(start.slice(0, 2));
       items.push({
         id: `demo-${year}-${month}-${day}-${index}`,
-        date: toKey(date),
+        date: toDateKey(date),
         startTime: start,
         endTime: `${pad(hour + 1)}:00`,
         status: 'CONFIRMED',
         memberName: names[(day + index) % names.length],
         capacity: cap,
+        serviceId: service.id,
+        serviceName: service.name || 'Termin',
+        serviceCapacity: cap,
         demo: true,
       });
     }
@@ -151,12 +170,82 @@ function buildDemoBookings(year, month, hours, members, capacity) {
   return items;
 }
 
+function SlotList({ slots, fallbackCapacity, expandedId, onToggle }) {
+  if (slots.length === 0) {
+    return <p className="cal-modal__empty">Nema rezervacija za ovaj dan.</p>;
+  }
+
+  return (
+    <ul className="cal-modal__list">
+      {slots.map((slot) => {
+        const filled = slot.members.length;
+        const cap = Math.max(1, slot.capacity || fallbackCapacity);
+        const full = filled >= cap;
+        return (
+          <li
+            key={slot.key}
+            className={full ? 'is-group-full' : undefined}
+          >
+            <div className="cal-modal__slot">
+              <div>
+                <strong className="cal-modal__service">
+                  {slot.serviceName || 'Termin'}
+                </strong>
+                <time dateTime={`${slot.startTime}`}>
+                  {slot.startTime}
+                  <span>–</span>
+                  {slot.endTime}
+                </time>
+              </div>
+              <span className="cal-modal__cap">
+                {filled}
+                /
+                {cap}
+                {' '}
+                {cap === 1 ? 'mjesto' : 'mjesta'}
+                {full ? ' · popunjeno' : ` · ${cap - filled} slobodno`}
+              </span>
+            </div>
+            <ul className="cal-modal__people">
+              {slot.members.map((item) => {
+                const open = expandedId === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      className="cal-modal__person"
+                      onClick={() => onToggle?.(item.id)}
+                    >
+                      <span>
+                        <strong>{item.memberName}</strong>
+                        <em>{statusLabel(item.status)}</em>
+                        {open && item.user?.email ? (
+                          <small>{item.user.email}</small>
+                        ) : null}
+                      </span>
+                      <span aria-hidden="true">{open ? '▴' : '›'}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function CalendarPage() {
   const { studio } = useOutletContext();
   const hours = studioHours(studio);
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [focusDay, setFocusDay] = useState(() => today);
   const [selected, setSelected] = useState(null);
+  const [viewMode, setViewMode] = useState('month');
+  const [serviceFilter, setServiceFilter] = useState('all');
+  const [expandedId, setExpandedId] = useState('');
   const [showDemo, setShowDemo] = useState(false);
   const titleId = useId();
   const tenantId = String(studio.id || '');
@@ -164,9 +253,29 @@ export default function CalendarPage() {
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
-  const dateFrom = `${year}-${pad(month + 1)}-01`;
-  const dateTo = `${year}-${pad(month + 1)}-${pad(new Date(year, month + 1, 0).getDate())}`;
+  const weekDays = useMemo(() => weekDates(focusDay), [focusDay]);
+  const queryRange = useMemo(() => {
+    if (viewMode === 'week') {
+      const start = weekStart(focusDay);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return { dateFrom: toDateKey(start), dateTo: toDateKey(end) };
+    }
+    if (viewMode === 'day') {
+      const key = toDateKey(focusDay);
+      return { dateFrom: key, dateTo: key };
+    }
+    return {
+      dateFrom: `${year}-${pad(month + 1)}-01`,
+      dateTo: `${year}-${pad(month + 1)}-${pad(new Date(year, month + 1, 0).getDate())}`,
+    };
+  }, [viewMode, focusDay, year, month]);
+
   const cells = monthCells(year, month);
+  const yearOptions = useMemo(() => {
+    const current = today.getFullYear();
+    return Array.from({ length: 7 }, (_, index) => current - 2 + index);
+  }, [today]);
 
   const {
     data: bookingData,
@@ -174,7 +283,7 @@ export default function CalendarPage() {
     isError: bookingsError,
     error: bookingsErr,
   } = useListTenantBookingsQuery(
-    { tenantId, dateFrom, dateTo, limit: 500 },
+    { tenantId, dateFrom: queryRange.dateFrom, dateTo: queryRange.dateTo, limit: 500 },
     { skip: !ready },
   );
   const { data: memberData } = useListMembershipsQuery(tenantId, { skip: !ready });
@@ -182,7 +291,7 @@ export default function CalendarPage() {
 
   const memberships = memberData?.memberships || [];
   const services = (serviceData?.services || []).filter((item) => item.active !== false);
-  const capacity = services.reduce(
+  const fallbackCapacity = services.reduce(
     (max, item) => Math.max(max, Number(item.capacity) || 0),
     0,
   ) || DEFAULT_CAPACITY;
@@ -193,17 +302,29 @@ export default function CalendarPage() {
   );
 
   const bookings = useMemo(() => {
-    if (showDemo) {
-      return buildDemoBookings(
+    const source = showDemo
+      ? buildDemoBookings(
         year,
         month,
         hours,
         memberships.filter((item) => item.status === 'ACTIVE'),
-        capacity,
-      );
-    }
-    return liveBookings;
-  }, [showDemo, liveBookings, year, month, hours, memberships, capacity]);
+        fallbackCapacity,
+        services,
+      )
+      : liveBookings;
+    if (serviceFilter === 'all') return source;
+    return source.filter((item) => String(item.serviceId || '') === serviceFilter);
+  }, [
+    showDemo,
+    liveBookings,
+    year,
+    month,
+    hours,
+    memberships,
+    fallbackCapacity,
+    services,
+    serviceFilter,
+  ]);
 
   const byDay = useMemo(() => {
     const map = new Map();
@@ -219,27 +340,32 @@ export default function CalendarPage() {
     return map;
   }, [bookings]);
 
-  const selectedKey = selected ? toKey(selected) : '';
-  const dayBookings = selectedKey ? (byDay.get(selectedKey) || []) : [];
-  const daySlots = useMemo(() => {
-    const groups = new Map();
-    for (const item of dayBookings) {
-      const key = `${item.startTime}-${item.endTime}`;
-      const current = groups.get(key) || {
-        startTime: item.startTime,
-        endTime: item.endTime,
-        date: item.date,
-        members: [],
-        capacity: item.capacity || capacity,
-        serviceName: item.serviceName || '',
-      };
-      current.members.push(item);
-      current.capacity = Math.max(current.capacity, item.capacity || capacity);
-      if (item.serviceName) current.serviceName = item.serviceName;
-      groups.set(key, current);
-    }
-    return [...groups.values()];
-  }, [dayBookings, capacity]);
+  const focusKey = toDateKey(focusDay);
+  const dayBookings = byDay.get(focusKey) || [];
+  const daySlots = useMemo(
+    () => groupDaySlots(dayBookings, fallbackCapacity),
+    [dayBookings, fallbackCapacity],
+  );
+
+  const selectedKey = selected ? toDateKey(selected) : '';
+  const modalBookings = selectedKey ? (byDay.get(selectedKey) || []) : [];
+  const modalSlots = useMemo(
+    () => groupDaySlots(modalBookings, fallbackCapacity),
+    [modalBookings, fallbackCapacity],
+  );
+
+  const periodStats = useMemo(() => {
+    const all = showDemo ? bookings : (bookingData?.bookings || []);
+    const filtered = serviceFilter === 'all'
+      ? all
+      : all.filter((item) => String(item.serviceId || '') === serviceFilter);
+    return {
+      total: filtered.length,
+      completed: filtered.filter((item) => item.status === 'COMPLETED').length,
+      cancelled: filtered.filter((item) => item.status === 'CANCELLED').length,
+      confirmed: filtered.filter((item) => item.status === 'CONFIRMED').length,
+    };
+  }, [showDemo, bookings, bookingData, serviceFilter]);
 
   useEffect(() => {
     if (!selected) return undefined;
@@ -257,10 +383,51 @@ export default function CalendarPage() {
     };
   }, [selected]);
 
+  function goToday() {
+    const now = new Date();
+    setCursor(new Date(now.getFullYear(), now.getMonth(), 1));
+    setFocusDay(now);
+    setSelected(null);
+    setExpandedId('');
+  }
+
   function shiftMonth(delta) {
     setCursor((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
     setSelected(null);
   }
+
+  function shiftWeek(delta) {
+    setFocusDay((current) => {
+      const next = new Date(current);
+      next.setDate(current.getDate() + (delta * 7));
+      setCursor(new Date(next.getFullYear(), next.getMonth(), 1));
+      return next;
+    });
+    setSelected(null);
+  }
+
+  function shiftDay(delta) {
+    setFocusDay((current) => {
+      const next = new Date(current);
+      next.setDate(current.getDate() + delta);
+      setCursor(new Date(next.getFullYear(), next.getMonth(), 1));
+      return next;
+    });
+    setSelected(null);
+  }
+
+  function openDay(date) {
+    setFocusDay(date);
+    setCursor(new Date(date.getFullYear(), date.getMonth(), 1));
+    if (viewMode === 'month') setSelected(date);
+    else setSelected(null);
+  }
+
+  const navLabel = viewMode === 'month'
+    ? monthLabel(cursor)
+    : viewMode === 'week'
+      ? `${formatDay(weekDays[0])} – ${formatDay(weekDays[6])}`
+      : formatDay(focusDay);
 
   return (
     <section className="studio-panel cal">
@@ -277,7 +444,7 @@ export default function CalendarPage() {
             <p className="cal__lede">
               {showDemo
                 ? 'Primjer rasporeda — nije povezan s bazom.'
-                : 'Zauzeti termini iz baze, po danima i kapacitetu usluge.'}
+                : 'Zauzetost se računa prema kapacitetu svakog termina, ne samo broju rezervacija.'}
             </p>
           </div>
           <div className="cal__head-actions">
@@ -292,17 +459,126 @@ export default function CalendarPage() {
               />
               Primjer rasporeda
             </label>
+            <button type="button" className="cal__today" onClick={goToday}>
+              Danas
+            </button>
             <div className="cal__month-nav">
-              <button type="button" onClick={() => shiftMonth(-1)} aria-label="Prethodni mjesec">
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewMode === 'week') shiftWeek(-1);
+                  else if (viewMode === 'day') shiftDay(-1);
+                  else shiftMonth(-1);
+                }}
+                aria-label="Prethodno"
+              >
                 ‹
               </button>
-              <strong>{monthLabel(cursor)}</strong>
-              <button type="button" onClick={() => shiftMonth(1)} aria-label="Sljedeći mjesec">
+              <strong>{navLabel}</strong>
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewMode === 'week') shiftWeek(1);
+                  else if (viewMode === 'day') shiftDay(1);
+                  else shiftMonth(1);
+                }}
+                aria-label="Sljedeće"
+              >
                 ›
               </button>
             </div>
           </div>
         </header>
+
+        <div className="cal__controls">
+          <div className="cal__views" role="group" aria-label="Prikaz kalendara">
+            {VIEW_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={viewMode === option.id ? 'is-active' : undefined}
+                aria-pressed={viewMode === option.id}
+                onClick={() => {
+                  setViewMode(option.id);
+                  setSelected(null);
+                  setExpandedId('');
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="cal__filters">
+            <label>
+              <span>Mjesec</span>
+              <select
+                value={month}
+                onChange={(event) => {
+                  const nextMonth = Number(event.target.value);
+                  setCursor(new Date(year, nextMonth, 1));
+                  setFocusDay(new Date(year, nextMonth, Math.min(focusDay.getDate(), 28)));
+                }}
+              >
+                {MONTH_NAMES.map((label, index) => (
+                  <option key={label} value={index}>{label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Godina</span>
+              <select
+                value={year}
+                onChange={(event) => {
+                  const nextYear = Number(event.target.value);
+                  setCursor(new Date(nextYear, month, 1));
+                  setFocusDay(new Date(nextYear, month, Math.min(focusDay.getDate(), 28)));
+                }}
+              >
+                {yearOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Usluga</span>
+              <select
+                value={serviceFilter}
+                onChange={(event) => {
+                  setServiceFilter(event.target.value);
+                  setSelected(null);
+                  setExpandedId('');
+                }}
+              >
+                <option value="all">Sve usluge</option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.name || 'Usluga'}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="cal__stats" aria-label="Sažetak razdoblja">
+          <article>
+            <span>Rezervacije</span>
+            <strong>{periodStats.total}</strong>
+          </article>
+          <article>
+            <span>Završene</span>
+            <strong>{periodStats.completed}</strong>
+          </article>
+          <article>
+            <span>Otkazane</span>
+            <strong>{periodStats.cancelled}</strong>
+          </article>
+          <article>
+            <span>Potvrđene</span>
+            <strong>{periodStats.confirmed}</strong>
+          </article>
+        </div>
 
         {!ready ? (
           <p className="cal__hint">Studio još nije u bazi. Dovršite registraciju da vidite stvarne termine.</p>
@@ -327,8 +603,8 @@ export default function CalendarPage() {
               <p className="cal__kicker">Popunjenost</p>
               <h2>Legenda</h2>
               <p>
-                Boja dana = najpuniji termin tog dana u odnosu na kapacitet
-                {services[0] ? ` (${capacity} mjesta)` : ` (${DEFAULT_CAPACITY} mjesta)`}.
+                Boja dana = najpuniji termin tog dana u odnosu na kapacitet usluge
+                (npr. 3/3 u igraonici ≠ 3/12 na grupnom treningu).
               </p>
             </div>
           </header>
@@ -345,69 +621,179 @@ export default function CalendarPage() {
           </ul>
         </section>
 
-        <section className="cal__month">
-          <header className="cal__panel-head">
-            <span className="cal__index" aria-hidden="true">02</span>
-            <div>
-              <p className="cal__kicker">Mjesec</p>
-              <h2>{monthLabel(cursor)}</h2>
-              <p>Odaberite dan za pregled rezervacija.</p>
+        {viewMode === 'month' ? (
+          <section className="cal__month">
+            <header className="cal__panel-head">
+              <span className="cal__index" aria-hidden="true">02</span>
+              <div>
+                <p className="cal__kicker">Mjesec</p>
+                <h2>{monthLabel(cursor)}</h2>
+                <p>Odaberite dan za pregled rezervacija i kapaciteta.</p>
+              </div>
+              <p className="cal__meta">
+                <strong>{bookings.length}</strong>
+                <span>{showDemo ? 'primjer' : 'upisa'}</span>
+              </p>
+            </header>
+
+            <div className="cal__grid" role="grid" aria-label={`Kalendar ${monthLabel(cursor)}`}>
+              {weekLabels.map((label) => (
+                <span key={label} className="cal__weekday" role="columnheader">
+                  {label}
+                </span>
+              ))}
+              {cells.map((date, index) => {
+                if (!date) {
+                  return <span key={`empty-${index}`} className="cal__cell cal__cell--empty" />;
+                }
+
+                const key = toDateKey(date);
+                const open = dayHours(date, hours).works;
+                const current = sameDay(date, today);
+                const list = byDay.get(key) || [];
+                const stats = dayPeak(list, fallbackCapacity);
+                const level = occupancyLevel(stats.ratio, open);
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="gridcell"
+                    className={[
+                      'cal__cell',
+                      `is-load-${level}`,
+                      current ? 'is-today' : '',
+                      selected && sameDay(date, selected) ? 'is-selected' : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => openDay(date)}
+                    aria-label={`${formatDay(date)}, ${loadLabel(level)}${stats.count ? `, ${stats.count} upisa` : ''}`}
+                  >
+                    <span className="cal__day">{date.getDate()}</span>
+                    <span className="cal__hint-label">{loadLabel(level)}</span>
+                    {stats.count > 0 ? (
+                      <span className="cal__count">
+                        {stats.count}
+                        <em>
+                          {stats.peak}
+                          /
+                          {stats.capacity}
+                        </em>
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
-            <p className="cal__meta">
-              <strong>{bookings.length}</strong>
-              <span>{showDemo ? 'primjer' : 'upisa'}</span>
-            </p>
-          </header>
+          </section>
+        ) : null}
 
-          <div className="cal__grid" role="grid" aria-label={`Kalendar ${monthLabel(cursor)}`}>
-            {weekLabels.map((label) => (
-              <span key={label} className="cal__weekday" role="columnheader">
-                {label}
-              </span>
-            ))}
-            {cells.map((date, index) => {
-              if (!date) {
-                return <span key={`empty-${index}`} className="cal__cell cal__cell--empty" />;
-              }
+        {viewMode === 'week' ? (
+          <section className="cal__week">
+            <header className="cal__panel-head">
+              <span className="cal__index" aria-hidden="true">02</span>
+              <div>
+                <p className="cal__kicker">Tjedan</p>
+                <h2>Raspored aktivnosti</h2>
+                <p>Pregled termina po danima s kapacitetom usluge.</p>
+              </div>
+            </header>
+            <div className="cal__week-grid">
+              {weekDays.map((date) => {
+                const key = toDateKey(date);
+                const list = byDay.get(key) || [];
+                const slots = groupDaySlots(list, fallbackCapacity);
+                const stats = dayPeak(list, fallbackCapacity);
+                const level = occupancyLevel(stats.ratio, dayHours(date, hours).works);
+                const current = sameDay(date, today);
+                return (
+                  <article
+                    key={key}
+                    className={[
+                      'cal__week-day',
+                      `is-load-${level}`,
+                      current ? 'is-today' : '',
+                      sameDay(date, focusDay) ? 'is-focus' : '',
+                    ].filter(Boolean).join(' ')}
+                  >
+                    <button
+                      type="button"
+                      className="cal__week-day-head"
+                      onClick={() => {
+                        setFocusDay(date);
+                        setViewMode('day');
+                      }}
+                    >
+                      <strong>{weekLabels[(date.getDay() + 6) % 7]}</strong>
+                      <span>{date.getDate()}</span>
+                      <em>{stats.count || '—'}</em>
+                    </button>
+                    <ul className="cal__week-slots">
+                      {slots.length === 0 ? (
+                        <li className="cal__week-empty">Nema termina</li>
+                      ) : (
+                        slots.slice(0, 6).map((slot) => (
+                          <li key={slot.key}>
+                            <strong>{slot.startTime}</strong>
+                            <span>{slot.serviceName || 'Termin'}</span>
+                            <em>
+                              {slot.members.length}
+                              /
+                              {slot.capacity}
+                            </em>
+                          </li>
+                        ))
+                      )}
+                      {slots.length > 6 ? (
+                        <li className="cal__week-more">
+                          +
+                          {slots.length - 6}
+                          {' '}
+                          još
+                        </li>
+                      ) : null}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
-              const key = toKey(date);
-              const open = dayHours(date, hours).works;
-              const current = sameDay(date, today);
-              const list = byDay.get(key) || [];
-              const stats = dayPeak(list, capacity);
-              const level = occupancyLevel(stats.ratio, open);
-
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="gridcell"
-                  className={[
-                    'cal__cell',
-                    `is-load-${level}`,
-                    current ? 'is-today' : '',
-                    selected && sameDay(date, selected) ? 'is-selected' : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => setSelected(date)}
-                  aria-label={`${formatDay(date)}, ${loadLabel(level)}${stats.count ? `, ${stats.count} upisa` : ''}`}
-                >
-                  <span className="cal__day">{date.getDate()}</span>
-                  <span className="cal__hint-label">{loadLabel(level)}</span>
-                  {stats.count > 0 ? <span className="cal__count">{stats.count}</span> : null}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        {viewMode === 'day' ? (
+          <section className="cal__dayview">
+            <header className="cal__panel-head">
+              <span className="cal__index" aria-hidden="true">02</span>
+              <div>
+                <p className="cal__kicker">Dan</p>
+                <h2>{formatDay(focusDay)}</h2>
+                <p>
+                  {dayBookings.length === 0
+                    ? 'Nema rezervacija ovog dana.'
+                    : `${dayBookings.length} ${dayBookings.length === 1 ? 'rezervacija' : 'rezervacija'} u ${daySlots.length} ${daySlots.length === 1 ? 'terminu' : 'termina'}`}
+                </p>
+              </div>
+              <p className="cal__meta">
+                <strong>{dayBookings.length}</strong>
+                <span>upisa</span>
+              </p>
+            </header>
+            <SlotList
+              slots={daySlots}
+              fallbackCapacity={fallbackCapacity}
+              expandedId={expandedId}
+              onToggle={(id) => setExpandedId((current) => (current === id ? '' : id))}
+            />
+          </section>
+        ) : null}
 
         {ready && !showDemo && !loadingBookings && !bookingsError && liveBookings.length === 0 ? (
           <p className="cal__hint">
-            Još nema rezervacija u bazi za ovaj mjesec. Uključite „Primjer rasporeda” za pregled izgleda.
+            Još nema rezervacija u bazi za ovo razdoblje. Uključite „Primjer rasporeda” za pregled izgleda.
           </p>
         ) : null}
       </div>
 
-      {selected ? (
+      {selected && viewMode === 'month' ? (
         <div
           className="cal-modal"
           role="presentation"
@@ -426,64 +812,47 @@ export default function CalendarPage() {
                 <p className="cal__kicker">Dan</p>
                 <h2 id={titleId}>{formatDay(selected)}</h2>
                 <p>
-                  {dayBookings.length === 0
+                  {modalBookings.length === 0
                     ? 'Nema rezervacija ovog dana.'
-                    : `${dayBookings.length} ${dayBookings.length === 1 ? 'upis' : 'upisa'} u ${daySlots.length} ${daySlots.length === 1 ? 'terminu' : 'termina'}`}
+                    : `${modalBookings.length} ${modalBookings.length === 1 ? 'upis' : 'upisa'} u ${modalSlots.length} ${modalSlots.length === 1 ? 'terminu' : 'termina'}`}
                 </p>
               </div>
-              <button
-                type="button"
-                className="cal-modal__close"
-                onClick={() => setSelected(null)}
-                aria-label="Zatvori"
-              >
-                ×
-              </button>
+              <div className="cal-modal__actions">
+                <button
+                  type="button"
+                  className="cal-modal__daylink"
+                  onClick={() => {
+                    setFocusDay(selected);
+                    setViewMode('day');
+                    setSelected(null);
+                  }}
+                >
+                  Dnevni prikaz
+                </button>
+                <button
+                  type="button"
+                  className="cal-modal__close"
+                  onClick={() => setSelected(null)}
+                  aria-label="Zatvori"
+                >
+                  ×
+                </button>
+              </div>
             </header>
 
-            {daySlots.length === 0 ? (
+            {modalSlots.length === 0 ? (
               <p className="cal-modal__empty">
                 {dayHours(selected, hours).works
                   ? 'Dan je otvoren, ali još nema upisa u bazi.'
                   : 'Studio je zatvoren ovog dana.'}
               </p>
             ) : (
-              <ul className="cal-modal__list">
-                {daySlots.map((slot) => {
-                  const filled = slot.members.length;
-                  const cap = Math.max(1, slot.capacity || capacity);
-                  const full = filled >= cap;
-                  return (
-                    <li
-                      key={`${slot.date}-${slot.startTime}`}
-                      className={full ? 'is-group-full' : undefined}
-                    >
-                      <div className="cal-modal__slot">
-                        <time dateTime={`${slot.date}T${slot.startTime}`}>
-                          {slot.startTime}
-                          <span>–</span>
-                          {slot.endTime}
-                        </time>
-                        <span className="cal-modal__cap">
-                          {filled}
-                          /
-                          {cap}
-                          {full ? ' · popunjeno' : ''}
-                          {slot.serviceName ? ` · ${slot.serviceName}` : ''}
-                        </span>
-                      </div>
-                      <ul className="cal-modal__people">
-                        {slot.members.map((item) => (
-                          <li key={item.id}>
-                            <strong>{item.memberName}</strong>
-                            <span>{statusLabel(item.status)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  );
-                })}
-              </ul>
+              <SlotList
+                slots={modalSlots}
+                fallbackCapacity={fallbackCapacity}
+                expandedId={expandedId}
+                onToggle={(id) => setExpandedId((current) => (current === id ? '' : id))}
+              />
             )}
           </div>
         </div>

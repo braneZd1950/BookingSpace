@@ -6,11 +6,11 @@
   --policy-edge: color-mix(in srgb, var(--policy-brand) 16%, transparent);
   --policy-accent: var(--accent, #f2a33a);
   position: relative;
-  isolation: isolate;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: clip;
   color: var(--policy-ink);
   background:
     linear-gradient(
@@ -26,7 +26,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .studio-policy__wash {
@@ -65,21 +65,29 @@
   display: grid;
   grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
   gap: clamp(1.4rem, 4vw, 3rem);
+  flex: 1 1 auto;
+  min-height: 0;
   width: min(58rem, calc(100% - 2.4rem));
   margin: 0 auto;
-  padding-top: clamp(2rem, 5vh, 3.4rem);
-  padding-bottom: clamp(2.4rem, 6vw, 3.6rem);
+  padding-top: clamp(1.2rem, 3vh, 2.2rem);
 }
 
 .studio-policy .platform-foot {
   position: relative;
   z-index: 1;
+  flex: 0 0 auto;
 }
 
 .studio-policy__rail {
+  align-self: start;
+  z-index: 2;
+  max-height: 100%;
+  overflow: auto;
   padding-top: 0.35rem;
+  padding-right: 0.75rem;
   border-right: 1px solid var(--policy-edge);
-  animation: studio-policy-rise 0.75s ease both;
+  animation: studio-policy-rail-in 0.75s ease both;
+  scrollbar-width: thin;
 }
 
 .studio-policy__rail-label {
@@ -132,8 +140,17 @@
 .studio-policy__stage {
   display: grid;
   gap: 1.55rem;
+  align-content: start;
   min-width: 0;
+  min-height: 0;
+  max-height: 100%;
   width: min(38rem, 100%);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  padding-bottom: clamp(2rem, 5vh, 3.2rem);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   animation: studio-policy-rise 0.85s 0.06s ease both;
 }
 
@@ -525,14 +542,21 @@
 @media (max-width: 720px) {
   .studio-policy__layout {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 1rem;
   }
 
   .studio-policy__rail {
-    padding-top: 0;
-    padding-bottom: 0.85rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    max-height: none;
+    overflow: visible;
+    padding: 0.55rem 0.15rem 0.75rem;
     border-right: 0;
     border-bottom: 1px solid var(--policy-edge);
+    background: color-mix(in srgb, var(--policy-canvas) 92%, var(--surface));
+    backdrop-filter: blur(10px);
   }
 
   .studio-policy__rail-label {
@@ -550,12 +574,31 @@
     padding: 0.35rem 0.15rem 0.55rem;
     text-align: left;
   }
+
+  .studio-policy__stage {
+    max-height: none;
+  }
+}
+
+@keyframes studio-policy-rail-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 :root[data-theme='dark'] .studio-policy {
   --policy-ink: var(--fg);
   --policy-canvas: var(--bg);
   --policy-soft: color-mix(in srgb, var(--policy-brand) 26%, var(--surface));
+  --policy-brand-readable: color-mix(
+    in srgb,
+    var(--brand-strong, var(--policy-brand)) 42%,
+    #fff
+  );
   color: var(--fg);
   background:
     linear-gradient(
@@ -566,14 +609,51 @@
     );
 }
 
-:root[data-theme='dark'] .studio-policy :is(h1, h2, h3) {
+:root[data-theme='dark'] .studio-policy :is(h1, h2, h3, strong) {
   color: var(--fg);
 }
 
 :root[data-theme='dark'] .studio-policy p,
 :root[data-theme='dark'] .studio-policy .studio-policy__lead,
+:root[data-theme='dark'] .studio-policy .studio-policy__source,
+:root[data-theme='dark'] .studio-policy .studio-policy__theme-note,
+:root[data-theme='dark'] .studio-policy .studio-policy__owner-note,
 :root[data-theme='dark'] .studio-policy li {
-  color: color-mix(in srgb, var(--fg) 88%, var(--bg));
+  color: color-mix(in srgb, var(--fg) 90%, #fff);
+}
+
+:root[data-theme='dark'] .studio-policy .studio-policy__rail-label,
+:root[data-theme='dark'] .studio-policy .studio-policy__index a {
+  color: color-mix(in srgb, var(--fg) 88%, #fff);
+}
+
+:root[data-theme='dark'] .studio-policy .studio-policy__index a:hover,
+:root[data-theme='dark'] .studio-policy .studio-policy__index a.is-active {
+  color: #fff;
+}
+
+:root[data-theme='dark'] .studio-policy .studio-policy__index-num,
+:root[data-theme='dark'] .studio-policy .studio-policy__sec-index {
+  color: color-mix(in srgb, var(--policy-accent) 70%, #fff);
+}
+
+:root[data-theme='dark'] .studio-policy .studio-policy__studio,
+:root[data-theme='dark'] .studio-policy .studio-policy__kicker,
+:root[data-theme='dark'] .studio-policy .studio-policy__back a,
+:root[data-theme='dark'] .studio-policy .studio-policy__owner-link,
+:root[data-theme='dark'] .studio-policy .studio-policy__theme-note a {
+  color: var(--policy-brand-readable);
+}
+
+:root[data-theme='dark'] .studio-policy .studio-policy__rail {
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  :root[data-theme='dark'] .studio-policy .studio-policy__rail {
+    background: color-mix(in srgb, var(--bg) 82%, var(--surface));
+    border-bottom-color: color-mix(in srgb, var(--policy-brand) 28%, transparent);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -581,11 +661,32 @@
     --policy-ink: var(--fg);
     --policy-canvas: var(--bg);
     --policy-soft: color-mix(in srgb, var(--policy-brand) 26%, var(--surface));
+    --policy-brand-readable: color-mix(
+      in srgb,
+      var(--brand-strong, var(--policy-brand)) 42%,
+      #fff
+    );
     color: var(--fg);
   }
 
-  :root:not([data-theme='light']) .studio-policy :is(h1, h2, h3) {
+  :root:not([data-theme='light']) .studio-policy :is(h1, h2, h3, strong) {
     color: var(--fg);
+  }
+
+  :root:not([data-theme='light']) .studio-policy .studio-policy__rail-label,
+  :root:not([data-theme='light']) .studio-policy .studio-policy__index a {
+    color: color-mix(in srgb, var(--fg) 88%, #fff);
+  }
+
+  :root:not([data-theme='light']) .studio-policy .studio-policy__index a.is-active,
+  :root:not([data-theme='light']) .studio-policy .studio-policy__index a:hover {
+    color: #fff;
+  }
+
+  :root:not([data-theme='light']) .studio-policy .studio-policy__studio,
+  :root:not([data-theme='light']) .studio-policy .studio-policy__kicker,
+  :root:not([data-theme='light']) .studio-policy .studio-policy__back a {
+    color: var(--policy-brand-readable);
   }
 }
 

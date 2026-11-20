@@ -46,7 +46,7 @@ function buildSheets(options) {
 export function downloadArchiveCsv(options) {
   const sheets = buildSheets(options);
   const chunks = [
-    `# AnyMinutes arhivski izvoz`,
+    `# Blizari arhivski izvoz`,
     `# ${options.title || ''}`,
     `# ${new Date().toISOString()}`,
     '',
@@ -72,7 +72,7 @@ export function downloadArchiveCsv(options) {
 /** Excel (.xlsx) workbook — one sheet per section. */
 export async function downloadArchiveExcel(options) {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'anyminutes';
+  workbook.creator = 'Blizari';
   const sheets = buildSheets(options);
 
   if (!sheets.length) {

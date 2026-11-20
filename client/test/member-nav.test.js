@@ -19,33 +19,33 @@ test('memberBasePath and memberNavHref normalize slug segments', () => {
   assert.equal(memberBasePath('/demo-fitness/'), '/s/demo-fitness');
   assert.equal(memberNavHref('demo-fitness'), '/s/demo-fitness');
   assert.equal(memberNavHref('demo-fitness', 'termini'), '/s/demo-fitness/termini');
-  assert.equal(memberNavHref('demo-fitness', '/otkrij/'), '/s/demo-fitness/otkrij');
+  assert.equal(memberNavHref('demo-fitness', '/kalendar/'), '/s/demo-fitness/kalendar');
 });
 
-test('buildMemberNavLinks hides Otkrij for guests and Online when flag is off', () => {
+test('buildMemberNavLinks hides settings for guests and Online when flag is off', () => {
   const guest = buildMemberNavLinks('demo-fitness', {
     loggedIn: false,
     onlineEnabled: false,
   });
-  assert.deepEqual(guest.map((item) => item.key), ['home', 'slots', 'privacy']);
+  assert.deepEqual(guest.map((item) => item.key), ['home', 'slots', 'calendar', 'privacy']);
   assert.equal(guest.find((item) => item.key === 'home')?.end, true);
 });
 
-test('buildMemberNavLinks includes Otkrij when logged in', () => {
+test('buildMemberNavLinks includes settings when logged in', () => {
   const links = buildMemberNavLinks('demo-fitness', {
     loggedIn: true,
     onlineEnabled: false,
   });
   assert.deepEqual(
     links.map((item) => item.label),
-    ['Početna', 'Termini', 'Otkrij', 'Privatnost', 'Postavke'],
+    ['Početna', 'Termini', 'Kalendar', 'Privatnost', 'Postavke'],
   );
   assert.deepEqual(
     links.map((item) => item.to),
     [
       '/s/demo-fitness',
       '/s/demo-fitness/termini',
-      '/s/demo-fitness/otkrij',
+      '/s/demo-fitness/kalendar',
       '/s/demo-fitness/privatnost',
       '/s/demo-fitness/postavke',
     ],
@@ -67,13 +67,13 @@ test('matchMemberNavPath distinguishes home from nested member routes', () => {
   assert.equal(matchMemberNavPath(`${base}/termini`, base, { end: true }), false);
   assert.equal(matchMemberNavPath(`${base}/termini`, `${base}/termini`), true);
   assert.equal(isMemberHomePath(`${base}/`, 'demo-fitness'), true);
-  assert.equal(isMemberHomePath(`${base}/otkrij`, 'demo-fitness'), false);
+  assert.equal(isMemberHomePath(`${base}/kalendar`, 'demo-fitness'), false);
 });
 
 test('MEMBER_NAV_CORE labels stay stable for mobile parity', () => {
   assert.deepEqual(
     MEMBER_NAV_CORE.map((item) => item.label),
-    ['Početna', 'Termini', 'Otkrij', 'Privatnost', 'Postavke'],
+    ['Početna', 'Termini', 'Kalendar', 'Privatnost', 'Postavke'],
   );
 });
 
@@ -93,5 +93,5 @@ test('MemberLayout uses config and icon+label chrome for small screens', () => {
   assert.match(scss, /@media \(max-width: 52rem\)/);
   assert.match(scss, /\.member-nav__item svg\s*\{[^}]*display:\s*block/s);
   assert.match(scss, /\.member-nav__label\s*\{[^}]*clip:\s*rect\(0, 0, 0, 0\)/s);
-  assert.match(scss, /overflow-x:\s*hidden/);
+  assert.match(scss, /overflow-x:\s*(?:hidden|clip)/);
 });

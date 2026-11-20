@@ -110,6 +110,24 @@ export function toDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+/** Monday-based start of the week containing `date`. */
+export function weekStart(date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const offset = (start.getDay() + 6) % 7;
+  start.setDate(start.getDate() - offset);
+  return start;
+}
+
+/** Seven consecutive dates Mon–Sun for the week containing `date`. */
+export function weekDates(date) {
+  const start = weekStart(date);
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+    return day;
+  });
+}
+
 export function addDaysKey(isoDate, days) {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(year, month - 1, day);

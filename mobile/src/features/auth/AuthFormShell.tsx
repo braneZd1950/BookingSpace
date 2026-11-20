@@ -6,6 +6,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import BrandMark from '../../ui/BrandMark';
 import GradientScrollShell from '../../ui/GradientScrollShell';
 import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
@@ -75,8 +76,11 @@ export default function AuthFormShell({
         </Pressable>
       ) : null}
       <View style={chrome.brandRow}>
-        <LiveClockMark size={28} />
-        <Text style={chrome.brand}>Blizari</Text>
+        <View style={chrome.brandLeft}>
+          <BrandMark size={28} />
+          <Text style={chrome.brand}>Blizari</Text>
+        </View>
+        <LiveClockMark size={56} />
       </View>
       <Text
         style={[

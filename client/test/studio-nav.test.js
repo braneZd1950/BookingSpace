@@ -35,6 +35,7 @@ test('studio nav includes every pilot key when flags are off', () => {
     'Termini',
     'Kalendar',
     'Članovi',
+    'Usluge',
     'Analitika',
     'Postavke',
   ]);

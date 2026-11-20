@@ -1090,7 +1090,7 @@ export default function SettingsPage() {
                   ['cancelEmail', 'Otkaz termina', 'E-pošta kad član ili trener otkaže rezervaciju'],
                   ['memberEmail', 'Novi član', 'Obavijest kad dodate ili obnovite člana'],
                   ['weeklyDigest', 'Tjedni sažetak', 'Jednom tjedno pregled popunjenosti'],
-                  ['marketing', 'Novosti proizvoda', 'Rijetke obavijesti o anyminutesu'],
+                  ['marketing', 'Novosti proizvoda', 'Rijetke obavijesti o Blizariju'],
                 ]}
               />
             </article>
@@ -1099,7 +1099,7 @@ export default function SettingsPage() {
               <NotifyChannelHeader
                 index="02"
                 title="Push na uređaj"
-                lead="Web Push u pregledniku — i na mobitelu kad instalirate anyminutes kao app."
+                lead="Web Push u pregledniku — i na mobitelu kad instalirate Blizari kao app."
                 count={pushPrefsOn}
               />
 
@@ -1117,7 +1117,7 @@ export default function SettingsPage() {
                   </strong>
                   <p className="settings__fine">
                     {!pushState.supported
-                      ? 'Ovaj preglednik ne podržava push. Na iPhoneu prvo dodajte anyminutes na početni zaslon.'
+                      ? 'Ovaj preglednik ne podržava push. Na iPhoneu prvo dodajte Blizari na početni zaslon.'
                       : pushState.subscribed
                         ? 'Ovaj uređaj vas obavještava o novim rezervacijama, otkazima i članovima.'
                         : pushState.permission === 'denied'

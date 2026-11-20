@@ -23,6 +23,7 @@ import { sessionCopyStyles as copy } from '../../ui/sessionCopyStyles.js';
 import AuthLegalStrip from '../auth/AuthLegalStrip';
 import { hourRows, hoursFromWorking } from '../studio/studioTime.js';
 import MemberBookScreen from './MemberBookScreen';
+import MemberCalendarScreen from './MemberCalendarScreen';
 import MemberDiscoverScreen from './MemberDiscoverScreen';
 import MemberGalleryScreen from './MemberGalleryScreen';
 import MemberPolicyScreen from './MemberPolicyScreen';
@@ -89,6 +90,7 @@ type PublicTenant = {
 type Panel =
   | 'home'
   | 'book'
+  | 'calendar'
   | 'gallery'
   | 'discover'
   | 'privacy'
@@ -114,6 +116,7 @@ export default function MemberHomeScreen({
   const colors = colorsForTheme(uiTheme);
 
   const [panel, setPanel] = useState<Panel>('home');
+  const [bookInitialDate, setBookInitialDate] = useState('');
   const [loading, setLoading] = useState(true);
   const { loggingOut, handleLogout } = useOwnerLogout(onLogout);
   const [error, setError] = useState('');
@@ -198,7 +201,25 @@ export default function MemberHomeScreen({
         tenant={tenant}
         membership={membership}
         isMember={isMember}
+        initialDate={bookInitialDate}
+        onBack={() => {
+          setBookInitialDate('');
+          setPanel('home');
+        }}
+      />
+    );
+  }
+
+  if (panel === 'calendar') {
+    return (
+      <MemberCalendarScreen
+        tenant={tenant}
+        uiTheme={uiTheme}
         onBack={() => setPanel('home')}
+        onBookDate={(dateKey) => {
+          setBookInitialDate(dateKey);
+          setPanel('book');
+        }}
       />
     );
   }

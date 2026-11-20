@@ -4,6 +4,8 @@ export const DEFAULT_NOTIFICATION_PREFS = {
   memberEmail: true,
   weeklyDigest: false,
   marketing: false,
+  marketingStudio: false,
+  marketingPlatform: false,
   bookingPush: true,
   cancelPush: true,
   memberPush: true,
@@ -11,8 +13,17 @@ export const DEFAULT_NOTIFICATION_PREFS = {
 };
 
 export function mergeNotificationPrefs(raw) {
-  return {
+  const incoming = raw?.toObject?.() || raw || {};
+  const merged = {
     ...DEFAULT_NOTIFICATION_PREFS,
-    ...(raw?.toObject?.() || raw || {}),
+    ...incoming,
   };
+  // Legacy single marketing flag → studio only (never auto-enable platform).
+  if (incoming.marketingStudio === undefined && incoming.marketing === true) {
+    merged.marketingStudio = true;
+  }
+  if (incoming.marketingPlatform === undefined) {
+    merged.marketingPlatform = false;
+  }
+  return merged;
 }

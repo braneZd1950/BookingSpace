@@ -21,6 +21,17 @@ const bookingApi = api.injectEndpoints({
       }),
       providesTags: ['Availability'],
     }),
+    getTenantOccupancy: build.query({
+      query: ({ tenantId, dateFrom, dateTo, serviceId }) => ({
+        url: `/tenants/${tenantId}/occupancy`,
+        params: {
+          dateFrom,
+          dateTo,
+          ...(serviceId ? { serviceId } : {}),
+        },
+      }),
+      providesTags: ['Availability'],
+    }),
     createBooking: build.mutation({
       query: (body) => ({
         url: '/bookings',
@@ -49,6 +60,7 @@ const bookingApi = api.injectEndpoints({
 export const {
   useListTenantBookingsQuery,
   useGetAvailabilityQuery,
+  useGetTenantOccupancyQuery,
   useCreateBookingMutation,
   useCancelBookingMutation,
   useListMyBookingsQuery,

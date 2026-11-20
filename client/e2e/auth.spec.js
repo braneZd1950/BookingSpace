@@ -27,7 +27,8 @@ test.describe('Auth screens', () => {
     await expect(page.getByRole('button', { name: /Nastavi kao partner/i })).toBeVisible();
 
     await page.getByRole('button', { name: /Nastavi kao partner/i }).click();
-    await expect(page.getByRole('heading', { name: /Pokrenite svoj prostor/i })).toBeVisible();
-    await expect(page.getByText(/Naziv, niša i račun/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Postavite svoje poslovanje/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Podaci o poslovanju/i })).toBeVisible();
   });
 });
+

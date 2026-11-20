@@ -1,23 +1,82 @@
 .status {
+  position: relative;
+  isolation: isolate;
   display: grid;
   place-items: center;
-  min-height: min(70vh, 40rem);
-  padding: 3rem 1.25rem 4rem;
+  min-height: min(78vh, 44rem);
+  padding: clamp(2.5rem, 6vw, 4rem) 1.25rem 4rem;
+  overflow: clip;
+  color: var(--fg);
   background:
-    radial-gradient(90% 70% at 10% 0%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%),
-    radial-gradient(70% 50% at 100% 20%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 50%),
-    var(--bg);
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--brand-soft) 55%, var(--bg)) 0%,
+      color-mix(in srgb, var(--bg) 88%, var(--surface)) 18rem,
+      var(--bg) 100%
+    );
+}
+
+.status__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.status__wash {
+  position: absolute;
+  top: -12%;
+  right: -8%;
+  width: min(38rem, 78vw);
+  height: 62%;
+  background:
+    radial-gradient(
+      ellipse at 42% 38%,
+      color-mix(in srgb, var(--brand) 18%, transparent),
+      transparent 70%
+    );
+  filter: blur(4px);
+  animation: status-wash 16s ease-in-out infinite alternate;
+}
+
+.status__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  background:
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 12px,
+      color-mix(in srgb, var(--fg) 2.6%, transparent) 12px,
+      color-mix(in srgb, var(--fg) 2.6%, transparent) 13px
+    );
+}
+
+.status__panel,
+.status__miss {
+  position: relative;
+  z-index: 1;
 }
 
 .status__panel {
   width: min(34rem, 100%);
   text-align: left;
+  animation: status-rise 0.55s ease both;
+}
+
+.status__brand {
+  display: inline-flex;
+  margin: 0 0 1.15rem;
+  line-height: 0;
+  text-decoration: none;
 }
 
 .status__code {
   margin: 0 0 0.75rem;
-  color: var(--brand);
-  font-size: 0.78rem;
+  color: var(--brand-strong, var(--brand));
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -25,15 +84,27 @@
 
 .status h1 {
   margin: 0;
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: Fraunces, 'Source Serif 4', Georgia, serif;
   font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 640;
-  letter-spacing: -0.035em;
-  line-height: 1.1;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.status h1::after {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 0.16rem;
+  margin-top: 0.75rem;
+  border-radius: 999px;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: status-rule 0.6s 0.12s ease both;
 }
 
 .status__lead {
-  margin: 0.9rem 0 0;
+  margin: 0.95rem 0 0;
   color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.55;
@@ -69,27 +140,30 @@
   min-height: 2.7rem;
   padding: 0.65rem 1.15rem;
   border: 0;
-  border-radius: 0.45rem;
+  border-radius: 0.3rem;
   background: var(--brand);
   color: var(--on-brand);
   font: inherit;
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
 }
 
 .status__cta:hover {
-  background: var(--brand-strong);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 .status__cta--ghost {
   background: transparent;
   color: var(--fg);
-  box-shadow: inset 0 0 0 1.5px var(--line);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--brand) 28%, var(--line));
 }
 
 .status__cta--ghost:hover {
-  background: var(--surface);
+  background: color-mix(in srgb, var(--brand-soft) 45%, var(--surface));
+  filter: none;
 }
 
 .status__cta:focus-visible {
@@ -105,7 +179,7 @@
 }
 
 .status__meta a {
-  color: var(--brand);
+  color: var(--brand-strong, var(--brand));
   font-weight: 750;
   text-decoration: none;
 }
@@ -117,7 +191,6 @@
 .status--miss {
   place-items: stretch;
   align-content: center;
-  min-height: min(78vh, 44rem);
 }
 
 .status__miss {
@@ -126,15 +199,20 @@
   align-items: center;
   width: min(56rem, 100%);
   margin: 0 auto;
+  animation: status-rise 0.55s ease both;
 }
 
 .status__slot {
   padding: 1.15rem 1.2rem 1.25rem;
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--line));
+  border-radius: 0.35rem;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--brand-soft) 55%, #fff), var(--surface));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-soft) 55%, var(--surface)),
+      var(--surface)
+    );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
 }
 
 .status__slot-day {
@@ -160,7 +238,7 @@
   align-items: baseline;
   justify-content: space-between;
   padding: 0.7rem 0.8rem;
-  border-radius: 0.5rem;
+  border-radius: 0.3rem;
   background: color-mix(in srgb, var(--bg) 65%, transparent);
   font-weight: 650;
 }
@@ -181,12 +259,58 @@
 
 .status__slot-list li.is-gap {
   border: 1.5px dashed color-mix(in srgb, var(--brand) 45%, transparent);
-  background: color-mix(in srgb, var(--brand-soft) 40%, #fff);
+  background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface));
+  animation: status-gap-pulse 2.8s ease-in-out infinite;
 }
 
 .status__slot-list li.is-gap span,
 .status__slot-list li.is-gap em {
   color: var(--brand-strong, var(--brand));
+}
+
+@keyframes status-wash {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-4%, 3%, 0) scale(1.05);
+  }
+}
+
+@keyframes status-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes status-rule {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes status-gap-pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+
+  50% {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
 }
 
 @media (min-width: 48rem) {
@@ -197,7 +321,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .status__wash,
+  .status__panel,
+  .status__miss,
+  .status h1::after,
   .status__slot-list li.is-gap {
-    animation: none;
+    animation: none !important;
+  }
+}
+
+:root[data-theme='dark'] .status__slot {
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .status__slot {
+    box-shadow: none;
   }
 }

@@ -6,11 +6,29 @@
   min-width: 0;
   max-width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   color: var(--member-ink, var(--fg));
   background:
     radial-gradient(ellipse 65% 40% at 0% -8%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 55%),
     var(--member-canvas, var(--bg));
+}
+
+/* Settings / policy: lock shell height so only the stage column scrolls; rail stays visible. */
+.member-shell:has(> .member-settings),
+.member-shell:has(> .studio-policy) {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.member-shell:has(> .member-settings) > .member-settings,
+.member-shell:has(> .studio-policy) > .studio-policy {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.member-shell:has(> .member-settings) > .platform-legal-strip {
+  flex: 0 0 auto;
 }
 
 :root[data-theme='dark'] .member-shell {

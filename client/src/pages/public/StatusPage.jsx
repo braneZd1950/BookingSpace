@@ -1,9 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import BrandWordmark from '../../components/BrandWordmark.jsx';
+import { BRAND } from '../../lib/brand.js';
 import { contactEmail } from '../../lib/contact.js';
 import './StatusPage.scss';
 
 const MAINTENANCE_RETRY_KEY = 'am.maintenance.retry';
+
+function StatusShell({ variant = 'base', children }) {
+  return (
+    <main className={`status${variant === 'miss' ? ' status--miss' : ''}`}>
+      <div className="status__atmosphere" aria-hidden="true">
+        <span className="status__wash" />
+        <span className="status__grain" />
+      </div>
+      {children}
+    </main>
+  );
+}
 
 export function StatusPage({
   code,
@@ -18,10 +32,16 @@ export function StatusPage({
   secondaryLabel,
   showContact = false,
   contactPrefix = 'Hitno?',
+  showBrand = true,
 }) {
   return (
-    <main className="status">
+    <StatusShell>
       <div className="status__panel">
+        {showBrand ? (
+          <Link className="status__brand" to="/" aria-label={BRAND.name}>
+            <BrandWordmark slot="banner" tone="dark" decorative />
+          </Link>
+        ) : null}
         {code ? <p className="status__code">{code}</p> : null}
         <h1>{title}</h1>
         <p className="status__lead">{lead}</p>
@@ -51,13 +71,13 @@ export function StatusPage({
           </p>
         ) : null}
       </div>
-    </main>
+    </StatusShell>
   );
 }
 
 export function NotFoundPage() {
   return (
-    <main className="status status--miss">
+    <StatusShell variant="miss">
       <div className="status__miss">
         <aside className="status__slot" aria-hidden="true">
           <p className="status__slot-day">Danas</p>
@@ -78,10 +98,13 @@ export function NotFoundPage() {
         </aside>
 
         <div className="status__panel">
-          <p className="status__code">Termin ne postoji</p>
+          <Link className="status__brand" to="/" aria-label={BRAND.name}>
+            <BrandWordmark slot="banner" tone="dark" decorative />
+          </Link>
+          <p className="status__code">Stranica nije pronađena</p>
           <h1>Ovaj sat nije u rasporedu.</h1>
           <p className="status__lead">
-            Ova stranica nije dio rasporeda — nema studija ni termina ovdje.
+            Ova adresa nije dio Blizarija — nema studija ni termina ovdje.
             Vratite se na početnu ili se prijavite.
           </p>
           <div className="status__actions">
@@ -94,7 +117,7 @@ export function NotFoundPage() {
           </div>
         </div>
       </div>
-    </main>
+    </StatusShell>
   );
 }
 
@@ -143,57 +166,31 @@ export function MaintenancePage() {
 
 export function ErrorPage({ onRetry } = {}) {
   return (
-    <main className="status">
-      <div className="status__panel">
-        <p className="status__code">Greška</p>
-        <h1>Nešto je pošlo po zlu.</h1>
-        <p className="status__lead">
-          Stranica se nije učitala kako treba. Pokušajte ponovno — ako se
-          problem ponovi, javite nam i nastavit ćemo odmah.
-        </p>
-        <div className="status__actions">
-          {typeof onRetry === 'function' ? (
-            <button type="button" className="status__cta" onClick={onRetry}>
-              Pokušajte ponovno
-            </button>
-          ) : (
-            <Link className="status__cta" to="/">
-              Početna
-            </Link>
-          )}
-          <Link className="status__cta status__cta--ghost" to="/">
-            Početna
-          </Link>
-        </div>
-        <p className="status__meta">
-          Hitno?
-          {' '}
-          <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
-        </p>
-      </div>
-    </main>
+    <StatusPage
+      code="Greška"
+      title="Nešto je pošlo po zlu."
+      lead="Stranica se nije učitala kako treba. Pokušajte ponovno — ako se problem ponovi, javite nam na Blizariju i nastavit ćemo odmah."
+      primaryLabel="Pokušajte ponovno"
+      onPrimary={typeof onRetry === 'function' ? onRetry : undefined}
+      primaryTo="/"
+      secondaryTo="/"
+      secondaryLabel="Početna"
+      showContact
+      contactPrefix="Hitno?"
+    />
   );
 }
 
 export function StudioMissingPage() {
   return (
-    <main className="status status--miss">
-      <div className="status__panel">
-        <p className="status__code">Studio nije u kalendaru</p>
-        <h1>Na ovoj adresi nema aktivnog objekta.</h1>
-        <p className="status__lead">
-          Provjerite poveznicu od svog fitness studija. Ako ste član, prijavite
-          se — nakon prijave otvara se stranica objekta kod kojeg imate članarinu.
-        </p>
-        <div className="status__actions">
-          <Link className="status__cta" to="/">
-            Početna Blizari
-          </Link>
-          <Link className="status__cta status__cta--ghost" to="/login">
-            Prijava
-          </Link>
-        </div>
-      </div>
-    </main>
+    <StatusPage
+      code="Studio nije dostupan"
+      title="Na ovoj adresi nema aktivnog objekta."
+      lead="Provjerite poveznicu od svog poslovanja. Ako ste član, prijavite se — nakon prijave otvara se stranica objekta kod kojeg imate članarinu."
+      primaryTo="/"
+      primaryLabel={`Početna ${BRAND.name}`}
+      secondaryTo="/login"
+      secondaryLabel="Prijava"
+    />
   );
 }

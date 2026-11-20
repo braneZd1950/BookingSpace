@@ -71,14 +71,14 @@ export function getHomePartners() {
     return {
       partners: real,
       label: 'S nama',
-      ariaLabel: 'Partneri na anyminutes',
+      ariaLabel: 'Partneri na Blizariju',
       live: true,
     };
   }
   return {
     partners: placeholders,
     label: 'Uskoro s nama',
-    ariaLabel: 'Partneri koji dolaze na anyminutes',
+    ariaLabel: 'Partneri koji dolaze na Blizari',
     live: false,
   };
 }

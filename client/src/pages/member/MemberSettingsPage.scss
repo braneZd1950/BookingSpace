@@ -6,11 +6,11 @@
   --settings-edge: color-mix(in srgb, var(--settings-brand) 16%, transparent);
   --settings-accent: var(--accent, #f2a33a);
   position: relative;
-  isolation: isolate;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 0;
-  padding: 0 0 clamp(3rem, 7vw, 4.5rem);
-  overflow: clip;
+  padding: 0;
   color: var(--settings-ink);
   background:
     linear-gradient(
@@ -53,7 +53,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .member-settings__wash {
@@ -92,18 +92,25 @@
   display: grid;
   grid-template-columns: minmax(0, 10.5rem) minmax(0, 1fr);
   gap: clamp(1.3rem, 4vw, 3rem);
+  flex: 1 1 auto;
+  min-height: 0;
   width: min(58rem, calc(100% - 2.4rem));
   margin: 0 auto;
-  padding-top: clamp(2rem, 5vh, 3.4rem);
+  padding-top: clamp(1.2rem, 3vh, 2.2rem);
 }
 
 .member-settings__rail {
+  align-self: start;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 0.3rem 0 0.2rem;
+  max-height: 100%;
+  overflow: auto;
+  padding: 0.3rem 0.75rem 0.2rem 0;
   border-right: 1px solid var(--settings-edge);
-  animation: member-settings-rise 0.75s ease both;
+  animation: member-settings-rail-in 0.75s ease both;
+  scrollbar-width: thin;
 }
 
 .member-settings__rail-mark {
@@ -160,7 +167,16 @@
 .member-settings__stage {
   display: grid;
   gap: 1.15rem;
+  align-content: start;
   min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  padding-bottom: clamp(2rem, 5vh, 3.5rem);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   animation: member-settings-rise 0.85s 0.06s ease both;
 }
 
@@ -218,7 +234,7 @@
   border: 1px solid var(--settings-edge);
   border-radius: 1.05rem;
   background: color-mix(in srgb, var(--surface) 92%, var(--settings-soft));
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 1rem;
 }
 
 .member-settings__sheet h2 {
@@ -232,6 +248,75 @@
   color: color-mix(in srgb, var(--settings-ink) 70%, var(--bg));
   font-size: 0.92rem;
   line-height: 1.45;
+}
+
+.member-settings__subhead {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.member-settings__hint {
+  margin: 0 0 0.75rem;
+  color: color-mix(in srgb, var(--settings-ink) 62%, var(--bg));
+  font-size: 0.84rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.member-settings__readonly {
+  margin: 0;
+  padding: 0.72rem 0.8rem;
+  border: 1px dashed color-mix(in srgb, var(--settings-brand) 22%, var(--line, #dde3e0));
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--surface) 80%, var(--settings-soft));
+  font-weight: 650;
+}
+
+.member-settings__ghost {
+  padding: 0.72rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--settings-brand) 28%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--settings-brand);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.member-settings__danger {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--settings-edge);
+}
+
+.member-settings__danger-btn {
+  padding: 0.72rem 1.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, #b91c1c 88%, #000);
+  color: #fff;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.member-settings__legal {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.member-settings__legal a {
+  color: var(--settings-brand);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.member-settings__legal a:hover {
+  text-decoration: underline;
 }
 
 .member-settings__grid {
@@ -412,6 +497,17 @@
   }
 }
 
+/* Opacity-only so sticky rail is not broken by a lingering transform. */
+@keyframes member-settings-rail-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes member-settings-rule-x {
   from {
     transform: scaleX(0);
@@ -447,18 +543,27 @@
 @media (max-width: 720px) {
   .member-settings__layout {
     grid-template-columns: 1fr;
-    gap: 1.2rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.85rem;
   }
 
   .member-settings__rail {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    max-height: none;
+    overflow: visible;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
     gap: 0.85rem 1rem;
-    padding-bottom: 0.85rem;
+    margin: 0;
+    padding: 0.55rem 0.15rem 0.75rem;
     border-right: 0;
     border-bottom: 1px solid var(--settings-edge);
+    background: color-mix(in srgb, var(--settings-canvas) 92%, var(--surface));
+    backdrop-filter: blur(10px);
   }
 
   .member-settings__rail-mark {
@@ -484,6 +589,10 @@
     width: 100%;
   }
 
+  .member-settings__stage {
+    max-height: none;
+  }
+
   .member-settings__grid {
     grid-template-columns: 1fr;
   }
@@ -498,6 +607,11 @@
   --settings-ink: var(--fg);
   --settings-canvas: var(--bg);
   --settings-soft: color-mix(in srgb, var(--settings-brand) 26%, var(--surface));
+  --settings-brand-readable: color-mix(
+    in srgb,
+    var(--brand-strong, var(--settings-brand)) 42%,
+    #fff
+  );
   color: var(--fg);
   background:
     linear-gradient(
@@ -515,6 +629,7 @@
 :root[data-theme='dark'] .member-settings p,
 :root[data-theme='dark'] .member-settings .member-settings__lead,
 :root[data-theme='dark'] .member-settings .member-settings__sheet-lead,
+:root[data-theme='dark'] .member-settings .member-settings__hint,
 :root[data-theme='dark'] .member-settings .member-settings__toggle em,
 :root[data-theme='dark'] .member-settings .ui-theme-picker__lead,
 :root[data-theme='dark'] .member-settings .ui-theme-picker__copy em,
@@ -538,6 +653,20 @@
 
 :root[data-theme='dark'] .member-settings .member-settings__index-num {
   color: color-mix(in srgb, var(--settings-accent) 70%, #fff);
+}
+
+:root[data-theme='dark'] .member-settings .member-settings__rail-mark,
+:root[data-theme='dark'] .member-settings .member-settings__studio,
+:root[data-theme='dark'] .member-settings .member-settings__kicker,
+:root[data-theme='dark'] .member-settings .member-settings__ghost,
+:root[data-theme='dark'] .member-settings .member-settings__eye,
+:root[data-theme='dark'] .member-settings .member-settings__legal a,
+:root[data-theme='dark'] .member-settings .member-settings--gate a {
+  color: var(--settings-brand-readable);
+}
+
+:root[data-theme='dark'] .member-settings .member-settings__legal a:hover {
+  color: #fff;
 }
 
 :root[data-theme='dark'] .member-settings .member-settings__sheet {
@@ -574,7 +703,7 @@
 }
 
 :root[data-theme='dark'] .member-settings .privacy-consent__actions a {
-  color: color-mix(in srgb, var(--brand-strong, var(--settings-brand)) 55%, #fff);
+  color: var(--settings-brand-readable);
 }
 
 :root[data-theme='dark'] .member-settings .privacy-consent__status {
@@ -595,6 +724,11 @@
     --settings-ink: var(--fg);
     --settings-canvas: var(--bg);
     --settings-soft: color-mix(in srgb, var(--settings-brand) 26%, var(--surface));
+    --settings-brand-readable: color-mix(
+      in srgb,
+      var(--brand-strong, var(--settings-brand)) 42%,
+      #fff
+    );
     color: var(--fg);
   }
 
@@ -605,8 +739,18 @@
   :root:not([data-theme='light']) .member-settings .member-settings__field,
   :root:not([data-theme='light']) .member-settings .member-settings__field > span,
   :root:not([data-theme='light']) .member-settings .ui-theme-picker__legend,
-  :root:not([data-theme='light']) .member-settings .member-settings__index a {
+  :root:not([data-theme='light']) .member-settings .member-settings__index a,
+  :root:not([data-theme='light']) .member-settings .member-settings__hint {
     color: color-mix(in srgb, var(--fg) 94%, #fff);
+  }
+
+  :root:not([data-theme='light']) .member-settings .member-settings__rail-mark,
+  :root:not([data-theme='light']) .member-settings .member-settings__studio,
+  :root:not([data-theme='light']) .member-settings .member-settings__kicker,
+  :root:not([data-theme='light']) .member-settings .member-settings__ghost,
+  :root:not([data-theme='light']) .member-settings .member-settings__legal a,
+  :root:not([data-theme='light']) .member-settings .privacy-consent__actions a {
+    color: var(--settings-brand-readable);
   }
 
   :root:not([data-theme='light']) .member-settings .privacy-consent__withdraw {
@@ -614,9 +758,16 @@
     border-color: color-mix(in srgb, #f87171 45%, transparent);
     color: color-mix(in srgb, #fecaca 88%, #fff);
   }
+}
 
-  :root:not([data-theme='light']) .member-settings .privacy-consent__actions a {
-    color: color-mix(in srgb, var(--brand-strong, var(--settings-brand)) 55%, #fff);
+:root[data-theme='dark'] .member-settings .member-settings__rail {
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  :root[data-theme='dark'] .member-settings .member-settings__rail {
+    background: color-mix(in srgb, var(--bg) 82%, var(--surface));
+    border-bottom-color: color-mix(in srgb, var(--settings-brand) 28%, transparent);
   }
 }
 

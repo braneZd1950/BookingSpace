@@ -10,6 +10,7 @@ import {
 import { USE_NATIVE_DRIVER } from '../../lib/nativeDriver.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import BrandMark from '../../ui/BrandMark';
 import { sessionCopyStyles as copy } from '../../ui/sessionCopyStyles.js';
 import LiveClockMark from '../../ui/LiveClockMark';
 import AuthLegalStrip from './AuthLegalStrip';
@@ -105,8 +106,11 @@ export default function SessionSuccessScreen({
           }}
         >
           <View style={styles.brandRow}>
-            <LiveClockMark size={28} />
-            <Text style={copy.brand}>Blizari</Text>
+            <View style={styles.brandLeft}>
+              <BrandMark size={28} />
+              <Text style={copy.brand}>Blizari</Text>
+            </View>
+            <LiveClockMark size={56} />
           </View>
           <Text style={copy.kicker}>{kicker}</Text>
           <Text style={[copy.title, styles.titleGap, compact && { fontSize: 34, lineHeight: 38 }]}>
@@ -167,8 +171,15 @@ const styles = StyleSheet.create({
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 18,
+  },
+  brandLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
   },
   titleGap: { marginBottom: 14 },
   leadMax: { maxWidth: 360, marginBottom: 0 },
