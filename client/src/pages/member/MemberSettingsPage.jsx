@@ -18,18 +18,22 @@ import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import {
   ACCOUNT_SETTINGS_SECTIONS,
   LEGAL_LINKS,
+  MEMBER_SETTINGS_ACTIONS,
   MEMBER_SETTINGS_MESSAGES,
   OPERATIONAL_NOTIFY_OPTIONS,
   PROMOTIONAL_NOTIFY_OPTIONS,
+  apiErrorMessage,
+  buildDeleteAccountBody,
+  emailChangeNoteFromResult,
   emailChangeResentMessage,
-  emailChangeSentMessage,
   emailStatusLabel,
+  memberAccountFromUser,
   memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
+  prepareAccountUpdate,
+  prepareEmailChange,
+  preparePasswordChange,
   uiThemeSavedMessage,
-  validateMemberAccountName,
-  validateMemberEmailChange,
-  validateMemberPasswordChange,
 } from '../../../../shared/memberAccountSettings.js';
 import './MemberSettingsPage.scss';
 
@@ -65,10 +69,7 @@ export default function MemberSettingsPage() {
 
   useEffect(() => {
     if (!user) return;
-    setAccount({
-      name: user.name || '',
-      phone: user.phone || '',
-    });
+    setAccount(memberAccountFromUser(user));
     setEmailDraft('');
     setUiTheme(normalizeUiTheme(user.uiTheme));
     setPrefs(mergeMemberNotifyPrefs(user.notificationPrefs));
@@ -95,20 +96,16 @@ export default function MemberSettingsPage() {
     event.preventDefault();
     setError('account', '');
     setNote('account', '');
-    const name = account.name.trim();
-    const nameError = validateMemberAccountName(name);
-    if (nameError) {
-      setError('account', nameError);
+    const prepared = prepareAccountUpdate(account);
+    if (prepared.error) {
+      setError('account', prepared.error);
       return;
     }
     try {
-      await updateMe({
-        name,
-        phone: account.phone.trim() || undefined,
-      }).unwrap();
+      await updateMe(prepared.payload).unwrap();
       setNote('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
     } catch (err) {
-      setError('account', err?.data?.message || 'Podaci nisu spremljeni.');
+      setError('account', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.accountSaveFailed));
     }
   }
 
@@ -116,23 +113,17 @@ export default function MemberSettingsPage() {
     event.preventDefault();
     setError('email', '');
     setNote('email', '');
-    const email = emailDraft.trim().toLowerCase();
-    const emailError = validateMemberEmailChange(email, user?.email);
-    if (emailError) {
-      setError('email', emailError);
+    const prepared = prepareEmailChange(emailDraft, user?.email);
+    if (prepared.error) {
+      setError('email', prepared.error);
       return;
     }
     try {
-      const result = await updateMe({ email }).unwrap();
+      const result = await updateMe(prepared.payload).unwrap();
       setEmailDraft('');
-      setNote(
-        'email',
-        result?.user?.pendingEmail
-          ? emailChangeSentMessage(result.user.pendingEmail)
-          : 'Zahtjev za promjenu e-pošte je poslan.',
-      );
+      setNote('email', emailChangeNoteFromResult(result, prepared.payload.email));
     } catch (err) {
-      setError('email', err?.data?.message || 'E-pošta nije ažurirana.');
+      setError('email', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.emailUpdateFailed));
     }
   }
 
@@ -143,7 +134,7 @@ export default function MemberSettingsPage() {
       const result = await resendEmail().unwrap();
       setNote('email', emailChangeResentMessage(result.pendingEmail));
     } catch {
-      setError('email', 'Ponovno slanje nije uspjelo.');
+      setError('email', MEMBER_SETTINGS_MESSAGES.emailResendFailed);
     }
   }
 
@@ -169,7 +160,7 @@ export default function MemberSettingsPage() {
       }).unwrap();
       setNote('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
     } catch {
-      setNote('prefs', 'Obavijesti nisu spremljene. Pokušajte ponovno.');
+      setNote('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaveFailed);
     }
   }
 
@@ -177,28 +168,25 @@ export default function MemberSettingsPage() {
     event.preventDefault();
     setError('password', '');
     setNote('password', '');
-    const passwordError = validateMemberPasswordChange(password);
-    if (passwordError) {
-      setError('password', passwordError);
+    const prepared = preparePasswordChange(password);
+    if (prepared.error) {
+      setError('password', prepared.error);
       return;
     }
     try {
-      const result = await changePassword({
-        currentPassword: password.currentPassword,
-        newPassword: password.newPassword,
-      }).unwrap();
+      const result = await changePassword(prepared.payload).unwrap();
       if (result?.token) {
         localStorage.setItem(TOKEN_KEY, result.token);
       } else {
         await clearSession({ dispatch });
-        setNote('password', 'Lozinka je promijenjena — prijavite se ponovo.');
+        setNote('password', MEMBER_SETTINGS_MESSAGES.passwordSavedReauth);
         setPassword({ currentPassword: '', newPassword: '', again: '' });
         return;
       }
       setPassword({ currentPassword: '', newPassword: '', again: '' });
       setNote('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
     } catch (err) {
-      setError('password', err?.data?.message || 'Lozinka nije promijenjena.');
+      setError('password', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.passwordChangeFailed));
     }
   }
 
@@ -210,7 +198,7 @@ export default function MemberSettingsPage() {
       /* still clear local */
     }
     await clearSession({ dispatch });
-    setNote('security', 'Odjavljeni ste sa svih uređaja.');
+    setNote('security', MEMBER_SETTINGS_MESSAGES.logoutAllSuccess);
   }
 
   async function onExport() {
@@ -227,9 +215,9 @@ export default function MemberSettingsPage() {
       anchor.download = `blizari-podaci-${new Date().toISOString().slice(0, 10)}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      setNote('privacy', 'Izvoz je preuzet.');
+      setNote('privacy', MEMBER_SETTINGS_MESSAGES.exportDownloaded);
     } catch {
-      setError('privacy', 'Izvoz nije uspio.');
+      setError('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
     }
   }
 
@@ -237,16 +225,17 @@ export default function MemberSettingsPage() {
     event.preventDefault();
     setError('delete', '');
     setNote('delete', '');
-    if (!window.confirm('Trajno ćete deaktivirati Blizari račun. Nastaviti?')) return;
+    if (!window.confirm(MEMBER_SETTINGS_MESSAGES.deleteConfirmWeb)) return;
     try {
-      const body = user?.hasPassword
-        ? { password: deleteForm.password }
-        : { confirm: deleteForm.confirm };
+      const body = buildDeleteAccountBody(
+        Boolean(user?.hasPassword),
+        user?.hasPassword ? deleteForm.password : deleteForm.confirm,
+      );
       await deleteAccount(body).unwrap();
       await clearSession({ dispatch });
-      setNote('delete', 'Račun je deaktiviran.');
+      setNote('delete', MEMBER_SETTINGS_MESSAGES.deleteSuccess);
     } catch (err) {
-      setError('delete', err?.data?.message || 'Račun nije obrisan.');
+      setError('delete', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.deleteFailed));
     }
   }
 
@@ -304,8 +293,7 @@ export default function MemberSettingsPage() {
             <p className="member-settings__kicker">Blizari račun</p>
             <h1>Postavke</h1>
             <p className="member-settings__lead">
-              Opće postavke pripadaju vašem Blizari računu i sinkroniziraju se
-              između uređaja. Članarine i rezervacije ostaju u studiju.
+              {MEMBER_SETTINGS_MESSAGES.lead}
             </p>
           </header>
 
@@ -354,7 +342,7 @@ export default function MemberSettingsPage() {
             ) : null}
             <div className="member-settings__actions">
               <button type="submit" className="member-settings__primary" disabled={savingProfile}>
-                {savingProfile ? 'Spremamo…' : 'Spremi podatke'}
+                {savingProfile ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.saveAccount}
               </button>
             </div>
           </form>
@@ -384,7 +372,7 @@ export default function MemberSettingsPage() {
             ) : null}
             <div className="member-settings__actions">
               <button type="submit" className="member-settings__primary" disabled={savingProfile}>
-                Pošalji potvrdu
+                {MEMBER_SETTINGS_ACTIONS.sendEmailConfirm}
               </button>
               {user?.pendingEmail ? (
                 <button
@@ -393,7 +381,7 @@ export default function MemberSettingsPage() {
                   disabled={resendingEmail}
                   onClick={() => { void onResendEmail(); }}
                 >
-                  {resendingEmail ? 'Šaljemo…' : 'Pošalji ponovno'}
+                  {resendingEmail ? MEMBER_SETTINGS_ACTIONS.sending : MEMBER_SETTINGS_ACTIONS.resendEmail}
                 </button>
               ) : null}
             </div>
@@ -470,7 +458,7 @@ export default function MemberSettingsPage() {
             ) : null}
             <div className="member-settings__actions">
               <button type="submit" className="member-settings__primary" disabled={savingProfile}>
-                {savingProfile ? 'Spremamo…' : 'Spremi obavijesti'}
+                {savingProfile ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.savePrefs}
               </button>
             </div>
           </form>
@@ -483,7 +471,7 @@ export default function MemberSettingsPage() {
             </p>
             {user?.hasPassword === false ? (
               <p className="member-settings__hint">
-                Ovaj račun koristi Google prijavu — lozinka se ne postavlja ovdje.
+                {MEMBER_SETTINGS_MESSAGES.googleAuthNoPassword}
               </p>
             ) : (
               <form onSubmit={savePassword}>
@@ -536,7 +524,7 @@ export default function MemberSettingsPage() {
                 ) : null}
                 <div className="member-settings__actions">
                   <button type="submit" className="member-settings__primary" disabled={savingPassword}>
-                    {savingPassword ? 'Spremamo…' : 'Promijeni lozinku'}
+                    {savingPassword ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.changePassword}
                   </button>
                 </div>
               </form>
@@ -548,7 +536,7 @@ export default function MemberSettingsPage() {
                 disabled={loggingOutAll}
                 onClick={() => { void onLogoutAll(); }}
               >
-                {loggingOutAll ? 'Odjavljujemo…' : 'Odjava sa svih uređaja'}
+                {loggingOutAll ? MEMBER_SETTINGS_ACTIONS.loggingOut : MEMBER_SETTINGS_ACTIONS.logoutAll}
               </button>
             </div>
             {notes.security ? (
@@ -569,7 +557,7 @@ export default function MemberSettingsPage() {
                 disabled={exporting}
                 onClick={() => { void onExport(); }}
               >
-                {exporting ? 'Pripremamo…' : 'Izvezi osobne podatke'}
+                {exporting ? MEMBER_SETTINGS_ACTIONS.preparing : MEMBER_SETTINGS_ACTIONS.exportData}
               </button>
             </div>
             {errors.privacy ? (
@@ -620,7 +608,7 @@ export default function MemberSettingsPage() {
               ) : null}
               <div className="member-settings__actions">
                 <button type="submit" className="member-settings__danger-btn" disabled={deleting}>
-                  {deleting ? 'Brišemo…' : 'Obriši račun'}
+                  {deleting ? MEMBER_SETTINGS_ACTIONS.deleting : MEMBER_SETTINGS_ACTIONS.deleteAccount}
                 </button>
               </div>
             </form>

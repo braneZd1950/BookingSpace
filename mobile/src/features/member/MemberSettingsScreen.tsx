@@ -36,19 +36,23 @@ import {
 import {
   ACCOUNT_SETTINGS_SECTIONS,
   LEGAL_LINKS,
+  MEMBER_SETTINGS_ACTIONS,
   MEMBER_SETTINGS_MESSAGES,
   OPERATIONAL_NOTIFY_OPTIONS,
   PROMOTIONAL_NOTIFY_OPTIONS,
   UI_THEME_OPTIONS,
+  apiErrorMessage,
+  buildDeleteAccountBody,
+  emailChangeNoteFromResult,
   emailChangeResentMessage,
-  emailChangeSentMessage,
   emailStatusLabel,
+  memberAccountFromUser,
   memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
+  prepareAccountUpdate,
+  prepareEmailChange,
+  preparePasswordChange,
   uiThemeSavedMessage,
-  validateMemberAccountName,
-  validateMemberEmailChange,
-  validateMemberPasswordChange,
 } from '../../../../shared/memberAccountSettings.js';
 import { BRAND } from '../../lib/brandColors.js';
 import { type LegalDocId } from '../auth/LegalDocumentScreen';
@@ -137,10 +141,7 @@ export default function MemberSettingsScreen({
         const data = await getMe();
         const user = data?.user || data;
         if (cancelled || !user) return;
-        setAccount({
-          name: user.name || '',
-          phone: user.phone || '',
-        });
+        setAccount(memberAccountFromUser(user));
         setUserMeta({
           email: user.email,
           emailVerified: Boolean(user.emailVerified),
@@ -190,21 +191,17 @@ export default function MemberSettingsScreen({
   async function saveAccount() {
     fail('account', '');
     note('account', '');
-    const name = account.name.trim();
-    const nameError = validateMemberAccountName(name);
-    if (nameError) {
-      fail('account', nameError);
+    const prepared = prepareAccountUpdate(account);
+    if (prepared.error) {
+      fail('account', prepared.error);
       return;
     }
     setBusy('account');
     try {
-      await updateMe({
-        name,
-        phone: account.phone.trim() || undefined,
-      });
+      await updateMe(prepared.payload);
       note('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
     } catch (err) {
-      fail('account', err instanceof Error ? err.message : 'Podaci nisu spremljeni.');
+      fail('account', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.accountSaveFailed));
     } finally {
       setBusy('');
     }
@@ -213,21 +210,20 @@ export default function MemberSettingsScreen({
   async function requestEmailChange() {
     fail('email', '');
     note('email', '');
-    const email = emailDraft.trim().toLowerCase();
-    const emailError = validateMemberEmailChange(email, userMeta.email);
-    if (emailError) {
-      fail('email', emailError);
+    const prepared = prepareEmailChange(emailDraft, userMeta.email);
+    if (prepared.error) {
+      fail('email', prepared.error);
       return;
     }
     setBusy('email');
     try {
-      const result = await updateMe({ email });
-      const pending = result?.user?.pendingEmail || email;
+      const result = await updateMe(prepared.payload);
+      const pending = result?.user?.pendingEmail || prepared.payload.email;
       setUserMeta((current) => ({ ...current, pendingEmail: pending }));
       setEmailDraft('');
-      note('email', emailChangeSentMessage(pending));
+      note('email', emailChangeNoteFromResult(result, prepared.payload.email));
     } catch (err) {
-      fail('email', err instanceof Error ? err.message : 'E-pošta nije ažurirana.');
+      fail('email', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.emailUpdateFailed));
     } finally {
       setBusy('');
     }
@@ -241,7 +237,7 @@ export default function MemberSettingsScreen({
       const result = await resendEmailChange();
       note('email', emailChangeResentMessage(result.pendingEmail));
     } catch {
-      fail('email', 'Ponovno slanje nije uspjelo.');
+      fail('email', MEMBER_SETTINGS_MESSAGES.emailResendFailed);
     } finally {
       setBusy('');
     }
@@ -256,7 +252,7 @@ export default function MemberSettingsScreen({
       });
       note('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
     } catch {
-      note('prefs', 'Obavijesti nisu spremljene.');
+      note('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaveFailed);
     } finally {
       setBusy('');
     }
@@ -265,22 +261,19 @@ export default function MemberSettingsScreen({
   async function savePassword() {
     fail('password', '');
     note('password', '');
-    const passwordError = validateMemberPasswordChange(password);
-    if (passwordError) {
-      fail('password', passwordError);
+    const prepared = preparePasswordChange(password);
+    if (prepared.error) {
+      fail('password', prepared.error);
       return;
     }
     setBusy('password');
     try {
-      const result = await changePassword({
-        currentPassword: password.currentPassword,
-        newPassword: password.newPassword,
-      });
+      const result = await changePassword(prepared.payload);
       if (result?.token) await setToken(result.token);
       setPassword({ currentPassword: '', newPassword: '', again: '' });
       note('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
     } catch (err) {
-      fail('password', err instanceof Error ? err.message : 'Lozinka nije promijenjena.');
+      fail('password', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.passwordChangeFailed));
     } finally {
       setBusy('');
     }
@@ -344,9 +337,9 @@ export default function MemberSettingsScreen({
         message: JSON.stringify(payload, null, 2),
         title: 'Blizari — izvoz podataka',
       });
-      note('privacy', 'Izvoz je spreman za dijeljenje.');
+      note('privacy', MEMBER_SETTINGS_MESSAGES.exportShared);
     } catch {
-      note('privacy', 'Izvoz nije uspio.');
+      note('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
     } finally {
       setBusy('');
     }
@@ -354,8 +347,8 @@ export default function MemberSettingsScreen({
 
   function onDeleteAccount() {
     Alert.alert(
-      'Brisanje računa',
-      'Račun će se deaktivirati i osobni podaci anonimizirati.',
+      MEMBER_SETTINGS_MESSAGES.deleteConfirmTitle,
+      MEMBER_SETTINGS_MESSAGES.deleteConfirmBody,
       [
         { text: 'Odustani', style: 'cancel' },
         {
@@ -367,13 +360,14 @@ export default function MemberSettingsScreen({
               note('delete', '');
               setBusy('delete');
               try {
-                const body = userMeta.hasPassword === false
-                  ? { confirm: deleteConfirm }
-                  : { password: deleteConfirm };
+                const body = buildDeleteAccountBody(
+                  userMeta.hasPassword !== false,
+                  deleteConfirm,
+                );
                 await deleteMyAccount(body);
                 onLogout?.();
               } catch (err) {
-                fail('delete', err instanceof Error ? err.message : 'Račun nije obrisan.');
+                fail('delete', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.deleteFailed));
               } finally {
                 setBusy('');
               }
@@ -421,7 +415,7 @@ export default function MemberSettingsScreen({
         <Text style={[styles.kicker, { color: colors.accent }]}>Blizari račun</Text>
         <Text style={[styles.title, { color: colors.title }]}>Postavke</Text>
         <Text style={[styles.lead, { color: colors.muted }]}>
-          Opće postavke pripadaju vašem Blizari računu i sinkroniziraju se između uređaja.
+          {MEMBER_SETTINGS_MESSAGES.leadShort}
         </Text>
 
         <View style={styles.sectionNav} accessibilityRole="tablist">
@@ -490,7 +484,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.cta, { backgroundColor: colors.ctaBg }, pressed && styles.pressed]}
             >
               <Text style={[styles.ctaLabel, { color: colors.ctaText }]}>
-                {busy === 'account' ? 'Spremamo…' : 'Spremi podatke'}
+                {busy === 'account' ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.saveAccount}
               </Text>
             </Pressable>
 
@@ -512,7 +506,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
             >
               <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
-                {busy === 'email' ? 'Šaljemo…' : 'Pošalji potvrdu'}
+                {busy === 'email' ? MEMBER_SETTINGS_ACTIONS.sending : MEMBER_SETTINGS_ACTIONS.sendEmailConfirm}
               </Text>
             </Pressable>
             {userMeta.pendingEmail ? (
@@ -521,7 +515,9 @@ export default function MemberSettingsScreen({
                 onPress={() => { void onResendEmail(); }}
                 style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
               >
-                <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>Pošalji ponovno</Text>
+                <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
+                  {MEMBER_SETTINGS_ACTIONS.resendEmail}
+                </Text>
               </Pressable>
             ) : null}
           </>
@@ -600,7 +596,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
             >
               <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
-                {busy === 'prefs' ? 'Spremamo…' : 'Spremi obavijesti'}
+                {busy === 'prefs' ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.savePrefs}
               </Text>
             </Pressable>
           </>
@@ -610,7 +606,7 @@ export default function MemberSettingsScreen({
           <>
             {userMeta.hasPassword === false ? (
               <Text style={[styles.prefHint, { color: colors.muted }]}>
-                Ovaj račun koristi Google prijavu — lozinka se ne postavlja ovdje.
+                {MEMBER_SETTINGS_MESSAGES.googleAuthNoPassword}
               </Text>
             ) : (
               <>
@@ -646,7 +642,7 @@ export default function MemberSettingsScreen({
                   style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
                 >
                   <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
-                    {busy === 'password' ? 'Spremamo…' : 'Promijeni lozinku'}
+                    {busy === 'password' ? MEMBER_SETTINGS_ACTIONS.saving : MEMBER_SETTINGS_ACTIONS.changePassword}
                   </Text>
                 </Pressable>
               </>
@@ -657,7 +653,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
             >
               <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
-                {busy === 'logout' ? 'Odjavljujemo…' : 'Odjava sa svih uređaja'}
+                {busy === 'logout' ? MEMBER_SETTINGS_ACTIONS.loggingOut : MEMBER_SETTINGS_ACTIONS.logoutAll}
               </Text>
             </Pressable>
           </>
@@ -690,7 +686,7 @@ export default function MemberSettingsScreen({
                 style={({ pressed }) => [styles.cta, { backgroundColor: colors.ctaBg }, pressed && styles.pressed]}
               >
                 <Text style={[styles.ctaLabel, { color: colors.ctaText }]}>
-                  {busy === 'consent' ? 'Spremamo…' : 'Prihvatite privolu'}
+                  {busy === 'consent' ? MEMBER_SETTINGS_ACTIONS.saving : 'Prihvatite privolu'}
                 </Text>
               </Pressable>
             )}
@@ -700,7 +696,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.ctaGhost, { borderColor: colors.border }, pressed && styles.pressed]}
             >
               <Text style={[styles.ctaGhostLabel, { color: colors.title }]}>
-                {busy === 'export' ? 'Pripremamo…' : 'Izvezi osobne podatke'}
+                {busy === 'export' ? MEMBER_SETTINGS_ACTIONS.preparing : MEMBER_SETTINGS_ACTIONS.exportData}
               </Text>
             </Pressable>
             {notes.privacy ? <Text style={[styles.note, { color: colors.accent }]}>{notes.privacy}</Text> : null}
@@ -723,7 +719,7 @@ export default function MemberSettingsScreen({
               style={({ pressed }) => [styles.dangerBtn, pressed && styles.pressed]}
             >
               <Text style={styles.dangerLabel}>
-                {busy === 'delete' ? 'Brišemo…' : 'Obriši račun'}
+                {busy === 'delete' ? MEMBER_SETTINGS_ACTIONS.deleting : MEMBER_SETTINGS_ACTIONS.deleteAccount}
               </Text>
             </Pressable>
           </>

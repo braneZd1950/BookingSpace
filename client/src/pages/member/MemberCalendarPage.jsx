@@ -6,9 +6,11 @@ import {
   CALENDAR_LEVEL_ORDER,
   CALENDAR_WEEKDAY_SHORT,
   MEMBER_CALENDAR_COPY,
+  formatOccupancySlotMeta,
+  formatOccupancySlotTime,
+  listActiveTenantServices,
   occupancyDaySubtitle,
   occupancySlotBadge,
-  occupancySlotStatusLabel,
   resolveOccupancyDayLevel,
 } from '../../../../shared/memberCalendarUi.js';
 import { monthCells, monthLabel, toDateKey } from '../owner/studioTime.js';
@@ -58,16 +60,10 @@ export default function MemberCalendarPage() {
 
   const selectedDay = byDate.get(selected) || null;
   // Prefer studio services from layout so filter chips stay after picking one.
-  const services = useMemo(() => {
-    const fromTenant = (tenant?.services || [])
-      .filter((item) => item.active !== false)
-      .map((item) => ({ id: String(item.id), name: item.name }));
-    if (fromTenant.length) return fromTenant;
-    return (data?.services || []).map((item) => ({
-      id: String(item.id),
-      name: item.name,
-    }));
-  }, [tenant?.services, data?.services]);
+  const services = useMemo(
+    () => listActiveTenantServices(tenant?.services, data?.services),
+    [tenant?.services, data?.services],
+  );
   const bookTo = `/s/${slug}/termini`;
 
   return (
@@ -121,7 +117,7 @@ export default function MemberCalendarPage() {
             className={!serviceId ? 'is-on' : undefined}
             onClick={() => setServiceId('')}
           >
-            Sve usluge
+            {MEMBER_CALENDAR_COPY.filterAll}
           </button>
           {services.map((item) => {
             const id = String(item.id);
@@ -143,7 +139,7 @@ export default function MemberCalendarPage() {
       ) : null}
 
       {isError ? (
-        <p className="member-cal__error" role="alert">Kalendar se nije učitao.</p>
+        <p className="member-cal__error" role="alert">{MEMBER_CALENDAR_COPY.loadError}</p>
       ) : null}
 
       <div className="member-cal__week" aria-hidden="true">
@@ -181,7 +177,7 @@ export default function MemberCalendarPage() {
 
       <section className="member-cal__day" aria-label="Detalji dana">
         <header>
-          <p className="member-cal__kicker">Odabrani dan</p>
+          <p className="member-cal__kicker">{MEMBER_CALENDAR_COPY.selectedDay}</p>
           <h2>{formatSelectedDay(selected)}</h2>
           <p>{occupancyDaySubtitle(selectedDay)}</p>
         </header>
@@ -195,18 +191,9 @@ export default function MemberCalendarPage() {
             {(selectedDay.slots || []).map((slot) => (
               <li key={`${slot.serviceId}-${slot.startTime}`}>
                 <div>
-                  <strong>
-                    {slot.startTime}
-                    {slot.endTime ? ` – ${slot.endTime}` : ''}
-                  </strong>
+                  <strong>{formatOccupancySlotTime(slot)}</strong>
                   <span>{slot.serviceName || 'Termin'}</span>
-                  <em>
-                    {slot.booked}
-                    /
-                    {slot.capacity}
-                    {' · '}
-                    {occupancySlotStatusLabel(slot)}
-                  </em>
+                  <em>{formatOccupancySlotMeta(slot)}</em>
                 </div>
                 <b className={`is-${slot.level || 'free'}`}>
                   {occupancySlotBadge(slot)}
@@ -217,7 +204,7 @@ export default function MemberCalendarPage() {
         )}
 
         <Link className="member-cal__cta" to={bookTo}>
-          Rezerviraj termin
+          {MEMBER_CALENDAR_COPY.bookCta}
         </Link>
       </section>
     </main>

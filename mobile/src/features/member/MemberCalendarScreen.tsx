@@ -22,9 +22,13 @@ import { loadLabel } from '../../../../shared/calendarOccupancy.js';
 import {
   CALENDAR_WEEKDAY_SHORT,
   MEMBER_CALENDAR_COPY,
+  OCCUPANCY_CELL_COLORS,
+  formatOccupancySlotMeta,
+  formatOccupancySlotTime,
+  listActiveTenantServices,
   occupancyDaySubtitle,
+  occupancyLegendItems,
   occupancySlotBadge,
-  occupancySlotStatusLabel,
   resolveOccupancyDayLevel,
 } from '../../../../shared/memberCalendarUi.js';
 import MemberChrome from './memberChrome';
@@ -59,23 +63,8 @@ type OccupancyDay = {
   slots?: OccupancySlot[];
 };
 
-const LEGEND = [
-  { id: 'free', label: 'Slobodno', color: 'rgba(148, 163, 184, 0.18)' },
-  { id: 'low', label: 'Nisko', color: 'rgba(45, 212, 191, 0.28)' },
-  { id: 'mid', label: 'Srednje', color: 'rgba(96, 165, 250, 0.4)' },
-  { id: 'high', label: 'Visoko', color: 'rgba(251, 191, 36, 0.45)' },
-  { id: 'max', label: 'Puno', color: 'rgba(251, 113, 133, 0.5)' },
-  { id: 'closed', label: 'Zatvoreno', color: 'rgba(15, 23, 42, 0.55)' },
-];
-
-const CELL_COLORS: Record<string, string> = {
-  free: 'rgba(148, 163, 184, 0.14)',
-  low: 'rgba(45, 212, 191, 0.28)',
-  mid: 'rgba(96, 165, 250, 0.4)',
-  high: 'rgba(251, 191, 36, 0.45)',
-  max: 'rgba(251, 113, 133, 0.5)',
-  closed: 'rgba(15, 23, 42, 0.55)',
-};
+const LEGEND = occupancyLegendItems();
+const CELL_COLORS = OCCUPANCY_CELL_COLORS;
 
 function localOccupancyDays(year: number, month: number): OccupancyDay[] {
   if (!isLocalDesignMode()) return [];
@@ -159,19 +148,15 @@ export default function MemberCalendarScreen({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [usingLocal, setUsingLocal] = useState(false);
-  const services = useMemo(() => {
-    const fromTenant = (tenant?.services || [])
-      .filter((item: any) => item.active !== false)
-      .map((item: any) => ({ id: String(item.id), name: item.name }));
-    if (fromTenant.length) return fromTenant;
-    if (isLocalDesignMode()) {
-      return [
+  const services = useMemo(() => listActiveTenantServices(
+    tenant?.services,
+    isLocalDesignMode()
+      ? [
         { id: 'local-svc-1', name: 'Grupni termin' },
         { id: 'local-svc-2', name: 'Individualni termin' },
-      ];
-    }
-    return [];
-  }, [tenant?.services]);
+      ]
+      : [],
+  ), [tenant?.services]);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -224,7 +209,7 @@ export default function MemberCalendarScreen({
         setError('');
       } else {
         setDays([]);
-        setError('Kalendar se nije učitao. Pokušajte ponovo.');
+        setError(MEMBER_CALENDAR_COPY.loadErrorRetry);
       }
     } finally {
       setLoading(false);
@@ -305,7 +290,7 @@ export default function MemberCalendarScreen({
                   serviceFilter === 'all' && styles.filterLabelOn,
                 ]}
               >
-                Sve usluge
+                {MEMBER_CALENDAR_COPY.filterAll}
               </Text>
             </Pressable>
             {services.map((item) => {
@@ -391,14 +376,14 @@ export default function MemberCalendarScreen({
           ))}
         </View>
         <Text style={[styles.hint, { color: colors.muted }]}>
-          Dodirnite dan za termine. Broj je ukupan broj rezervacija tog dana.
+          {MEMBER_CALENDAR_COPY.gridHint}
         </Text>
       </MemberChrome>
 
       <StudioTopCurtain
         open={curtainOpen}
         onClose={() => setCurtainOpen(false)}
-        kicker="Odabrani dan"
+        kicker={MEMBER_CALENDAR_COPY.selectedDay}
         title={formatDay(new Date(`${selected}T12:00:00`))}
         subtitle={occupancyDaySubtitle(selectedDay)}
         footer={
@@ -413,7 +398,7 @@ export default function MemberCalendarScreen({
               }}
               style={styles.bookCta}
             >
-              <Text style={styles.bookCtaLabel}>Rezerviraj ovaj dan</Text>
+              <Text style={styles.bookCtaLabel}>{MEMBER_CALENDAR_COPY.bookDayCta}</Text>
             </Pressable>
           ) : null
         }
@@ -430,18 +415,9 @@ export default function MemberCalendarScreen({
           selectedSlots.map((slot) => (
             <View key={`${slot.serviceId}-${slot.startTime}`} style={styles.slotRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.slotTime}>
-                  {slot.startTime}
-                  {slot.endTime ? ` – ${slot.endTime}` : ''}
-                </Text>
+                <Text style={styles.slotTime}>{formatOccupancySlotTime(slot)}</Text>
                 <Text style={styles.slotName}>{slot.serviceName || 'Termin'}</Text>
-                <Text style={styles.slotMeta}>
-                  {slot.booked ?? 0}
-                  /
-                  {slot.capacity ?? '—'}
-                  {' · '}
-                  {occupancySlotStatusLabel(slot)}
-                </Text>
+                <Text style={styles.slotMeta}>{formatOccupancySlotMeta(slot)}</Text>
               </View>
               <View
                 style={[

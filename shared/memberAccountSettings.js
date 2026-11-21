@@ -107,7 +107,42 @@ export const MEMBER_SETTINGS_MESSAGES = {
   prefsSaved: 'Obavijesti su spremljene.',
   accountSaved: 'Osobni podaci su spremljeni.',
   passwordSaved: 'Lozinka je promijenjena.',
+  passwordSavedReauth: 'Lozinka je promijenjena — prijavite se ponovo.',
   themeLocalOnly: 'Tema ostaje lokalno — nije spremljena na račun.',
+  accountSaveFailed: 'Podaci nisu spremljeni.',
+  emailUpdateFailed: 'E-pošta nije ažurirana.',
+  emailResendFailed: 'Ponovno slanje nije uspjelo.',
+  emailChangeRequested: 'Zahtjev za promjenu e-pošte je poslan.',
+  prefsSaveFailed: 'Obavijesti nisu spremljene. Pokušajte ponovno.',
+  passwordChangeFailed: 'Lozinka nije promijenjena.',
+  logoutAllSuccess: 'Odjavljeni ste sa svih uređaja.',
+  exportFailed: 'Izvoz nije uspio.',
+  exportDownloaded: 'Izvoz je preuzet.',
+  exportShared: 'Izvoz je spreman za dijeljenje.',
+  deleteFailed: 'Račun nije obrisan.',
+  deleteSuccess: 'Račun je deaktiviran.',
+  deleteConfirmWeb: 'Trajno ćete deaktivirati Blizari račun. Nastaviti?',
+  deleteConfirmTitle: 'Brisanje računa',
+  deleteConfirmBody: 'Račun će se deaktivirati i osobni podaci anonimizirati.',
+  googleAuthNoPassword: 'Račun je povezan preko Googlea — lozinka se ne postavlja ovdje.',
+  lead: 'Opće postavke pripadaju vašem Blizari računu i sinkroniziraju se između uređaja. Članarine i rezervacije ostaju u studiju.',
+  leadShort: 'Opće postavke pripadaju vašem Blizari računu i sinkroniziraju se između uređaja.',
+};
+
+export const MEMBER_SETTINGS_ACTIONS = {
+  saving: 'Spremamo…',
+  sending: 'Šaljemo…',
+  preparing: 'Pripremamo…',
+  deleting: 'Brišemo…',
+  loggingOut: 'Odjavljujemo…',
+  saveAccount: 'Spremi podatke',
+  savePrefs: 'Spremi obavijesti',
+  changePassword: 'Promijeni lozinku',
+  sendEmailConfirm: 'Pošalji potvrdu',
+  resendEmail: 'Pošalji ponovno',
+  logoutAll: 'Odjava sa svih uređaja',
+  exportData: 'Izvezi osobne podatke',
+  deleteAccount: 'Obriši račun',
 };
 
 export function memberNotificationPrefsPayload(prefs = {}) {
@@ -151,4 +186,57 @@ export function emailChangeSentMessage(pendingEmail) {
 
 export function emailChangeResentMessage(pendingEmail) {
   return `Ponovno smo poslali potvrdu na ${pendingEmail}.`;
+}
+
+export function memberAccountFromUser(user = {}) {
+  return {
+    name: user.name || '',
+    phone: user.phone || '',
+  };
+}
+
+export function prepareAccountUpdate(account = {}) {
+  const name = String(account.name || '').trim();
+  const error = validateMemberAccountName(name);
+  if (error) return { error };
+  return {
+    payload: {
+      name,
+      phone: String(account.phone || '').trim() || undefined,
+    },
+  };
+}
+
+export function prepareEmailChange(email, currentEmail) {
+  const next = String(email || '').trim().toLowerCase();
+  const error = validateMemberEmailChange(next, currentEmail);
+  if (error) return { error };
+  return { payload: { email: next } };
+}
+
+export function preparePasswordChange(password = {}) {
+  const error = validateMemberPasswordChange(password);
+  if (error) return { error };
+  return {
+    payload: {
+      currentPassword: password.currentPassword,
+      newPassword: password.newPassword,
+    },
+  };
+}
+
+export function emailChangeNoteFromResult(result, fallbackEmail) {
+  const pending = result?.user?.pendingEmail || fallbackEmail;
+  if (pending) return emailChangeSentMessage(pending);
+  return MEMBER_SETTINGS_MESSAGES.emailChangeRequested;
+}
+
+export function buildDeleteAccountBody(hasPassword, secret) {
+  return hasPassword
+    ? { password: secret }
+    : { confirm: secret };
+}
+
+export function apiErrorMessage(err, fallback) {
+  return err?.data?.message || err?.message || fallback;
 }
