@@ -2,10 +2,17 @@ import { useMemo, useState } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useGetTenantOccupancyQuery } from '../../api/bookingApi.js';
 import { loadLabel } from '../../../../shared/calendarOccupancy.js';
+import {
+  CALENDAR_LEVEL_ORDER,
+  CALENDAR_WEEKDAY_SHORT,
+  MEMBER_CALENDAR_COPY,
+  occupancyDaySubtitle,
+  occupancySlotBadge,
+  occupancySlotStatusLabel,
+  resolveOccupancyDayLevel,
+} from '../../../../shared/memberCalendarUi.js';
 import { monthCells, monthLabel, toDateKey } from '../owner/studioTime.js';
 import './MemberCalendarPage.scss';
-
-const WEEK = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
 
 function formatSelectedDay(key) {
   const date = new Date(`${key}T12:00:00`);
@@ -140,7 +147,7 @@ export default function MemberCalendarPage() {
       ) : null}
 
       <div className="member-cal__week" aria-hidden="true">
-        {WEEK.map((label) => <span key={label}>{label}</span>)}
+        {CALENDAR_WEEKDAY_SHORT.map((label) => <span key={label}>{label}</span>)}
       </div>
 
       <div className={`member-cal__grid${isFetching ? ' is-loading' : ''}`} role="grid">
@@ -148,7 +155,7 @@ export default function MemberCalendarPage() {
           if (!cell) return <span key={`e-${index}`} className="member-cal__empty" />;
           const key = toDateKey(cell);
           const day = byDate.get(key);
-          const level = day?.open === false ? 'closed' : (day?.level || 'free');
+          const level = resolveOccupancyDayLevel(day);
           return (
             <button
               key={key}
@@ -164,7 +171,7 @@ export default function MemberCalendarPage() {
       </div>
 
       <ul className="member-cal__legend">
-        {['free', 'low', 'mid', 'high', 'max', 'closed'].map((level) => (
+        {CALENDAR_LEVEL_ORDER.map((level) => (
           <li key={level}>
             <i className={`is-${level}`} />
             {loadLabel(level)}
@@ -176,47 +183,36 @@ export default function MemberCalendarPage() {
         <header>
           <p className="member-cal__kicker">Odabrani dan</p>
           <h2>{formatSelectedDay(selected)}</h2>
-          <p>
-            {!selectedDay
-              ? 'Nema podataka'
-              : selectedDay.open === false
-                ? 'Zatvoreno'
-                : selectedDay.label || 'Zauzetost'}
-          </p>
+          <p>{occupancyDaySubtitle(selectedDay)}</p>
         </header>
 
         {selectedDay?.open === false ? (
-          <p className="member-cal__hint">Poslovanje je zatvoreno ovog dana.</p>
+          <p className="member-cal__hint">{MEMBER_CALENDAR_COPY.closedDay}</p>
         ) : !(selectedDay?.slots || []).length ? (
-          <p className="member-cal__hint">
-            Još nema rezervacija — dan izgleda slobodan.
-          </p>
+          <p className="member-cal__hint">{MEMBER_CALENDAR_COPY.emptyDay}</p>
         ) : (
           <ul className="member-cal__slots">
-            {(selectedDay.slots || []).map((slot) => {
-              const full = slot.status === 'FULL' || slot.remaining <= 0;
-              return (
-                <li key={`${slot.serviceId}-${slot.startTime}`}>
-                  <div>
-                    <strong>
-                      {slot.startTime}
-                      {slot.endTime ? ` – ${slot.endTime}` : ''}
-                    </strong>
-                    <span>{slot.serviceName || 'Termin'}</span>
-                    <em>
-                      {slot.booked}
-                      /
-                      {slot.capacity}
-                      {' · '}
-                      {slot.label || (full ? 'Puno' : 'Slobodno')}
-                    </em>
-                  </div>
-                  <b className={`is-${slot.level || 'free'}`}>
-                    {full ? 'Puno' : `${slot.remaining} slob.`}
-                  </b>
-                </li>
-              );
-            })}
+            {(selectedDay.slots || []).map((slot) => (
+              <li key={`${slot.serviceId}-${slot.startTime}`}>
+                <div>
+                  <strong>
+                    {slot.startTime}
+                    {slot.endTime ? ` – ${slot.endTime}` : ''}
+                  </strong>
+                  <span>{slot.serviceName || 'Termin'}</span>
+                  <em>
+                    {slot.booked}
+                    /
+                    {slot.capacity}
+                    {' · '}
+                    {occupancySlotStatusLabel(slot)}
+                  </em>
+                </div>
+                <b className={`is-${slot.level || 'free'}`}>
+                  {occupancySlotBadge(slot)}
+                </b>
+              </li>
+            ))}
           </ul>
         )}
 

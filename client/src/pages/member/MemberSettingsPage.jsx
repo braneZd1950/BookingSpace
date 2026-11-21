@@ -18,10 +18,18 @@ import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import {
   ACCOUNT_SETTINGS_SECTIONS,
   LEGAL_LINKS,
+  MEMBER_SETTINGS_MESSAGES,
   OPERATIONAL_NOTIFY_OPTIONS,
   PROMOTIONAL_NOTIFY_OPTIONS,
+  emailChangeResentMessage,
+  emailChangeSentMessage,
   emailStatusLabel,
+  memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
+  uiThemeSavedMessage,
+  validateMemberAccountName,
+  validateMemberEmailChange,
+  validateMemberPasswordChange,
 } from '../../../../shared/memberAccountSettings.js';
 import './MemberSettingsPage.scss';
 
@@ -88,8 +96,9 @@ export default function MemberSettingsPage() {
     setError('account', '');
     setNote('account', '');
     const name = account.name.trim();
-    if (!name) {
-      setError('account', 'Ime i prezime su obavezni.');
+    const nameError = validateMemberAccountName(name);
+    if (nameError) {
+      setError('account', nameError);
       return;
     }
     try {
@@ -97,7 +106,7 @@ export default function MemberSettingsPage() {
         name,
         phone: account.phone.trim() || undefined,
       }).unwrap();
-      setNote('account', 'Osobni podaci su spremljeni.');
+      setNote('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
     } catch (err) {
       setError('account', err?.data?.message || 'Podaci nisu spremljeni.');
     }
@@ -108,8 +117,9 @@ export default function MemberSettingsPage() {
     setError('email', '');
     setNote('email', '');
     const email = emailDraft.trim().toLowerCase();
-    if (!email || email === user?.email) {
-      setError('email', 'Unesite novu e-poštu različitu od trenutne.');
+    const emailError = validateMemberEmailChange(email, user?.email);
+    if (emailError) {
+      setError('email', emailError);
       return;
     }
     try {
@@ -118,7 +128,7 @@ export default function MemberSettingsPage() {
       setNote(
         'email',
         result?.user?.pendingEmail
-          ? `Poslali smo potvrdu na ${result.user.pendingEmail}.`
+          ? emailChangeSentMessage(result.user.pendingEmail)
           : 'Zahtjev za promjenu e-pošte je poslan.',
       );
     } catch (err) {
@@ -131,7 +141,7 @@ export default function MemberSettingsPage() {
     setNote('email', '');
     try {
       const result = await resendEmail().unwrap();
-      setNote('email', `Ponovno smo poslali potvrdu na ${result.pendingEmail}.`);
+      setNote('email', emailChangeResentMessage(result.pendingEmail));
     } catch {
       setError('email', 'Ponovno slanje nije uspjelo.');
     }
@@ -144,13 +154,9 @@ export default function MemberSettingsPage() {
     setNote('theme', '');
     try {
       await updateMe({ uiTheme: value }).unwrap();
-      setNote('theme', value === 'dark'
-        ? 'Tamna tema je spremljena na račun.'
-        : value === 'light'
-          ? 'Svijetla tema je spremljena na račun.'
-          : 'Tema uređaja je spremljena na račun.');
+      setNote('theme', uiThemeSavedMessage(value));
     } catch {
-      setNote('theme', 'Tema ostaje lokalno — nije spremljena na račun.');
+      setNote('theme', MEMBER_SETTINGS_MESSAGES.themeLocalOnly);
     }
   }
 
@@ -159,15 +165,9 @@ export default function MemberSettingsPage() {
     setNote('prefs', '');
     try {
       await updateMe({
-        notificationPrefs: {
-          bookingEmail: Boolean(prefs.bookingEmail),
-          cancelEmail: Boolean(prefs.cancelEmail),
-          marketingStudio: Boolean(prefs.marketingStudio),
-          marketingPlatform: Boolean(prefs.marketingPlatform),
-          marketing: Boolean(prefs.marketingStudio),
-        },
+        notificationPrefs: memberNotificationPrefsPayload(prefs),
       }).unwrap();
-      setNote('prefs', 'Obavijesti su spremljene.');
+      setNote('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
     } catch {
       setNote('prefs', 'Obavijesti nisu spremljene. Pokušajte ponovno.');
     }
@@ -177,12 +177,9 @@ export default function MemberSettingsPage() {
     event.preventDefault();
     setError('password', '');
     setNote('password', '');
-    if (password.newPassword.length < 8) {
-      setError('password', 'Nova lozinka mora imati barem 8 znakova.');
-      return;
-    }
-    if (password.newPassword !== password.again) {
-      setError('password', 'Nova lozinka i ponavljanje se ne podudaraju.');
+    const passwordError = validateMemberPasswordChange(password);
+    if (passwordError) {
+      setError('password', passwordError);
       return;
     }
     try {
@@ -199,7 +196,7 @@ export default function MemberSettingsPage() {
         return;
       }
       setPassword({ currentPassword: '', newPassword: '', again: '' });
-      setNote('password', 'Lozinka je promijenjena.');
+      setNote('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
     } catch (err) {
       setError('password', err?.data?.message || 'Lozinka nije promijenjena.');
     }

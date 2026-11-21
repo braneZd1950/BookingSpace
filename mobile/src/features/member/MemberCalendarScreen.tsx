@@ -19,6 +19,14 @@ import {
   toDateKey,
 } from '../studio/studioTime.js';
 import { loadLabel } from '../../../../shared/calendarOccupancy.js';
+import {
+  CALENDAR_WEEKDAY_SHORT,
+  MEMBER_CALENDAR_COPY,
+  occupancyDaySubtitle,
+  occupancySlotBadge,
+  occupancySlotStatusLabel,
+  resolveOccupancyDayLevel,
+} from '../../../../shared/memberCalendarUi.js';
 import MemberChrome from './memberChrome';
 
 type MemberCalendarScreenProps = {
@@ -50,8 +58,6 @@ type OccupancyDay = {
   bookingCount?: number;
   slots?: OccupancySlot[];
 };
-
-const WEEK = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
 
 const LEGEND = [
   { id: 'free', label: 'Slobodno', color: 'rgba(148, 163, 184, 0.18)' },
@@ -331,7 +337,7 @@ export default function MemberCalendarScreen({
         ) : null}
 
         <View style={styles.weekRow}>
-          {WEEK.map((label) => (
+          {CALENDAR_WEEKDAY_SHORT.map((label) => (
             <Text key={label} style={[styles.weekLabel, { color: colors.muted }]}>
               {label}
             </Text>
@@ -348,7 +354,7 @@ export default function MemberCalendarScreen({
               }
               const key = toDateKey(cell);
               const day = byDate.get(key);
-              const level = day?.open === false ? 'closed' : (day?.level || 'free');
+              const level = resolveOccupancyDayLevel(day);
               const selectedOn = key === selected && curtainOpen;
               return (
                 <Pressable
@@ -394,13 +400,7 @@ export default function MemberCalendarScreen({
         onClose={() => setCurtainOpen(false)}
         kicker="Odabrani dan"
         title={formatDay(new Date(`${selected}T12:00:00`))}
-        subtitle={
-          !selectedDay
-            ? 'Nema podataka'
-            : selectedDay.open === false
-              ? 'Zatvoreno'
-              : selectedDay.label || 'Zauzetost'
-        }
+        subtitle={occupancyDaySubtitle(selectedDay)}
         footer={
           onBookDate ? (
             <Pressable
@@ -419,43 +419,42 @@ export default function MemberCalendarScreen({
         }
       >
         {selectedDay?.open === false ? (
-          <Text style={styles.curtainEmpty}>Poslovanje je zatvoreno ovog dana.</Text>
+          <Text style={styles.curtainEmpty}>{MEMBER_CALENDAR_COPY.closedDay}</Text>
         ) : selectedSlots.length === 0 ? (
           <Text style={styles.curtainEmpty}>
-            Još nema rezervacija — dan izgleda slobodan. Možete rezervirati termin.
+            {MEMBER_CALENDAR_COPY.emptyDay}
+            {' '}
+            Možete rezervirati termin.
           </Text>
         ) : (
-          selectedSlots.map((slot) => {
-            const full = slot.status === 'FULL' || (slot.remaining ?? 1) <= 0;
-            return (
-              <View key={`${slot.serviceId}-${slot.startTime}`} style={styles.slotRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.slotTime}>
-                    {slot.startTime}
-                    {slot.endTime ? ` – ${slot.endTime}` : ''}
-                  </Text>
-                  <Text style={styles.slotName}>{slot.serviceName || 'Termin'}</Text>
-                  <Text style={styles.slotMeta}>
-                    {slot.booked ?? 0}
-                    /
-                    {slot.capacity ?? '—'}
-                    {' · '}
-                    {slot.label || (full ? 'Puno' : 'Slobodno')}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.slotBadge,
-                    { backgroundColor: CELL_COLORS[slot.level || 'free'] || CELL_COLORS.free },
-                  ]}
-                >
-                  <Text style={styles.slotBadgeLabel}>
-                    {full ? 'Puno' : `${slot.remaining ?? 0} slob.`}
-                  </Text>
-                </View>
+          selectedSlots.map((slot) => (
+            <View key={`${slot.serviceId}-${slot.startTime}`} style={styles.slotRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.slotTime}>
+                  {slot.startTime}
+                  {slot.endTime ? ` – ${slot.endTime}` : ''}
+                </Text>
+                <Text style={styles.slotName}>{slot.serviceName || 'Termin'}</Text>
+                <Text style={styles.slotMeta}>
+                  {slot.booked ?? 0}
+                  /
+                  {slot.capacity ?? '—'}
+                  {' · '}
+                  {occupancySlotStatusLabel(slot)}
+                </Text>
               </View>
-            );
-          })
+              <View
+                style={[
+                  styles.slotBadge,
+                  { backgroundColor: CELL_COLORS[slot.level || 'free'] || CELL_COLORS.free },
+                ]}
+              >
+                <Text style={styles.slotBadgeLabel}>
+                  {occupancySlotBadge(slot)}
+                </Text>
+              </View>
+            </View>
+          ))
         )}
       </StudioTopCurtain>
     </>

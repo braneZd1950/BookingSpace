@@ -88,3 +88,67 @@ export function emailStatusLabel({ emailVerified, pendingEmail } = {}) {
   if (emailVerified) return 'E-pošta je potvrđena';
   return 'E-pošta nije potvrđena';
 }
+
+export const UI_THEME_OPTIONS = [
+  { value: 'light', label: 'Svijetla', hint: 'Uvijek svijetlo' },
+  { value: 'dark', label: 'Tamna', hint: 'Uvijek tamno' },
+  {
+    value: 'system',
+    label: 'Prema uređaju',
+    hint: 'Prati postavku telefona ili računala',
+  },
+];
+
+export const MEMBER_SETTINGS_MESSAGES = {
+  nameRequired: 'Ime i prezime su obavezni.',
+  emailUnchanged: 'Unesite novu e-poštu različitu od trenutne.',
+  passwordTooShort: 'Nova lozinka mora imati barem 8 znakova.',
+  passwordMismatch: 'Nova lozinka i ponavljanje se ne podudaraju.',
+  prefsSaved: 'Obavijesti su spremljene.',
+  accountSaved: 'Osobni podaci su spremljeni.',
+  passwordSaved: 'Lozinka je promijenjena.',
+  themeLocalOnly: 'Tema ostaje lokalno — nije spremljena na račun.',
+};
+
+export function memberNotificationPrefsPayload(prefs = {}) {
+  return {
+    bookingEmail: Boolean(prefs.bookingEmail),
+    cancelEmail: Boolean(prefs.cancelEmail),
+    marketingStudio: Boolean(prefs.marketingStudio),
+    marketingPlatform: Boolean(prefs.marketingPlatform),
+    marketing: Boolean(prefs.marketingStudio),
+  };
+}
+
+export function validateMemberAccountName(name) {
+  if (!String(name || '').trim()) return MEMBER_SETTINGS_MESSAGES.nameRequired;
+  return '';
+}
+
+export function validateMemberEmailChange(email, currentEmail) {
+  const next = String(email || '').trim().toLowerCase();
+  if (!next || next === String(currentEmail || '').trim().toLowerCase()) {
+    return MEMBER_SETTINGS_MESSAGES.emailUnchanged;
+  }
+  return '';
+}
+
+export function validateMemberPasswordChange({ newPassword = '', again = '' } = {}) {
+  if (String(newPassword).length < 8) return MEMBER_SETTINGS_MESSAGES.passwordTooShort;
+  if (newPassword !== again) return MEMBER_SETTINGS_MESSAGES.passwordMismatch;
+  return '';
+}
+
+export function uiThemeSavedMessage(theme) {
+  if (theme === 'dark') return 'Tamna tema je spremljena na račun.';
+  if (theme === 'light') return 'Svijetla tema je spremljena na račun.';
+  return 'Tema uređaja je spremljena na račun.';
+}
+
+export function emailChangeSentMessage(pendingEmail) {
+  return `Poslali smo potvrdu na ${pendingEmail}.`;
+}
+
+export function emailChangeResentMessage(pendingEmail) {
+  return `Ponovno smo poslali potvrdu na ${pendingEmail}.`;
+}

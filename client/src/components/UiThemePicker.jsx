@@ -1,14 +1,7 @@
+import { UI_THEME_OPTIONS } from '../../../shared/memberAccountSettings.js';
 import './UiThemePicker.scss';
 
-const OPTIONS = [
-  { value: 'light', label: 'Svijetla', hint: 'Uvijek svijetlo' },
-  { value: 'dark', label: 'Tamna', hint: 'Uvijek tamno' },
-  {
-    value: 'system',
-    label: 'Prema sustavu',
-    hint: 'Prati postavku vašeg telefona ili računala',
-  },
-];
+const OPTIONS = UI_THEME_OPTIONS;
 
 export default function UiThemePicker({
   value = 'system',

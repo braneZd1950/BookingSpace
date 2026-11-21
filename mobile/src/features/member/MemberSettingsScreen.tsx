@@ -36,10 +36,19 @@ import {
 import {
   ACCOUNT_SETTINGS_SECTIONS,
   LEGAL_LINKS,
+  MEMBER_SETTINGS_MESSAGES,
   OPERATIONAL_NOTIFY_OPTIONS,
   PROMOTIONAL_NOTIFY_OPTIONS,
+  UI_THEME_OPTIONS,
+  emailChangeResentMessage,
+  emailChangeSentMessage,
   emailStatusLabel,
+  memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
+  uiThemeSavedMessage,
+  validateMemberAccountName,
+  validateMemberEmailChange,
+  validateMemberPasswordChange,
 } from '../../../../shared/memberAccountSettings.js';
 import { BRAND } from '../../lib/brandColors.js';
 import { type LegalDocId } from '../auth/LegalDocumentScreen';
@@ -61,16 +70,6 @@ type MemberSettingsScreenProps = {
 };
 
 type SectionId = (typeof ACCOUNT_SETTINGS_SECTIONS)[number]['id'];
-
-const THEME_OPTIONS = [
-  { value: 'light', label: 'Svijetla', hint: 'Uvijek svijetlo' },
-  { value: 'dark', label: 'Tamna', hint: 'Uvijek tamno' },
-  {
-    value: 'system',
-    label: 'Prema uređaju',
-    hint: 'Prati postavku telefona ili računala',
-  },
-];
 
 export default function MemberSettingsScreen({
   tenantName,
@@ -182,16 +181,9 @@ export default function MemberSettingsScreen({
     note('theme', '');
     try {
       await updateMe({ uiTheme: next });
-      note(
-        'theme',
-        next === 'dark'
-          ? 'Tamna tema je spremljena na račun.'
-          : next === 'light'
-            ? 'Svijetla tema je spremljena na račun.'
-            : 'Tema uređaja je spremljena na račun.',
-      );
+      note('theme', uiThemeSavedMessage(next));
     } catch {
-      note('theme', 'Tema ostaje lokalno — nije spremljena na račun.');
+      note('theme', MEMBER_SETTINGS_MESSAGES.themeLocalOnly);
     }
   }
 
@@ -199,8 +191,9 @@ export default function MemberSettingsScreen({
     fail('account', '');
     note('account', '');
     const name = account.name.trim();
-    if (!name) {
-      fail('account', 'Ime i prezime su obavezni.');
+    const nameError = validateMemberAccountName(name);
+    if (nameError) {
+      fail('account', nameError);
       return;
     }
     setBusy('account');
@@ -209,7 +202,7 @@ export default function MemberSettingsScreen({
         name,
         phone: account.phone.trim() || undefined,
       });
-      note('account', 'Osobni podaci su spremljeni.');
+      note('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
     } catch (err) {
       fail('account', err instanceof Error ? err.message : 'Podaci nisu spremljeni.');
     } finally {
@@ -221,8 +214,9 @@ export default function MemberSettingsScreen({
     fail('email', '');
     note('email', '');
     const email = emailDraft.trim().toLowerCase();
-    if (!email || email === userMeta.email) {
-      fail('email', 'Unesite novu e-poštu različitu od trenutne.');
+    const emailError = validateMemberEmailChange(email, userMeta.email);
+    if (emailError) {
+      fail('email', emailError);
       return;
     }
     setBusy('email');
@@ -231,7 +225,7 @@ export default function MemberSettingsScreen({
       const pending = result?.user?.pendingEmail || email;
       setUserMeta((current) => ({ ...current, pendingEmail: pending }));
       setEmailDraft('');
-      note('email', `Poslali smo potvrdu na ${pending}.`);
+      note('email', emailChangeSentMessage(pending));
     } catch (err) {
       fail('email', err instanceof Error ? err.message : 'E-pošta nije ažurirana.');
     } finally {
@@ -245,7 +239,7 @@ export default function MemberSettingsScreen({
     setBusy('email');
     try {
       const result = await resendEmailChange();
-      note('email', `Ponovno smo poslali potvrdu na ${result.pendingEmail}.`);
+      note('email', emailChangeResentMessage(result.pendingEmail));
     } catch {
       fail('email', 'Ponovno slanje nije uspjelo.');
     } finally {
@@ -258,15 +252,9 @@ export default function MemberSettingsScreen({
     setBusy('prefs');
     try {
       await updateMe({
-        notificationPrefs: {
-          bookingEmail: Boolean(prefs.bookingEmail),
-          cancelEmail: Boolean(prefs.cancelEmail),
-          marketingStudio: Boolean(prefs.marketingStudio),
-          marketingPlatform: Boolean(prefs.marketingPlatform),
-          marketing: Boolean(prefs.marketingStudio),
-        },
+        notificationPrefs: memberNotificationPrefsPayload(prefs),
       });
-      note('prefs', 'Obavijesti su spremljene.');
+      note('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
     } catch {
       note('prefs', 'Obavijesti nisu spremljene.');
     } finally {
@@ -277,12 +265,9 @@ export default function MemberSettingsScreen({
   async function savePassword() {
     fail('password', '');
     note('password', '');
-    if (password.newPassword.length < 8) {
-      fail('password', 'Nova lozinka mora imati barem 8 znakova.');
-      return;
-    }
-    if (password.newPassword !== password.again) {
-      fail('password', 'Nova lozinka i ponavljanje se ne podudaraju.');
+    const passwordError = validateMemberPasswordChange(password);
+    if (passwordError) {
+      fail('password', passwordError);
       return;
     }
     setBusy('password');
@@ -293,7 +278,7 @@ export default function MemberSettingsScreen({
       });
       if (result?.token) await setToken(result.token);
       setPassword({ currentPassword: '', newPassword: '', again: '' });
-      note('password', 'Lozinka je promijenjena.');
+      note('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
     } catch (err) {
       fail('password', err instanceof Error ? err.message : 'Lozinka nije promijenjena.');
     } finally {
@@ -545,7 +530,7 @@ export default function MemberSettingsScreen({
         {section === 'izgled' ? (
           <>
             <View style={styles.themeList}>
-              {THEME_OPTIONS.map((option) => {
+              {UI_THEME_OPTIONS.map((option) => {
                 const on = theme === option.value;
                 return (
                   <Pressable
