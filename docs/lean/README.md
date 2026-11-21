@@ -2,7 +2,8 @@
 
 Indeks: [../README.md](../README.md) · Status: [../16-current-status.md](../16-current-status.md)
 
-**Build → Measure → Learn.** Faze 1–4 su u proizvodu. Faza 5 (blagajna UI) je glavni preostali fokus.
+**Build → Measure → Learn.** Faze 1–4 su u proizvodu (demo/pilot).  
+**Faza 5 (blagajna UI) nije dio ovog dema** — API postoji, UI čeka nakon potvrđenog booking pilota.
 
 Backend **nije zamrznut** — vidi [backend-status.md](backend-status.md). Preferiraj najmanju promjenu.
 
@@ -13,7 +14,7 @@ Backend **nije zamrznut** — vidi [backend-status.md](backend-status.md). Prefe
 | Ako… | Čitaj |
 | --- | --- |
 | Što je već gotovo | [../16-current-status.md](../16-current-status.md) |
-| Blagajna / naplata | [phase-05-frontend.md](phase-05-frontend.md) |
+| Blagajna / naplata (kasnije) | [phase-05-frontend.md](phase-05-frontend.md) |
 | Booking UI | [phase-02](phase-02-frontend.md) / [phase-03](phase-03-frontend.md) |
 | Javna stranica | [phase-04-frontend.md](phase-04-frontend.md) |
 | Diram `server/` | [backend-status.md](backend-status.md) + [../07-api-spec.md](../07-api-spec.md) |
@@ -28,7 +29,7 @@ Backend **nije zamrznut** — vidi [backend-status.md](backend-status.md). Prefe
 | 2 | Booking (vlasnik) | **Gotovo** |
 | 3 | Član rezervira sam | **Gotovo** |
 | 4 | Javna stranica | **Uglavnom** (DNS kasnije) |
-| 5 | Naplata i paketi | **Sljedeće** |
+| 5 | Naplata i paketi (blagajna UI) | **Van dema** — nakon pilota |
 
 Detalji: `phase-01` … `phase-05` u ovom folderu.
 
@@ -36,6 +37,6 @@ Detalji: `phase-01` … `phase-05` u ovom folderu.
 
 ## Namjerno kasnije
 
-Subdomena, waitlist, Stripe, marketplace, Online UI, igraonica/wellness modeli.
+Blagajna UI, Stripe, subdomena, waitlist, marketplace, Online UI, igraonica/wellness modeli.
 
-U app-u: `client/src/pages/owner/launchPhases.js` prati statuse. Ruta `/stranica/plan` trenutno nije montirana.
+U app-u: `client/src/pages/owner/launchPhases.js` prati statuse. Ruta `/stranica/plan` trenutno nije montirana (flag).

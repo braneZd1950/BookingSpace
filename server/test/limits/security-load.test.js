@@ -509,18 +509,23 @@ describe('load and page latency', () => {
 
 describe('auth flood (last — shares IP rate limiter)', () => {
   test('auth rate limit eventually trips', async () => {
-    const email = `lim-flood-${stamp}@example.com`;
-    let hit429 = false;
-    for (let i = 0; i < 25; i += 1) {
-      const res = await request('/api/auth/login', {
-        method: 'POST',
-        body: { email, password: 'Wrong-Pass-999!' },
-      });
-      if (res.status === 429) {
-        hit429 = true;
-        break;
+    process.env.FORCE_RATE_LIMIT = '1';
+    try {
+      const email = `lim-flood-${stamp}@example.com`;
+      let hit429 = false;
+      for (let i = 0; i < 25; i += 1) {
+        const res = await request('/api/auth/login', {
+          method: 'POST',
+          body: { email, password: 'Wrong-Pass-999!' },
+        });
+        if (res.status === 429) {
+          hit429 = true;
+          break;
+        }
       }
+      assert.equal(hit429, true, 'expected 429 after auth flood');
+    } finally {
+      delete process.env.FORCE_RATE_LIMIT;
     }
-    assert.equal(hit429, true, 'expected 429 after auth flood');
   });
 });

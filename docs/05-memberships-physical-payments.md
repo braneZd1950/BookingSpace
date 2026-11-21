@@ -2,13 +2,13 @@
 
 Indeks: [README.md](README.md) · Lean: [lean/phase-05-frontend.md](lean/phase-05-frontend.md)
 
-Članovi u UI-u: gotovo. Blagajna UI: još faza 5. API za uplate već postoji. Stripe **nije** u MVP-u.
+Članovi u UI-u: gotovo. Blagajna UI: **van demo/pilota** (faza 5 kasnije). API za uplate već postoji. Stripe **nije** u MVP-u.
 
 ---
 
 ## Cilj
 
-Član plati u studiju (gotovina / POS), a rezervira online u anyminutesu.
+Član plati u studiju (gotovina / POS), a rezervira online u Blizariju.
 
 ## Identiteti
 

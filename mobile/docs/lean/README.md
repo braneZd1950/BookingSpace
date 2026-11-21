@@ -3,7 +3,7 @@
 Indeks: [../README.md](../README.md) · Status: [../07-status.md](../07-status.md)
 
 Isti ritam kao web: **Build → Measure → Learn**.  
-Ne skači na M5 (store) dok M2 (član termini) ne radi na pravom uređaju.
+Za demo/pilot: **M1–M3 gotovi**. M4/M5 nisu uvjet za ovaj demo.
 
 ---
 
@@ -12,10 +12,10 @@ Ne skači na M5 (store) dok M2 (član termini) ne radi na pravom uređaju.
 | Ako… | Čitaj |
 | --- | --- |
 | Prvi put podižeš app | [../03-setup-expo.md](../03-setup-expo.md) + **M1** |
-| Radiš član book | **M2** |
-| Radiš vlasnika | **M3** |
-| Push / privola | **M4** |
-| Ideš u store | **M5** |
+| Član book | **M2** |
+| Vlasnik | **M3** |
+| Push / privola (kasnije) | **M4** |
+| Store (kasnije) | **M5** |
 
 ---
 
@@ -23,14 +23,14 @@ Ne skači na M5 (store) dok M2 (član termini) ne radi na pravom uređaju.
 
 | Faza | Naslov | Stanje | Done kad |
 | --- | --- | --- | --- |
-| M1 | Auth + shell | **Sljedeće** | Login, me, tabs član/vlasnik |
-| M2 | Član — termini | Planirano | Book + cancel na telefonu |
-| M3 | Vlasnik — operacije | Planirano | Termini + osnovni članovi |
-| M4 | Push + privola | Planirano | Consent + notifikacije |
-| M5 | Store | Planirano | TestFlight / Play internal |
+| M1 | Auth + shell | **Gotovo** | Login, me, tabs član/vlasnik |
+| M2 | Član — termini | **Gotovo** | Book + cancel na telefonu (+ kalendar / settings) |
+| M3 | Vlasnik — operacije | **Gotovo (pilot)** | Termini + osnovni članovi |
+| M4 | Push + privola | **Van dema** | Consent prefs djelomično; Expo push kasnije |
+| M5 | Store | **Djelomično** | EAS preview OK; internal track / Sentry kasnije |
 
 ---
 
 ## Namjerno kasnije
 
-Admin platforme, site wizard, Stripe, offline sync cijele baze, potpuni vizualni paritet s weba.
+Admin platforme, site wizard, Stripe, blagajna, offline sync cijele baze, potpuni vizualni paritet s weba.

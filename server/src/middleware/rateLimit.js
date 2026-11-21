@@ -11,14 +11,7 @@ export function createRateLimiter({
   message,
   keyByUser = false,
 }) {
-  // Ephemeral e2e / unit API: dense register matrices must not trip 429 noise.
-  if (process.env.NODE_ENV === 'test' || process.env.E2E_DISABLE_RATE_LIMIT === '1') {
-    return function skipRateLimit(req, res, next) {
-      next();
-    };
-  }
-
-  return rateLimit({
+  const limiter = rateLimit({
     windowMs,
     limit,
     standardHeaders: true,
@@ -35,4 +28,17 @@ export function createRateLimiter({
       next(new HttpError(429, message, { code: 'TOO_MANY_REQUESTS' }));
     },
   });
+
+  // Ephemeral e2e / unit API: dense matrices skip 429 noise by default.
+  // Limits flood can opt in per-request via FORCE_RATE_LIMIT=1.
+  return function maybeRateLimit(req, res, next) {
+    if (
+      process.env.FORCE_RATE_LIMIT !== '1'
+      && (process.env.NODE_ENV === 'test' || process.env.E2E_DISABLE_RATE_LIMIT === '1')
+    ) {
+      next();
+      return;
+    }
+    return limiter(req, res, next);
+  };
 }

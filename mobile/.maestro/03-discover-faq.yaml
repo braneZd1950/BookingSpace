@@ -8,16 +8,15 @@ tags:
 - tapOn: "Nastavite bez prijave"
 - assertVisible:
     text: ".*Otkrij.*|.*uslugu.*|.*mjesto.*|.*pretraž.*"
-- launchApp
+- launchApp:
+    clearState: true
+- assertVisible: "Blizari"
 - tapOn: "Česta pitanja"
 - assertVisible:
     text: ".*pitanj.*|.*FAQ.*|.*Odgovor.*|.*Česta.*"
-- launchApp
-- scrollUntilVisible:
-    element:
-      text: "O nama"
-    direction: DOWN
-    timeout: 10000
+- launchApp:
+    clearState: true
+- assertVisible: "Blizari"
+- assertVisible: "O nama"
 - tapOn: "O nama"
-- assertVisible:
-    text: "O nama"
+- assertVisible: "O nama"

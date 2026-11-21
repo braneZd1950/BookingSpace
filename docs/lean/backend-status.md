@@ -17,19 +17,20 @@ Staro „zamrznuti server” lean pravilo je **ukinuto**. Faze 1–3 i kasnije f
 
 ---
 
-## Što frontend već koristi
+## Što frontend / mobile već koristi
 
 | Domen | Tipično | Napomena |
 | --- | --- | --- |
-| Auth | register, login, me, lozinka… | Brevo SMTP |
-| Tenants | create, mine, public, site, images | `siteSettings` na tenant |
+| Auth | register, login, google, me, lozinka, email change, export, delete, logout-all | Brevo SMTP |
+| Tenants | create, mine, public, discover, site, images | `siteSettings` na tenant |
 | Services / availability | CRUD + slotovi | `PER_SLOT` / `CONCURRENT` |
 | Bookings | create, my, lista, cancel… | opcionalni `staffId` |
+| Occupancy | `GET …/occupancy` | javno, bez PII |
 | Memberships / plans | lista, create, suspend | kodovi `MEM-…` |
-| Payments | lista, zapis | blagajna UI tanka |
+| Payments | lista, zapis | **API OK; blagajna UI van pilota** |
 | Staff | lista, invite, suspend | treneri |
-| Online | katalog, CRUD | FE flag |
-| Push / Consent | VAPID, subscribe, consent | |
+| Online | katalog, CRUD | FE flag off |
+| Push / Consent | VAPID, subscribe, consent | Web Push; native Expo ≠ VAPID |
 | Analytics | platform + studio | ADMIN |
 
 ---
@@ -44,7 +45,9 @@ Staro „zamrznuti server” lean pravilo je **ukinuto**. Faze 1–3 i kasnije f
 | 2026-10-10 | Member | bookings/my bez naziva usluge | implementirano |
 | 2026-10-10 | Site | layout/paletteId | implementirano |
 | 2026-10-25 | Docs | Spec zaostajao | refresh statusa |
-| — | Faza 5 | Filteri / računi uplata | dokumentiraj prije širenja |
+| 2026-11-21 | Docs | Occupancy / account / mobile | usklađeno s kodom (pilot) |
+| — | Faza 5 | Blagajna UI | **van dema**; dokumentiraj prije širenja |
+| — | M4 | Native Expo push token | odgođeno nakon pilota |
 | — | Kasnije | Waitlist, hostname | odgođeno |
 
 ---
@@ -56,8 +59,10 @@ U `server/test/`:
 - `mvp-flow.test.js` — studio, članarina, booking, otkaz  
 - `studio-ops.test.js` — invite, trener, staff booking  
 - `platform-billing.test.js` — trial / paid / warn  
+- security + limits suite — vidi [../23-e2e-deep-security.md](../23-e2e-deep-security.md)
 
 ```bash
-npm test
-npm run test:ci
+npm run test:server
+npm run test:security
+npm run test:limits
 ```

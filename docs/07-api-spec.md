@@ -16,11 +16,17 @@ Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-stat
 | --- | --- | --- |
 | POST | `/auth/register` | Registracija (rate limit) |
 | POST | `/auth/login` | JWT |
+| POST | `/auth/google` | Google prijava |
 | POST | `/auth/forgot-password` | Reset mail |
 | POST | `/auth/reset-password` | Nova lozinka |
+| POST | `/auth/email/confirm` | Potvrda promjene e-pošte |
+| POST | `/auth/email/resend` | Ponovno slanje potvrde |
 | POST | `/auth/logout` | Odjava |
-| GET | `/auth/me` | Trenutni korisnik (+ `platformAdmin`) |
-| PATCH | `/auth/me` | Profil / obavijesti |
+| POST | `/auth/logout-all` | Odjava svih sesija (`tokenVersion`) |
+| GET | `/auth/me` | Trenutni korisnik (+ `platformAdmin`, prefs) |
+| GET | `/auth/me/export` | Izvoz osobnih podataka |
+| POST | `/auth/me/delete` | Brisanje računa |
+| PATCH | `/auth/me` | Profil / email change / `notificationPrefs` |
 | PATCH | `/auth/password` | Promjena lozinke |
 
 ## Studiji — `/tenants`
@@ -29,6 +35,7 @@ Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-stat
 | --- | --- | --- |
 | POST | `/tenants` | Novi studio + owner |
 | GET | `/tenants/mine` | Moji studiji |
+| GET | `/tenants/discover` | Javni popis studija |
 | GET | `/tenants/:slug/public` | Javna konfiguracija |
 | PATCH | `/tenants/:tenantId` | Profil / sati / billing |
 | PATCH | `/tenants/:tenantId/site` | Tema, layout, SEO |
@@ -54,6 +61,14 @@ Svaki slot: `startTime`, `endTime`, `capacity`, `booked`, `available`, `status`.
 | GET | `/tenants/:tenantId/bookings` | Kalendar studija |
 | PATCH | `…/cancel` · `…/complete` · `…/no-show` | Status |
 
+## Occupancy (javni kalendar zauzeća)
+
+| Metoda | Put | Svrha |
+| --- | --- | --- |
+| GET | `/tenants/:tenantId/occupancy` | Dnevni / slot summary **bez PII** (rate limited) |
+
+Koriste web + mobile member kalendar. Vraća razine zauzeća (npr. free / low / mid / high / full), ne imena članova.
+
 ## Planovi, članarine, uplate
 
 | Metoda | Put | Svrha |
@@ -63,7 +78,7 @@ Svaki slot: `startTime`, `endTime`, `capacity`, `booked`, `available`, `status`.
 | GET/POST | `/tenants/:tenantId/memberships` | Članarine |
 | GET | `/memberships/my` | Moje (uključuje slug) |
 | PATCH | `/memberships/:id/suspend` | Suspend |
-| POST/GET | `/tenants/:tenantId/payments` | Fizičke uplate |
+| POST/GET | `/tenants/:tenantId/payments` | Fizičke uplate (**API postoji; blagajna UI nije u pilotu**) |
 
 Metode uplate: `CASH`, `CARD_TERMINAL`, `BANK_TRANSFER`, `ONLINE` (bez Stripe gatewaysa).
 
@@ -97,10 +112,12 @@ Za svaki tenant endpoint: JWT korisnik + uloga u studiju + `tenantId` resursa mo
 
 **Nikad** ne prihvaćaj `tenantId` iz bodyja kao dokaz ovlasti.
 
-## Još nije u API-ju
+## Još nije u API-ju / van dema
 
 | Ideja | Stanje |
 | --- | --- |
 | Waitlist | Samo roadmap |
 | Hostname → tenant | Samo slug |
 | Stripe checkout | Odgođeno |
+| Blagajna UI | API uplata postoji; UI van pilota |
+| Native Expo push token | Web VAPID ≠ Expo; M4 kasnije |

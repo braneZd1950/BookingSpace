@@ -12,11 +12,11 @@ Indeks: [README.md](README.md) · Faze: [lean/README.md](lean/README.md) · Stat
 | 2. Booking (vlasnik) | [phase-02](lean/phase-02-frontend.md) | **Gotovo** |
 | 3. Self-book (član) | [phase-03](lean/phase-03-frontend.md) | **Gotovo** |
 | 4. Javna stranica | [phase-04](lean/phase-04-frontend.md) | **Uglavnom** |
-| 5. Naplata / blagajna | [phase-05](lean/phase-05-frontend.md) | **Sljedeće** |
+| 5. Naplata / blagajna | [phase-05](lean/phase-05-frontend.md) | **Van dema** |
 
 ---
 
-## Acceptance za tržišni pilot
+## Acceptance za demo / tržišni pilot
 
 Pilot je spreman za učenje kad:
 
@@ -25,11 +25,12 @@ Pilot je spreman za učenje kad:
 3. ✅ Dodaje / suspendira / obnavlja članove  
 4. ✅ Vidi Termini / Kalendar  
 5. ✅ Rezervira i otkazuje u app-u  
-6. ✅ Član sam rezervira / otkazuje  
-7. *(mjeriti)* Jedan pravi studio koristi članove + termine tjedan dana  
-8. *(faza 5)* Blagajna UI za fizičke uplate  
+6. ✅ Član sam rezervira / otkazuje (+ kalendar / postavke)  
+7. ✅ Mobile preview (član + vlasnik book/cancel)  
+8. *(mjeriti)* Jedan pravi studio koristi članove + termine tjedan dana  
+9. ~~Blagajna UI~~ — **nije uvjet dema** (faza 5 kasnije)  
 
-**Nije potrebno** za prvo učenje: pravi DNS, Stripe, marketplace, Online flag ON.
+**Nije potrebno** za prvo učenje: blagajna UI, pravi DNS, Stripe, marketplace, Online flag ON, native Expo push, javni store.
 
 ---
 

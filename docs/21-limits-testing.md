@@ -35,5 +35,8 @@ Suite je ranije ulovila race za overbooking; create booking sada re-checka kapac
 - Auth flood ide **zadnji**  
 - Latency budžeti su za lokalni Node — CI može biti sporiji  
 - Live produkcijski smoke: `npm run smoke` (ne ova suite)  
+- U `NODE_ENV=test` rate limiter je po defaultu **isključen** (brži unit/e2e). Limits flood test privremeno pali `FORCE_RATE_LIMIT=1` samo za taj case.  
+
+Kompletna matrica (unit / e2e / mobile): [23-e2e-deep-security.md](23-e2e-deep-security.md)
 
 Vezano: [20-production-launch.md](20-production-launch.md)

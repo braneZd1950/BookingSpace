@@ -1,8 +1,8 @@
-# Dokumentacija — anyminutes
+# Dokumentacija — Blizari
 
 Jednostavan indeks na hrvatskom. Počni od **što trebaš**, ne od broja datoteke.
 
-Brand u aplikaciji: **anyminutes** (repo može još zvati `bookingspace`).
+Brand u aplikaciji: **Blizari** (repo / Expo slug mogu još zvati `bookingspace` / `anyminutes`).
 
 ---
 
@@ -11,11 +11,12 @@ Brand u aplikaciji: **anyminutes** (repo može još zvati `bookingspace`).
 | Želim… | Idi ovdje |
 | --- | --- |
 | Pokrenuti lokalno | [Root README](../README.md#lokalno) → `npm run dev` |
-| Znati što je gotovo | [16 — Status](16-current-status.md) |
+| Znati što je gotovo (demo/pilot) | [16 — Status](16-current-status.md) |
 | Ići u produkciju | [20 — Go-live](20-production-launch.md) |
 | Postaviti Render env | [22 — Env checklist](22-render-env-checklist.md) |
 | Razumjeti Render | [17 — Deploy](17-render-deploy.md) |
-| Graditi **mobilnu** app (RN/Expo) | [../mobile/docs/README.md](../mobile/docs/README.md) |
+| Kompletno testiranje | [23 — E2E + security](23-e2e-deep-security.md) |
+| Mobilna app (RN/Expo) | [../mobile/docs/README.md](../mobile/docs/README.md) |
 
 ```bash
 cp .env.example .env
@@ -31,7 +32,7 @@ npm test
 
 1. [16 — Status](16-current-status.md)  
 2. [12 — Roadmap](12-roadmap.md)  
-3. [lean/README.md](lean/README.md) — faze 1–5  
+3. [lean/README.md](lean/README.md) — faze 1–5 (5 = blagajna, **nije u demou**)  
 4. [01 — Vizija](01-product-vision.md)  
 
 ### Deploy
@@ -50,6 +51,12 @@ npm test
 4. [03 — Baza](03-database.md)  
 5. [lean/backend-status.md](lean/backend-status.md)  
 
+### QA / sigurnost
+
+1. [23 — Dubinski E2E + security](23-e2e-deep-security.md)  
+2. [21 — Limits](21-limits-testing.md)  
+3. [../mobile/docs/e2e-maestro.md](../mobile/docs/e2e-maestro.md)  
+
 ---
 
 ## Svi dokumenti
@@ -58,12 +65,13 @@ npm test
 
 | Datoteka | Sadržaj |
 | --- | --- |
-| [16-current-status.md](16-current-status.md) | Što je shipped |
+| [16-current-status.md](16-current-status.md) | Što je shipped (demo/pilot) |
 | [20-production-launch.md](20-production-launch.md) | Prva produkcija |
 | [22-render-env-checklist.md](22-render-env-checklist.md) | Render Environment |
 | [17-render-deploy.md](17-render-deploy.md) | Deploy |
 | [08-routes-frontend.md](08-routes-frontend.md) | FE rute |
 | [07-api-spec.md](07-api-spec.md) | REST |
+| [23-e2e-deep-security.md](23-e2e-deep-security.md) | Test matrica |
 | [lean/README.md](lean/README.md) | Lean faze |
 
 ### Referenca
@@ -74,7 +82,7 @@ npm test
 | [02](02-architecture.md) | Arhitektura |
 | [03](03-database.md) | Baza |
 | [04](04-booking-engine.md) | Motor rezervacija |
-| [05](05-memberships-physical-payments.md) | Članarine / naplata |
+| [05](05-memberships-physical-payments.md) | Članarine / naplata (API; UI van pilota) |
 | [06](06-tenant-website.md) | Javna stranica |
 | [09](09-mvp-build-plan.md) | MVP acceptance |
 | [10](10-security-rules.md) | Sigurnosna pravila |
@@ -98,5 +106,6 @@ npm test
 - **API / baza** = [07](07-api-spec.md) / [03](03-database.md) — ažuriraj uz kod  
 - Tajne nikad u git  
 - Ne `seed:demo` na produ  
+- Blagajna / Stripe **nisu** dio demo/pilota  
 
 Ne znaš odakle? → ovaj README → **Brzi start**.

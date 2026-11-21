@@ -2,7 +2,7 @@
 
 Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-status.md)
 
-Brand u aplikaciji: **anyminutes**.
+Brand u aplikaciji: **Blizari** (repo može još zvati `anyminutes` / `bookingspace`).
 
 ---
 
@@ -12,20 +12,22 @@ Mali fitness studiji često vode rezervacije, članove, pakete treninga, otkaze 
 
 ## Rješenje
 
-anyminutes na jednom mjestu nudi:
+Blizari na jednom mjestu nudi:
 
 1. rezervacije i kapacitet termina  
 2. članarine / pakete  
 3. račune članova  
 4. dashboard za studio  
 5. jednostavnu javnu stranicu studija  
+6. native mobilnu app (Expo) za član + vlasnik  
 
 ## Jedna rečenica
 
 > Studio vodi članarine i termine na jednom mjestu — članovi rezerviraju sami.
 
-Redoslijed rada (1–4 već uglavnom gotovo):  
-**članovi i sati → rezervacije vlasnika → self-book člana → javna stranica → blagajna (UI).**
+Redoslijed rada (demo/pilot):  
+**članovi i sati → rezervacije vlasnika → self-book člana → javna stranica → mobile.**  
+Blagajna UI / naplata **nisu** dio ovog dema.
 
 ---
 

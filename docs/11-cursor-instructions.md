@@ -9,7 +9,7 @@ Indeks: [README.md](README.md) · Status: [16-current-status.md](16-current-stat
 1. Pročitaj [16-current-status.md](16-current-status.md) i relevantnu lean fazu.  
 2. Najmanja promjena koja pomiče cilj (trenutno: faza 5 blagajna UI, osim ako korisnik kaže drugačije).  
 3. Backend smiješ dirati — zabilježi rupu u [lean/backend-status.md](lean/backend-status.md) i ažuriraj [07-api-spec.md](07-api-spec.md) / [03-database.md](03-database.md).  
-4. UI copy na **hrvatskom**. Brand: **anyminutes**.
+4. UI copy na **hrvatskom**. Brand: **Blizari**.
 
 ---
 

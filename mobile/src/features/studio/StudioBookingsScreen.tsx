@@ -151,6 +151,12 @@ export default function StudioBookingsScreen({
   }, [loadBookings]);
 
   useEffect(() => {
+    if (copyState === 'idle') return undefined;
+    const id = setTimeout(() => setCopyState('idle'), 2200);
+    return () => clearTimeout(id);
+  }, [copyState]);
+
+  useEffect(() => {
     let cancelled = false;
     if (!tenantId || isLocalDesignMode()) return undefined;
     void (async () => {
@@ -285,10 +291,8 @@ export default function StudioBookingsScreen({
     try {
       await copySiteAddress(siteHost);
       setCopyState('done');
-      setTimeout(() => setCopyState('idle'), 2200);
     } catch {
       setCopyState('error');
-      setTimeout(() => setCopyState('idle'), 2200);
     }
   }
 

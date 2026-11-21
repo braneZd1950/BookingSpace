@@ -1,6 +1,6 @@
 # Faza M5 — Store (TestFlight / Play)
 
-**Stanje:** planirano (nakon M2 minimum; idealno nakon M4)  
+**Stanje:** djelomično — EAS preview za demo; internal track / Sentry van dema  
 **Hipoteza:** Internal release dovoljan je za pravi pilot studija.
 
 ---
@@ -22,21 +22,18 @@ Development/preview build preko EAS-a, zatim internal testing track.
 
 ## Preduvjeti
 
-- M2 petlja radi na development buildu  
+- M2 petlja radi na development/preview buildu  
 - Privacy policy / uvjeti linkovi (isti kao web)  
 - Nema tajni u repou  
 
 ## Izvan opsega
 
-Javni marketing launch · tablet layout perfection · iPad-only UI
-
-## Mjeri
-
-5+ stvarnih korisnika instalira internal build i napravi rezervaciju.
+Javni marketing launch · tablet layout perfection · iPad-only UI · blagajna
 
 ## Done kad
 
-- [ ] EAS build prolazi  
-- [ ] Internal distribuacija radi  
-- [ ] Produkcijski API URL  
-- [ ] Osnovni crash reporting  
+- [x] EAS preview build prolazi  
+- [x] Preview APK se može instalirati (demo)  
+- [ ] Internal distribuacija (Play / TestFlight)  
+- [ ] Produkcijski API URL potvrđen za store build  
+- [ ] Osnovni crash reporting (Sentry RN)  

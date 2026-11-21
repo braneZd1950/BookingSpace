@@ -1,8 +1,8 @@
-# Status — mobile
+# Status — mobile (demo / pilot)
 
 Indeks: [README.md](README.md) · Web status: [../../docs/16-current-status.md](../../docs/16-current-status.md)
 
-**Ažurirano:** 2026-11-10
+**Ažurirano:** 2026-11-21 · Brand: **Blizari** · Package: `hr.anyminutes.app`
 
 ---
 
@@ -12,28 +12,38 @@ Indeks: [README.md](README.md) · Web status: [../../docs/16-current-status.md](
 | --- | --- |
 | Dokumentacija (`mobile/docs`) | **Gotovo** (ovaj set) |
 | API klijent (`mobile/src/api`) | **Gotovo** — isti REST kao web |
-| Expo projekt | **Gotovo** (`npm run web`) |
-| Landing ekran | **Gotovo** — mobilni night-studio UI |
-| Login / shell (M1) | **Sljedeće** |
+| Expo projekt | **Gotovo** |
+| Landing + brand UI | **Gotovo** |
+| M1 Login / shell (član / vlasnik) | **Gotovo** |
+| M2 Član — termini (book/cancel) | **Gotovo** |
+| M2+ Occupancy kalendar | **Gotovo** |
+| M2+ Member account settings | **Gotovo** (shared s weba) |
+| M3 Vlasnik — termini / članovi | **Gotovo (pilot)** |
+| Discover / FAQ / O nama | **Gotovo** (javni ekrani) |
 | API backend spreman | **Da** (isti `server/`) |
 | CORS za lokalni Expo | **Da** (portovi 8081–8099 u non-prod) |
-| `npm run test:mobile-load` | **Da** (API load, ne UI) |
-| Store build / listing | **Ne** |
+| `npm run test:mobile` / `test:mobile-load` | **Da** |
+| EAS preview APK | **Da** |
+| Maestro flowovi | **Pripremljeno** (zeleni prolaz = uređaj + mreža) |
+| M4 Native push | **Ne** (consent prefs postoje; Expo Notifications ne) |
+| Store internal / Sentry RN | **Ne** (nije u ovom demu) |
 
 ---
 
-## Cilj sljedećeg koraka
+## Cilj dema / pilota
 
-**M1** — Expo scaffold + login + routing shell (član / vlasnik).  
-Vidi: [lean/faza-m1-auth-shell.md](lean/faza-m1-auth-shell.md) i [03-setup-expo.md](03-setup-expo.md).
+Stabilan book/cancel na telefonu (član + vlasnik) preko preview APK-a.  
+**Nije u demu:** blagajna, Stripe, native push, javni store.
 
 ---
 
 ## Što namjerno čeka
 
+- Native Expo push (M4)  
+- Play internal / TestFlight + crash reporting (M5 dovršetak)  
 - Platform admin na mobitelu  
 - Site wizard / page builder  
-- Stripe  
+- Stripe / blagajna  
 - Offline-first sync cijele baze  
 - Potpuni vizualni 1:1 s web SCSS  
 

@@ -1,6 +1,6 @@
 # Faza M3 — Vlasnik: termini i članovi
 
-**Stanje:** planirano (nakon M2)  
+**Stanje:** gotovo za demo / pilot  
 **Hipoteza:** Vlasnik obavi dnevne operacije s telefona (bez weba).  
 **Web:** [../../../docs/lean/phase-02-frontend.md](../../../docs/lean/phase-02-frontend.md)
 
@@ -22,19 +22,11 @@ Minimalni owner kokpit: termini (book/cancel) + osnovni članovi.
 
 ## Izvan opsega
 
-Kalendar-mjesec fancy UI · analitika · postavljanje stranice · blagajna
-
-## Mjeri
-
-Vlasnik odradi jutarnje rezervacije samo na mobitelu jedan dan.
-
-## Learn
-
-Ako „dodaj člana” fali mail — SMTP je ops problem, ne RN bug.
+Kalendar-mjesec fancy UI · puna analitika · postavljanje stranice · **blagajna** · Stripe
 
 ## Done kad
 
-- [ ] Owner vidi današnje termine  
-- [ ] Može bookati člana  
-- [ ] Može otkazati  
-- [ ] Vidi listu članova (minimalno)  
+- [x] Owner vidi današnje termine  
+- [x] Može bookati člana  
+- [x] Može otkazati  
+- [x] Vidi listu članova (minimalno)  

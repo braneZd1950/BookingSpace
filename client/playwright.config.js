@@ -41,9 +41,13 @@ export default defineConfig({
     {
       command: 'node scripts/e2e-api.mjs',
       cwd: serverDir,
-      url: 'http://127.0.0.1:4001/api/health',
+      url: `http://127.0.0.1:${process.env.E2E_API_PORT || 4001}/api/health`,
       reuseExistingServer: false,
       timeout: 120_000,
+      env: {
+        ...process.env,
+        PORT: process.env.E2E_API_PORT || '4001',
+      },
     },
     {
       command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
@@ -52,7 +56,8 @@ export default defineConfig({
       timeout: 180_000,
       env: {
         ...process.env,
-        VITE_API_URL: process.env.VITE_API_URL || 'http://127.0.0.1:4001/api',
+        VITE_API_URL: process.env.VITE_API_URL
+          || `http://127.0.0.1:${process.env.E2E_API_PORT || 4001}/api`,
         VITE_APP_MODE: process.env.VITE_APP_MODE || 'development',
         VITE_SENTRY_DSN: process.env.VITE_SENTRY_DSN || '',
       },

@@ -18,7 +18,7 @@ Vlasnici i članovi studija često su na telefonu. Web radi, ali native app daje
 
 ## Jedna rečenica
 
-> Ista anyminutes logika — na telefonu, preko React Nativea.
+> Ista Blizari logika — na telefonu, preko React Nativea.
 
 ## Zašto React Native
 
