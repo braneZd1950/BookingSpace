@@ -35,25 +35,27 @@ import {
 } from '../../lib/uiTheme.js';
 import {
   ACCOUNT_SETTINGS_SECTIONS,
+  INITIAL_MEMBER_PASSWORD_FORM,
   LEGAL_LINKS,
+  MEMBER_NOTIFY_SECTIONS,
   MEMBER_SETTINGS_ACTIONS,
   MEMBER_SETTINGS_MESSAGES,
-  OPERATIONAL_NOTIFY_OPTIONS,
-  PROMOTIONAL_NOTIFY_OPTIONS,
   UI_THEME_OPTIONS,
-  apiErrorMessage,
-  buildDeleteAccountBody,
-  emailChangeNoteFromResult,
-  emailChangeResentMessage,
   emailStatusLabel,
   memberAccountFromUser,
-  memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
-  prepareAccountUpdate,
-  prepareEmailChange,
-  preparePasswordChange,
-  uiThemeSavedMessage,
+  patchMemberNotifyPref,
 } from '../../../../shared/memberAccountSettings.js';
+import {
+  changeMemberPassword,
+  createMemberSettingsFeedback,
+  deleteMemberAccount,
+  resendMemberEmailChange,
+  saveMemberAccount,
+  saveMemberEmailChange,
+  saveMemberNotificationPrefs,
+  saveMemberUiTheme,
+} from '../../../../shared/memberSettingsHandlers.js';
 import { BRAND } from '../../lib/brandColors.js';
 import { type LegalDocId } from '../auth/LegalDocumentScreen';
 import { findLegalDoc, LEGAL_UPDATED } from '../auth/platformLegal.js';
@@ -97,11 +99,7 @@ export default function MemberSettingsScreen({
   const [emailDraft, setEmailDraft] = useState('');
   const [prefs, setPrefs] = useState(mergeMemberNotifyPrefs());
   const [theme, setTheme] = useState(normalizeUiTheme(uiTheme));
-  const [password, setPassword] = useState({
-    currentPassword: '',
-    newPassword: '',
-    again: '',
-  });
+  const [password, setPassword] = useState(INITIAL_MEMBER_PASSWORD_FORM);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [consentOk, setConsentOk] = useState(false);
   const [consentInfo, setConsentInfo] = useState<{ version?: string; acceptedAt?: string }>({});
@@ -110,6 +108,7 @@ export default function MemberSettingsScreen({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [section, setSection] = useState<SectionId>('osobni');
   const [legalDoc, setLegalDoc] = useState<LegalDocId | null>(null);
+  const feedback = createMemberSettingsFeedback(setNotes, setErrors);
   const activeSection = ACCOUNT_SETTINGS_SECTIONS.find((item) => item.id === section)
     || ACCOUNT_SETTINGS_SECTIONS[0];
   const legalDocument = legalDoc ? findLegalDoc(legalDoc) : null;
@@ -166,117 +165,64 @@ export default function MemberSettingsScreen({
     };
   }, [uiTheme]);
 
-  function note(key: string, text: string) {
-    setNotes((current) => ({ ...current, [key]: text }));
-  }
-
-  function fail(key: string, text: string) {
-    setErrors((current) => ({ ...current, [key]: text }));
+  async function withBusy(key: string, run: () => Promise<unknown>) {
+    setBusy(key);
+    try {
+      await run();
+    } finally {
+      setBusy('');
+    }
   }
 
   async function saveUiTheme(nextRaw: string) {
-    const next = normalizeUiTheme(nextRaw);
-    setTheme(next);
-    syncUiTheme(next);
-    onThemeChange?.(next);
-    note('theme', '');
-    try {
-      await updateMe({ uiTheme: next });
-      note('theme', uiThemeSavedMessage(next));
-    } catch {
-      note('theme', MEMBER_SETTINGS_MESSAGES.themeLocalOnly);
-    }
+    await saveMemberUiTheme(nextRaw, {
+      normalizeUiTheme,
+      syncUiTheme,
+      updateMe,
+      feedback,
+      onApply: (value) => {
+        setTheme(value);
+        onThemeChange?.(value);
+      },
+    });
   }
 
   async function saveAccount() {
-    fail('account', '');
-    note('account', '');
-    const prepared = prepareAccountUpdate(account);
-    if (prepared.error) {
-      fail('account', prepared.error);
-      return;
-    }
-    setBusy('account');
-    try {
-      await updateMe(prepared.payload);
-      note('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
-    } catch (err) {
-      fail('account', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.accountSaveFailed));
-    } finally {
-      setBusy('');
-    }
+    await withBusy('account', () => saveMemberAccount(account, updateMe, feedback));
   }
 
   async function requestEmailChange() {
-    fail('email', '');
-    note('email', '');
-    const prepared = prepareEmailChange(emailDraft, userMeta.email);
-    if (prepared.error) {
-      fail('email', prepared.error);
-      return;
-    }
-    setBusy('email');
-    try {
-      const result = await updateMe(prepared.payload);
-      const pending = result?.user?.pendingEmail || prepared.payload.email;
-      setUserMeta((current) => ({ ...current, pendingEmail: pending }));
-      setEmailDraft('');
-      note('email', emailChangeNoteFromResult(result, prepared.payload.email));
-    } catch (err) {
-      fail('email', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.emailUpdateFailed));
-    } finally {
-      setBusy('');
-    }
+    await withBusy('email', () => saveMemberEmailChange(
+      emailDraft,
+      userMeta.email,
+      updateMe,
+      feedback,
+      (result, email) => {
+        const pending = result?.user?.pendingEmail || email;
+        setUserMeta((current) => ({ ...current, pendingEmail: pending }));
+        setEmailDraft('');
+      },
+    ));
   }
 
   async function onResendEmail() {
-    fail('email', '');
-    note('email', '');
-    setBusy('email');
-    try {
-      const result = await resendEmailChange();
-      note('email', emailChangeResentMessage(result.pendingEmail));
-    } catch {
-      fail('email', MEMBER_SETTINGS_MESSAGES.emailResendFailed);
-    } finally {
-      setBusy('');
-    }
+    await withBusy('email', () => resendMemberEmailChange(resendEmailChange, feedback));
   }
 
   async function savePrefs() {
-    note('prefs', '');
-    setBusy('prefs');
-    try {
-      await updateMe({
-        notificationPrefs: memberNotificationPrefsPayload(prefs),
-      });
-      note('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
-    } catch {
-      note('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaveFailed);
-    } finally {
-      setBusy('');
-    }
+    await withBusy('prefs', () => saveMemberNotificationPrefs(prefs, updateMe, feedback));
   }
 
   async function savePassword() {
-    fail('password', '');
-    note('password', '');
-    const prepared = preparePasswordChange(password);
-    if (prepared.error) {
-      fail('password', prepared.error);
-      return;
-    }
-    setBusy('password');
-    try {
-      const result = await changePassword(prepared.payload);
-      if (result?.token) await setToken(result.token);
-      setPassword({ currentPassword: '', newPassword: '', again: '' });
-      note('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
-    } catch (err) {
-      fail('password', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.passwordChangeFailed));
-    } finally {
-      setBusy('');
-    }
+    await withBusy('password', () => changeMemberPassword(
+      password,
+      changePassword,
+      feedback,
+      {
+        onToken: setToken,
+        resetPassword: () => setPassword(INITIAL_MEMBER_PASSWORD_FORM),
+      },
+    ));
   }
 
   async function onLogoutAll() {
@@ -293,7 +239,7 @@ export default function MemberSettingsScreen({
 
   async function acceptConsent() {
     setBusy('consent');
-    note('consent', '');
+    feedback.setNote('consent', '');
     try {
       await recordConsentWait({
         action: 'accept',
@@ -302,9 +248,9 @@ export default function MemberSettingsScreen({
       });
       setConsentOk(true);
       setConsentInfo({ version: CONSENT_VERSION, acceptedAt: new Date().toISOString() });
-      note('consent', 'Privola je spremljena.');
+      feedback.setNote('consent', 'Privola je spremljena.');
     } catch (err) {
-      note('consent', err instanceof Error ? err.message : 'Privola nije spremljena.');
+      feedback.setNote('consent', err instanceof Error ? err.message : 'Privola nije spremljena.');
     } finally {
       setBusy('');
     }
@@ -312,7 +258,7 @@ export default function MemberSettingsScreen({
 
   async function withdrawConsent() {
     setBusy('consent');
-    note('consent', '');
+    feedback.setNote('consent', '');
     try {
       await recordConsentWait({
         action: 'withdraw',
@@ -320,16 +266,16 @@ export default function MemberSettingsScreen({
         source: 'settings',
       });
       setConsentOk(false);
-      note('consent', 'Privola je povučena.');
+      feedback.setNote('consent', 'Privola je povučena.');
     } catch (err) {
-      note('consent', err instanceof Error ? err.message : 'Privola nije povučena.');
+      feedback.setNote('consent', err instanceof Error ? err.message : 'Privola nije povučena.');
     } finally {
       setBusy('');
     }
   }
 
   async function onExport() {
-    note('privacy', '');
+    feedback.setNote('privacy', '');
     setBusy('export');
     try {
       const payload = await exportMyData();
@@ -337,9 +283,9 @@ export default function MemberSettingsScreen({
         message: JSON.stringify(payload, null, 2),
         title: 'Blizari — izvoz podataka',
       });
-      note('privacy', MEMBER_SETTINGS_MESSAGES.exportShared);
+      feedback.setNote('privacy', MEMBER_SETTINGS_MESSAGES.exportShared);
     } catch {
-      note('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
+      feedback.setNote('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
     } finally {
       setBusy('');
     }
@@ -355,23 +301,13 @@ export default function MemberSettingsScreen({
           text: 'Obriši',
           style: 'destructive',
           onPress: () => {
-            void (async () => {
-              fail('delete', '');
-              note('delete', '');
-              setBusy('delete');
-              try {
-                const body = buildDeleteAccountBody(
-                  userMeta.hasPassword !== false,
-                  deleteConfirm,
-                );
-                await deleteMyAccount(body);
-                onLogout?.();
-              } catch (err) {
-                fail('delete', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.deleteFailed));
-              } finally {
-                setBusy('');
-              }
-            })();
+            void withBusy('delete', () => deleteMemberAccount(
+              userMeta.hasPassword !== false,
+              deleteConfirm,
+              deleteMyAccount,
+              feedback,
+              () => { onLogout?.(); },
+            ));
           },
         },
       ],
@@ -555,38 +491,34 @@ export default function MemberSettingsScreen({
 
         {section === 'obavijesti' ? (
           <>
-            <Text style={[styles.prefHint, { color: colors.muted, marginBottom: 8 }]}>
-              Operativne (e-pošta). Push još nije dostupan za klijente.
-            </Text>
-            {OPERATIONAL_NOTIFY_OPTIONS.map((item) => (
-              <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
-                  <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
-                </View>
-                <Switch
-                  value={Boolean((prefs as any)[item.key])}
-                  onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
-                  trackColor={{ false: '#334155', true: 'rgba(37, 99, 235, 0.55)' }}
-                  thumbColor={(prefs as any)[item.key] ? BRAND.blueBright : '#94A3B8'}
-                />
-              </View>
-            ))}
-            <Text style={[styles.prefHint, { color: colors.muted, marginTop: 12, marginBottom: 8 }]}>
-              Promotivne (nisu unaprijed uključene).
-            </Text>
-            {PROMOTIONAL_NOTIFY_OPTIONS.map((item) => (
-              <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
-                  <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
-                </View>
-                <Switch
-                  value={Boolean((prefs as any)[item.key])}
-                  onValueChange={(value) => setPrefs((current) => ({ ...current, [item.key]: value }))}
-                  trackColor={{ false: '#334155', true: 'rgba(37, 99, 235, 0.55)' }}
-                  thumbColor={(prefs as any)[item.key] ? BRAND.blueBright : '#94A3B8'}
-                />
+            {MEMBER_NOTIFY_SECTIONS.map((group) => (
+              <View key={group.id}>
+                <Text
+                  style={[
+                    styles.prefHint,
+                    {
+                      color: colors.muted,
+                      marginBottom: 8,
+                      marginTop: group.id === 'promotional' ? 12 : 0,
+                    },
+                  ]}
+                >
+                  {group.mobileLead}
+                </Text>
+                {group.options.map((item) => (
+                  <View key={item.key} style={[styles.prefRow, { borderBottomColor: colors.border }]}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.prefLabel, { color: colors.title }]}>{item.label}</Text>
+                      <Text style={[styles.prefHint, { color: colors.muted }]}>{item.hint}</Text>
+                    </View>
+                    <Switch
+                      value={Boolean((prefs as any)[item.key])}
+                      onValueChange={(value) => setPrefs(patchMemberNotifyPref(item.key, value))}
+                      trackColor={{ false: '#334155', true: 'rgba(37, 99, 235, 0.55)' }}
+                      thumbColor={(prefs as any)[item.key] ? BRAND.blueBright : '#94A3B8'}
+                    />
+                  </View>
+                ))}
               </View>
             ))}
             {notes.prefs ? <Text style={[styles.note, { color: colors.accent }]}>{notes.prefs}</Text> : null}

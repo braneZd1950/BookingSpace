@@ -47,6 +47,33 @@ export const PROMOTIONAL_NOTIFY_OPTIONS = [
   },
 ];
 
+export const MEMBER_NOTIFY_SECTIONS = [
+  {
+    id: 'operational',
+    heading: 'Operativne (e-pošta)',
+    mobileLead: 'Operativne (e-pošta). Push još nije dostupan za klijente.',
+    hint: null,
+    options: OPERATIONAL_NOTIFY_OPTIONS,
+  },
+  {
+    id: 'promotional',
+    heading: 'Promotivne (e-pošta)',
+    mobileLead: 'Promotivne (nisu unaprijed uključene).',
+    hint: 'Marketinške opcije nisu unaprijed uključene. Povlačenje ne blokira rezervacije.',
+    options: PROMOTIONAL_NOTIFY_OPTIONS,
+  },
+];
+
+export const INITIAL_MEMBER_PASSWORD_FORM = {
+  currentPassword: '',
+  newPassword: '',
+  again: '',
+};
+
+export function patchMemberNotifyPref(key, value) {
+  return (current) => ({ ...current, [key]: value });
+}
+
 export const BLIZARI_LEGAL = {
   website: 'https://blizari.com',
   privacy: 'https://blizari.com/privatnost',

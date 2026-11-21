@@ -17,24 +17,26 @@ import { clearSession } from '../../lib/clearSession.js';
 import { normalizeUiTheme, syncUiTheme } from '../../lib/uiTheme.js';
 import {
   ACCOUNT_SETTINGS_SECTIONS,
+  INITIAL_MEMBER_PASSWORD_FORM,
   LEGAL_LINKS,
+  MEMBER_NOTIFY_SECTIONS,
   MEMBER_SETTINGS_ACTIONS,
   MEMBER_SETTINGS_MESSAGES,
-  OPERATIONAL_NOTIFY_OPTIONS,
-  PROMOTIONAL_NOTIFY_OPTIONS,
-  apiErrorMessage,
-  buildDeleteAccountBody,
-  emailChangeNoteFromResult,
-  emailChangeResentMessage,
   emailStatusLabel,
   memberAccountFromUser,
-  memberNotificationPrefsPayload,
   mergeMemberNotifyPrefs,
-  prepareAccountUpdate,
-  prepareEmailChange,
-  preparePasswordChange,
-  uiThemeSavedMessage,
+  patchMemberNotifyPref,
 } from '../../../../shared/memberAccountSettings.js';
+import {
+  changeMemberPassword,
+  createMemberSettingsFeedback,
+  deleteMemberAccount,
+  resendMemberEmailChange,
+  saveMemberAccount,
+  saveMemberEmailChange,
+  saveMemberNotificationPrefs,
+  saveMemberUiTheme,
+} from '../../../../shared/memberSettingsHandlers.js';
 import './MemberSettingsPage.scss';
 
 const TOKEN_KEY = 'bookingspace.token';
@@ -58,14 +60,11 @@ export default function MemberSettingsPage() {
   const [emailDraft, setEmailDraft] = useState('');
   const [uiTheme, setUiTheme] = useState('system');
   const [prefs, setPrefs] = useState(mergeMemberNotifyPrefs());
-  const [password, setPassword] = useState({
-    currentPassword: '',
-    newPassword: '',
-    again: '',
-  });
+  const [password, setPassword] = useState(INITIAL_MEMBER_PASSWORD_FORM);
   const [deleteForm, setDeleteForm] = useState({ password: '', confirm: '' });
   const [notes, setNotes] = useState({});
   const [errors, setErrors] = useState({});
+  const feedback = createMemberSettingsFeedback(setNotes, setErrors);
 
   useEffect(() => {
     if (!user) return;
@@ -74,14 +73,6 @@ export default function MemberSettingsPage() {
     setUiTheme(normalizeUiTheme(user.uiTheme));
     setPrefs(mergeMemberNotifyPrefs(user.notificationPrefs));
   }, [user]);
-
-  function setNote(key, text) {
-    setNotes((current) => ({ ...current, [key]: text }));
-  }
-
-  function setError(key, text) {
-    setErrors((current) => ({ ...current, [key]: text }));
-  }
 
   function jumpToSection(event, sectionId) {
     event.preventDefault();
@@ -94,116 +85,70 @@ export default function MemberSettingsPage() {
 
   async function saveAccount(event) {
     event.preventDefault();
-    setError('account', '');
-    setNote('account', '');
-    const prepared = prepareAccountUpdate(account);
-    if (prepared.error) {
-      setError('account', prepared.error);
-      return;
-    }
-    try {
-      await updateMe(prepared.payload).unwrap();
-      setNote('account', MEMBER_SETTINGS_MESSAGES.accountSaved);
-    } catch (err) {
-      setError('account', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.accountSaveFailed));
-    }
+    await saveMemberAccount(account, (payload) => updateMe(payload).unwrap(), feedback);
   }
 
   async function requestEmailChange(event) {
     event.preventDefault();
-    setError('email', '');
-    setNote('email', '');
-    const prepared = prepareEmailChange(emailDraft, user?.email);
-    if (prepared.error) {
-      setError('email', prepared.error);
-      return;
-    }
-    try {
-      const result = await updateMe(prepared.payload).unwrap();
-      setEmailDraft('');
-      setNote('email', emailChangeNoteFromResult(result, prepared.payload.email));
-    } catch (err) {
-      setError('email', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.emailUpdateFailed));
-    }
+    await saveMemberEmailChange(
+      emailDraft,
+      user?.email,
+      (payload) => updateMe(payload).unwrap(),
+      feedback,
+      () => setEmailDraft(''),
+    );
   }
 
   async function onResendEmail() {
-    setError('email', '');
-    setNote('email', '');
-    try {
-      const result = await resendEmail().unwrap();
-      setNote('email', emailChangeResentMessage(result.pendingEmail));
-    } catch {
-      setError('email', MEMBER_SETTINGS_MESSAGES.emailResendFailed);
-    }
+    await resendMemberEmailChange(() => resendEmail().unwrap(), feedback);
   }
 
   async function saveUiTheme(next) {
-    const value = normalizeUiTheme(next);
-    setUiTheme(value);
-    syncUiTheme(value);
-    setNote('theme', '');
-    try {
-      await updateMe({ uiTheme: value }).unwrap();
-      setNote('theme', uiThemeSavedMessage(value));
-    } catch {
-      setNote('theme', MEMBER_SETTINGS_MESSAGES.themeLocalOnly);
-    }
+    await saveMemberUiTheme(next, {
+      normalizeUiTheme,
+      syncUiTheme,
+      updateMe: (payload) => updateMe(payload).unwrap(),
+      feedback,
+      onApply: setUiTheme,
+    });
   }
 
   async function savePrefs(event) {
     event.preventDefault();
-    setNote('prefs', '');
-    try {
-      await updateMe({
-        notificationPrefs: memberNotificationPrefsPayload(prefs),
-      }).unwrap();
-      setNote('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaved);
-    } catch {
-      setNote('prefs', MEMBER_SETTINGS_MESSAGES.prefsSaveFailed);
-    }
+    await saveMemberNotificationPrefs(
+      prefs,
+      (payload) => updateMe(payload).unwrap(),
+      feedback,
+    );
   }
 
   async function savePassword(event) {
     event.preventDefault();
-    setError('password', '');
-    setNote('password', '');
-    const prepared = preparePasswordChange(password);
-    if (prepared.error) {
-      setError('password', prepared.error);
-      return;
-    }
-    try {
-      const result = await changePassword(prepared.payload).unwrap();
-      if (result?.token) {
-        localStorage.setItem(TOKEN_KEY, result.token);
-      } else {
-        await clearSession({ dispatch });
-        setNote('password', MEMBER_SETTINGS_MESSAGES.passwordSavedReauth);
-        setPassword({ currentPassword: '', newPassword: '', again: '' });
-        return;
-      }
-      setPassword({ currentPassword: '', newPassword: '', again: '' });
-      setNote('password', MEMBER_SETTINGS_MESSAGES.passwordSaved);
-    } catch (err) {
-      setError('password', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.passwordChangeFailed));
-    }
+    await changeMemberPassword(
+      password,
+      (payload) => changePassword(payload).unwrap(),
+      feedback,
+      {
+        onToken: (token) => { localStorage.setItem(TOKEN_KEY, token); },
+        onReauth: () => clearSession({ dispatch }),
+        resetPassword: () => setPassword(INITIAL_MEMBER_PASSWORD_FORM),
+      },
+    );
   }
 
   async function onLogoutAll() {
-    setNote('security', '');
+    feedback.setNote('security', '');
     try {
       await logoutAll().unwrap();
     } catch {
       /* still clear local */
     }
     await clearSession({ dispatch });
-    setNote('security', MEMBER_SETTINGS_MESSAGES.logoutAllSuccess);
+    feedback.setNote('security', MEMBER_SETTINGS_MESSAGES.logoutAllSuccess);
   }
 
   async function onExport() {
-    setError('privacy', '');
-    setNote('privacy', '');
+    feedback.clear('privacy');
     try {
       const payload = await exportData().unwrap();
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -215,28 +160,22 @@ export default function MemberSettingsPage() {
       anchor.download = `blizari-podaci-${new Date().toISOString().slice(0, 10)}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      setNote('privacy', MEMBER_SETTINGS_MESSAGES.exportDownloaded);
+      feedback.setNote('privacy', MEMBER_SETTINGS_MESSAGES.exportDownloaded);
     } catch {
-      setError('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
+      feedback.setError('privacy', MEMBER_SETTINGS_MESSAGES.exportFailed);
     }
   }
 
   async function onDeleteAccount(event) {
     event.preventDefault();
-    setError('delete', '');
-    setNote('delete', '');
     if (!window.confirm(MEMBER_SETTINGS_MESSAGES.deleteConfirmWeb)) return;
-    try {
-      const body = buildDeleteAccountBody(
-        Boolean(user?.hasPassword),
-        user?.hasPassword ? deleteForm.password : deleteForm.confirm,
-      );
-      await deleteAccount(body).unwrap();
-      await clearSession({ dispatch });
-      setNote('delete', MEMBER_SETTINGS_MESSAGES.deleteSuccess);
-    } catch (err) {
-      setError('delete', apiErrorMessage(err, MEMBER_SETTINGS_MESSAGES.deleteFailed));
-    }
+    await deleteMemberAccount(
+      Boolean(user?.hasPassword),
+      user?.hasPassword ? deleteForm.password : deleteForm.confirm,
+      (body) => deleteAccount(body).unwrap(),
+      feedback,
+      () => clearSession({ dispatch }),
+    );
   }
 
   if (!loggedIn) {
@@ -408,51 +347,33 @@ export default function MemberSettingsPage() {
               Operativne obavijesti o terminima i zasebne promotivne opcije.
               Push kanali još nisu dostupni za klijente.
             </p>
-            <h3 className="member-settings__subhead">Operativne (e-pošta)</h3>
-            <ul className="member-settings__toggles">
-              {OPERATIONAL_NOTIFY_OPTIONS.map((option) => (
-                <li key={option.key}>
-                  <label className="member-settings__toggle" aria-label={option.label}>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(prefs[option.key])}
-                      onChange={(event) => setPrefs((current) => ({
-                        ...current,
-                        [option.key]: event.target.checked,
-                      }))}
-                    />
-                    <span>
-                      <strong>{option.label}</strong>
-                      <em>{option.hint}</em>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <h3 className="member-settings__subhead">Promotivne (e-pošta)</h3>
-            <p className="member-settings__hint">
-              Marketinške opcije nisu unaprijed uključene. Povlačenje ne blokira rezervacije.
-            </p>
-            <ul className="member-settings__toggles">
-              {PROMOTIONAL_NOTIFY_OPTIONS.map((option) => (
-                <li key={option.key}>
-                  <label className="member-settings__toggle" aria-label={option.label}>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(prefs[option.key])}
-                      onChange={(event) => setPrefs((current) => ({
-                        ...current,
-                        [option.key]: event.target.checked,
-                      }))}
-                    />
-                    <span>
-                      <strong>{option.label}</strong>
-                      <em>{option.hint}</em>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+            {MEMBER_NOTIFY_SECTIONS.map((group) => (
+              <div key={group.id}>
+                <h3 className="member-settings__subhead">{group.heading}</h3>
+                {group.hint ? (
+                  <p className="member-settings__hint">{group.hint}</p>
+                ) : null}
+                <ul className="member-settings__toggles">
+                  {group.options.map((option) => (
+                    <li key={option.key}>
+                      <label className="member-settings__toggle" aria-label={option.label}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(prefs[option.key])}
+                          onChange={(event) => setPrefs(
+                            patchMemberNotifyPref(option.key, event.target.checked),
+                          )}
+                        />
+                        <span>
+                          <strong>{option.label}</strong>
+                          <em>{option.hint}</em>
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
             {notes.prefs ? (
               <p className="member-settings__note" role="status">{notes.prefs}</p>
             ) : null}
