@@ -119,7 +119,10 @@ app.use('/uploads', (req, res, next) => {
 }));
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    sentry: Boolean(String(process.env.SENTRY_DSN || '').trim()),
+  });
 });
 
 // Intentional crash for Sentry first-error verification (non-production only).
