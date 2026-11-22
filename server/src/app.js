@@ -132,6 +132,26 @@ if (env.nodeEnv !== 'production') {
   });
 }
 
+// Safe ping: sends a message (not a crash). In production require SENTRY_VERIFY_TOKEN.
+app.get('/api/sentry-ping', async (req, res) => {
+  const dsn = String(process.env.SENTRY_DSN || '').trim();
+  if (!dsn) {
+    res.status(503).json({ ok: false, error: 'SENTRY_DSN not configured' });
+    return;
+  }
+  const expected = String(process.env.SENTRY_VERIFY_TOKEN || '').trim();
+  if (env.nodeEnv === 'production') {
+    if (!expected || String(req.query.token || '') !== expected) {
+      res.status(404).json({ ok: false });
+      return;
+    }
+  }
+  const msg = `sentry-ping ${new Date().toISOString()}`;
+  const eventId = Sentry.captureMessage(msg, 'error');
+  await Sentry.flush(8000);
+  res.json({ ok: true, eventId, msg });
+});
+
 app.use('/api', api);
 
 const clientDist = resolveClientDist();

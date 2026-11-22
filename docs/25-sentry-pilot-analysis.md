@@ -93,12 +93,33 @@ Dok Sentry RN nije u APK-u, **ne očekuj** mobile evente u Sentryju.
 
 ---
 
+## Dva projekta (najčešća zabuna)
+
+Imaš **dva** Sentry projecta — Issues jednog **ne** pokazuju evente drugog:
+
+| Env na Renderu | Project u Sentryju | Što šalje |
+| --- | --- | --- |
+| `VITE_SENTRY_DSN` | **Web / React** (npr. `bookingspace`) | Browser greške s produkcijskog weba |
+| `SENTRY_DSN` | **API / Node** (drugi project) | Server greške |
+
+Ako gledaš samo `bookingspace` + filter **24h / Recommended**, a nema novih browser crashova, lista je prazna — iako API radi.
+
+**Provjera da je Render OK:** `GET /api/health` → `"sentry": true`.
+
+**API test event (lokalno):** `node server/scripts/sentry-verify.mjs` → traži u **Node** projektu.
+
+**Prod API ping (nakon deploya):** postavi `SENTRY_VERIFY_TOKEN` na Renderu, zatim  
+`GET /api/sentry-ping?token=…` → traži poruku `sentry-ping …` u **Node** projektu.
+
+---
+
 ## Checklist prije partnera
 
 - [ ] Render ima `SENTRY_DSN`  
 - [ ] Render ima `VITE_SENTRY_DSN` + **clear cache deploy** nakon dodavanja  
-- [ ] U Sentryju vidiš barem jedan stari ili test event po projektu  
-- [ ] Znaš koji project = Web, koji = API  
+- [ ] `/api/health` vraća `"sentry": true`  
+- [ ] U Sentryju znaš koji project = Web, koji = API  
+- [ ] U Web projektu makni Recommended / proširi raspon datuma  
 - [ ] Partnerima je jasan bug kanal (WhatsApp/mail)  
 - [ ] Mobile: bez Sentry RN — dogovoreno da javljaju ručno  
 
