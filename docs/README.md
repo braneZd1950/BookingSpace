@@ -16,6 +16,8 @@ Brand u aplikaciji: **Blizari** (repo / Expo slug mogu još zvati `bookingspace`
 | Postaviti Render env | [22 — Env checklist](22-render-env-checklist.md) |
 | Razumjeti Render | [17 — Deploy](17-render-deploy.md) |
 | Kompletno testiranje | [23 — E2E + security](23-e2e-deep-security.md) |
+| Zatvoreni pilot (1–2 partnera) | [24 — Closed pilot](24-closed-pilot.md) |
+| Sentry analiza (web/API/mobile) | [25 — Sentry pilot](25-sentry-pilot-analysis.md) |
 | Mobilna app (RN/Expo) | [../mobile/docs/README.md](../mobile/docs/README.md) |
 
 ```bash
@@ -72,6 +74,8 @@ npm test
 | [08-routes-frontend.md](08-routes-frontend.md) | FE rute |
 | [07-api-spec.md](07-api-spec.md) | REST |
 | [23-e2e-deep-security.md](23-e2e-deep-security.md) | Test matrica |
+| [24-closed-pilot.md](24-closed-pilot.md) | Zatvoreni pilot checklist |
+| [25-sentry-pilot-analysis.md](25-sentry-pilot-analysis.md) | Sentry web/API/mobile |
 | [lean/README.md](lean/README.md) | Lean faze |
 
 ### Referenca
