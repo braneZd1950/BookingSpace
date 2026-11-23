@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useGetMeQuery } from '../../api/authApi.js';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import '../public/AnalyticsPage.scss';
 
 const TOKEN_KEY = 'bookingspace.token';
@@ -12,6 +13,7 @@ export default function AdminGate() {
   if (!token) {
     return (
       <main className="analytics">
+        <SeoNoIndex title="Administracija — Blizari" />
         <h1>Administracija</h1>
         <p className="analytics__lead">
           Prijavite se običnom prijavom. Super admin se dodaje ručno u bazu;
@@ -25,6 +27,7 @@ export default function AdminGate() {
   if (isLoading) {
     return (
       <main className="analytics">
+        <SeoNoIndex title="Administracija — Blizari" />
         <p>Učitavamo…</p>
       </main>
     );
@@ -33,6 +36,7 @@ export default function AdminGate() {
   if (!allowed) {
     return (
       <main className="analytics">
+        <SeoNoIndex title="Administracija — Blizari" />
         <h1>Nema pristupa</h1>
         <p className="analytics__lead">
           Ova zona je za voditelje i djelatnike Blizarija.
@@ -42,5 +46,10 @@ export default function AdminGate() {
     );
   }
 
-  return <Outlet context={{ me: meData }} />;
+  return (
+    <>
+      <SeoNoIndex title="Administracija — Blizari" />
+      <Outlet context={{ me: meData }} />
+    </>
+  );
 }

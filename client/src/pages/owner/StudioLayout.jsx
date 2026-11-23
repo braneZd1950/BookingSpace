@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
 import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import { useGetMeQuery } from '../../api/authApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import { useMyTenantsQuery } from '../../api/tenantApi.js';
@@ -277,6 +278,7 @@ export default function StudioLayout() {
       className="studio-shell"
       style={surfaceVars}
     >
+      <SeoNoIndex title={`Studio — ${studio.name}`} />
       <header className="studio-topbar">
         <Link className="studio-nav__brand" to="/stranica" title={studio.name}>
           <strong>{studio.name}</strong>

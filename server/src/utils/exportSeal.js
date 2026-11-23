@@ -4,7 +4,8 @@ import env from '../config/env.js';
 function sealSecret() {
   if (env.exportSealSecret) return env.exportSealSecret;
   if (env.nodeEnv === 'production') {
-    console.warn('[security] EXPORT_SEAL_SECRET missing — falling back to JWT_SECRET');
+    // productionGuard already blocks boot; keep a hard fail as defense-in-depth.
+    throw new Error('EXPORT_SEAL_SECRET is required in production');
   }
   return env.jwtSecret;
 }

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
+import SeoHead from '../../components/SeoHead.jsx';
 import { contactEmail } from '../../lib/contact.js';
+import { organizationJsonLd } from '../../lib/seo.js';
 import './AboutPage.scss';
 
 const promises = [
@@ -102,6 +104,12 @@ function AboutMark({ type }) {
 export default function AboutPage() {
   return (
     <main className="about">
+      <SeoHead
+        title="O nama — Blizari"
+        description="Blizari je nastao iz stvarnog problema: termini, rezervacije i klijenti u bilježnicama i porukama. Gradimo jednostavan alat za uslužna poslovanja."
+        path="/o-nama"
+        jsonLd={organizationJsonLd()}
+      />
       <div className="about__atmosphere" aria-hidden="true">
         <span className="about__orb about__orb--a" />
         <span className="about__orb about__orb--b" />

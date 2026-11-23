@@ -18,3 +18,15 @@ server/.env.local
 client/src/pages/owner/GalleryPage.jsx
 client/src/pages/owner/GalleryPage.scss
 client/src/pages/owner/PaymentsPreparePage.jsx
+
+gitleaks-report.json
+zap-report.html
+zap-report.json
+zap-run.log
+test-results/
+.vscode/
+mobile/.maestro-debug/
+mobile/.maestro-debug2/
+mobile/*.apk
+mobile/emu-screen*.png
+

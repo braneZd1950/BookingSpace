@@ -16,7 +16,7 @@ import {
 import { notifyTenantStaff } from '../../utils/notify.js';
 import { overlaps, withinCancellationWindow, zonedNow } from '../../utils/time.js';
 import { createDoc, sessionOptions, withTransaction } from '../../utils/transaction.js';
-import { MANAGE_ROLES, requireMember } from '../access.js';
+import { MANAGE_ROLES, assertTenantLinkedUser, requireMember } from '../access.js';
 import { assertPrivacyConsent } from '../consent/service.js';
 import { assertBookableStaff, listPublicTrainers } from '../staff/service.js';
 import { buildDaySlots } from '../sessions/slots.js';
@@ -184,6 +184,7 @@ export async function createBooking(actor, input) {
   let customerId = actor._id;
   if (input.userId && String(input.userId) !== String(actor._id)) {
     await requireMember(actor, tenant._id, MANAGE_ROLES);
+    await assertTenantLinkedUser(tenant._id, input.userId);
     const customer = await User.findById(input.userId).select('_id');
     if (!customer) throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
     customerId = customer._id;

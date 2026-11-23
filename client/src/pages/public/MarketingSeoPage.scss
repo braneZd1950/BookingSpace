@@ -1,0 +1,109 @@
+.seo-mkt__crumbs {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+}
+
+.seo-mkt__sep {
+  opacity: 0.55;
+}
+
+.seo-mkt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 1.5rem;
+}
+
+.seo-mkt__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 0.55rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.seo-mkt__cta--ghost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+}
+
+.seo-mkt__list {
+  position: relative;
+  z-index: 1;
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+
+  ul {
+    margin: 0.85rem 0 0;
+    padding: 0 0 0 1.15rem;
+    display: grid;
+    gap: 0.55rem;
+    max-width: 40rem;
+  }
+
+  li {
+    line-height: 1.45;
+  }
+}
+
+.seo-mkt__h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.seo-mkt__cards {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1rem;
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.seo-mkt__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--bg) 88%, var(--brand-soft));
+  text-decoration: none;
+  color: inherit;
+
+  strong {
+    font-size: 1.02rem;
+  }
+
+  span {
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--fg) 72%, transparent);
+  }
+}
+
+.seo-mkt__note {
+  position: relative;
+  z-index: 1;
+  margin: 1.75rem 0 0;
+  max-width: 40rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--fg) 75%, transparent);
+}

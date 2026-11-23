@@ -893,6 +893,25 @@
   text-decoration: underline;
 }
 
+.home__link-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+  max-width: 28rem;
+
+  a {
+    color: var(--brand);
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
 .home__close {
   width: min(44rem, calc(100% - 2.5rem));
   margin: 3.4rem auto 0;

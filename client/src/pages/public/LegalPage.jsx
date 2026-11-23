@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
+import SeoHead from '../../components/SeoHead.jsx';
 import { entityLine, legalEntity } from '../../lib/legal.js';
 import './LegalPage.scss';
 
@@ -8,6 +9,27 @@ const docs = [
   { id: 'uvjeti', label: 'Uvjeti', to: '/uvjeti' },
   { id: 'kolacici', label: 'Kolačići', to: '/kolacici' },
 ];
+
+const SEO_BY_DOC = {
+  privatnost: {
+    title: 'Politika privatnosti — Blizari',
+    description:
+      'Kako Blizari obrađuje osobne podatke, pravna osnova, rokovi čuvanja i vaša prava prema GDPR-u.',
+    path: '/privatnost',
+  },
+  uvjeti: {
+    title: 'Uvjeti korištenja — Blizari',
+    description:
+      'Uvjeti korištenja Blizari platforme za studije i članove — prava, obveze i ograničenja usluge.',
+    path: '/uvjeti',
+  },
+  kolacici: {
+    title: 'Politika kolačića — Blizari',
+    description:
+      'Koje kolačiće Blizari koristi, zašto i kako upravljati pristankom — bez marketinških tragova u pilotu.',
+    path: '/kolacici',
+  },
+};
 
 function ClauseBody({ section }) {
   return (
@@ -44,8 +66,15 @@ export default function LegalPage({
   updatedIso = '2026-10-13',
   sections,
 }) {
+  const seo = SEO_BY_DOC[docId] || {
+    title: `${title} — Blizari`,
+    description: lead,
+    path: `/${docId}`,
+  };
+
   return (
     <main className="legal">
+      <SeoHead title={seo.title} description={seo.description} path={seo.path} />
       <div className="legal__wash" aria-hidden="true" />
 
       <header className="legal__hero">

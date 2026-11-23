@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useConfirmEmailChangeMutation } from '../../api/authApi.js';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import './RegisterPage.scss';
 
 const TOKEN_KEY = 'bookingspace.token';
@@ -46,6 +47,7 @@ export default function ConfirmEmailPage() {
   if (!token) {
     return (
       <main className="register">
+        <SeoNoIndex title="Potvrda e-pošte — Blizari" />
         <h1>Link nije valjan.</h1>
         <p className="register__lead">
           Otvorite link iz poruke ili zatražite novi iz postavki računa.
@@ -60,6 +62,7 @@ export default function ConfirmEmailPage() {
   if (done) {
     return (
       <main className="register">
+        <SeoNoIndex title="Potvrda e-pošte — Blizari" />
         <h1>E-pošta je potvrđena.</h1>
         <p className="register__lead">
           Nova adresa je spremljena na vaš Blizari račun.
@@ -77,6 +80,7 @@ export default function ConfirmEmailPage() {
 
   return (
     <main className="register">
+      <SeoNoIndex title="Potvrda e-pošte — Blizari" />
       <h1>Potvrda e-pošte</h1>
       <p className="register__lead">
         {isLoading ? 'Potvrđujemo novu adresu…' : (error || 'Pripremamo potvrdu…')}

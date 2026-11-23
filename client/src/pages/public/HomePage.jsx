@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
 import MarketingIconCards from '../../components/marketing/MarketingIconCards.jsx';
+import SeoHead from '../../components/SeoHead.jsx';
 import { HOME_FAQS } from '../../content/homeFaqs.js';
 import { BRAND } from '../../lib/brand.js';
 import { contactEmail } from '../../lib/contact.js';
 import { getHomePartners, SHOW_HOME_PARTNERS } from '../../lib/homePartners.js';
+import {
+  HOME_SEO,
+  organizationJsonLd,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+} from '../../lib/seo.js';
 import './HomePage.scss';
 
 const calendars = [
@@ -135,6 +142,12 @@ export default function HomePage() {
 
   return (
     <main className="home">
+      <SeoHead
+        title={HOME_SEO.title}
+        description={HOME_SEO.description}
+        path={HOME_SEO.path}
+        jsonLd={[organizationJsonLd(), websiteJsonLd(), softwareApplicationJsonLd()]}
+      />
       <section className="home__hero" aria-labelledby="home-brand">
         <div className="home__hero-shade" aria-hidden="true" />
         <div className="home__calendars" aria-hidden="true">
@@ -191,18 +204,20 @@ export default function HomePage() {
             <BrandWordmark slot="home" tone="dark" />
           </p>
           <p className="home__slogan">{BRAND.sloganHr}</p>
-          <h1>Vi vodite posao. Blizari pomaže oko organizacije.</h1>
+          <h1>Upravljajte svojim poslovanjem i terminima na jednom mjestu.</h1>
           <p className="home__lead">
-            Platforma za upravljanje uslužnim poslovanjem: vlastita stranica,
-            raspored, članovi, članarine i rezervacije — na jednom mjestu.
+            Blizari je platforma za poslovanja koja žele jednostavnije upravljati
+            terminima, rezervacijama, klijentima i uslugama. Kreirajte vlastitu
+            poslovnu stranicu, omogućite online rezervacije i pratite poslovanje
+            iz jedne aplikacije.
           </p>
           <p className="home__lead home__lead--tight">
-            Manje vremena na dogovaranje i administraciju. Više vremena za klijente
-            i posao koji radite.
+            Svaki studio zadržava svoje klijente i vlastitu stranicu — Blizari je
+            alat za organizaciju, ne katalog koji šalje klijente konkurenciji.
           </p>
           <div className="home__actions">
             <Link className="home__cta" to="/register">
-              Napravite svoju stranicu
+              Isprobajte Blizari
             </Link>
             <a className="home__cta home__cta--ghost" href="#kako">
               Pogledajte kako funkcionira
@@ -414,6 +429,24 @@ export default function HomePage() {
         <Link className="home__text-link" to="/o-nama">
           Upoznajte Blizari
         </Link>
+      </section>
+
+      <section className="home__block" aria-labelledby="home-seo-links">
+        <h2 id="home-seo-links">Za različite djelatnosti i potrebe</h2>
+        <p>
+          Pogledajte kako Blizari pomaže konkretnim vrstama poslovanja i što
+          možete raditi danas — bez obećanja koja još nisu u proizvodu.
+        </p>
+        <ul className="home__link-list">
+          <li><Link to="/za-koga-je-blizari">Za koga je Blizari</Link></li>
+          <li><Link to="/za-koga-je-blizari/fitness">Fitness i grupni treninzi</Link></li>
+          <li><Link to="/za-koga-je-blizari/pilates-yoga">Pilates i yoga</Link></li>
+          <li><Link to="/za-koga-je-blizari/kozmeticki-saloni">Kozmetički saloni</Link></li>
+          <li><Link to="/za-koga-je-blizari/igraonice">Igraonice</Link></li>
+          <li><Link to="/za-koga-je-blizari/wellness">Wellness</Link></li>
+          <li><Link to="/funkcionalnosti">Funkcionalnosti</Link></li>
+          <li><Link to="/cijene">Cijene (pilot)</Link></li>
+        </ul>
       </section>
 
       <section className="home__close" aria-labelledby="home-close">

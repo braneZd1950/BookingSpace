@@ -6,6 +6,7 @@ import { useGetPublicTenantQuery } from '../../api/tenantApi.js';
 import { useListMyMembershipsQuery } from '../../api/membershipApi.js';
 import ConsentBanner from '../../components/ConsentBanner.jsx';
 import PlatformLegalStrip from '../../components/PlatformLegalStrip.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import { rememberAnalyticsTenant } from '../../components/UsageTracker.jsx';
 import { StudioMissingPage } from '../public/StatusPage.jsx';
 import useResolvedDarkMode from '../../hooks/useResolvedDarkMode.js';
@@ -214,6 +215,8 @@ export default function MemberLayout() {
       className="member-shell"
       style={surfaceVars}
     >
+      {/* Tenant sites stay noindex until explicit public discovery opt-in exists. */}
+      <SeoNoIndex title={`${tenant.name} — Blizari`} />
       <header className="member-nav">
         <Link className="member-nav__brand" to={base} title={tenant.name}>
           <strong>{tenant.name}</strong>

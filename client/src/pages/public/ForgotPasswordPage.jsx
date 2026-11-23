@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForgotPasswordMutation } from '../../api/authApi.js';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import './RegisterPage.scss';
 import { isEmail } from '../../lib/isEmail.js';
 
@@ -42,6 +43,7 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <main className="register">
+        <SeoNoIndex title="Zaboravljena lozinka — Blizari" />
         <h1>Provjerite e-poštu.</h1>
         <p className="register__lead">
           Ako račun postoji, poslali smo link za postavljanje nove lozinke.
@@ -56,6 +58,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="register">
+      <SeoNoIndex title="Zaboravljena lozinka — Blizari" />
       <h1>Zaboravljena lozinka.</h1>
       <p className="register__lead">
         Ista prijava za člana i za studio. Upišite e-poštu računa — pošaljemo link za novu lozinku.

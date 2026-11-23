@@ -4,6 +4,7 @@ import { useGoogleAuthMutation } from '../../api/authApi.js';
 import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
 import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { studioFromTenant } from '../owner/studioSync.js';
 import BusinessSignupForm from './BusinessSignupForm.jsx';
@@ -88,6 +89,7 @@ export default function RegisterPage() {
 
   return (
     <main className={`register register--atelier ${modeClass}`}>
+      <SeoNoIndex title="Registracija — Blizari" />
       <div className="register__atmosphere" aria-hidden="true">
         <span className="register__shaft" />
         <span className="register__orb register__orb--a" />

@@ -16,7 +16,7 @@
     "test:mobile-load": "npm --prefix server run test:mobile-load",
     "test:mobile:all": "npm run test:mobile && npm run test:mobile-load",
     "test:mobile:e2e": "node scripts/run-maestro.js",
-    "test:security": "node --test server/test/security-hardening.test.js server/test/security-regressions.test.js server/test/security-matrix.test.js",
+    "test:security": "node --test --test-concurrency=1 server/test/security-hardening.test.js server/test/security-regressions.test.js server/test/security-matrix.test.js server/test/security-tenant-isolation.test.js",
     "test:ci": "npm --prefix server run test:ci && npm run test:client",
     "test:ci:e2e": "npm --prefix client run test:e2e",
     "build:client": "npm --prefix client run build",

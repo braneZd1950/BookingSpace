@@ -157,7 +157,74 @@ app.use('/api', api);
 const clientDist = resolveClientDist();
 if (clientDist) {
   console.log(`[web] serving SPA from ${clientDist}`);
+
+  // Canonical URLs without trailing slash (except "/").
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      next();
+      return;
+    }
+    if (req.path.length > 1 && req.path.endsWith('/')) {
+      const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      res.redirect(301, `${req.path.replace(/\/+$/, '')}${qs}`);
+      return;
+    }
+    next();
+  });
+
+  // Defense-in-depth: keep private app shells out of search indexes.
+  app.use((req, res, next) => {
+    const p = req.path || '';
+    const privatePath = (
+      p.startsWith('/api')
+      || p.startsWith('/s/')
+      || p.startsWith('/stranica')
+      || p.startsWith('/admin')
+      || p.startsWith('/analitika')
+      || p.startsWith('/login')
+      || p.startsWith('/register')
+      || p.startsWith('/prijava')
+      || p.startsWith('/registracija')
+      || p.startsWith('/postavljanje')
+      || p.startsWith('/zaboravljena-lozinka')
+      || p.startsWith('/nova-lozinka')
+      || p.startsWith('/potvrda-emaila')
+      || p.startsWith('/uploads')
+    );
+    if (privatePath) {
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+    next();
+  });
+
   app.use(express.static(clientDist, { index: false, fallthrough: true }));
+
+  // Prefer build-time prerendered HTML: /path → dist/path/index.html
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      next();
+      return;
+    }
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      next();
+      return;
+    }
+    if (req.path === '/' || req.path === '') {
+      next();
+      return;
+    }
+
+    const relative = req.path.replace(/^\/+/, '');
+    const prerendered = path.join(clientDist, relative, 'index.html');
+    if (fs.existsSync(prerendered)) {
+      res.sendFile(prerendered, (err) => {
+        if (err) next(err);
+      });
+      return;
+    }
+    next();
+  });
+
   app.use((req, res, next) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       next();

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useResetPasswordMutation } from '../../api/authApi.js';
 import PasswordField from '../../components/PasswordField.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import './RegisterPage.scss';
 
 export default function ResetPasswordPage() {
@@ -49,6 +50,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <main className="register">
+        <SeoNoIndex title="Nova lozinka — Blizari" />
         <h1>Link nije valjan.</h1>
         <p className="register__lead">
           Zatražite novi link za oporavak lozinke.
@@ -65,6 +67,7 @@ export default function ResetPasswordPage() {
   if (done) {
     return (
       <main className="register">
+        <SeoNoIndex title="Nova lozinka — Blizari" />
         <h1>Lozinka je spremljena.</h1>
         <p className="register__lead">
           Možete se prijaviti novom lozinkom — isto za člana i za studio.
@@ -82,6 +85,7 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="register">
+      <SeoNoIndex title="Nova lozinka — Blizari" />
       <h1>Nova lozinka.</h1>
       <p className="register__lead">
         Odaberite novu lozinku za svoj račun.

@@ -115,8 +115,16 @@ export async function updatePlan(user, planId, input) {
 
 async function resolveCustomer(tenantId, input, session) {
   if (input.userId) {
-    const user = await bind(User.findById(input.userId).select('_id name email phone'), session);
+    // First-time membership may bind an existing app user, then ensureCustomerLink.
+    // Never allow elevating/linking platform operators by guessed ObjectId.
+    const user = await bind(
+      User.findById(input.userId).select('_id name email phone role'),
+      session,
+    );
     if (!user) throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
+    if (user.role === 'ADMIN' || user.role === 'PLATFORM_STAFF') {
+      throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
+    }
     return { user, accountCreated: false, temporaryPassword: null };
   }
 

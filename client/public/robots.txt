@@ -1,0 +1,30 @@
+# Blizari — public marketing indexable; app shells stay out of search.
+User-agent: *
+Allow: /
+Allow: /za-koga-je-blizari
+Allow: /funkcionalnosti
+Allow: /mogucnosti
+Allow: /cijene
+Allow: /o-nama
+Allow: /kontakt
+Allow: /otkrij
+Allow: /privatnost
+Allow: /uvjeti
+Allow: /kolacici
+
+Disallow: /login
+Disallow: /register
+Disallow: /prijava
+Disallow: /registracija
+Disallow: /zaboravljena-lozinka
+Disallow: /nova-lozinka
+Disallow: /potvrda-emaila
+Disallow: /postavljanje
+Disallow: /stranica
+Disallow: /s/
+Disallow: /admin
+Disallow: /analitika
+Disallow: /api/
+Disallow: /uploads/
+
+Sitemap: https://bookingspaceapp.onrender.com/sitemap.xml

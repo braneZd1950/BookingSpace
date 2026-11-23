@@ -45,6 +45,9 @@ import {
 } from '../pages/platform/platformPages.jsx';
 import PlatformAnalyticsPage from '../pages/public/PlatformAnalyticsPage.jsx';
 import AboutPage from '../pages/public/AboutPage.jsx';
+import { AudienceDetailPage, AudienceHubPage } from '../pages/public/AudiencePages.jsx';
+import { FeatureDetailPage, FeaturesHubPage } from '../pages/public/FeatureSeoPages.jsx';
+import PricingPage from '../pages/public/PricingPage.jsx';
 import RegisterPage from '../pages/public/RegisterPage.jsx';
 import ConfirmEmailPage from '../pages/public/ConfirmEmailPage.jsx';
 import ResetPasswordPage from '../pages/public/ResetPasswordPage.jsx';
@@ -108,12 +111,19 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/mogucnosti" element={<FeaturesPage />} />
+          <Route path="/funkcionalnosti" element={<FeaturesHubPage />} />
+          <Route path="/funkcionalnosti/:feature" element={<FeatureDetailPage />} />
+          <Route path="/za-koga-je-blizari" element={<AudienceHubPage />} />
+          <Route path="/za-koga-je-blizari/:niche" element={<AudienceDetailPage />} />
+          <Route path="/cijene" element={<PricingPage />} />
           <Route path="/otkrij" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/prijava" element={<Navigate to="/login" replace />} />
           <Route path="/zaboravljena-lozinka" element={<ForgotPasswordPage />} />
           <Route path="/nova-lozinka" element={<ResetPasswordPage />} />
           <Route path="/potvrda-emaila" element={<ConfirmEmailPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/registracija" element={<Navigate to="/register" replace />} />
           <Route path="/admin" element={<AdminGate />}>
             <Route index element={<AdminHomePage />} />
             <Route path="djelatnici" element={<AdminStaffPage />} />

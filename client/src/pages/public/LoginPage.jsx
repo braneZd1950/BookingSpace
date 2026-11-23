@@ -10,6 +10,7 @@ import { useLazyMyTenantsQuery } from '../../api/tenantApi.js';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
 import GoogleAuthButton from '../../components/GoogleAuthButton.jsx';
 import PasswordField from '../../components/PasswordField.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import { business, member } from '../../mock/data.js';
 import { loadStudio, saveStudio } from '../../lib/studio.js';
 import { IS_DEV } from '../../lib/runtimeEnv.js';
@@ -60,6 +61,7 @@ function remember(session, token) {
 function LoginShell({ done = false, children }) {
   return (
     <main className={`login${done ? ' login--done' : ''}`}>
+      <SeoNoIndex title="Prijava — Blizari" />
       <div className="login__atmosphere" aria-hidden="true">
         <span className="login__shaft" />
         <span className="login__orb login__orb--a" />

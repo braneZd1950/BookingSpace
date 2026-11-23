@@ -1,6 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDiscoverTenantsQuery } from '../../api/tenantApi.js';
+import SeoHead from '../../components/SeoHead.jsx';
 import {
   DiscoverAtmosphere,
   DiscoverCategoryTabs,
@@ -70,6 +71,11 @@ export default function DiscoverPage() {
 
   return (
     <main className="member-discover">
+      <SeoHead
+        title="Otkrij usluge i studije — Blizari"
+        description="Pregledajte javno otkrivene studije i usluge. Rezervirajte izravno na stranici poslovanja koje odaberete."
+        path="/otkrij"
+      />
       <DiscoverAtmosphere />
 
       <div className="member-discover__stage">

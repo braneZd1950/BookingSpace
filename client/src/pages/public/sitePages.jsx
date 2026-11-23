@@ -60,7 +60,11 @@ export function FeedbackPage() {
 
 export function ContactPage() {
   return (
-    <InfoPage title="Kontakt">
+    <InfoPage
+      title="Kontakt"
+      path="/kontakt"
+      description="Kontaktirajte Blizari podršku ili se javite svom studiju zbog termina. E-pošta za platformu je dostupna na ovoj stranici."
+    >
       <p>Za svoj termin javite se studiju kod kojeg ste upisani.</p>
       <p>
         Za sam Blizari pišite na{' '}

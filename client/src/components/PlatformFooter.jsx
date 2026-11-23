@@ -4,6 +4,9 @@ import { BRAND } from '../lib/brand.js';
 import './PlatformFooter.scss';
 
 const footerLinks = [
+  ['/za-koga-je-blizari', 'Za koga'],
+  ['/funkcionalnosti', 'Funkcionalnosti'],
+  ['/cijene', 'Cijene'],
   ['/o-nama', 'O Blizariju'],
   ['/privatnost', 'Privatnost'],
   ['/uvjeti', 'Uvjeti korištenja'],

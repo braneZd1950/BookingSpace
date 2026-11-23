@@ -5,11 +5,14 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function run(args, cwd) {
-  return spawn('npm', args, {
+  // Prefer npm.cmd on Windows so we can keep shell:false (no shell injection surface).
+  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  return spawn(npmCmd, args, {
     cwd,
     stdio: 'inherit',
-    shell: true,
+    shell: false,
     env: process.env,
+    windowsHide: true,
   });
 }
 

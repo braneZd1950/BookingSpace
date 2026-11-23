@@ -1,0 +1,11 @@
+# Developer / CI tooling (not production request path)
+scripts/
+client/e2e/
+client/test/
+server/test/
+mobile/test/
+mobile/.maestro/
+
+# Generated / lock metadata scanned separately via npm audit
+**/package-lock.json
+**/node_modules/

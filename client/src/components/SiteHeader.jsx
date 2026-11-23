@@ -255,10 +255,10 @@ export default function SiteHeader() {
         </Link>
         <nav className="site-header__nav" aria-label="Račun">
           <NavItem to="/" label="Početna" icon={<IconSteps />} />
-          <NavItem to="/mogucnosti" label="Mogućnosti" icon={<IconFeatures />} />
-          <NavItem to="/otkrij" label="Otkrij" icon={<IconDiscover />} />
+          <NavItem to="/funkcionalnosti" label="Funkcije" icon={<IconFeatures />} />
+          <NavItem to="/za-koga-je-blizari" label="Za koga" icon={<IconDiscover />} />
+          <NavItem to="/cijene" label="Cijene" icon={<IconHelp />} />
           <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
-          <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
           {role === 'BUSINESS_OWNER' ? (
             <NavItem to="/stranica" label="Poslovanje" icon={<IconStudio />} />
           ) : null}
@@ -283,10 +283,10 @@ export default function SiteHeader() {
       </Link>
       <nav className="site-header__nav" aria-label="Navigacija">
         <NavItem to="/" label="Početna" icon={<IconSteps />} />
-        <NavItem to="/mogucnosti" label="Mogućnosti" icon={<IconFeatures />} />
-        <NavItem to="/otkrij" label="Otkrij" icon={<IconDiscover />} />
+        <NavItem to="/funkcionalnosti" label="Funkcije" icon={<IconFeatures />} />
+        <NavItem to="/za-koga-je-blizari" label="Za koga" icon={<IconDiscover />} />
+        <NavItem to="/cijene" label="Cijene" icon={<IconHelp />} />
         <NavItem to="/o-nama" label="O nama" icon={<IconAbout />} />
-        <NavItem to="/#faq" label="Česta pitanja" icon={<IconHelp />} />
         <NavItem to="/login" label="Prijava" icon={<IconLogin />} />
         <NavItem
           to="/register"

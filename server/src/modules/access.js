@@ -26,6 +26,32 @@ export async function requireMember(user, tenantId, roles = []) {
   return access;
 }
 
+/**
+ * Ensure target user is already linked to the tenant before binding payments/bookings.
+ * Returns 404 (not 403) to avoid cross-tenant user existence leaks.
+ */
+export async function assertTenantLinkedUser(
+  tenantId,
+  userId,
+  { statuses = ['ACTIVE'] } = {},
+) {
+  if (!mongoose.isValidObjectId(tenantId) || !mongoose.isValidObjectId(userId)) {
+    throw new HttpError(400, 'Invalid id', { code: 'INVALID_ID' });
+  }
+
+  const link = await TenantUser.findOne({
+    tenantId,
+    userId,
+    status: { $in: statuses },
+  }).select('_id role status');
+
+  if (!link) {
+    throw new HttpError(404, 'Not found', { code: 'NOT_FOUND' });
+  }
+
+  return link;
+}
+
 export function requireTenantRole(...roles) {
   return async (req, res, next) => {
     try {

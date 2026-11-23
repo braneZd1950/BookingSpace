@@ -39,10 +39,21 @@ async function optionalUser(req) {
 
 export async function trackHandler(req, res) {
   const user = await optionalUser(req);
+  let tenantId = req.input.body.tenantId;
+  // Only accept client-supplied tenantId when the caller is a member of that tenant.
+  if (tenantId && user) {
+    try {
+      await requireMember(user, tenantId);
+    } catch {
+      tenantId = undefined;
+    }
+  } else if (tenantId && !user) {
+    tenantId = undefined;
+  }
   trackUsage({
     type: req.input.body.type,
     path: req.input.body.path,
-    tenantId: req.input.body.tenantId,
+    tenantId,
     userId: user?._id,
     role: user?.role,
   });

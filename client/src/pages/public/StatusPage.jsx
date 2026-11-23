@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
+import { SeoNoIndex } from '../../components/SeoHead.jsx';
 import { BRAND } from '../../lib/brand.js';
 import { contactEmail } from '../../lib/contact.js';
 import './StatusPage.scss';
@@ -78,6 +79,7 @@ export function StatusPage({
 export function NotFoundPage() {
   return (
     <StatusShell variant="miss">
+      <SeoNoIndex title="Stranica nije pronađena — Blizari" />
       <div className="status__miss">
         <aside className="status__slot" aria-hidden="true">
           <p className="status__slot-day">Danas</p>

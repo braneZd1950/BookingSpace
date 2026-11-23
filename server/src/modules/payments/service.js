@@ -3,7 +3,7 @@ import Payment from '../../models/Payment.js';
 import User from '../../models/User.js';
 import { createWithCode } from '../../utils/codes.js';
 import { HttpError } from '../../utils/httpError.js';
-import { MANAGE_ROLES, requireMember } from '../access.js';
+import { MANAGE_ROLES, assertTenantLinkedUser, requireMember } from '../access.js';
 
 export function toPayment(payment) {
   return {
@@ -30,6 +30,7 @@ export async function listPayments(user, tenantId, limit) {
 
 export async function recordPayment(actor, tenantId, input) {
   await requireMember(actor, tenantId, MANAGE_ROLES);
+  await assertTenantLinkedUser(tenantId, input.userId);
   const customer = await User.findById(input.userId).select('_id');
   if (!customer) throw new HttpError(404, 'Customer not found', { code: 'NOT_FOUND' });
 

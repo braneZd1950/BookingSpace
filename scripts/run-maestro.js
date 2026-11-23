@@ -70,11 +70,20 @@ const env = {
   Path: `${path.join(javaHome, 'bin')}${path.delimiter}${process.env.Path || process.env.PATH || ''}`,
 };
 
-const result = spawnSync(cmd, args, {
-  cwd: root,
-  stdio: 'inherit',
-  shell: process.platform === 'win32',
-  env,
-});
+// On Windows, .bat launchers need cmd.exe; keep shell:false and invoke explicitly.
+const isBat = process.platform === 'win32' && /\.bat$/i.test(cmd);
+const result = isBat
+  ? spawnSync(
+    process.env.ComSpec || 'cmd.exe',
+    ['/d', '/s', '/c', `"${cmd}"`, ...args],
+    { cwd: root, stdio: 'inherit', shell: false, env, windowsHide: true },
+  )
+  : spawnSync(cmd, args, {
+    cwd: root,
+    stdio: 'inherit',
+    shell: false,
+    env,
+    windowsHide: true,
+  });
 
 process.exit(result.status ?? 1);

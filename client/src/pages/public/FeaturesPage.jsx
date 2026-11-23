@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import BrandWordmark from '../../components/BrandWordmark.jsx';
 import MarketingIconCards from '../../components/marketing/MarketingIconCards.jsx';
+import SeoHead from '../../components/SeoHead.jsx';
 import { BRAND } from '../../lib/brand.js';
 import './FeaturesPage.scss';
 
@@ -30,6 +31,11 @@ const pillars = [
 export default function FeaturesPage() {
   return (
     <main className="features">
+      <SeoHead
+        title={`Mogućnosti ${BRAND.name} — rezervacije, članovi, termini`}
+        description="Pregled mogućnosti Blizaria: vlastita stranica, online rezervacije, raspored, članovi i članarine na jednom mjestu."
+        path="/mogucnosti"
+      />
       <div className="features__atmosphere" aria-hidden="true">
         <span className="features__orb features__orb--a" />
         <span className="features__orb features__orb--b" />
@@ -76,8 +82,8 @@ export default function FeaturesPage() {
             <Link className="features__cta" to="/register">
               Napravite svoju stranicu
             </Link>
-            <Link className="features__cta features__cta--ghost" to="/">
-              Natrag na početnu
+            <Link className="features__cta features__cta--ghost" to="/funkcionalnosti">
+              Detaljne funkcionalnosti
             </Link>
           </div>
         </section>
