@@ -30,6 +30,9 @@ app.use(helmet({
         "'self'",
         'https://accounts.google.com',
         'https://apis.google.com',
+        // GA4 loads only after privacy consent (client); CSP must allow the host.
+        'https://www.googletagmanager.com',
+        'https://www.google-analytics.com',
       ],
       // No 'unsafe-inline' — Vite emits hashed CSS files; Google Fonts via link.
       styleSrc: ["'self'", 'https://fonts.googleapis.com'],
@@ -40,11 +43,17 @@ app.use(helmet({
         'blob:',
         'https://res.cloudinary.com',
         'https://*.googleusercontent.com',
+        'https://www.google-analytics.com',
+        'https://www.googletagmanager.com',
       ],
       connectSrc: [
         "'self'",
         'https://*.sentry.io',
         'https://accounts.google.com',
+        'https://www.google-analytics.com',
+        'https://analytics.google.com',
+        'https://region1.google-analytics.com',
+        'https://*.google-analytics.com',
       ],
       frameSrc: ["'self'", 'https://accounts.google.com'],
       mediaSrc: ["'self'", 'blob:', 'https://res.cloudinary.com'],
@@ -197,7 +206,13 @@ if (clientDist) {
     next();
   });
 
-  app.use(express.static(clientDist, { index: false, fallthrough: true }));
+  // redirect:false — otherwise /cijene (dir with prerender index.html) → /cijene/
+  // which our trailing-slash 301 sends back to /cijene (infinite loop).
+  app.use(express.static(clientDist, {
+    index: false,
+    fallthrough: true,
+    redirect: false,
+  }));
 
   // Prefer build-time prerendered HTML: /path → dist/path/index.html
   app.use((req, res, next) => {

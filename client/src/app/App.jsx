@@ -20,6 +20,7 @@ import MemberHomePage from '../pages/member/MemberHomePage.jsx';
 import MemberLayout from '../pages/member/MemberLayout.jsx';
 import MemberOnlinePage from '../pages/member/MemberOnlinePage.jsx';import MemberSettingsPage from '../pages/member/MemberSettingsPage.jsx';
 import StudioPolicyPage from '../pages/member/StudioPolicyPage.jsx';
+import GoogleAnalytics from '../components/GoogleAnalytics.jsx';
 import UsageTracker from '../components/UsageTracker.jsx';
 import StudioAnalyticsPage from '../pages/owner/StudioAnalyticsPage.jsx';
 import {
@@ -83,6 +84,7 @@ export default function App() {
     <>
       <ThemeSync />
       <UsageTracker />
+      <GoogleAnalytics />
       <SentryRoutes>
         <Route path="/s/:slug" element={<MemberLayout />}>
           <Route index element={<MemberHomePage />} />
