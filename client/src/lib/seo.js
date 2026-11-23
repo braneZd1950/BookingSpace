@@ -48,10 +48,24 @@ export const HOME_SEO = {
   path: '/',
 };
 
+/** Build a marketing landing entry without copy-pasted object shapes (Sonar duplication). */
+function landingPage(basePath, slug, { title, description, h1, lead, bullets, cta }) {
+  return {
+    path: `${basePath}/${slug}`,
+    title,
+    description,
+    h1,
+    lead,
+    bullets,
+    ...(cta ? { cta } : {}),
+  };
+}
+
+const AUDIENCE_BASE = '/za-koga-je-blizari';
+
 /** Audience landings — unique copy, only shipped capabilities. */
 export const AUDIENCE_PAGES = {
-  fitness: {
-    path: '/za-koga-je-blizari/fitness',
+  fitness: landingPage(AUDIENCE_BASE, 'fitness', {
     title: 'Program za fitness studije i online rezervacije | Blizari',
     description:
       'Upravljajte grupnim treninzima, kapacitetima, članovima i članarinama. Omogućite online rezervacije putem vlastite stranice studija.',
@@ -67,9 +81,8 @@ export const AUDIENCE_PAGES = {
       'Pregled aktivnosti u studijskom prostoru',
     ],
     cta: 'Organizirajte svoj fitness studio uz Blizari',
-  },
-  'pilates-yoga': {
-    path: '/za-koga-je-blizari/pilates-yoga',
+  }),
+  'pilates-yoga': landingPage(AUDIENCE_BASE, 'pilates-yoga', {
     title: 'Program za Pilates i yoga studije | Blizari',
     description:
       'Organizirajte satove, kapacitete i članove. Klijenti rezerviraju online na vašoj stranici — vi zadržavate odnos s njima.',
@@ -84,9 +97,8 @@ export const AUDIENCE_PAGES = {
       'Staff / treneri kad trebate više osoba u rasporedu',
     ],
     cta: 'Podesite studio u Blizariju',
-  },
-  'kozmeticki-saloni': {
-    path: '/za-koga-je-blizari/kozmeticki-saloni',
+  }),
+  'kozmeticki-saloni': landingPage(AUDIENCE_BASE, 'kozmeticki-saloni', {
     title: 'Program za kozmetičke i frizerske salone | Blizari',
     description:
       'Upravljajte terminima, uslugama i klijentima. Omogućite online rezervacije na vlastitoj stranici salona.',
@@ -101,9 +113,8 @@ export const AUDIENCE_PAGES = {
       'Bez indeksiranja tuđih klijenata — privatnost tenanta',
     ],
     cta: 'Pokrenite stranicu salona',
-  },
-  igraonice: {
-    path: '/za-koga-je-blizari/igraonice',
+  }),
+  igraonice: landingPage(AUDIENCE_BASE, 'igraonice', {
     title: 'Sustav za dječje igraonice i rođendaonice | Blizari',
     description:
       'Organizirajte rezervacije prostora i termina. Roditelji rezerviraju online, vi vidite raspored na jednom mjestu.',
@@ -118,9 +129,8 @@ export const AUDIENCE_PAGES = {
       'Pilot: naplata i dalje na način koji već koristite',
     ],
     cta: 'Organizirajte rezervacije uz Blizari',
-  },
-  wellness: {
-    path: '/za-koga-je-blizari/wellness',
+  }),
+  wellness: landingPage(AUDIENCE_BASE, 'wellness', {
     title: 'Rezervacije za wellness centre | Blizari',
     description:
       'Upravljajte terminima, uslugama i klijentima u wellnessu. Online rezervacije na vašoj stranici, bez gubitka kontrole nad klijentima.',
@@ -135,7 +145,7 @@ export const AUDIENCE_PAGES = {
       'Analitika osnovnih aktivnosti studija',
     ],
     cta: 'Isprobajte Blizari za wellness',
-  },
+  }),
 };
 
 export const AUDIENCE_HUB = {
@@ -148,9 +158,10 @@ export const AUDIENCE_HUB = {
     'Ako radite s rasporedom, klijentima i rezervacijama, Blizari vam daje vlastitu stranicu i alate za organizaciju — bez preusmjeravanja klijenata konkurenciji.',
 };
 
+const FEATURE_BASE = '/funkcionalnosti';
+
 export const FEATURE_PAGES = {
-  'online-rezervacije': {
-    path: '/funkcionalnosti/online-rezervacije',
+  'online-rezervacije': landingPage(FEATURE_BASE, 'online-rezervacije', {
     title: 'Online rezervacije termina | Blizari',
     description:
       'Omogućite klijentima online rezervacije i otkaz na vašoj stranici. Vi upravljate kapacitetom i pravilima otkaza.',
@@ -163,9 +174,8 @@ export const FEATURE_PAGES = {
       'Otkaz unutar prozora koji postavite',
       'Obavijesti e-poštom (kad je SMTP podešen)',
     ],
-  },
-  'upravljanje-clanovima': {
-    path: '/funkcionalnosti/upravljanje-clanovima',
+  }),
+  'upravljanje-clanovima': landingPage(FEATURE_BASE, 'upravljanje-clanovima', {
     title: 'Upravljanje članovima i klijentima | Blizari',
     description:
       'Dodajte članove, pratite status i obnovu paketa. Evidencija klijenata ostaje unutar vašeg studija.',
@@ -178,9 +188,8 @@ export const FEATURE_PAGES = {
       'Pozivnice i privremene lozinke e-poštom',
       'Odvojeni prostori po studiju (tenant izolacija)',
     ],
-  },
-  'usluge-i-termini': {
-    path: '/funkcionalnosti/usluge-i-termini',
+  }),
+  'usluge-i-termini': landingPage(FEATURE_BASE, 'usluge-i-termini', {
     title: 'Upravljanje uslugama i terminima | Blizari',
     description:
       'Definirajte usluge, trajanje i kapacitete. Vodite dnevni raspored i kalendar rezervacija.',
@@ -193,9 +202,8 @@ export const FEATURE_PAGES = {
       'Kalendar i termini vlasnika',
       'Opcionalni trener / staff na rezervaciji',
     ],
-  },
-  'clanarine-i-paketi': {
-    path: '/funkcionalnosti/clanarine-i-paketi',
+  }),
+  'clanarine-i-paketi': landingPage(FEATURE_BASE, 'clanarine-i-paketi', {
     title: 'Članarine i paketi | Blizari',
     description:
       'Vodite pakete i preostale termine. Blagajna i kartična naplata u appu nisu dio trenutačnog pilota.',
@@ -208,7 +216,7 @@ export const FEATURE_PAGES = {
       'Bez Stripe / online kartica u ovom demu',
       'Jasna komunikacija statusa članu',
     ],
-  },
+  }),
 };
 
 export const FEATURES_HUB = {
