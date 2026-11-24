@@ -8,5 +8,13 @@ export function getApiBaseUrl() {
     || (typeof process !== 'undefined' && process.env?.API_URL)
     || '';
   const trimmed = String(fromEnv || '').trim().replace(/\/$/, '');
-  return trimmed || 'http://localhost:4001/api';
+  if (trimmed) return trimmed;
+
+  const isRelease = typeof __DEV__ !== 'undefined'
+    ? !__DEV__
+    : (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production');
+  if (isRelease) {
+    throw new Error('EXPO_PUBLIC_API_URL must be set for production / release builds.');
+  }
+  return 'http://localhost:4001/api';
 }

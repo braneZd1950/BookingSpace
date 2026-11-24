@@ -63,7 +63,12 @@ export async function sendMail({ to, subject, text, html }) {
       console.error('[mail] SMTP nije konfiguriran — poruka nije poslana:', { to, subject });
       return { delivered: false, mode: 'unconfigured' };
     }
-    console.info('[mail:dev]', { from, to, subject, text });
+    // Never dump invite passwords / reset links unless explicitly opted in.
+    const logBodies = String(process.env.MAIL_LOG_BODIES || '').toLowerCase() === '1'
+      || String(process.env.MAIL_LOG_BODIES || '').toLowerCase() === 'true';
+    console.info('[mail:dev]', logBodies
+      ? { from, to, subject, text }
+      : { from, to, subject, body: '[redacted — set MAIL_LOG_BODIES=1 to print]' });
     return { delivered: true, mode: 'console' };
   }
 

@@ -59,6 +59,13 @@ test('productionGuard rejects missing EXPORT_SEAL_SECRET', () => {
   );
 });
 
+test('productionGuard rejects short EXPORT_SEAL_SECRET', () => {
+  assert.throws(
+    () => assertProductionReady(baseEnv({ exportSealSecret: 'too-short-seal' })),
+    /EXPORT_SEAL_SECRET/,
+  );
+});
+
 test('productionGuard rejects ADMIN_EMAIL_BOOTSTRAP=true', () => {
   assert.throws(
     () => assertProductionReady(baseEnv({ adminEmailBootstrap: true })),

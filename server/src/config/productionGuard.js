@@ -43,10 +43,15 @@ export function assertProductionReady(env) {
     errors.push('JWT_SECRET looks like a placeholder — generate a strong secret');
   }
 
-  if (!env.exportSealSecret) {
+  const seal = String(env.exportSealSecret || '');
+  if (!seal) {
     errors.push('EXPORT_SEAL_SECRET is required in production (do not reuse JWT_SECRET)');
-  } else if (env.exportSealSecret === env.jwtSecret) {
+  } else if (seal === jwtSecret) {
     errors.push('EXPORT_SEAL_SECRET must differ from JWT_SECRET');
+  } else if (seal.length < 32) {
+    errors.push('EXPORT_SEAL_SECRET must be at least 32 characters in production');
+  } else if (/^(change-me|secret|jwt|test|dev|seal)/i.test(seal)) {
+    errors.push('EXPORT_SEAL_SECRET looks like a placeholder — generate a strong secret');
   }
 
   const origins = Array.isArray(env.clientOrigins) ? env.clientOrigins : [env.clientOrigin];
