@@ -12,9 +12,10 @@ ICONS = ROOT / 'client' / 'public' / 'icons'
 MARK = ICONS / 'blizari-mark.png'
 
 
-def square_icon(src: Image.Image, size: int, pad_ratio: float = 0.02) -> Image.Image:
+def square_icon(src: Image.Image, size: int, pad_ratio: float = 0.0, zoom: float = 1.18) -> Image.Image:
+    """Fit mark into a square; zoom > 1 fills more of the tab icon (slight edge crop OK)."""
     canvas = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    inner = max(1, int(size * (1 - 2 * pad_ratio)))
+    inner = max(1, int(size * (1 - 2 * pad_ratio) * zoom))
     fitted = src.copy()
     fitted.thumbnail((inner, inner), Image.Resampling.LANCZOS)
     x = (size - fitted.width) // 2
@@ -31,7 +32,7 @@ def main() -> None:
         print('wrote', name, out.size)
 
     # Transparent SVG favicon (no white plate) — embed 192px mark for crisp tabs.
-    embedded = square_icon(mark, 192, pad_ratio=0.02)
+    embedded = square_icon(mark, 192, pad_ratio=0.0)
     buf = io.BytesIO()
     embedded.save(buf, format='PNG', optimize=True)
     b64 = base64.b64encode(buf.getvalue()).decode('ascii')
