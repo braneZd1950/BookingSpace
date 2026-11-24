@@ -68,21 +68,49 @@ export function consentFromUser(user) {
   };
 }
 
-/** Logged-in user wins; otherwise localStorage. */
+function userIdOf(user) {
+  if (!user) return '';
+  return String(user.id || user._id || '');
+}
+
+/**
+ * Consent resolution:
+ * - Guest: localStorage only.
+ * - Logged in + server isCurrent: accepted.
+ * - Logged in + withdrawn / stale version on account: not accepted (re-prompt).
+ * - Logged in + account never recorded: trust device only when bound to this user
+ *   or still flagged for one-time guest→account sync (not after logout onto another account).
+ *
+ * Important: Mongo always embeds privacyConsent defaults, so "empty" must not
+ * wipe a valid device accept for the same account (that caused the banner to
+ * reappear after restart whenever /me loaded before/without a synced DB row).
+ */
 export function hasValidConsent(user) {
-  if (user?.privacyConsent) {
-    return Boolean(user.privacyConsent.isCurrent);
-  }
-  return hasValidLocalConsent();
+  const remote = consentFromUser(user);
+  if (remote?.isCurrent) return true;
+  if (!user) return hasValidLocalConsent();
+
+  if (remote?.withdrawnAt && !remote.accepted) return false;
+  if (remote?.accepted && !remote.isCurrent) return false;
+
+  const neverRecorded = !remote?.accepted && !remote?.withdrawnAt;
+  if (!neverRecorded || !hasValidLocalConsent()) return false;
+
+  const local = readLocalConsent();
+  if (local?.allowAccountSync === true) return true;
+  const uid = userIdOf(user);
+  return Boolean(uid && local?.userId && String(local.userId) === uid);
 }
 
 /**
  * @param {string} [source]
- * @param {{ allowAccountSync?: boolean }} [options]
+ * @param {{ allowAccountSync?: boolean, userId?: string|null }} [options]
  *   allowAccountSync: guest accept may be copied to the next login once.
  *   Cleared on logout so another account on this device is not auto-accepted.
+ *   userId: binds accept to the logged-in account so restart keeps the banner away.
  */
-export function acceptLocally(source = 'banner', { allowAccountSync = true } = {}) {
+export function acceptLocally(source = 'banner', { allowAccountSync = true, userId = null } = {}) {
+  const prev = readLocalConsent();
   writeLocalConsent({
     accepted: true,
     version: CONSENT_VERSION,
@@ -90,6 +118,9 @@ export function acceptLocally(source = 'banner', { allowAccountSync = true } = {
     withdrawnAt: null,
     source,
     allowAccountSync: Boolean(allowAccountSync),
+    userId: userId != null && userId !== ''
+      ? String(userId)
+      : (prev?.userId || null),
   });
 }
 
@@ -100,6 +131,7 @@ export function retainLocalConsentAfterLogout() {
   writeLocalConsent({
     ...prev,
     allowAccountSync: false,
+    // Keep userId so the same account still matches on re-login if DB sync lagged.
   });
 }
 
@@ -112,5 +144,6 @@ export function withdrawLocally(source = 'settings') {
     withdrawnAt: new Date().toISOString(),
     source,
     allowAccountSync: false,
+    userId: null,
   });
 }

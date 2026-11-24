@@ -52,12 +52,62 @@ test('hasValidConsent prefers user privacyConsent.isCurrent', () => {
     acceptedAt: new Date().toISOString(),
   });
 
+  // Empty/default account + unbound local must not auto-accept another login.
   assert.equal(hasValidConsent({
-    privacyConsent: { isCurrent: false, accepted: false, version: CONSENT_VERSION },
+    id: 'u1',
+    privacyConsent: { isCurrent: false, accepted: false, version: '' },
   }), false);
   assert.equal(hasValidConsent({
+    id: 'u1',
     privacyConsent: { isCurrent: true, accepted: true, version: CONSENT_VERSION },
   }), true);
+});
+
+test('hasValidConsent trusts device accept bound to the same account', () => {
+  store.clear();
+  installStorage();
+  acceptLocally('banner', { userId: 'owner-1', allowAccountSync: false });
+
+  assert.equal(hasValidConsent({
+    id: 'owner-1',
+    privacyConsent: { accepted: false, version: '', isCurrent: false },
+  }), true);
+  assert.equal(hasValidConsent({
+    id: 'other-user',
+    privacyConsent: { accepted: false, version: '', isCurrent: false },
+  }), false);
+});
+
+test('hasValidConsent honors account withdraw over local accept', () => {
+  store.clear();
+  installStorage();
+  acceptLocally('banner', { userId: 'owner-1' });
+
+  assert.equal(hasValidConsent({
+    id: 'owner-1',
+    privacyConsent: {
+      accepted: false,
+      version: CONSENT_VERSION,
+      withdrawnAt: '2026-01-01',
+      isCurrent: false,
+    },
+  }), false);
+});
+
+test('guest allowAccountSync covers empty account until logout clears the flag', () => {
+  store.clear();
+  installStorage();
+  acceptLocally('banner'); // allowAccountSync true
+  assert.equal(hasValidConsent({
+    id: 'fresh',
+    privacyConsent: { accepted: false, version: '', isCurrent: false },
+  }), true);
+
+  retainLocalConsentAfterLogout();
+  assert.equal(hasValidConsent({
+    id: 'fresh',
+    privacyConsent: { accepted: false, version: '', isCurrent: false },
+  }), false);
 });
 
 test('consentFromUser normalizes payload', () => {

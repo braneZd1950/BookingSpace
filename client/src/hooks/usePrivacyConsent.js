@@ -35,16 +35,21 @@ export function usePrivacyConsent() {
   useEffect(() => {
     if (!user || !token) return undefined;
     const remote = consentFromUser(user);
+    const uid = String(user.id || user._id || '');
+    const local = readLocalConsent();
 
-    if (remote?.isCurrent && !hasValidLocalConsent()) {
-      acceptLocally(remote.source || 'settings', { allowAccountSync: false });
+    if (remote?.isCurrent) {
+      if (!hasValidLocalConsent() || local?.userId !== uid) {
+        acceptLocally(remote.source || 'settings', { allowAccountSync: false, userId: uid });
+      }
       return undefined;
     }
 
-    // Push guest accept → first login only when explicitly allowed (not after logout).
-    // Do not overwrite a withdraw or stale remote.
+    // Push device accept → account when never recorded: guest→login sync flag,
+    // or same userId rebound after restart when DB row was missing.
     const neverRecorded = !remote || (!remote.accepted && !remote.withdrawnAt);
-    const maySyncToAccount = readLocalConsent()?.allowAccountSync === true;
+    const boundToUser = Boolean(uid && local?.userId && String(local.userId) === uid);
+    const maySyncToAccount = local?.allowAccountSync === true || boundToUser;
     if (hasValidLocalConsent() && neverRecorded && maySyncToAccount && !syncingRef.current) {
       syncingRef.current = true;
       void recordConsent({
@@ -56,7 +61,7 @@ export function usePrivacyConsent() {
       })
         .unwrap()
         .then(() => {
-          acceptLocally('banner', { allowAccountSync: false });
+          acceptLocally('banner', { allowAccountSync: false, userId: uid });
           return refetch();
         })
         .catch(() => {})
@@ -72,7 +77,8 @@ export function usePrivacyConsent() {
   void tick;
 
   const accept = useCallback(async (source = 'banner') => {
-    acceptLocally(source);
+    const uid = user?.id || user?._id || null;
+    acceptLocally(source, { userId: uid });
     try {
       await recordConsent({
         action: 'accept',
@@ -85,7 +91,7 @@ export function usePrivacyConsent() {
     } catch {
       /* local already set; banner hides — booking still needs server sync */
     }
-  }, [recordConsent, refetch, token]);
+  }, [recordConsent, refetch, token, user]);
 
   const withdraw = useCallback(async (source = 'settings') => {
     withdrawLocally(source);
