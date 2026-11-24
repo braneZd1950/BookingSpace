@@ -1,7 +1,7 @@
 /**
  * JWT spremište.
  * Web: localStorage (preživi refresh Metro/preglednika).
- * Native kasnije: setTokenStorage s expo-secure-store.
+ * Native: installNativeTokenStorage() wires expo-secure-store before boot.
  */
 
 let memoryToken = null;

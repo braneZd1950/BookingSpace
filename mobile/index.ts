@@ -1,6 +1,10 @@
 import { registerRootComponent } from 'expo';
 
 import App from './App';
+import { installNativeTokenStorage } from './src/api/installTokenStorage.js';
+
+// Native JWT → SecureStore before any screen reads the session.
+installNativeTokenStorage();
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
 // It also ensures that whether you load the app in Expo Go or in a native build,
