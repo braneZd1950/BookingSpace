@@ -10,4 +10,8 @@ const config = getDefaultConfig(projectRoot);
 // shared/platformLegal — isti tekstovi kao web
 config.watchFolders = [path.resolve(workspaceRoot, 'shared')];
 
+// Keep resolution inside mobile/node_modules (monorepo parent has no expo).
+config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')];
+config.resolver.disableHierarchicalLookup = true;
+
 module.exports = config;
